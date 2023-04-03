@@ -1,3 +1,4 @@
+#include "vcepch.h"
 #include "Log.h"
 
 namespace VeryCoolEngine {

@@ -1,3 +1,6 @@
 [submodule "VeryCoolEngine/vendor/spdlog"]
 	path = VeryCoolEngine/vendor/spdlog
 	url = https://github.com/gabime/spdlog
+[submodule "VeryCoolEngine/vendor/GLFW"]
+	path = VeryCoolEngine/vendor/GLFW
+	url = https://github.com/tomosh22/glfwPremake

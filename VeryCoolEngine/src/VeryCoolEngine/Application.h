@@ -1,7 +1,8 @@
 #pragma once
 
 #include "core.h"
-#include <iostream>
+#include "Events/Event.h"
+#include "Window.h"
 
 
 namespace VeryCoolEngine {
@@ -12,8 +13,10 @@ namespace VeryCoolEngine {
 		Application();
 		virtual ~Application();
 		void Run();
-		
+	private:
+		Window* _window;
+		bool _running = true;
 	};
 	Application* CreateApplication();
-	
+
 }

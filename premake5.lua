@@ -1,4 +1,3 @@
-require "cmake"
 
 workspace "VeryCoolEngine"
 	architecture "x64"
@@ -11,6 +10,8 @@ workspace "VeryCoolEngine"
 
 outputDir = "%{cfg.buildcfg}-%{cfg.cystem}-%{cfg.architecture}"
 
+include "VeryCoolEngine/vendor/GLFW"
+
 project "VeryCoolEngine"
 	location"VeryCoolEngine"
 	kind "SharedLib"
@@ -19,19 +20,29 @@ project "VeryCoolEngine"
 	targetdir ("bin/" .. outputDir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputDir .. "/%{prj.name}")
 
+	pchheader "vcepch.h"
+	pchsource "VeryCoolEngine/src/vcepch.cpp"
+
 	files{
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/src/**.h"
 	}
 
 	includedirs{
-		"%{prj.name}/vendor/spdlog/include"
+		"%{prj.name}/vendor/spdlog/include",
+		"%{prj.name}/vendor/GLFW/include",
+		"%{prj.name}/src"
+	}
+
+	links{
+		"GLFW",
+		"opengl32.lib"
 	}
 
 	filter "system:windows"
 		cppdialect "C++17"
 		staticruntime "On"
-		systemversion "10.0"
+		systemversion "latest"
 
 		defines{
 			"VCE_WINDOWS",
@@ -80,7 +91,7 @@ project "Game"
 	filter "system:windows"
 		cppdialect "C++17"
 		staticruntime "On"
-		systemversion "10.0"
+		systemversion "latest"
 
 		defines{
 			"VCE_WINDOWS",
