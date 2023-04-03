@@ -15,8 +15,9 @@ int main(int argc, char** argv) {
 
 	VeryCoolEngine::Application* game = VeryCoolEngine::CreateApplication();
 	game->Run();
-	delete game;
 	VeryCoolEngine::Log::Destroy();
+	delete game;
+	
 }
 #else
 #error not built for windows

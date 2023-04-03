@@ -24,7 +24,11 @@ namespace VeryCoolEngine {
 		inline int GetRepeatCount() const { return _repeatCount; }
 
 		EventType GetType() const override { return EventType::KeyPressed;};
-		std::string GetName() const override { return "KeyPressed"; };
+		
+		std::string GetName() const override {
+			std::string name = "KeyPressed " + std::to_string(_keyCode);
+			return name;
+		};
 	private:
 		int _repeatCount;
 	};
@@ -36,6 +40,9 @@ namespace VeryCoolEngine {
 			: KeyEvent(keyCode) {}
 
 		EventType GetType() const override { return EventType::KeyReleased; };
-		std::string GetName() const override { return "KeyReleased"; };
+		std::string GetName() const override {
+			std::string name = "KeyReleased " + std::to_string(_keyCode);
+			return name;
+		};
 	};
 }

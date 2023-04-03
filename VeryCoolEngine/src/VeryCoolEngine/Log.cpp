@@ -16,7 +16,5 @@ namespace VeryCoolEngine {
 	}
 
 	void Log::Destroy() {
-		delete _coreLogger;
-		delete _clientLogger;
 	}
 }

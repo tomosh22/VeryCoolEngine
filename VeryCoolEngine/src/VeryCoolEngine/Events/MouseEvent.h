@@ -56,7 +56,7 @@ namespace VeryCoolEngine {
 
 	class VCE_API MouseButtonPressedEvent : public MouseButtonEvent {
 	public:
-		MouseButtonPressedEvent(int MouseButtonCode, int repeatCount)
+		MouseButtonPressedEvent(int MouseButtonCode)
 			: MouseButtonEvent(MouseButtonCode){}
 
 		EventType GetType() const override { return EventType::MouseButtonPressed;};

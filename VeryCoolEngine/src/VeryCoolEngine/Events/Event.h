@@ -37,14 +37,16 @@ namespace VeryCoolEngine {
 	};
 
 	class EventDispatcher {
-		using EventFunction = std::function<bool(Event&)>;
+		template<typename T>
+		using EventFunction = std::function<bool(T&)>;
 	public:
 		EventDispatcher(Event& event) : _event(event) {}
 
-		
-		bool Dispatch(EventFunction func) {
-			Event* castEventPtr = (Event*)&_event;
+		template<typename T>
+		bool Dispatch(EventFunction<T> func) {
+			T* castEventPtr = (T*)&_event;
 			_event._handled = func(*castEventPtr);
+			return _event._handled;
 		}
 
 	private:

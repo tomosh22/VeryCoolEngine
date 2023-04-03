@@ -1,5 +1,8 @@
 #include "vcepch.h"
 #include "WindowsWindow.h"
+#include "VeryCoolEngine/Events/ApplicationEvent.h"
+#include "VeryCoolEngine/Events/MouseEvent.h"
+#include "VeryCoolEngine/Events/KeyEvent.h"
 
 
 namespace VeryCoolEngine {
@@ -18,12 +21,65 @@ namespace VeryCoolEngine {
 		VCE_CORE_INFO("Creating window {0} ({1},{2})", p._title, p._width, p._height);
 		if (!glfwInititliazed) {
 			VCE_CORE_ASSERT(glfwInit() == GLFW_TRUE, "failed to init glfw");
+			glfwSetErrorCallback([](int error, const char* desc) {VCE_CORE_ERROR("glfw error {0} {1}",error,desc); });
 			glfwInititliazed = true;
 		}
 		_window = glfwCreateWindow((int)p._width, (int)p._height, p._title.c_str(), nullptr, nullptr);
 		glfwMakeContextCurrent(_window);
 		glfwSetWindowUserPointer(_window, &_data);
 		SetVSync(true);
+
+		glfwSetWindowSizeCallback(_window, [](GLFWwindow* window, int width, int height) {
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			data._width = width;
+			data._height = height;
+			data._eventCallback(WindowResizeEvent(width, height));
+			
+		});
+
+		glfwSetWindowCloseCallback(_window, [](GLFWwindow* window) {
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			data._eventCallback(WindowCloseEvent());
+		});
+
+		glfwSetKeyCallback(_window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			switch (action) {
+			case GLFW_PRESS:
+				data._eventCallback(KeyPressedEvent(key,0));
+				break;
+			case GLFW_REPEAT:
+				data._eventCallback(KeyPressedEvent(key, 1));
+				break;
+			case GLFW_RELEASE:
+				data._eventCallback(KeyReleasedEvent(key));
+				break;
+			}
+		});
+
+		glfwSetMouseButtonCallback(_window, [](GLFWwindow* window, int button, int action, int mods) {
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			switch (action) {
+			case GLFW_PRESS:
+				data._eventCallback(MouseButtonPressedEvent(button));
+				break;
+			case GLFW_RELEASE:
+				data._eventCallback(MouseButtonReleasedEvent(button));
+				break;
+			}
+		});
+
+		glfwSetScrollCallback(_window, [](GLFWwindow* window, double xOffset, double yOffset) {
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			data._eventCallback(MouseScrolledEvent((float)xOffset, (float)yOffset));
+		});
+
+		glfwSetCursorPosCallback(_window, [](GLFWwindow* window, double xPos, double yPos) {
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			data._eventCallback(MouseMovedEvent((float)xPos, (float)yPos));
+		});
+
+
 	}
 
 	void WindowsWindow::SetVSync(bool enabled) {

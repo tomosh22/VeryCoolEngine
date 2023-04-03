@@ -12,7 +12,11 @@ namespace VeryCoolEngine {
 		inline float GetHeight() const { return _height; }
 
 		EventType GetType() const override { return EventType::WindowResize; };
-		std::string GetName() const override { return "WindowResize"; };
+		
+		std::string GetName() const override {
+			std::string name = "WindowResize " + std::to_string(_width) + " " + std::to_string(_height); 
+			return name;
+		};
 
 		int GetCategoryBitMask() const { return EventCategoryApplication; }
 	private:
@@ -23,7 +27,7 @@ namespace VeryCoolEngine {
 
 	class VCE_API WindowCloseEvent : public Event {
 	public:
-		WindowCloseEvent(unsigned int width, unsigned int height) {};
+		WindowCloseEvent() {};
 
 		EventType GetType() const override { return EventType::WindowClose; };
 		std::string GetName() const override { return "WindowClose"; };
