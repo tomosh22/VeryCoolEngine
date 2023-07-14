@@ -5,23 +5,19 @@
 #include <glad/glad.h>	
 
 namespace VeryCoolEngine {
-	Application::Application(){
+	Application::Application() {
 		_window = Window::Create();
 		std::function callback = [this](Event& e) {OnEvent(e); };
 		_window->SetEventCallback(callback);
-
-		unsigned int  id = 999;
-		glGenVertexArrays(1, &id);
-		bool a = false;
 	}
 
 	void Application::OnEvent(Event& e) {
 		EventDispatcher dispatcher(e);
-		if (e.GetType() == EventType::WindowClose){
+		if (e.GetType() == EventType::WindowClose) {
 			std::function function = [&](WindowCloseEvent& e) -> bool {return Application::OnWindowClose(e); };
 			dispatcher.Dispatch(function);
 		}
-		
+
 		for (auto it = _layerStack.end(); it != _layerStack.begin();) {
 			//#todo can be changed
 			(*--it)->OnEvent(e);
@@ -44,7 +40,7 @@ namespace VeryCoolEngine {
 
 	Application::~Application() { delete _window; }
 
-	void Application::Run(){
+	void Application::Run() {
 		while (_running) {
 			for (Layer* layer : _layerStack)
 				layer->OnUpdate();
