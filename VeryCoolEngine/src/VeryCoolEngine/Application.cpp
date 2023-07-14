@@ -2,12 +2,17 @@
 #include "Application.h"
 #include "Events/ApplicationEvent.h"
 #include "Log.h"
+#include <glad/glad.h>	
 
 namespace VeryCoolEngine {
 	Application::Application(){
 		_window = Window::Create();
 		std::function callback = [this](Event& e) {OnEvent(e); };
 		_window->SetEventCallback(callback);
+
+		unsigned int  id = 999;
+		glGenVertexArrays(1, &id);
+		bool a = false;
 	}
 
 	void Application::OnEvent(Event& e) {
@@ -17,7 +22,19 @@ namespace VeryCoolEngine {
 			dispatcher.Dispatch(function);
 		}
 		
-		VCE_CORE_INFO(e.GetName());
+		for (auto it = _layerStack.end(); it != _layerStack.begin();) {
+			//#todo can be changed
+			(*--it)->OnEvent(e);
+			if (e.GetHandled()) break;
+		}
+	}
+
+	void Application::PushLayer(Layer* layer) {
+		_layerStack.PushLayer(layer);
+	}
+
+	void Application::PushOverlay(Layer* layer) {
+		_layerStack.PushOverlay(layer);
 	}
 
 	bool Application::OnWindowClose(WindowCloseEvent& e) {
@@ -26,8 +43,11 @@ namespace VeryCoolEngine {
 	}
 
 	Application::~Application() { delete _window; }
+
 	void Application::Run(){
 		while (_running) {
+			for (Layer* layer : _layerStack)
+				layer->OnUpdate();
 			_window->OnUpdate();
 		}
 	}

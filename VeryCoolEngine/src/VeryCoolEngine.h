@@ -3,3 +3,4 @@
 
 #include "VeryCoolEngine/Log.h"
 #include "VeryCoolEngine/EntryPoint.h"
+#include "VeryCoolEngine/Layers/layer.h""

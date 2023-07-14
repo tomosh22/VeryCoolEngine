@@ -12,11 +12,6 @@ namespace VeryCoolEngine {
 		inline float GetHeight() const { return _height; }
 
 		EventType GetType() const override { return EventType::WindowResize; };
-		
-		std::string GetName() const override {
-			std::string name = "WindowResize " + std::to_string(_width) + " " + std::to_string(_height); 
-			return name;
-		};
 
 		int GetCategoryBitMask() const { return EventCategoryApplication; }
 	private:
@@ -30,7 +25,6 @@ namespace VeryCoolEngine {
 		WindowCloseEvent() {};
 
 		EventType GetType() const override { return EventType::WindowClose; };
-		std::string GetName() const override { return "WindowClose"; };
 
 		int GetCategoryBitMask() const { return EventCategoryApplication; }
 	};
@@ -41,7 +35,6 @@ namespace VeryCoolEngine {
 		AppTickEvent() {};
 
 		EventType GetType() const override { return EventType::AppTick;};
-		std::string GetName() const override { return "AppTick"; };
 
 		int GetCategoryBitMask() const { return EventCategoryApplication; }
 	};
@@ -53,7 +46,6 @@ namespace VeryCoolEngine {
 		AppUpdateEvent() {};
 
 		EventType GetType() const override { return EventType::AppUpdate; };
-		std::string GetName() const override { return "AppUpdate"; };
 
 		int GetCategoryBitMask() const { return EventCategoryApplication; }
 	};
@@ -63,7 +55,6 @@ namespace VeryCoolEngine {
 		AppRenderEvent() {};
 
 		EventType GetType() const override { return EventType::AppRender; };
-		std::string GetName() const override { return "AppRender"; };
 
 		int GetCategoryBitMask() const { return EventCategoryApplication; }
 	};

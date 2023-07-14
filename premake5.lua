@@ -11,6 +11,7 @@ workspace "VeryCoolEngine"
 outputDir = "%{cfg.buildcfg}-%{cfg.cystem}-%{cfg.architecture}"
 
 include "VeryCoolEngine/vendor/GLFW"
+include "VeryCoolEngine/vendor/Glad"
 
 project "VeryCoolEngine"
 	location"VeryCoolEngine"
@@ -31,11 +32,13 @@ project "VeryCoolEngine"
 	includedirs{
 		"%{prj.name}/vendor/spdlog/include",
 		"%{prj.name}/vendor/GLFW/include",
+		"%{prj.name}/vendor/Glad/include",
 		"%{prj.name}/src"
 	}
 
 	links{
 		"GLFW",
+		"Glad",
 		"opengl32.lib"
 	}
 
@@ -46,7 +49,8 @@ project "VeryCoolEngine"
 
 		defines{
 			"VCE_WINDOWS",
-			"VCE_BUILD_DLL"
+			"VCE_BUILD_DLL",
+			"GLFW_INCLUDE_NONE"
 		}
 
 		postbuildcommands{

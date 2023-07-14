@@ -24,14 +24,19 @@ namespace VeryCoolEngine {
 	};
 
 	class VCE_API Event {
-		friend class EventDispatcher;
 	public:
 		virtual EventType GetType() const = 0;
-		virtual std::string GetName() const = 0;
+		const char* GetName() const { return _name.c_str(); };
 		virtual int GetCategoryBitMask() const = 0;
 		inline bool IsInCategory(EventCategory c) const {
 			return GetCategoryBitMask() & c;
 		}
+
+		void SetHandled(bool handled) { _handled = handled; }
+		bool GetHandled() const { return _handled; }
+		
+	protected:
+		std::string _name = "defualt name";
 	private:
 		bool _handled = false;
 	};
@@ -45,8 +50,8 @@ namespace VeryCoolEngine {
 		template<typename T>
 		bool Dispatch(EventFunction<T> func) {
 			T* castEventPtr = (T*)&_event;
-			_event._handled = func(*castEventPtr);
-			return _event._handled;
+			_event.SetHandled(func(*castEventPtr));
+			return _event.GetHandled();
 		}
 
 	private:

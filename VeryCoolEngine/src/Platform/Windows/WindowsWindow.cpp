@@ -3,6 +3,7 @@
 #include "VeryCoolEngine/Events/ApplicationEvent.h"
 #include "VeryCoolEngine/Events/MouseEvent.h"
 #include "VeryCoolEngine/Events/KeyEvent.h"
+#include <glad/glad.h>
 
 
 namespace VeryCoolEngine {
@@ -26,6 +27,8 @@ namespace VeryCoolEngine {
 		}
 		_window = glfwCreateWindow((int)p._width, (int)p._height, p._title.c_str(), nullptr, nullptr);
 		glfwMakeContextCurrent(_window);
+		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+		VCE_CORE_ASSERT(status, "failed to init glad");
 		glfwSetWindowUserPointer(_window, &_data);
 		SetVSync(true);
 

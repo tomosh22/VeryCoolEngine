@@ -6,13 +6,14 @@ namespace VeryCoolEngine {
 	
 	class VCE_API MouseMovedEvent : public Event {
 	public:
-		MouseMovedEvent(float x, float y) : _mouseX(x), _mouseY(y) {};
+		MouseMovedEvent(float x, float y) : _mouseX(x), _mouseY(y) {
+			_name = "MouseMoved " + std::to_string(x) + " " + std::to_string(y);
+		};
 
 		inline float GetX() const { return _mouseX; }
 		inline float GetY() const { return _mouseY; }
 
 		EventType GetType() const override { return EventType::MouseMoved; };
-		std::string GetName() const override { return "MouseMoved"; };
 
 		int GetCategoryBitMask() const { return EventCategoryInput | EventCategoryMouse; }
 
@@ -33,7 +34,6 @@ namespace VeryCoolEngine {
 
 
 		EventType GetType() const override { return EventType::MouseScrolled;};
-		std::string GetName() const override { return "MouseScrolled"; };
 
 		int GetCategoryBitMask() const { return EventCategoryInput | EventCategoryMouse; }
 	private:
@@ -60,7 +60,6 @@ namespace VeryCoolEngine {
 			: MouseButtonEvent(MouseButtonCode){}
 
 		EventType GetType() const override { return EventType::MouseButtonPressed;};
-		std::string GetName() const override { return "MouseButtonPressed"; };
 	};
 
 
@@ -70,6 +69,5 @@ namespace VeryCoolEngine {
 			: MouseButtonEvent(MouseButtonCode) {}
 
 		EventType GetType() const override { return EventType::MouseButtonReleased; };
-		std::string GetName() const override { return "MouseButtonReleased"; };
 	};
 }

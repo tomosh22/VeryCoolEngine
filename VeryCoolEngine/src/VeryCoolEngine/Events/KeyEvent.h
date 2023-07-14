@@ -10,6 +10,7 @@ namespace VeryCoolEngine {
 	public:
 		inline int GetKeyCode() const { return _keyCode; }
 		int GetCategoryBitMask() const { return EventCategoryInput | EventCategoryKeyboard; }
+		
 	private:
 		KeyEvent(int keyCode) : _keyCode(keyCode) {};
 		int _keyCode;
@@ -25,10 +26,6 @@ namespace VeryCoolEngine {
 
 		EventType GetType() const override { return EventType::KeyPressed;};
 		
-		std::string GetName() const override {
-			std::string name = "KeyPressed " + std::to_string(_keyCode);
-			return name;
-		};
 	private:
 		int _repeatCount;
 	};
@@ -37,12 +34,10 @@ namespace VeryCoolEngine {
 	class VCE_API KeyReleasedEvent : public KeyEvent {
 	public:
 		KeyReleasedEvent(int keyCode)
-			: KeyEvent(keyCode) {}
+			: KeyEvent(keyCode) {
+			_name = "KeyReleased " + std::to_string(keyCode);
+		}
 
 		EventType GetType() const override { return EventType::KeyReleased; };
-		std::string GetName() const override {
-			std::string name = "KeyReleased " + std::to_string(_keyCode);
-			return name;
-		};
 	};
 }
