@@ -4,3 +4,6 @@
 [submodule "VeryCoolEngine/vendor/GLFW"]
 	path = VeryCoolEngine/vendor/GLFW
 	url = https://github.com/tomosh22/glfwPremake
+[submodule "VeryCoolEngine/vendor/imgui"]
+	path = VeryCoolEngine/vendor/imgui
+	url = https://github.com/tomosh22/imguiPremake
