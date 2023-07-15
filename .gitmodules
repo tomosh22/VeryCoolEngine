@@ -7,3 +7,6 @@
 [submodule "VeryCoolEngine/vendor/imgui"]
 	path = VeryCoolEngine/vendor/imgui
 	url = https://github.com/tomosh22/imguiPremake
+[submodule "VeryCoolEngine/vendor/glm"]
+	path = VeryCoolEngine/vendor/glm
+	url = https://github.com/g-truc/glm
