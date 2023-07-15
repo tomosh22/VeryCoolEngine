@@ -1,6 +1,6 @@
 #include "Game.h"
 
-
+#include <imgui.h>
 
 class ExampleLayer : public VeryCoolEngine::Layer
 {
@@ -17,8 +17,16 @@ public:
 		
 		
 	}
+	void OnImGuiRender() override {
+		ImGui::Begin("Test");
+		ImGui::Text("Test");
+		float test[4]{};
+		ImGui::ColorEdit4("hi" ,test);
+		ImGui::End();
+	}
 };
 Game::Game() {
+	PushOverlay(new ExampleLayer());
 }
 
 Game::~Game(){}

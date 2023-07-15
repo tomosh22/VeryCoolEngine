@@ -56,7 +56,7 @@ project "VeryCoolEngine"
 		defines{
 			"VCE_WINDOWS",
 			"VCE_BUILD_DLL",
-			"GLFW_INCLUDE_NONE"
+			"GLFW_INCLUDE_NONE",
 		}
 
 		postbuildcommands{
