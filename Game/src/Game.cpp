@@ -1,26 +1,24 @@
 #include "Game.h"
 
+
+
 class ExampleLayer : public VeryCoolEngine::Layer
 {
 public:
 	ExampleLayer()
-		: Layer("Example")
-	{
+		: Layer("Example"){
 	}
 
-	void OnUpdate() override
-	{
-		VCE_INFO("ExampleLayer::Update");
-	}
-
-	void OnEvent(VeryCoolEngine::Event& event) override
-	{
+	void OnUpdate() override{
 		
-		VCE_TRACE(event.GetName());
+	}
+
+	void OnEvent(VeryCoolEngine::Event& event) override{
+		
+		
 	}
 };
 Game::Game() {
-	PushOverlay(new VeryCoolEngine::ImGuiLayer());
 }
 
 Game::~Game(){}

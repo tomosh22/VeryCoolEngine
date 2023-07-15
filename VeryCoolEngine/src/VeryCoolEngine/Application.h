@@ -7,9 +7,12 @@
 #include "VeryCoolEngine/Layers/LayerStack.h"
 #include "VeryCoolEngine/Events/Event.h"
 #include "VeryCoolEngine/Events/ApplicationEvent.h"
+#include "VeryCoolEngine/ImGui/ImGuiLayer.h"
 
 
 namespace VeryCoolEngine {
+
+	class ImGuiLayer;
 
 	class VCE_API Application
 	{
@@ -27,6 +30,7 @@ namespace VeryCoolEngine {
 		bool _running = true;
 		bool OnWindowClose(WindowCloseEvent& e);
 		LayerStack _layerStack;
+		ImGuiLayer* _pImGuiLayer;
 		static Application* _spInstance;
 	};
 	Application* CreateApplication();

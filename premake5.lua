@@ -27,7 +27,9 @@ project "VeryCoolEngine"
 
 	files{
 		"%{prj.name}/src/**.cpp",
-		"%{prj.name}/src/**.h"
+		"%{prj.name}/src/**.h",
+		"%{prj.name}/vendor/glm/glm/**.hpp",
+		"%{prj.name}/vendor/glm/glm/**.inl"
 	}
 
 	includedirs{
@@ -35,6 +37,7 @@ project "VeryCoolEngine"
 		"%{prj.name}/vendor/GLFW/include",
 		"%{prj.name}/vendor/Glad/include",
 		"%{prj.name}/vendor/imgui",
+		"%{prj.name}/vendor/glm",
 		"%{prj.name}/src"
 	}
 
@@ -90,7 +93,10 @@ project "Game"
 
 	includedirs{
 		"VeryCoolEngine/vendor/spdlog/include",
-		"VeryCoolEngine/src"
+		"VeryCoolEngine/src",
+		"VeryCoolEngine/vendor/imgui",
+		"VeryCoolEngine/vendor/glm"
+
 	}
 
 	links{"VeryCoolEngine"}

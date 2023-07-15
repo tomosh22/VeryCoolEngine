@@ -5,6 +5,8 @@
 #include <glad/glad.h>	
 #include "Input.h"
 
+#include <glm/glm.hpp>
+
 namespace VeryCoolEngine {
 
 	Application* Application::_spInstance = nullptr;
@@ -14,6 +16,9 @@ namespace VeryCoolEngine {
 		_window = Window::Create();
 		std::function callback = [this](Event& e) {OnEvent(e); };
 		_window->SetEventCallback(callback);
+
+		_pImGuiLayer = new ImGuiLayer();
+		PushOverlay(_pImGuiLayer);
 	}
 
 	void Application::OnEvent(Event& e) {
@@ -49,8 +54,15 @@ namespace VeryCoolEngine {
 
 	void Application::Run() {
 		while (_running) {
+			glClearColor(0.1, 0.1, 0.1, 1);
+			glClear(GL_COLOR_BUFFER_BIT);
 			for (Layer* layer : _layerStack)
 				layer->OnUpdate();
+
+			_pImGuiLayer->Begin();
+			for (Layer* layer : _layerStack)
+				layer->OnImGuiRender();
+			_pImGuiLayer->End();
 
 			_window->OnUpdate();
 		}

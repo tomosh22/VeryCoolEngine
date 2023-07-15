@@ -4,7 +4,6 @@
 namespace VeryCoolEngine {
 
 	LayerStack::LayerStack(){
-		_layerInsert = _layers.begin();
 	}
 
 	LayerStack::~LayerStack(){
@@ -12,7 +11,7 @@ namespace VeryCoolEngine {
 	}
 
 	void LayerStack::PushLayer(Layer* layer){
-		_layerInsert = _layers.emplace(_layerInsert, layer);
+		_layers.emplace(_layers.begin() + _insertIndex, layer);
 	}
 
 	void LayerStack::PushOverlay(Layer* overlay){
@@ -23,7 +22,7 @@ namespace VeryCoolEngine {
 		auto it = std::find(_layers.begin(), _layers.end(), layer);
 		if (it != _layers.end()){
 			_layers.erase(it);
-			_layerInsert--;
+			_insertIndex--;
 		}
 	}
 

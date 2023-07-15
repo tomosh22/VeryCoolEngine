@@ -7,8 +7,7 @@
 #include "VeryCoolEngine/Events/KeyEvent.h"
 #include "VeryCoolEngine/Events/MouseEvent.h"
 
-#include "../../imgui/imgui.h"
-#include "../src/Platform/OpenGL/imgui_impl_opengl3.h"
+#include <imgui.h>
 
 namespace VeryCoolEngine {
 
@@ -19,19 +18,12 @@ public:
 
 	void OnAttach() override;
 	void OnDetach() override;
-	void OnUpdate() override;
-	void OnEvent(Event& event) override;
+	void OnImGuiRender() override;
+
+	void Begin();
+	void End();
 
 private:
-	bool OnMouseMovedEvent(MouseMovedEvent& event);
-	bool OnMouseButtonPressedEvent(MouseButtonPressedEvent& event);
-	bool OnMouseButtonReleasedEvent(MouseButtonReleasedEvent& event);
-	bool OnMouseScrolledEvent(MouseScrolledEvent& event);
-	bool OnKeyPressedEvent(KeyPressedEvent& event);
-	bool OnKeyReleasedEvent(KeyReleasedEvent& event);
-	//bool OnKeyTypedEvent(KeyTypedEvent& event);
-	bool OnWindowResizeEvent(WindowResizeEvent& event);
-
 	float _time = 0;
 };
 

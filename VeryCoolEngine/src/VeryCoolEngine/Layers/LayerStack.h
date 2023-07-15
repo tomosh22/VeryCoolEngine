@@ -22,7 +22,7 @@ namespace VeryCoolEngine {
 		std::vector<Layer*>::iterator end() { return _layers.end(); }
 	private:
 		std::vector<Layer*> _layers;
-		std::vector<Layer*>::iterator _layerInsert;
+		unsigned int _insertIndex = 0;
 	};
 
 }
