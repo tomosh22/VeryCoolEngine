@@ -8,8 +8,8 @@ namespace VeryCoolEngine {
 	public:
 		WindowResizeEvent(unsigned int width, unsigned int height) : _width(width), _height(height) {};
 
-		inline float GetWidth() const { return _width; }
-		inline float GetHeight() const { return _height; }
+		inline float GetWidth() const { return (float)_width; }
+		inline float GetHeight() const { return (float)_height; }
 
 		EventType GetType() const override { return EventType::WindowResize; };
 

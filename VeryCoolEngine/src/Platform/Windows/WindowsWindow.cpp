@@ -3,7 +3,8 @@
 #include "VeryCoolEngine/Events/ApplicationEvent.h"
 #include "VeryCoolEngine/Events/MouseEvent.h"
 #include "VeryCoolEngine/Events/KeyEvent.h"
-#include <glad/glad.h>
+
+#include "Platform/OpenGL/OpenGLContext.h"
 
 
 namespace VeryCoolEngine {
@@ -15,6 +16,8 @@ namespace VeryCoolEngine {
 	WindowsWindow::~WindowsWindow() { Shutdown(); }
 
 	void WindowsWindow::Init(const WindowProperties& p) {
+		
+
 		_data._title = p._title;
 		_data._width = p._width;
 		_data._height = p._height;
@@ -25,14 +28,15 @@ namespace VeryCoolEngine {
 			glfwSetErrorCallback([](int error, const char* desc) {VCE_CORE_ERROR("glfw error {0} {1}",error,desc); });
 			glfwInititliazed = true;
 		}
-		_window = glfwCreateWindow((int)p._width, (int)p._height, p._title.c_str(), nullptr, nullptr);
-		glfwMakeContextCurrent(_window);
-		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-		VCE_CORE_ASSERT(status, "failed to init glad");
-		glfwSetWindowUserPointer(_window, &_data);
+		_pWindow = glfwCreateWindow((int)p._width, (int)p._height, p._title.c_str(), nullptr, nullptr);
+		_pContext = new OpenGLContext(_pWindow);
+		_pContext->Init();
+
+		
+		glfwSetWindowUserPointer(_pWindow, &_data);
 		SetVSync(true);
 
-		glfwSetWindowSizeCallback(_window, [](GLFWwindow* window, int width, int height) {
+		glfwSetWindowSizeCallback(_pWindow, [](GLFWwindow* window, int width, int height) {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			data._width = width;
 			data._height = height;
@@ -40,12 +44,12 @@ namespace VeryCoolEngine {
 			
 		});
 
-		glfwSetWindowCloseCallback(_window, [](GLFWwindow* window) {
+		glfwSetWindowCloseCallback(_pWindow, [](GLFWwindow* window) {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			data._eventCallback(WindowCloseEvent());
 		});
 
-		glfwSetKeyCallback(_window, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
+		glfwSetKeyCallback(_pWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			switch (action) {
 			case GLFW_PRESS:
@@ -60,7 +64,7 @@ namespace VeryCoolEngine {
 			}
 		});
 
-		glfwSetMouseButtonCallback(_window, [](GLFWwindow* window, int button, int action, int mods) {
+		glfwSetMouseButtonCallback(_pWindow, [](GLFWwindow* window, int button, int action, int mods) {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			switch (action) {
 			case GLFW_PRESS:
@@ -72,12 +76,12 @@ namespace VeryCoolEngine {
 			}
 		});
 
-		glfwSetScrollCallback(_window, [](GLFWwindow* window, double xOffset, double yOffset) {
+		glfwSetScrollCallback(_pWindow, [](GLFWwindow* window, double xOffset, double yOffset) {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			data._eventCallback(MouseScrolledEvent((float)xOffset, (float)yOffset));
 		});
 
-		glfwSetCursorPosCallback(_window, [](GLFWwindow* window, double xPos, double yPos) {
+		glfwSetCursorPosCallback(_pWindow, [](GLFWwindow* window, double xPos, double yPos) {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			data._eventCallback(MouseMovedEvent((float)xPos, (float)yPos));
 		});
@@ -92,11 +96,12 @@ namespace VeryCoolEngine {
 
 	bool WindowsWindow::GetVSyncEnabled() const { return _data._VSync; }
 
-	void WindowsWindow::Shutdown() { glfwDestroyWindow(_window);}
+	void WindowsWindow::Shutdown() { glfwDestroyWindow(_pWindow);}
 
 	void WindowsWindow::OnUpdate() {
 		glfwPollEvents();
-		glfwSwapBuffers(_window);
+		_pContext->SwapBuffers();
+		
 	}
 
 }

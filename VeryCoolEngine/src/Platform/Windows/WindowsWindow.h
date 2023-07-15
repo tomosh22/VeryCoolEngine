@@ -5,6 +5,8 @@
 #include "VeryCoolEngine/core.h"
 #include "GLFW/glfw3.h"
 
+#include "VeryCoolEngine/Renderer/GraphicsContext.h"
+
 namespace VeryCoolEngine {
 	
 	class WindowsWindow : public Window {
@@ -12,7 +14,7 @@ namespace VeryCoolEngine {
 		WindowsWindow(const WindowProperties& p);
 		virtual ~WindowsWindow();
 
-		void* GetNativeWindow() const override { return _window; }
+		void* GetNativeWindow() const override { return _pWindow; }
 
 		void OnUpdate() override;
 
@@ -23,13 +25,13 @@ namespace VeryCoolEngine {
 		void SetVSync(bool enabled) override;
 		bool GetVSyncEnabled() const override;
 	private:
-		GLFWwindow* _window;
+		GLFWwindow* _pWindow;
+		GraphicsContext* _pContext;
 		struct WindowData {
 			unsigned int _width, _height;
 			std::string _title;
 			bool _VSync;
 			EventCallBackFunction _eventCallback;
-			WindowData() {};
 		} _data;
 		
 

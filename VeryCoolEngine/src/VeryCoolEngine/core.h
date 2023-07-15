@@ -1,6 +1,7 @@
 #pragma once
 
 #ifdef VCE_WINDOWS
+#if VCE_DYNAMIC_LINK
 	#ifdef VCE_BUILD_DLL
 		#define VCE_API __declspec(dllexport)
 		#define IMGUI_API __declspec( dllexport )
@@ -8,6 +9,9 @@
 		#define VCE_API __declspec(dllimport)
 		#define IMGUI_API __declspec( dllimport )
 	#endif
+#else
+#define VCE_API
+#endif
 #else
 #error not built for windows
 #endif

@@ -3,7 +3,9 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
+#ifndef IMGUI_IMPL_API
 #define IMGUI_IMPL_API
+#endif
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
@@ -47,7 +49,7 @@ namespace VeryCoolEngine {
 	void ImGuiLayer::End() {
 		ImGuiIO& io = ImGui::GetIO();
 		Application* app = Application::GetInstance();
-		io.DisplaySize = ImVec2(app->GetWindow().GetWidth(), app->GetWindow().GetHeight());
+		io.DisplaySize = ImVec2((float)app->GetWindow().GetWidth(), (float)app->GetWindow().GetHeight());
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

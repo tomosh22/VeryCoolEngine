@@ -16,8 +16,10 @@ include "VeryCoolEngine/vendor/imgui"
 
 project "VeryCoolEngine"
 	location"VeryCoolEngine"
-	kind "SharedLib"
+	kind "StaticLib"
 	language "C++"
+	cppdialect "C++17"
+	staticruntime "on"
 
 	targetdir ("bin/" .. outputDir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputDir .. "/%{prj.name}")
@@ -49,8 +51,6 @@ project "VeryCoolEngine"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
-		staticruntime "On"
 		systemversion "latest"
 
 		defines{
@@ -65,23 +65,25 @@ project "VeryCoolEngine"
 
 	filter "configurations:Debug"
 		defines "VCE_DEBUG"
-		symbols "On"
+		symbols "on"
 	
 
 	filter "configurations:Release"
 		defines "VCE_RELEASE"
-		optimize "On"
+		optimize "on"
 	
 
 	filter "configurations:Dist"
 		defines "VCE_DIST"
-		optimize "On"
+		optimize "on"
 	
 
 project "Game"
 	location "Game"
 	kind "ConsoleApp"
 	language "C++"
+	cppdialect "C++17"
+	staticruntime "on"
 
 	targetdir ("bin/" .. outputDir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputDir .. "/%{prj.name}")
@@ -102,8 +104,6 @@ project "Game"
 	links{"VeryCoolEngine"}
 
 	filter "system:windows"
-		cppdialect "C++17"
-		staticruntime "On"
 		systemversion "latest"
 
 		defines{
@@ -112,15 +112,15 @@ project "Game"
 
 	filter "configurations:Debug"
 		defines "VCE_DEBUG"
-		symbols "On"
+		symbols "on"
 	
 
 	filter "configurations:Release"
 		defines "VCE_RELEASE"
-		optimize "On"
+		optimize "on"
 	
 
 	filter "configurations:Dist"
 		defines "VCE_DIST"
-		optimize "On"
+		optimize "on"
 	

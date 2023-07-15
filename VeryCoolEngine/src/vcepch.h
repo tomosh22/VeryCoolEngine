@@ -12,3 +12,5 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include "VeryCoolEngine/Log.h"

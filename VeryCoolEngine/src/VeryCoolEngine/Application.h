@@ -32,6 +32,8 @@ namespace VeryCoolEngine {
 		LayerStack _layerStack;
 		ImGuiLayer* _pImGuiLayer;
 		static Application* _spInstance;
+
+		unsigned int _vertArray, _vertBuffer, _indexBuffer;
 	};
 	Application* CreateApplication();
 

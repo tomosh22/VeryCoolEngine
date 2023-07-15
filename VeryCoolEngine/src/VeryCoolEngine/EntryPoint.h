@@ -2,6 +2,7 @@
 #include <string>
 #ifdef VCE_WINDOWS
 
+
 //to be defined by game
 //extern VeryCoolEngine::Application* VeryCoolEngine::CreateApplication();
 
