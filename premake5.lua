@@ -12,6 +12,7 @@ outputDir = "%{cfg.buildcfg}-%{cfg.cystem}-%{cfg.architecture}"
 
 include "VeryCoolEngine/vendor/GLFW"
 include "VeryCoolEngine/vendor/Glad"
+include "VeryCoolEngine/vendor/imgui"
 
 project "VeryCoolEngine"
 	location"VeryCoolEngine"
@@ -33,13 +34,15 @@ project "VeryCoolEngine"
 		"%{prj.name}/vendor/spdlog/include",
 		"%{prj.name}/vendor/GLFW/include",
 		"%{prj.name}/vendor/Glad/include",
+		"%{prj.name}/vendor/imgui",
 		"%{prj.name}/src"
 	}
 
 	links{
 		"GLFW",
 		"Glad",
-		"opengl32.lib"
+		"opengl32.lib",
+		"ImGui"
 	}
 
 	filter "system:windows"

@@ -20,7 +20,7 @@ public:
 	}
 };
 Game::Game() {
-	PushLayer(new ExampleLayer());
+	PushOverlay(new VeryCoolEngine::ImGuiLayer());
 }
 
 Game::~Game(){}

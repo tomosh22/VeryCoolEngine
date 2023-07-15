@@ -49,9 +49,12 @@ namespace VeryCoolEngine {
 
 		template<typename T>
 		bool Dispatch(EventFunction<T> func) {
-			T* castEventPtr = (T*)&_event;
-			_event.SetHandled(func(*castEventPtr));
-			return _event.GetHandled();
+			if (typeid(T) == typeid(_event)) {
+				T* castEventPtr = (T*)&_event;
+				_event.SetHandled(func(*castEventPtr));
+				return _event.GetHandled();
+			}
+			return false;
 		}
 
 	private:

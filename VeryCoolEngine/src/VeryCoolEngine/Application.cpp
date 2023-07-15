@@ -5,7 +5,11 @@
 #include <glad/glad.h>	
 
 namespace VeryCoolEngine {
+
+	Application* Application::_spInstance = nullptr;
+
 	Application::Application() {
+		_spInstance = this;
 		_window = Window::Create();
 		std::function callback = [this](Event& e) {OnEvent(e); };
 		_window->SetEventCallback(callback);
@@ -27,10 +31,12 @@ namespace VeryCoolEngine {
 
 	void Application::PushLayer(Layer* layer) {
 		_layerStack.PushLayer(layer);
+		layer->OnAttach();
 	}
 
 	void Application::PushOverlay(Layer* layer) {
 		_layerStack.PushOverlay(layer);
+		layer->OnAttach();
 	}
 
 	bool Application::OnWindowClose(WindowCloseEvent& e) {
