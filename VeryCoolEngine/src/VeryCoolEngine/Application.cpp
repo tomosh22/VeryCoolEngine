@@ -3,6 +3,7 @@
 #include "Events/ApplicationEvent.h"
 #include "Log.h"
 #include <glad/glad.h>	
+#include "Input.h"
 
 namespace VeryCoolEngine {
 
@@ -50,6 +51,7 @@ namespace VeryCoolEngine {
 		while (_running) {
 			for (Layer* layer : _layerStack)
 				layer->OnUpdate();
+
 			_window->OnUpdate();
 		}
 	}

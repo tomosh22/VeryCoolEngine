@@ -12,6 +12,8 @@ namespace VeryCoolEngine {
 		WindowsWindow(const WindowProperties& p);
 		virtual ~WindowsWindow();
 
+		void* GetNativeWindow() const override { return _window; }
+
 		void OnUpdate() override;
 
 		inline unsigned int GetWidth() const override { return _data._width; }
