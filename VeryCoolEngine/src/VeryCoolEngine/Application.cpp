@@ -6,11 +6,13 @@
 #include "Input.h"
 
 #include <glm/glm.hpp>
-#include "VeryCoolEngine/Renderer/ShaderFactory.h"
 
 namespace VeryCoolEngine {
 
+
 	Application* Application::_spInstance = nullptr;
+
+	
 
 	Application::Application() {
 		_spInstance = this;
@@ -21,27 +23,32 @@ namespace VeryCoolEngine {
 		_pImGuiLayer = new ImGuiLayer();
 		PushOverlay(_pImGuiLayer);
 
-		glGenVertexArrays(1, &_vertArray);
-		glBindVertexArray(_vertArray);
+		_pVertArray = VertexArray::Create();
 
-		glGenBuffers(1, &_vertBuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, _vertBuffer);
 
-		float verts[9] = {
-			-0.5,-0.5,0,
-			0.5,-0.5,0,
-			0,0.5,0
+		float verts[3 * (3+4)] = {
+			-0.5,-0.5,0,    1,0,0,1,
+			0.5,-0.5,0,     0,1,0,1,
+			0,0.5,0,        0,0,1,1
 		};
-		glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), verts, GL_STREAM_DRAW);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+		
+		_pVertBuffer = VertexBuffer::Create(verts,sizeof(verts));
 
-		glGenBuffers(1, &_indexBuffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+		BufferLayout layout = {
+			{ShaderDataType::Float3, "_aPosition"},
+			{ShaderDataType::Float4, "_aColor"},
+		};
+		_pVertBuffer->SetLayout(layout);
+		
+		_pVertArray->AddVertexBuffer(_pVertBuffer);
+		
 		unsigned int indices[3] = { 0,1,2 };
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(float) * 3, indices, GL_STREAM_DRAW);
+		_pIndexBuffer = IndexBuffer::Create(indices, 3);
+		_pVertArray->SetIndexBuffer(_pIndexBuffer);
 
-		_pBasicShader = ShaderFactory::CreateShader("basic.vert", "basic.frag");
+		_pVertArray->Unbind();
+
+		_pBasicShader = Shader::Create("basic.vert", "basic.frag");
 		bool a = false;
 	}
 
@@ -82,9 +89,9 @@ namespace VeryCoolEngine {
 			glClearColor(0.2, 0.2, 0.4, 1);
 			glClear(GL_COLOR_BUFFER_BIT);
 
-			glBindVertexArray(_vertArray);
+			_pVertArray->Bind();
 			_pBasicShader->Bind();
-			glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_TRIANGLES, _pVertArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
 			
 			glDrawArrays(GL_TRIANGLES, 0, 1);
 			for (Layer* layer : _layerStack)

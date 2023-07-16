@@ -13,10 +13,7 @@ Credit Rich Davison
 #include "OpenGLShader.h"
 
 
-#include <glad/glad.h>
-
 #include "VeryCoolEngine/AssetHandling/Assets.h"
-#include <iostream>
 
 namespace VeryCoolEngine {
 
