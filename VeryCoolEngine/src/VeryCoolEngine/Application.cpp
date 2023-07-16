@@ -6,6 +6,7 @@
 #include "Input.h"
 
 #include <glm/glm.hpp>
+#include "VeryCoolEngine/Renderer/ShaderFactory.h"
 
 namespace VeryCoolEngine {
 
@@ -40,6 +41,8 @@ namespace VeryCoolEngine {
 		unsigned int indices[3] = { 0,1,2 };
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(float) * 3, indices, GL_STREAM_DRAW);
 
+		_pBasicShader = ShaderFactory::CreateShader("basic.vert", "basic.frag");
+		bool a = false;
 	}
 
 	void Application::OnEvent(Event& e) {
@@ -80,8 +83,9 @@ namespace VeryCoolEngine {
 			glClear(GL_COLOR_BUFFER_BIT);
 
 			glBindVertexArray(_vertArray);
+			_pBasicShader->Bind();
 			glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
-
+			
 			glDrawArrays(GL_TRIANGLES, 0, 1);
 			for (Layer* layer : _layerStack)
 				layer->OnUpdate();

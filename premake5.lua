@@ -27,6 +27,12 @@ project "VeryCoolEngine"
 	pchheader "vcepch.h"
 	pchsource "VeryCoolEngine/src/vcepch.cpp"
 
+	assetPath = "/Assets/"
+	defines{
+		"ASSETROOTLOCATION=" .. '\"' .. _WORKING_DIR .. assetPath .. '\"',
+		"VCE_OPENGL"
+	}
+
 	files{
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/src/**.h",
@@ -97,7 +103,8 @@ project "Game"
 		"VeryCoolEngine/vendor/spdlog/include",
 		"VeryCoolEngine/src",
 		"VeryCoolEngine/vendor/imgui",
-		"VeryCoolEngine/vendor/glm"
+		"VeryCoolEngine/vendor/glm",
+		"VeryCoolEngine/vendor/Glad/include",
 
 	}
 

@@ -8,6 +8,7 @@
 #include "VeryCoolEngine/Events/Event.h"
 #include "VeryCoolEngine/Events/ApplicationEvent.h"
 #include "VeryCoolEngine/ImGui/ImGuiLayer.h"
+#include "Platform/OpenGL/OpenGLShader.h"
 
 
 namespace VeryCoolEngine {
@@ -34,6 +35,7 @@ namespace VeryCoolEngine {
 		static Application* _spInstance;
 
 		unsigned int _vertArray, _vertBuffer, _indexBuffer;
+		Shader* _pBasicShader;
 	};
 	Application* CreateApplication();
 
