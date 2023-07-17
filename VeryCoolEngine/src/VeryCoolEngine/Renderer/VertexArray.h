@@ -11,6 +11,7 @@ namespace VeryCoolEngine {
 		virtual void AddVertexBuffer(VertexBuffer* vertexBuffer) = 0;
 		virtual void SetIndexBuffer(IndexBuffer* indexBuffer) = 0;
 
+		std::vector<VertexBuffer*>& GetVertexBuffers() { return _VertexBuffers; }
 		IndexBuffer* GetIndexBuffer() const { return _pIndexBuffer; }
 
 		static VertexArray* Create();

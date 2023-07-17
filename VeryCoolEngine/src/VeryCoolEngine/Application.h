@@ -11,6 +11,9 @@
 #include "VeryCoolEngine/Renderer/Shader.h"
 #include "VeryCoolEngine/Renderer/Buffer.h"
 #include "VeryCoolEngine/Renderer/VertexArray.h"
+#include "VeryCoolEngine/Renderer/Renderer.h"
+#include "VeryCoolEngine/Renderer/RenderCommand.h"
+#include "VeryCoolEngine/Renderer/Camera.h"
 
 
 
@@ -36,6 +39,9 @@ namespace VeryCoolEngine {
 		LayerStack _layerStack;
 		ImGuiLayer* _pImGuiLayer;
 		static Application* _spInstance;
+
+		Renderer* _pRenderer;
+		Camera* _pCamera;
 
 		Shader* _pBasicShader;
 

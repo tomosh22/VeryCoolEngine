@@ -2,13 +2,15 @@
 #include "Application.h"
 #include "Events/ApplicationEvent.h"
 #include "Log.h"
-#include <glad/glad.h>	
 #include "Input.h"
-
+#include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <glm/mat4x4.hpp>
+#include "Platform/OpenGL/OpenGLShader.h"
 
 namespace VeryCoolEngine {
 
+	Renderer* Renderer::_spRenderer = Renderer::Create();
 
 	Application* Application::_spInstance = nullptr;
 
@@ -20,6 +22,10 @@ namespace VeryCoolEngine {
 		std::function callback = [this](Event& e) {OnEvent(e); };
 		_window->SetEventCallback(callback);
 
+		_pRenderer = Renderer::_spRenderer;
+
+		_pCamera = new Camera(0, 0, glm::vec3(0,0,-5));
+
 		_pImGuiLayer = new ImGuiLayer();
 		PushOverlay(_pImGuiLayer);
 
@@ -27,9 +33,9 @@ namespace VeryCoolEngine {
 
 
 		float verts[3 * (3+4)] = {
-			-0.5,-0.5,0,    1,0,0,1,
-			0.5,-0.5,0,     0,1,0,1,
-			0,0.5,0,        0,0,1,1
+			-5,-5,0,    1,0,0,1,
+			5,-5,0,     0,1,0,1,
+			0,5,0,        0,0,1,1
 		};
 		
 		_pVertBuffer = VertexBuffer::Create(verts,sizeof(verts));
@@ -81,19 +87,29 @@ namespace VeryCoolEngine {
 		return true;
 	}
 
-	Application::~Application() { delete _window; }
+	Application::~Application() { 
+		delete _window;
+		delete _pCamera;
+	}
 
 	void Application::Run() {
 		while (_running) {
 
-			glClearColor(0.2, 0.2, 0.4, 1);
-			glClear(GL_COLOR_BUFFER_BIT);
+			RenderCommand::SetClearColor({ 0.6, 0.2, 0.4, 1 });
+			RenderCommand::Clear();
+			
+			_pCamera->UpdateCamera(0.001);
 
 			_pVertArray->Bind();
 			_pBasicShader->Bind();
-			glDrawElements(GL_TRIANGLES, _pVertArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+			GLuint viewMatLoc = glGetUniformLocation(((OpenGLShader*)_pBasicShader)->GetProgramID(), "viewMat");
+			GLuint projMatLoc = glGetUniformLocation(((OpenGLShader*)_pBasicShader)->GetProgramID(), "projMat");
+			glm::mat4 viewMat = _pCamera->BuildViewMatrix();
+			glm::mat4 projMat = _pCamera->BuildProjectionMatrix();
+			glUniformMatrix4fv(viewMatLoc, 1, false, (float*)(&viewMat[0]));
+			glUniformMatrix4fv(projMatLoc, 1, false, (float*)(&projMat[0]));
+			Renderer::Submit(_pVertArray);
 			
-			glDrawArrays(GL_TRIANGLES, 0, 1);
 			for (Layer* layer : _layerStack)
 				layer->OnUpdate();
 
