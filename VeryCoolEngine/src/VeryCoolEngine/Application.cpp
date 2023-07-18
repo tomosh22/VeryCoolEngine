@@ -21,10 +21,11 @@ namespace VeryCoolEngine {
 		_window = Window::Create();
 		std::function callback = [this](Event& e) {OnEvent(e); };
 		_window->SetEventCallback(callback);
+		_window->SetVSync(true);
 
 		_pRenderer = Renderer::_spRenderer;
 
-		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 0, -5), 0, 0, 45, 1, 100);
+		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 0, 5), 0, 0, 45, 0, 1000);
 		//_Camera = Camera::BuildOrthoCamera(glm::vec3(0, 0, -5), 0, 0, -10, 10, 5, -5, 1, 100);
 
 		_pImGuiLayer = new ImGuiLayer();
@@ -60,6 +61,7 @@ namespace VeryCoolEngine {
 	}
 
 	void Application::OnEvent(Event& e) {
+		if (e.GetType() == EventType::KeyPressed && dynamic_cast<KeyPressedEvent&>(e).GetKeyCode() == VCE_KEY_ESCAPE) _running = false;
 		EventDispatcher dispatcher(e);
 		if (e.GetType() == EventType::WindowClose) {
 			std::function function = [&](WindowCloseEvent& e) -> bool {return Application::OnWindowClose(e); };
@@ -96,10 +98,16 @@ namespace VeryCoolEngine {
 	void Application::Run() {
 		while (_running) {
 
+			std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+			std::chrono::duration duration = std::chrono::duration_cast<std::chrono::microseconds>(now - _LastFrameTime);
+			_DeltaTime = duration.count()/1000.;
+			//std::cout << "delta time: " << _DeltaTime << std::endl;
+			_LastFrameTime = now;
+
 			RenderCommand::SetClearColor({ 0.6, 0.2, 0.4, 1 });
 			RenderCommand::Clear();
 			
-			_Camera.UpdateCamera(0.001);
+			_Camera.UpdateCamera(_DeltaTime);
 
 			_pVertArray->Bind();
 			_pBasicShader->Bind();

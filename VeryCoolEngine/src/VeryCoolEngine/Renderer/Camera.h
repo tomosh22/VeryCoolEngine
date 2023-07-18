@@ -115,6 +115,6 @@ namespace VeryCoolEngine {
 		float	pitch;
 		glm::vec3 position;
 
-		std::pair<float, float> prevMousePos = {0,0};
+		std::pair<float, float> prevMousePos = {std::numeric_limits<float>::max(),0};
 	};
 }

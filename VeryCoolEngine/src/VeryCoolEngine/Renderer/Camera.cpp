@@ -25,25 +25,32 @@ last frame (default value is for simplicities sake...)
 namespace VeryCoolEngine {
 	void Camera::UpdateCamera(float dt) {
 		//Update the mouse by how much
-
 		std::pair<float, float> currentMousePos = Input::GetMousePos();
+		if (prevMousePos.first == std::numeric_limits<float>::max()) {
+			prevMousePos = currentMousePos;
+			return;
+		}
+		
 
-		pitch -= (currentMousePos.second/100 - prevMousePos.second/100);
-		yaw -= (currentMousePos.first/100 - prevMousePos.first/100);
+		float frameSpeed = dt/50;
+
+		pitch -= (currentMousePos.second/100 - prevMousePos.second/100) * frameSpeed;
+		yaw -= (currentMousePos.first/100 - prevMousePos.first/100) * frameSpeed;
 		prevMousePos = currentMousePos;
 
 		//Bounds check the pitch, to be between straight up and straight down ;)
-		pitch = std::min(pitch, 90.0f);
-		pitch = std::max(pitch, -90.0f);
+		pitch = std::min(pitch, glm::pi<float>() / 2);
+		pitch = std::max(pitch, -glm::pi<float>() / 2);
+
 
 		if (yaw < 0) {
-			yaw += 360.0f;
+			yaw += glm::pi<float>() * 2;
 		}
-		if (yaw > 360.0f) {
-			yaw -= 360.0f;
+		if (yaw > glm::pi<float>() * 2) {
+			yaw -= glm::pi<float>() * 2;
 		}
 
-		float frameSpeed = 100 * dt;
+		std::cout << yaw << std::endl;
 
 		if (Input::IsKeyPressed(VCE_KEY_W)) {
 			glm::mat4 rotation = glm::rotate(yaw, glm::vec3( 0,1,0 ));

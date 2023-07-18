@@ -48,6 +48,9 @@ namespace VeryCoolEngine {
 		VertexArray* _pVertArray;
 		VertexBuffer* _pVertBuffer;
 		IndexBuffer* _pIndexBuffer;
+
+		std::chrono::high_resolution_clock::time_point _LastFrameTime = std::chrono::high_resolution_clock::now();
+		float _DeltaTime;
 	};
 	Application* CreateApplication();
 
