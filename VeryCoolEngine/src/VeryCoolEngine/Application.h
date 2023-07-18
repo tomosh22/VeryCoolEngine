@@ -41,7 +41,7 @@ namespace VeryCoolEngine {
 		static Application* _spInstance;
 
 		Renderer* _pRenderer;
-		Camera* _pCamera;
+		Camera _Camera;
 
 		Shader* _pBasicShader;
 

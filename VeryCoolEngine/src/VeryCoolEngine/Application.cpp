@@ -24,7 +24,8 @@ namespace VeryCoolEngine {
 
 		_pRenderer = Renderer::_spRenderer;
 
-		_pCamera = new Camera(0, 0, glm::vec3(0,0,-5));
+		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 0, -5), 0, 0, 45, 1, 100);
+		//_Camera = Camera::BuildOrthoCamera(glm::vec3(0, 0, -5), 0, 0, -10, 10, 5, -5, 1, 100);
 
 		_pImGuiLayer = new ImGuiLayer();
 		PushOverlay(_pImGuiLayer);
@@ -89,7 +90,7 @@ namespace VeryCoolEngine {
 
 	Application::~Application() { 
 		delete _window;
-		delete _pCamera;
+		//delete _pCamera;
 	}
 
 	void Application::Run() {
@@ -98,14 +99,14 @@ namespace VeryCoolEngine {
 			RenderCommand::SetClearColor({ 0.6, 0.2, 0.4, 1 });
 			RenderCommand::Clear();
 			
-			_pCamera->UpdateCamera(0.001);
+			_Camera.UpdateCamera(0.001);
 
 			_pVertArray->Bind();
 			_pBasicShader->Bind();
 			GLuint viewMatLoc = glGetUniformLocation(((OpenGLShader*)_pBasicShader)->GetProgramID(), "viewMat");
 			GLuint projMatLoc = glGetUniformLocation(((OpenGLShader*)_pBasicShader)->GetProgramID(), "projMat");
-			glm::mat4 viewMat = _pCamera->BuildViewMatrix();
-			glm::mat4 projMat = _pCamera->BuildProjectionMatrix();
+			glm::mat4 viewMat = _Camera.BuildViewMatrix();
+			glm::mat4 projMat = _Camera.BuildProjectionMatrix();
 			glUniformMatrix4fv(viewMatLoc, 1, false, (float*)(&viewMat[0]));
 			glUniformMatrix4fv(projMatLoc, 1, false, (float*)(&projMat[0]));
 			Renderer::Submit(_pVertArray);
