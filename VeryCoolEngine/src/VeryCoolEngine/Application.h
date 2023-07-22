@@ -14,6 +14,7 @@
 #include "VeryCoolEngine/Renderer/Renderer.h"
 #include "VeryCoolEngine/Renderer/RenderCommand.h"
 #include "VeryCoolEngine/Renderer/Camera.h"
+#include "VeryCoolEngine/Renderer/Mesh.h"
 
 
 
@@ -31,6 +32,9 @@ namespace VeryCoolEngine {
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
 		Window& GetWindow() const { return *_window; };
+
+		Mesh* GenerateHeightmap(uint32_t x, uint32_t y);
+
 		static Application* GetInstance() { return _spInstance; }
 	private:
 		Window* _window;
@@ -43,11 +47,12 @@ namespace VeryCoolEngine {
 		Renderer* _pRenderer;
 		Camera _Camera;
 
-		Shader* _pBasicShader;
 
-		VertexArray* _pVertArray;
-		VertexBuffer* _pVertBuffer;
-		IndexBuffer* _pIndexBuffer;
+		Mesh* _pMesh;
+		Mesh * _pHeightmap;
+		//VertexArray* _pVertArray;
+		//VertexBuffer* _pVertBuffer;
+		//IndexBuffer* _pIndexBuffer;
 
 		std::chrono::high_resolution_clock::time_point _LastFrameTime = std::chrono::high_resolution_clock::now();
 		float _DeltaTime;

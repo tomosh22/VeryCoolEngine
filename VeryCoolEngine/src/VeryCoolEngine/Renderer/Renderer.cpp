@@ -9,6 +9,15 @@ namespace VeryCoolEngine {
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);
 	}
+
+	void Renderer::SubmitMesh(Mesh* mesh) {
+		mesh->GetShader()->Bind();
+		_spRenderer->BindViewProjMat(mesh->GetShader());
+		VertexArray* vertexArray = mesh->GetVertexArray();
+		vertexArray->Bind();
+		RenderCommand::DrawIndexed(vertexArray);
+	}
+
 	Renderer* Renderer::Create() {
 #ifdef VCE_OPENGL
 		return new OpenGLRenderer();

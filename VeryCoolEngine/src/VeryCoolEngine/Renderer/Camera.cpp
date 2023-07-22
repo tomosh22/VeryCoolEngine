@@ -50,7 +50,7 @@ namespace VeryCoolEngine {
 			yaw -= glm::pi<float>() * 2;
 		}
 
-		std::cout << yaw << std::endl;
+		//std::cout << yaw << std::endl;
 
 		if (Input::IsKeyPressed(VCE_KEY_W)) {
 			glm::mat4 rotation = glm::rotate(yaw, glm::vec3( 0,1,0 ));
