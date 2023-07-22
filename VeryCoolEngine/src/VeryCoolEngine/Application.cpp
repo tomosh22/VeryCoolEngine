@@ -11,6 +11,7 @@
 namespace VeryCoolEngine {
 
 	Renderer* Renderer::_spRenderer = Renderer::Create();
+	Renderer* RenderCommand::_spRenderer = Renderer::_spRenderer;
 
 	Application* Application::_spInstance = nullptr;
 
@@ -24,6 +25,7 @@ namespace VeryCoolEngine {
 		_window->SetVSync(true);
 
 		_pRenderer = Renderer::_spRenderer;
+
 
 		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 0, 5), 0, 0, 45, 0, 1000);
 		//_Camera = Camera::BuildOrthoCamera(glm::vec3(0, 0, -5), 0, 0, -10, 10, 5, -5, 1, 100);
