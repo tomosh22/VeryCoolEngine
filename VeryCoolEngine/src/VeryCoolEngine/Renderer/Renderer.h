@@ -19,7 +19,7 @@ namespace VeryCoolEngine {
 
 		virtual void BindViewProjMat(Shader* shader) = 0;
 
-		virtual void DrawFullScreenQuad(Shader* shader, Camera* camera) = 0;
+		virtual void DrawFullScreenQuad(Shader* shader, Camera* camera, Texture* debugTex) = 0;
 
 		static void Submit(VertexArray* vertexArray);
 		static void SubmitMesh(Mesh* mesh);

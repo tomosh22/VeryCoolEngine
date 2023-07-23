@@ -1,8 +1,24 @@
 #include "vcepch.h"
 #include "OpenGLRenderer.h"
 #include "OpenGLShader.h"
+#include "OpenGLTexture.h"
 
 namespace VeryCoolEngine {
+
+	void GLAPIENTRY
+		MessageCallback(GLenum source,
+			GLenum type,
+			GLuint id,
+			GLenum severity,
+			GLsizei length,
+			const GLchar* message,
+			const void* userParam)
+	{
+		fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+			(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+			type, severity, message);
+	}
+
 
 	void OpenGLRenderer::Init() {
 		glGenBuffers(1, &_matrixUBO);
@@ -12,6 +28,11 @@ namespace VeryCoolEngine {
 		glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), NULL, GL_STATIC_DRAW);//#todo check static draw is right
 		glBindBufferRange(GL_UNIFORM_BUFFER, 0, _matrixUBO, 0,sizeof(glm::mat4));
 
+		glEnable(GL_DEBUG_OUTPUT);
+		glDebugMessageCallback(MessageCallback, 0);
+
+		//glClampColorARB(GL_CLAMP_VERTEX_COLOR_ARB, GL_FALSE);
+		//glClampColorARB(GL_CLAMP_FRAGMENT_COLOR_ARB, GL_FALSE);
 	}
 
 	void OpenGLRenderer::SetClearColor(const glm::vec4 color)
@@ -28,15 +49,30 @@ namespace VeryCoolEngine {
 		glBindBufferBase(GL_UNIFORM_BUFFER, 5, _matrixUBO);
 	}
 
-	void OpenGLRenderer::DrawFullScreenQuad(Shader* shader, Camera* camera)
+	void OpenGLRenderer::DrawFullScreenQuad(Shader* shader, Camera* camera, Texture* debugTex)
 	{
 		glBindVertexArray(0);
 		OpenGLShader* oglShader = dynamic_cast<OpenGLShader*>(shader);
 		oglShader->Bind();
+		OpenGLTexture2D* oglTex = dynamic_cast<OpenGLTexture2D*>(debugTex);
+		glActiveTexture(GL_TEXTURE0);
+		glBindImageTexture(0, oglTex->GetID(), 0, GL_FALSE, NULL, GL_WRITE_ONLY, GL_RGBA32F);//#todo stop hardcoding rgba32f
+		//glUniform1i(glGetUniformLocation(oglShader->GetProgramID(), "debugTex"), 0);
+
+
 		glm::mat4 projMat = camera->BuildProjectionMatrix();
 		glm::mat4 viewMat = camera->BuildViewMatrix();
-		glUniformMatrix4fv(glGetUniformLocation(oglShader->GetProgramID(),"projMatrix"),1,false,&projMat[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(oglShader->GetProgramID(), "viewMatrix"), 1, false, &viewMat[0][0]);
+
+		glm::mat4 inverseProj = glm::inverse(projMat);
+		glm::mat4 inverseView = glm::inverse(viewMat);
+
+
+		glm::vec3 camPos = camera->GetPosition();
+
+
+		glUniformMatrix4fv(glGetUniformLocation(oglShader->GetProgramID(),"inverseProjMatrix"),1,false,&inverseProj[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(oglShader->GetProgramID(), "inverseViewMatrix"), 1, false, &inverseView[0][0]);
+		glUniform3fv(glGetUniformLocation(oglShader->GetProgramID(), "cameraPos"),1, &camPos[0]);
 		unsigned int indices[4]{ 0,1,2,3 };
 		glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT,indices);
 	}

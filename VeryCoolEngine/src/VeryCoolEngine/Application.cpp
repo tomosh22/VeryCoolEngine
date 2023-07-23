@@ -28,7 +28,7 @@ namespace VeryCoolEngine {
 		_pRenderer = Renderer::_spRenderer;
 		_pRenderer->Init();
 
-		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 0, 5), 0, 0, 45, 0, 1000);
+		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 0, 5), 0, 0, 45, 1, 1000, 1280.f/720.f);
 		//_Camera = Camera::BuildOrthoCamera(glm::vec3(0, 0, -5), 0, 0, -10, 10, 5, -5, 1, 100);
 
 		_pImGuiLayer = new ImGuiLayer();
@@ -70,6 +70,8 @@ namespace VeryCoolEngine {
 		_pMesh->SetTexture(Texture2D::Create("test1024x1024.png", false));
 
 		_pFullscreenShader = Shader::Create("fullscreen.vert", "fullscreen.frag");
+
+		_pDebugTexture = Texture2D::Create(_window->GetWidth(),_window->GetHeight());
 		bool a = false;
 	}
 
@@ -198,7 +200,7 @@ namespace VeryCoolEngine {
 
 			_pRenderer->BeginScene(viewProjMat);
 
-			_pRenderer->DrawFullScreenQuad(_pFullscreenShader,&_Camera);
+			_pRenderer->DrawFullScreenQuad(_pFullscreenShader,&_Camera, _pDebugTexture);
 
 			_pRenderer->SubmitMesh(_pMesh);
 

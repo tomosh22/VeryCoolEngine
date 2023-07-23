@@ -104,18 +104,18 @@ namespace VeryCoolEngine {
 			//Matrix4::Translation(-position);
 	};
 
-	glm::mat4 Camera::BuildProjectionMatrix(float currentAspect) const {
+	glm::mat4 Camera::BuildProjectionMatrix() const {
 		if (camType == CameraType::Orthographic) {
 			return glm::ortho(left, right, bottom, top, nearPlane,farPlane);
 			//return Matrix4::Orthographic(left, right, bottom, top, nearPlane, farPlane);
 		}
 		else if (camType == CameraType::Perspective) {
-			return glm::perspective(fov, currentAspect, nearPlane, farPlane);
+			return glm::perspective(fov, _aspectRatio, nearPlane, farPlane);
 			//return Matrix4::Perspective(nearPlane, farPlane, currentAspect, fov);
 		}
 	}
 
-	Camera Camera::BuildPerspectiveCamera(const glm::vec3& pos, float pitch, float yaw, float fov, float nearPlane, float farPlane) {
+	Camera Camera::BuildPerspectiveCamera(const glm::vec3& pos, float pitch, float yaw, float fov, float nearPlane, float farPlane, float aspectRatio) {
 		Camera c;
 		c.camType = CameraType::Perspective;
 		c.position = pos;
@@ -125,6 +125,8 @@ namespace VeryCoolEngine {
 		c.farPlane = farPlane;
 
 		c.fov = fov;
+
+		c._aspectRatio = aspectRatio;
 
 		return c;
 	}

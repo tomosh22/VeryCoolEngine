@@ -81,7 +81,7 @@ namespace VeryCoolEngine {
 		//to a vertex shader (i.e it's already an 'inverse camera matrix').
 		glm::mat4 BuildViewMatrix() const;
 
-		glm::mat4 BuildProjectionMatrix(float aspectRatio = 1.0f) const;
+		glm::mat4 BuildProjectionMatrix() const;
 
 		//Gets position in world space
 		glm::vec3 GetPosition() const { return position; }
@@ -98,7 +98,7 @@ namespace VeryCoolEngine {
 		//Sets pitch, in degrees
 		Camera& SetPitch(float p) { pitch = p; return *this; }
 
-		static Camera BuildPerspectiveCamera(const glm::vec3& pos, float pitch, float yaw, float fov, float near, float far);
+		static Camera BuildPerspectiveCamera(const glm::vec3& pos, float pitch, float yaw, float fov, float near, float far, float aspectRatio);
 		static Camera BuildOrthoCamera(const glm::vec3& pos, float pitch, float yaw, float left, float right, float top, float bottom, float near, float far);
 	protected:
 		CameraType camType;
@@ -113,6 +113,9 @@ namespace VeryCoolEngine {
 		float	fov;
 		float	yaw;
 		float	pitch;
+
+		float _aspectRatio;
+
 		glm::vec3 position;
 
 		std::pair<float, float> prevMousePos = {std::numeric_limits<float>::max(),0};

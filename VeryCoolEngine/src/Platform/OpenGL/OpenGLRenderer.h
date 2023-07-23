@@ -11,7 +11,7 @@ namespace VeryCoolEngine {
 		void Clear() override;
 		void DrawIndexed(VertexArray* vertexArray) override;
 		void BindViewProjMat(Shader* shader) override;
-		void DrawFullScreenQuad(Shader* shader, Camera* camera) override;
+		void DrawFullScreenQuad(Shader* shader, Camera* camera, Texture* debugTex) override;
 		void BeginScene(glm::mat4 viewProjMat) override;
 		void EndScene() override;
 	private:

@@ -15,14 +15,15 @@ namespace VeryCoolEngine {
 		case(TextureFormat::RGBA):
 			format = GL_RGBA;
 		}
-
+		format = GL_RGBA32F;//#todo stop hardcoding this
 		glGenTextures(1, &_id);
 		glBindTexture(GL_TEXTURE_2D, _id);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, nullptr);//#todo is unsigned byte always ok?
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);//#todo is unsigned byte always ok?
+		//#todo float now
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 
