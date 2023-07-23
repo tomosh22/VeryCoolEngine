@@ -4,6 +4,7 @@
 #include "Mesh.h"
 #include <glm/mat4x4.hpp>
 #include "Shader.h"
+#include "Camera.h"
 
 namespace VeryCoolEngine {
 	class Renderer
@@ -17,6 +18,8 @@ namespace VeryCoolEngine {
 		virtual void EndScene() = 0;
 
 		virtual void BindViewProjMat(Shader* shader) = 0;
+
+		virtual void DrawFullScreenQuad(Shader* shader, Camera* camera) = 0;
 
 		static void Submit(VertexArray* vertexArray);
 		static void SubmitMesh(Mesh* mesh);

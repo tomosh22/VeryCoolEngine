@@ -47,6 +47,7 @@ namespace VeryCoolEngine {
 		Renderer* _pRenderer;
 		Camera _Camera;
 
+		Shader* _pFullscreenShader;
 
 		Mesh* _pMesh;
 		Mesh * _pHeightmap;

@@ -28,6 +28,19 @@ namespace VeryCoolEngine {
 		glBindBufferBase(GL_UNIFORM_BUFFER, 5, _matrixUBO);
 	}
 
+	void OpenGLRenderer::DrawFullScreenQuad(Shader* shader, Camera* camera)
+	{
+		glBindVertexArray(0);
+		OpenGLShader* oglShader = dynamic_cast<OpenGLShader*>(shader);
+		oglShader->Bind();
+		glm::mat4 projMat = camera->BuildProjectionMatrix();
+		glm::mat4 viewMat = camera->BuildViewMatrix();
+		glUniformMatrix4fv(glGetUniformLocation(oglShader->GetProgramID(),"projMatrix"),1,false,&projMat[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(oglShader->GetProgramID(), "viewMatrix"), 1, false, &viewMat[0][0]);
+		unsigned int indices[4]{ 0,1,2,3 };
+		glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT,indices);
+	}
+
 	void OpenGLRenderer::DrawIndexed(VertexArray* vertexArray)
 	{
 		glDrawElements(GL_TRIANGLES, vertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);

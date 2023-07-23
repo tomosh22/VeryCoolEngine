@@ -46,6 +46,7 @@ project "VeryCoolEngine"
 		"%{prj.name}/vendor/Glad/include",
 		"%{prj.name}/vendor/imgui",
 		"%{prj.name}/vendor/glm",
+		"%{prj.name}/vendor/stb",
 		"%{prj.name}/src"
 	}
 
@@ -105,6 +106,7 @@ project "Game"
 		"VeryCoolEngine/vendor/imgui",
 		"VeryCoolEngine/vendor/glm",
 		"VeryCoolEngine/vendor/Glad/include",
+		"%{prj.name}/vendor/stb",
 
 	}
 

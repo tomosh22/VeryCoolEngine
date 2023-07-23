@@ -13,6 +13,7 @@ namespace VeryCoolEngine {
 	void Renderer::SubmitMesh(Mesh* mesh) {
 		mesh->GetShader()->Bind();
 		_spRenderer->BindViewProjMat(mesh->GetShader());
+		mesh->GetTexture()->BindToShader(mesh->GetShader(),"texture",0);//#todo how to determine bind point
 		VertexArray* vertexArray = mesh->GetVertexArray();
 		vertexArray->Bind();
 		RenderCommand::DrawIndexed(vertexArray);

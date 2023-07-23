@@ -64,9 +64,12 @@ namespace VeryCoolEngine {
 
 		//_pMesh->SetShader( Shader::Create("basic.vert", "basic.frag"));
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		_pMesh = GenerateHeightmap(10, 10);
 		_pMesh->SetShader(Shader::Create("basic.vert", "basic.frag"));
+		_pMesh->SetTexture(Texture2D::Create("test1024x1024.png", false));
+
+		_pFullscreenShader = Shader::Create("fullscreen.vert", "fullscreen.frag");
 		bool a = false;
 	}
 
@@ -195,17 +198,10 @@ namespace VeryCoolEngine {
 
 			_pRenderer->BeginScene(viewProjMat);
 
+			_pRenderer->DrawFullScreenQuad(_pFullscreenShader,&_Camera);
+
 			_pRenderer->SubmitMesh(_pMesh);
 
-			/*_pVertArray->Bind();
-			_pBasicShader->Bind();
-			GLuint viewMatLoc = glGetUniformLocation(((OpenGLShader*)_pBasicShader)->GetProgramID(), "viewMat");
-			GLuint projMatLoc = glGetUniformLocation(((OpenGLShader*)_pBasicShader)->GetProgramID(), "projMat");
-			glm::mat4 viewMat =_Camera.BuildViewMatrix/();
-			glm::mat4 projMat = _Camera.BuildProjectionMatrix();
-			glUniformMatrix4fv(viewMatLoc, 1, false, (float*)(&viewMat[0]));
-			glUniformMatrix4fv(projMatLoc, 1, false, (float*)(&projMat[0]));
-			Renderer::Submit(_pVertArray);*/
 			
 			for (Layer* layer : _layerStack)
 				layer->OnUpdate();
