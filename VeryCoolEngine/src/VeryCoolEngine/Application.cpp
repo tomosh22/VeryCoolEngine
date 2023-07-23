@@ -72,6 +72,9 @@ namespace VeryCoolEngine {
 		_pFullscreenShader = Shader::Create("fullscreen.vert", "fullscreen.frag");
 
 		_pDebugTexture = Texture2D::Create(_window->GetWidth(),_window->GetHeight());
+
+		_pCubemap = TextureCube::Create("CubemapTest", false);
+
 		bool a = false;
 	}
 
@@ -200,7 +203,7 @@ namespace VeryCoolEngine {
 
 			_pRenderer->BeginScene(viewProjMat);
 
-			_pRenderer->DrawFullScreenQuad(_pFullscreenShader,&_Camera, _pDebugTexture);
+			_pRenderer->DrawFullScreenQuad(_pFullscreenShader,&_Camera, _pCubemap);
 
 			_pRenderer->SubmitMesh(_pMesh);
 

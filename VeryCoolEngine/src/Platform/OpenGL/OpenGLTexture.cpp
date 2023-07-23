@@ -7,6 +7,8 @@
 
 
 namespace VeryCoolEngine {
+
+#pragma region 2d
 	VeryCoolEngine::OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, TextureFormat textureFormat, TextureWrapMode wrapMode) : _width(width), _height(height)
 	{
 		GLenum wrap = wrapMode == TextureWrapMode::Clamp ? GL_CLAMP_TO_EDGE : GL_REPEAT;
@@ -99,9 +101,56 @@ namespace VeryCoolEngine {
 	{
 		return uint32_t();
 	}
+#pragma end region
 
-	uint32_t VeryCoolEngine::OpenGLTexture2D::GetDepth() const
-	{
-		return uint32_t();
+#pragma region cube
+	OpenGLTextureCube::OpenGLTextureCube(const std::string& path, bool srgb) {
+		glGenTextures(1, &_id);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, _id);
+
+		std::list<std::string> faces{//#todo stop using jpg, blegh
+			"/px.jpg",
+			"/nx.jpg",
+			"/py.jpg",
+			"/ny.jpg",
+			"/pz.jpg",
+			"/nz.jpg"
+		};
+
+
+		int width, height, channels;
+		char* data;
+		GLuint faceIndex = 0;//to add to positive x face, couldn't figure out a good variable name
+		for (auto& face : faces) {
+			std::string file = TEXTUREDIR + path + face;
+			data = (char*) stbi_load((TEXTUREDIR+path+face).c_str(), &width, &height, &channels, 0);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, 0, GL_RGB, width, height,0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			stbi_image_free(data);
+			faceIndex++;
+		}
+
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		_width = width;
+		_height = height;
+		_format = TextureFormat::RGB;
 	}
+
+	void OpenGLTextureCube::BindToShader(Shader* shader, const std::string& uniformName, uint32_t bindPoint) const
+	{
+		OpenGLShader* oglShader = dynamic_cast<OpenGLShader*>(shader);
+		glUniform1i(glGetUniformLocation(oglShader->GetProgramID(), uniformName.c_str()), bindPoint);
+		GLenum texUnit;
+		switch (bindPoint) {
+		case(0):
+			texUnit = GL_TEXTURE0;
+		}
+		glActiveTexture(texUnit);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, _id);
+	}
+#pragma end region
 }

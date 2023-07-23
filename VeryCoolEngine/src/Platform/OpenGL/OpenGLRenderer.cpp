@@ -49,15 +49,14 @@ namespace VeryCoolEngine {
 		glBindBufferBase(GL_UNIFORM_BUFFER, 5, _matrixUBO);
 	}
 
-	void OpenGLRenderer::DrawFullScreenQuad(Shader* shader, Camera* camera, Texture* debugTex)
+	void OpenGLRenderer::DrawFullScreenQuad(Shader* shader, Camera* camera, TextureCube* cubemap)
 	{
 		glBindVertexArray(0);
 		OpenGLShader* oglShader = dynamic_cast<OpenGLShader*>(shader);
 		oglShader->Bind();
-		OpenGLTexture2D* oglTex = dynamic_cast<OpenGLTexture2D*>(debugTex);
-		glActiveTexture(GL_TEXTURE0);
-		glBindImageTexture(0, oglTex->GetID(), 0, GL_FALSE, NULL, GL_WRITE_ONLY, GL_RGBA32F);//#todo stop hardcoding rgba32f
-		//glUniform1i(glGetUniformLocation(oglShader->GetProgramID(), "debugTex"), 0);
+		OpenGLTextureCube* oglTex = dynamic_cast<OpenGLTextureCube*>(cubemap);
+		oglTex->BindToShader(shader,"cubemap",0);
+
 
 
 		glm::mat4 projMat = camera->BuildProjectionMatrix();

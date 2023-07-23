@@ -26,7 +26,28 @@ namespace VeryCoolEngine {
 
 		uint32_t GetWidth() const override;
 		uint32_t GetHeight() const override;
-		uint32_t GetDepth() const override;
+	private:
+		uint32_t _width;
+		uint32_t _height;
+		std::string _filePath;
+
+		char* _pData = nullptr;
+		size_t _dataLength;
+
+		TextureFormat _format;
+	};
+
+	class OpenGLTextureCube : public OpenGLTexture, public TextureCube {
+	public:
+		OpenGLTextureCube(const std::string& path, bool srgb);
+		~OpenGLTextureCube() = default;
+
+		void Bind() const override {};
+		void BindToShader(Shader* shader, const std::string& uniformName, uint32_t bindPoint) const override;
+		void Unbind() const override {};
+
+		uint32_t GetWidth() const override { return _width; };
+		uint32_t GetHeight() const override { return _height; };
 	private:
 		uint32_t _width;
 		uint32_t _height;

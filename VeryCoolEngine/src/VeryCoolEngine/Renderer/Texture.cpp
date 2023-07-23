@@ -15,5 +15,13 @@ namespace VeryCoolEngine {
 		return new OpenGLTexture2D(path,srgb);
 #endif
 	}
+
+
+	TextureCube* TextureCube::Create(const std::string& path, bool srgb)
+	{
+#ifdef VCE_OPENGL
+		return new OpenGLTextureCube(path, srgb);
+#endif
+	}
 }
 

@@ -51,7 +51,9 @@ namespace VeryCoolEngine {
 
 		Mesh* _pMesh;
 		Mesh * _pHeightmap;
-		Texture* _pDebugTexture;
+		Texture2D* _pDebugTexture;
+		TextureCube* _pCubemap;
+
 		//VertexArray* _pVertArray;
 		//VertexBuffer* _pVertBuffer;
 		//IndexBuffer* _pIndexBuffer;

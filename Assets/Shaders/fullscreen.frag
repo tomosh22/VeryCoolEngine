@@ -5,6 +5,8 @@ uniform mat4 inverseViewMatrix;
 
 uniform vec3 cameraPos;
 
+uniform samplerCube cubemap;
+
 layout(rgba32f) uniform writeonly image2D debugTex;
 
 layout(location = 0) out vec4 _oColor;
@@ -27,5 +29,5 @@ vec3 RayDir(vec2 pixel)//takes pixel in 0,1 range
 void main(){
 	vec3 rayDir = RayDir(UV);
 
-	_oColor = vec4(rayDir,1);
+	_oColor = texture(cubemap, (rayDir));
 }

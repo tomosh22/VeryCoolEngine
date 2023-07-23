@@ -4,6 +4,7 @@ namespace VeryCoolEngine {
 	enum class TextureFormat
 	{
 		RGBA,
+		RGB
 	};
 	enum class TextureWrapMode
 	{
@@ -18,9 +19,7 @@ namespace VeryCoolEngine {
 		virtual void BindToShader(Shader* shader, const std::string& uniformName, uint32_t bindPoint) const = 0;
 		virtual void Unbind() const = 0;
 
-		virtual uint32_t GetWidth() const = 0;
-		virtual uint32_t GetHeight() const = 0;
-		virtual uint32_t GetDepth() const = 0;
+		
 	private:
 	};
 
@@ -29,6 +28,18 @@ namespace VeryCoolEngine {
 		static Texture2D* Create(uint32_t width, uint32_t height, TextureFormat textureFormat = TextureFormat::RGBA, TextureWrapMode wrapMode = TextureWrapMode::Clamp);
 
 		static Texture2D* Create(const std::string& path, bool srgb);
+
+		virtual uint32_t GetWidth() const = 0;
+		virtual uint32_t GetHeight() const = 0;
+	};
+
+	class TextureCube : public Texture {
+	public:
+
+		static TextureCube* Create(const std::string& path, bool srgb);
+
+		virtual uint32_t GetWidth() const = 0;
+		virtual uint32_t GetHeight() const = 0;
 	};
 
 }
