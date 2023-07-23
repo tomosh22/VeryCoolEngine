@@ -3,7 +3,6 @@
 uniform mat4 inverseProjMatrix;
 uniform mat4 inverseViewMatrix;
 
-uniform vec3 cameraPos;
 
 uniform samplerCube cubemap;
 

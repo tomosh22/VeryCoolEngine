@@ -30,11 +30,8 @@ namespace VeryCoolEngine {
 		glm::mat4 inverseView = glm::inverse(viewMat);
 
 
-		glm::vec3 camPos = camera->GetPosition();
-
 		shader->UploadMatrix4Uniform(inverseProj, "inverseProjMatrix");
 		shader->UploadMatrix4Uniform(inverseView, "inverseViewMatrix");
-		shader->UploadVec3Uniform(camPos, "cameraPos");
 		_spRenderer->DrawFullScreenQuad();
 	}
 
