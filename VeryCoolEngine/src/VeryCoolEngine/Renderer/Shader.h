@@ -10,6 +10,7 @@ Credit Rich Davison
 */
 #pragma once
 #include <string>
+#include <glm/mat4x4.hpp>
 namespace VeryCoolEngine {
 	enum class ShaderStages {
 		Vertex,
@@ -35,6 +36,9 @@ namespace VeryCoolEngine {
 		virtual void ReloadShader() = 0;
 
 		virtual void Bind() = 0;
+
+		virtual void UploadMatrix4Uniform(const glm::mat4& matrix, const std::string& name) const = 0;
+		virtual void UploadVec3Uniform(const glm::vec3& matrix, const std::string& name) const = 0;
 
 		static Shader* Create(const std::string& vertex, const std::string& fragment, const std::string& geometry = "", const std::string& domain = "", const std::string& hull = "");
 	protected:

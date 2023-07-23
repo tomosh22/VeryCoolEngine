@@ -54,6 +54,14 @@ namespace VeryCoolEngine {
 	void OpenGLShader::Bind() {
 		glUseProgram(programID);
 	}
+	void OpenGLShader::UploadMatrix4Uniform(const glm::mat4& matrix, const std::string& name) const	{
+		glUniformMatrix4fv(glGetUniformLocation(programID, name.c_str()), 1, false, &matrix[0][0]);
+	}
+
+	void OpenGLShader::UploadVec3Uniform(const glm::vec3& matrix, const std::string& name) const{
+		glUniform3fv(glGetUniformLocation(programID, name.c_str()), 1, &matrix[0]);
+	}
+
 	void OpenGLShader::ReloadShader() {
 		DeleteIDs();
 		programID = glCreateProgram();

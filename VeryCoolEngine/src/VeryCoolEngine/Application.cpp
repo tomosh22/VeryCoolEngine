@@ -203,7 +203,7 @@ namespace VeryCoolEngine {
 
 			_pRenderer->BeginScene(viewProjMat);
 
-			_pRenderer->DrawFullScreenQuad(_pFullscreenShader,&_Camera, _pCubemap);
+			Renderer::SubmitSkybox(_pFullscreenShader,&_Camera, _pCubemap);
 
 			_pRenderer->SubmitMesh(_pMesh);
 

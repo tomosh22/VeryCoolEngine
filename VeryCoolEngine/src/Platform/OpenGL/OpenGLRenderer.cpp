@@ -49,29 +49,10 @@ namespace VeryCoolEngine {
 		glBindBufferBase(GL_UNIFORM_BUFFER, 5, _matrixUBO);
 	}
 
-	void OpenGLRenderer::DrawFullScreenQuad(Shader* shader, Camera* camera, TextureCube* cubemap)
+
+	void OpenGLRenderer::DrawFullScreenQuad()
 	{
 		glBindVertexArray(0);
-		OpenGLShader* oglShader = dynamic_cast<OpenGLShader*>(shader);
-		oglShader->Bind();
-		OpenGLTextureCube* oglTex = dynamic_cast<OpenGLTextureCube*>(cubemap);
-		oglTex->BindToShader(shader,"cubemap",0);
-
-
-
-		glm::mat4 projMat = camera->BuildProjectionMatrix();
-		glm::mat4 viewMat = camera->BuildViewMatrix();
-
-		glm::mat4 inverseProj = glm::inverse(projMat);
-		glm::mat4 inverseView = glm::inverse(viewMat);
-
-
-		glm::vec3 camPos = camera->GetPosition();
-
-
-		glUniformMatrix4fv(glGetUniformLocation(oglShader->GetProgramID(),"inverseProjMatrix"),1,false,&inverseProj[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(oglShader->GetProgramID(), "inverseViewMatrix"), 1, false, &inverseView[0][0]);
-		glUniform3fv(glGetUniformLocation(oglShader->GetProgramID(), "cameraPos"),1, &camPos[0]);
 		unsigned int indices[4]{ 0,1,2,3 };
 		glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT,indices);
 	}

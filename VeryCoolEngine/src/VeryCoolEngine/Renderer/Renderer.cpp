@@ -19,6 +19,25 @@ namespace VeryCoolEngine {
 		RenderCommand::DrawIndexed(vertexArray);
 	}
 
+	void Renderer::SubmitSkybox(Shader* shader, Camera* camera, TextureCube* cubemap)
+	{
+		shader->Bind();
+		cubemap->BindToShader(shader, "cubemap", 0);
+		glm::mat4 projMat = camera->BuildProjectionMatrix();
+		glm::mat4 viewMat = camera->BuildViewMatrix();
+
+		glm::mat4 inverseProj = glm::inverse(projMat);
+		glm::mat4 inverseView = glm::inverse(viewMat);
+
+
+		glm::vec3 camPos = camera->GetPosition();
+
+		shader->UploadMatrix4Uniform(inverseProj, "inverseProjMatrix");
+		shader->UploadMatrix4Uniform(inverseView, "inverseViewMatrix");
+		shader->UploadVec3Uniform(camPos, "cameraPos");
+		_spRenderer->DrawFullScreenQuad();
+	}
+
 	Renderer* Renderer::Create() {
 #ifdef VCE_OPENGL
 		return new OpenGLRenderer();
