@@ -2,6 +2,9 @@
 #include "OpenGLRenderer.h"
 #include "OpenGLShader.h"
 #include "OpenGLTexture.h"
+#include "VeryCoolEngine/Application.h"
+#include <GLFW/glfw3.h>
+
 
 namespace VeryCoolEngine {
 
@@ -70,6 +73,48 @@ namespace VeryCoolEngine {
 
 	void OpenGLRenderer::EndScene()
 	{
+	}
+
+
+	void OpenGLRenderer::OGLRenderThreadFunction()
+	{
+		Application* app = Application::GetInstance();
+
+		glfwMakeContextCurrent((GLFWwindow*)app->_window->GetNativeWindow());
+		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+		VCE_CORE_ASSERT(status, "failed to init glad");
+
+		_spRenderer = Renderer::_spRenderer;
+		_spRenderer->Init();
+
+		app->_pMesh = app->GenerateHeightmap(10, 10);
+		app->_pMesh->SetShader(Shader::Create("basic.vert", "basic.frag"));
+		app->_pMesh->SetTexture(Texture2D::Create("test1024x1024.png", false));
+
+		app->_pFullscreenShader = Shader::Create("fullscreen.vert", "fullscreen.frag");
+
+		app->_pDebugTexture = Texture2D::Create(app->_window->GetWidth(), app->_window->GetHeight());
+
+		app->_pCubemap = TextureCube::Create("CubemapTest", false);
+		app->renderThreadReady = true;
+		while (app->renderThreadShouldRun) {
+			while (!app->mainThreadReady) {}
+			app->renderThreadReady = false;
+			app->sceneMutex.lock();
+			glm::mat4 viewProjMat = app->scene.camera->BuildProjectionMatrix() * app->scene.camera->BuildViewMatrix();
+
+			RenderCommand::SetClearColor({ 0.6, 0.2, 0.4, 1 });
+			RenderCommand::Clear();
+
+			_spRenderer->BeginScene(viewProjMat);
+
+			SubmitSkybox(app->_pFullscreenShader, &app->_Camera, app->_pCubemap);
+
+			SubmitMesh(app->_pMesh);
+			glfwSwapBuffers((GLFWwindow*)app->_window->GetNativeWindow());
+			app->sceneMutex.unlock();
+			app->renderThreadReady = true;
+		}
 	}
 
 	

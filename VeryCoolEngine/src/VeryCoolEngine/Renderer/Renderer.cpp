@@ -4,6 +4,12 @@
 #include "RenderCommand.h"
 
 namespace VeryCoolEngine {
+	void Renderer::RenderThreadFunction()
+	{
+#ifdef VCE_OPENGL
+		OpenGLRenderer::OGLRenderThreadFunction();
+#endif
+	}
 	void Renderer::Submit(VertexArray* vertexArray)
 	{
 		vertexArray->Bind();

@@ -13,5 +13,6 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <thread>
 
 #include "VeryCoolEngine/Log.h"

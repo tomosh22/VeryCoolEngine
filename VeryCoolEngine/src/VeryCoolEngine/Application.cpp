@@ -8,6 +8,8 @@
 #include <glm/mat4x4.hpp>
 #include "Platform/OpenGL/OpenGLShader.h"
 
+
+
 namespace VeryCoolEngine {
 
 	Renderer* Renderer::_spRenderer = Renderer::Create();
@@ -25,39 +27,13 @@ namespace VeryCoolEngine {
 		_window->SetEventCallback(callback);
 		_window->SetVSync(true);
 
-		_pRenderer = Renderer::_spRenderer;
-		_pRenderer->Init();
 
 		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 0, 5), 0, 0, 45, 1, 1000, 1280.f/720.f);
 		//_Camera = Camera::BuildOrthoCamera(glm::vec3(0, 0, -5), 0, 0, -10, 10, 5, -5, 1, 100);
 
-		_pImGuiLayer = new ImGuiLayer();
-		PushOverlay(_pImGuiLayer);
+		//_pImGuiLayer = new ImGuiLayer();
+		//PushOverlay(_pImGuiLayer);
 
-		VertexArray* vertexArray = VertexArray::Create();
-
-
-		float verts[3 * (3+4)] = {
-			-5,-5,0,    1,0,0,1,
-			5,-5,0,     0,1,0,1,
-			0,5,0,        0,0,1,1
-		};
-		
-		VertexBuffer* vertexBuffer = VertexBuffer::Create(verts,sizeof(verts));
-
-		BufferLayout layout = {
-			{ShaderDataType::Float3, "_aPosition"},
-			{ShaderDataType::Float4, "_aColor"},
-		};
-		vertexBuffer->SetLayout(layout);
-		
-		vertexArray->AddVertexBuffer(vertexBuffer);
-		
-		unsigned int indices[3] = { 0,1,2 };
-		IndexBuffer* indexBuffer = IndexBuffer::Create(indices, 3);
-		vertexArray->SetIndexBuffer(indexBuffer);
-
-		vertexArray->Unbind();
 
 		//_pMesh = Mesh::Create();
 		//_pMesh->SetVertexArray(vertexArray);
@@ -65,16 +41,9 @@ namespace VeryCoolEngine {
 		//_pMesh->SetShader( Shader::Create("basic.vert", "basic.frag"));
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		_pMesh = GenerateHeightmap(10, 10);
-		_pMesh->SetShader(Shader::Create("basic.vert", "basic.frag"));
-		_pMesh->SetTexture(Texture2D::Create("test1024x1024.png", false));
+		
 
-		_pFullscreenShader = Shader::Create("fullscreen.vert", "fullscreen.frag");
-
-		_pDebugTexture = Texture2D::Create(_window->GetWidth(),_window->GetHeight());
-
-		_pCubemap = TextureCube::Create("CubemapTest", false);
-
+		_renderThread = std::thread([&]() {_pRenderer->RenderThreadFunction();});
 		bool a = false;
 	}
 
@@ -184,39 +153,36 @@ namespace VeryCoolEngine {
 		//delete _pCamera;
 	}
 
+	
+
+	
+
+
+
 	void Application::Run() {
 		while (_running) {
-
+			mainThreadReady = true;
 			std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
 			std::chrono::duration duration = std::chrono::duration_cast<std::chrono::microseconds>(now - _LastFrameTime);
 			_DeltaTime = duration.count()/1000.;
 			//std::cout << "delta time: " << _DeltaTime << std::endl;
 			_LastFrameTime = now;
 
-			RenderCommand::SetClearColor({ 0.6, 0.2, 0.4, 1 });
-			RenderCommand::Clear();
-
-
-			
 			_Camera.UpdateCamera(_DeltaTime);
-			glm::mat4 viewProjMat = _Camera.BuildProjectionMatrix() * _Camera.BuildViewMatrix();
 
-			_pRenderer->BeginScene(viewProjMat);
-
-			Renderer::SubmitSkybox(_pFullscreenShader,&_Camera, _pCubemap);
-
-			_pRenderer->SubmitMesh(_pMesh);
+			scene.camera = &_Camera;
 
 			
 			for (Layer* layer : _layerStack)
 				layer->OnUpdate();
 
-			_pImGuiLayer->Begin();
-			for (Layer* layer : _layerStack)
-				layer->OnImGuiRender();
-			_pImGuiLayer->End();
+			//_pImGuiLayer->Begin();
+			//for (Layer* layer : _layerStack)
+				//layer->OnImGuiRender();
+			//_pImGuiLayer->End();
 
 			_window->OnUpdate();
 		}
+		_renderThread.join();
 	}
 }

@@ -22,6 +22,11 @@ namespace VeryCoolEngine {
 
 	class ImGuiLayer;
 
+	struct Scene {
+		Camera* camera;
+
+	};
+
 	class VCE_API Application
 	{
 	public:
@@ -35,14 +40,16 @@ namespace VeryCoolEngine {
 
 		Mesh* GenerateHeightmap(uint32_t x, uint32_t y);
 
+
 		static Application* GetInstance() { return _spInstance; }
-	private:
+
 		Window* _window;
-		bool _running = true;
-		bool OnWindowClose(WindowCloseEvent& e);
-		LayerStack _layerStack;
-		ImGuiLayer* _pImGuiLayer;
-		static Application* _spInstance;
+
+		bool mainThreadReady = false;
+		bool renderThreadReady = false;
+		bool renderThreadShouldRun = true;
+		std::mutex sceneMutex;
+		Scene scene;
 
 		Renderer* _pRenderer;
 		Camera _Camera;
@@ -50,9 +57,20 @@ namespace VeryCoolEngine {
 		Shader* _pFullscreenShader;
 
 		Mesh* _pMesh;
-		Mesh * _pHeightmap;
+		Mesh* _pHeightmap;
 		Texture2D* _pDebugTexture;
 		TextureCube* _pCubemap;
+	private:
+		std::thread _renderThread;
+		bool _running = true;
+		bool OnWindowClose(WindowCloseEvent& e);
+		LayerStack _layerStack;
+		ImGuiLayer* _pImGuiLayer;
+		static Application* _spInstance;
+
+		
+
+		
 
 		//VertexArray* _pVertArray;
 		//VertexBuffer* _pVertBuffer;

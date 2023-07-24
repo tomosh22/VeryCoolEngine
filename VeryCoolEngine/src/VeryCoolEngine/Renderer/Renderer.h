@@ -5,6 +5,7 @@
 #include <glm/mat4x4.hpp>
 #include "Shader.h"
 #include "Camera.h"
+#include "GraphicsContext.h"
 
 namespace VeryCoolEngine {
 	class Renderer
@@ -21,6 +22,8 @@ namespace VeryCoolEngine {
 
 		virtual void DrawFullScreenQuad() = 0;
 
+		static void RenderThreadFunction();
+
 		static void Submit(VertexArray* vertexArray);
 		static void SubmitMesh(Mesh* mesh);
 		static void SubmitSkybox(Shader* shader, Camera* camera, TextureCube* cubemap);
@@ -29,6 +32,7 @@ namespace VeryCoolEngine {
 		static Renderer* Create();
 
 		static Renderer* _spRenderer;
+		static GraphicsContext* _spContext;
 
 	private:
 	};

@@ -29,8 +29,7 @@ namespace VeryCoolEngine {
 			glfwInititliazed = true;
 		}
 		_pWindow = glfwCreateWindow((int)p._width, (int)p._height, p._title.c_str(), nullptr, nullptr);
-		_pContext = new OpenGLContext(_pWindow);
-		_pContext->Init();
+		
 
 		
 		glfwSetWindowUserPointer(_pWindow, &_data);
@@ -100,7 +99,6 @@ namespace VeryCoolEngine {
 
 	void WindowsWindow::OnUpdate() {
 		glfwPollEvents();
-		_pContext->SwapBuffers();
 		
 	}
 

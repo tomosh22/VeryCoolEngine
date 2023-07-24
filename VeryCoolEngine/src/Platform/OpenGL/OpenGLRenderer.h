@@ -1,6 +1,7 @@
 #pragma once
 #include "VeryCoolEngine/Renderer/Renderer.h"
 #include <glad/glad.h>
+#include "OpenGLContext.h"
 
 namespace VeryCoolEngine {
 	class OpenGLRenderer : public Renderer
@@ -14,6 +15,7 @@ namespace VeryCoolEngine {
 		void DrawFullScreenQuad() override;
 		void BeginScene(glm::mat4 viewProjMat) override;
 		void EndScene() override;
+		static void OGLRenderThreadFunction();
 	private:
 		GLuint _matrixUBO = -1;
 	};
