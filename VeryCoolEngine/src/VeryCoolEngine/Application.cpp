@@ -25,14 +25,16 @@ namespace VeryCoolEngine {
 		_window = Window::Create();
 		std::function callback = [this](Event& e) {OnEvent(e); };
 		_window->SetEventCallback(callback);
-		_window->SetVSync(true);
+		//_window->SetVSync(true);
+		
+		//_window->SetVSync(true);
 
+		_renderThread = std::thread([&]() {_pRenderer->RenderThreadFunction(); });
 
 		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 0, 5), 0, 0, 45, 1, 1000, 1280.f/720.f);
 		//_Camera = Camera::BuildOrthoCamera(glm::vec3(0, 0, -5), 0, 0, -10, 10, 5, -5, 1, 100);
 
-		//_pImGuiLayer = new ImGuiLayer();
-		//PushOverlay(_pImGuiLayer);
+		
 
 
 		//_pMesh = Mesh::Create();
@@ -42,8 +44,8 @@ namespace VeryCoolEngine {
 
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		
-
-		_renderThread = std::thread([&]() {_pRenderer->RenderThreadFunction();});
+		scene = new Scene();
+		
 		bool a = false;
 	}
 
@@ -150,6 +152,7 @@ namespace VeryCoolEngine {
 
 	Application::~Application() { 
 		delete _window;
+		delete scene;
 		//delete _pCamera;
 	}
 
@@ -160,28 +163,35 @@ namespace VeryCoolEngine {
 
 
 	void Application::Run() {
+		while (!renderInitialised) {}
 		while (_running) {
+			std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 			mainThreadReady = true;
 			std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
 			std::chrono::duration duration = std::chrono::duration_cast<std::chrono::microseconds>(now - _LastFrameTime);
 			_DeltaTime = duration.count()/1000.;
 			//std::cout << "delta time: " << _DeltaTime << std::endl;
 			_LastFrameTime = now;
-
+			while (!renderThreadReady) {}
 			_Camera.UpdateCamera(_DeltaTime);
-
-			scene.camera = &_Camera;
+			scene->Reset();
+			scene->camera = &_Camera;
+			scene->skyboxShader = _pFullscreenShader;
+			scene->skybox = _pCubemap;
+			scene->meshes.push_back(_pMesh);
+			scene->ready = true;
 
 			
 			for (Layer* layer : _layerStack)
 				layer->OnUpdate();
 
-			//_pImGuiLayer->Begin();
-			//for (Layer* layer : _layerStack)
-				//layer->OnImGuiRender();
-			//_pImGuiLayer->End();
+			
 
 			_window->OnUpdate();
+
+			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+			std::chrono::duration frameDuration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+			//std::cout << "main thread duration: " << std::to_string(frameDuration.count() / 1000.f) << "ms" << std::endl;
 		}
 		_renderThread.join();
 	}

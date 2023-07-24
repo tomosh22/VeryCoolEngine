@@ -33,7 +33,7 @@ namespace VeryCoolEngine {
 
 		
 		glfwSetWindowUserPointer(_pWindow, &_data);
-		SetVSync(true);
+		//SetVSync(true);
 
 		glfwSetWindowSizeCallback(_pWindow, [](GLFWwindow* window, int width, int height) {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -50,7 +50,7 @@ namespace VeryCoolEngine {
 
 		glfwSetKeyCallback(_pWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			switch (action) {
+ 			switch (action) {
 			case GLFW_PRESS:
 				data._eventCallback(KeyPressedEvent(key,0));
 				break;

@@ -2,6 +2,7 @@
 #include "VeryCoolEngine/Renderer/Renderer.h"
 #include <glad/glad.h>
 #include "OpenGLContext.h"
+#include "VeryCoolEngine/Events/Event.h"
 
 namespace VeryCoolEngine {
 	class OpenGLRenderer : public Renderer
@@ -16,6 +17,8 @@ namespace VeryCoolEngine {
 		void BeginScene(glm::mat4 viewProjMat) override;
 		void EndScene() override;
 		static void OGLRenderThreadFunction();
+
+		void OnEvent(Event& e);
 	private:
 		GLuint _matrixUBO = -1;
 	};

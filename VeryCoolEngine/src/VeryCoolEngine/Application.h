@@ -23,7 +23,21 @@ namespace VeryCoolEngine {
 	class ImGuiLayer;
 
 	struct Scene {
-		Camera* camera;
+	public:
+		Camera* camera = nullptr;
+
+		Shader* skyboxShader = nullptr;
+		TextureCube* skybox = nullptr;
+
+		std::list<Mesh*> meshes{};
+
+
+		bool ready = false;
+
+		void Reset() {
+			ready = false;
+			meshes.clear();
+		};
 
 	};
 
@@ -48,8 +62,9 @@ namespace VeryCoolEngine {
 		bool mainThreadReady = false;
 		bool renderThreadReady = false;
 		bool renderThreadShouldRun = true;
+		bool renderInitialised = false;
 		std::mutex sceneMutex;
-		Scene scene;
+		Scene* scene;
 
 		Renderer* _pRenderer;
 		Camera _Camera;
@@ -60,12 +75,16 @@ namespace VeryCoolEngine {
 		Mesh* _pHeightmap;
 		Texture2D* _pDebugTexture;
 		TextureCube* _pCubemap;
-	private:
-		std::thread _renderThread;
+		ImGuiLayer* _pImGuiLayer;
+		LayerStack _layerStack;
 		bool _running = true;
 		bool OnWindowClose(WindowCloseEvent& e);
-		LayerStack _layerStack;
-		ImGuiLayer* _pImGuiLayer;
+	private:
+		std::thread _renderThread;
+		
+		
+		
+		
 		static Application* _spInstance;
 
 		

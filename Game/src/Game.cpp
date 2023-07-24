@@ -21,7 +21,6 @@ public:
 	}
 };
 Game::Game() {
-	PushOverlay(new ExampleLayer());
 }
 
 Game::~Game(){}

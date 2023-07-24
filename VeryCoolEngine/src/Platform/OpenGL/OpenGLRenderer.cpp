@@ -4,6 +4,7 @@
 #include "OpenGLTexture.h"
 #include "VeryCoolEngine/Application.h"
 #include <GLFW/glfw3.h>
+#include "VeryCoolEngine/ImGui/ImGuiLayer.h"
 
 
 namespace VeryCoolEngine {
@@ -76,9 +77,28 @@ namespace VeryCoolEngine {
 	}
 
 
+	void OpenGLRenderer::OnEvent(Event& e)
+	{
+		Application* app = Application::GetInstance();
+		if (e.GetType() == EventType::KeyPressed && dynamic_cast<KeyPressedEvent&>(e).GetKeyCode() == VCE_KEY_ESCAPE) app->_running = false;
+		EventDispatcher dispatcher(e);
+		if (e.GetType() == EventType::WindowClose) {
+			std::function function = [&](WindowCloseEvent& e) -> bool {return app->OnWindowClose(e); };
+			dispatcher.Dispatch(function);
+		}
+
+		for (auto it = app->_layerStack.end(); it != app->_layerStack.begin();) {
+			//#todo can be changed
+			(*--it)->OnEvent(e);
+			if (e.GetHandled()) break;
+		}
+	}
+
+
 	void OpenGLRenderer::OGLRenderThreadFunction()
 	{
 		Application* app = Application::GetInstance();
+
 
 		glfwMakeContextCurrent((GLFWwindow*)app->_window->GetNativeWindow());
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
@@ -96,26 +116,46 @@ namespace VeryCoolEngine {
 		app->_pDebugTexture = Texture2D::Create(app->_window->GetWidth(), app->_window->GetHeight());
 
 		app->_pCubemap = TextureCube::Create("CubemapTest", false);
+
+		app->_pImGuiLayer = new ImGuiLayer();
+		app->PushOverlay(app->_pImGuiLayer);
+
+		app->renderInitialised = true;
 		app->renderThreadReady = true;
-		while (app->renderThreadShouldRun) {
-			while (!app->mainThreadReady) {}
+		while (app->renderThreadShouldRun && app->_running) {
+			std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+			
+			Scene* scene = app->scene;
+			while (!scene->ready) {  }
 			app->renderThreadReady = false;
-			app->sceneMutex.lock();
-			glm::mat4 viewProjMat = app->scene.camera->BuildProjectionMatrix() * app->scene.camera->BuildViewMatrix();
+			glm::mat4 viewProjMat = scene->camera->BuildProjectionMatrix() * scene->camera->BuildViewMatrix();
 
 			RenderCommand::SetClearColor({ 0.6, 0.2, 0.4, 1 });
 			RenderCommand::Clear();
 
 			_spRenderer->BeginScene(viewProjMat);
 
-			SubmitSkybox(app->_pFullscreenShader, &app->_Camera, app->_pCubemap);
+			SubmitSkybox(scene->skyboxShader, scene->camera, scene->skybox);
+			//SubmitSkybox(app->_pFullscreenShader, &app->_Camera, app->_pCubemap);
 
-			SubmitMesh(app->_pMesh);
+ 			for (Mesh* mesh : scene->meshes) SubmitMesh(mesh);
+			//SubmitMesh(app->_pMesh);
+
+			//app->_pImGuiLayer->Begin();
+			//for (Layer* layer : app->_layerStack)
+				//layer->OnImGuiRender();
+			//app->_pImGuiLayer->End();
+
 			glfwSwapBuffers((GLFWwindow*)app->_window->GetNativeWindow());
-			app->sceneMutex.unlock();
 			app->renderThreadReady = true;
+
+			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+			std::chrono::duration duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+			//std::cout << "render thread duration: " << std::to_string(duration.count() / 1000.f) << "ms" << std::endl;
 		}
 	}
+
+	
 
 	
 }
