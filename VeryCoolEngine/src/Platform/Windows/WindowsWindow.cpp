@@ -12,7 +12,7 @@ namespace VeryCoolEngine {
 
 	Window* Window::Create(const WindowProperties& p) { return new WindowsWindow(p); }
 
-	WindowsWindow::WindowsWindow(const WindowProperties& p) { Init(p); }
+	WindowsWindow::WindowsWindow(const WindowProperties& p) { }
 	WindowsWindow::~WindowsWindow() { Shutdown(); }
 
 	void WindowsWindow::Init(const WindowProperties& p) {

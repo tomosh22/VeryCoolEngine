@@ -25,55 +25,61 @@ last frame (default value is for simplicities sake...)
 namespace VeryCoolEngine {
 	void Camera::UpdateCamera(float dt) {
 		//Update the mouse by how much
-		std::pair<float, float> currentMousePos = Input::GetMousePos();
+		std::pair<double, double> currentMousePos = Input::GetMousePos();
 		if (prevMousePos.first == std::numeric_limits<float>::max()) {
 			prevMousePos = currentMousePos;
 			return;
 		}
 		
+		//std::cout << currentMousePos.first << " " << currentMousePos.second << std::endl;
 
-		float frameSpeed = dt/50;
+		double frameSpeed = dt/50;
 
-		pitch -= (currentMousePos.second/100 - prevMousePos.second/100) * frameSpeed;
-		yaw -= (currentMousePos.first/100 - prevMousePos.first/100) * frameSpeed;
+		double deltaPitch = (currentMousePos.second - prevMousePos.second)/1000.;
+		pitch -= deltaPitch;
+		double deltaYaw = (currentMousePos.first - prevMousePos.first)/1000.;
+		yaw -= deltaYaw;
+
+		//if(deltaPitch != 0) std::cout << "pitch " << deltaPitch << std::endl;
+		//if (deltaYaw != 0)std::cout << "yaw " << deltaYaw << std::endl;
 		prevMousePos = currentMousePos;
 
 		//Bounds check the pitch, to be between straight up and straight down ;)
-		pitch = std::min(pitch, glm::pi<float>() / 2);
-		pitch = std::max(pitch, -glm::pi<float>() / 2);
+		pitch = std::min(pitch, glm::pi<double>() / 2);
+		pitch = std::max(pitch, -glm::pi<double>() / 2);
 
 
 		if (yaw < 0) {
-			yaw += glm::pi<float>() * 2;
+			yaw += glm::pi<double>() * 2;
 		}
-		if (yaw > glm::pi<float>() * 2) {
-			yaw -= glm::pi<float>() * 2;
+		if (yaw > glm::pi<double>() * 2) {
+			yaw -= glm::pi<double>() * 2;
 		}
 
 		//std::cout << yaw << std::endl;
 
 		if (Input::IsKeyPressed(VCE_KEY_W)) {
-			glm::mat4 rotation = glm::rotate(yaw, glm::vec3( 0,1,0 ));
+			glm::dmat4 rotation = glm::rotate(yaw, glm::dvec3( 0,1,0 ));
 			glm::vec4 result = rotation * glm::vec4(0, 0, -1,1) * frameSpeed;
 			position += glm::vec3(result.x, result.y, result.z);
 			//position += glm::mat4::Rotation(yaw, Vector3(0, 1, 0)) * Vector3(0, 0, -1) * frameSpeed;
 		}
 		if (Input::IsKeyPressed(VCE_KEY_S)) {
-			glm::mat4 rotation = glm::rotate(yaw, glm::vec3(0, 1, 0));
+			glm::dmat4 rotation = glm::rotate(yaw, glm::dvec3(0, 1, 0));
 			glm::vec4 result = rotation * glm::vec4(0, 0, -1, 1) * frameSpeed;
 			position -= glm::vec3(result.x, result.y, result.z);
 			//position -= Matrix4::Rotation(yaw, Vector3(0, 1, 0)) * Vector3(0, 0, -1) * frameSpeed;
 		}
 
 		if (Input::IsKeyPressed(VCE_KEY_A)) {
-			glm::mat4 rotation = glm::rotate(yaw, glm::vec3(0, 1, 0));
-			glm::vec4 result = rotation * glm::vec4(-1, 0, 0, 1) * frameSpeed;
+			glm::dmat4 rotation = glm::rotate(yaw, glm::dvec3(0, 1, 0));
+			glm::dvec4 result = rotation * glm::vec4(-1, 0, 0, 1) * frameSpeed;
 			position += glm::vec3(result.x, result.y, result.z);
 			//position += Matrix4::Rotation(yaw, Vector3(0, 1, 0)) * Vector3(-1, 0, 0) * frameSpeed;
 		}
 		if (Input::IsKeyPressed(VCE_KEY_D)) {
-			glm::mat4 rotation = glm::rotate(yaw, glm::vec3(0, 1, 0));
-			glm::vec4 result = rotation * glm::vec4(-1, 0, 0, 1) * frameSpeed;
+			glm::dmat4 rotation = glm::rotate(yaw, glm::dvec3(0, 1, 0));
+			glm::dvec4 result = rotation * glm::vec4(-1, 0, 0, 1) * frameSpeed;
 			position -= glm::vec3(result.x,result.y,result.z);
 			//position -= Matrix4::Rotation(yaw, Vector3(0, 1, 0)) * Vector3(-1, 0, 0) * frameSpeed;
 		}
@@ -93,9 +99,9 @@ namespace VeryCoolEngine {
 	glm::mat4 Camera::BuildViewMatrix() const {
 		//Why do a complicated matrix inversion, when we can just generate the matrix
 		//using the negative values ;). The matrix multiplication order is important!
-		glm::mat4 pitchMat = glm::rotate(-pitch, glm::vec3(1, 0, 0));
-		glm::mat4 yawMat = glm::rotate(-yaw, glm::vec3(0, 1, 0));
-		glm::mat4 transMat = glm::translate(-position);
+		glm::dmat4 pitchMat = glm::rotate(-pitch, glm::dvec3(1, 0, 0));
+		glm::dmat4 yawMat = glm::rotate(-yaw, glm::dvec3(0, 1, 0));
+		glm::dmat4 transMat = glm::translate(-position);
 
 		return pitchMat * yawMat * transMat;
 

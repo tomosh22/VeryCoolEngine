@@ -29,7 +29,7 @@ namespace VeryCoolEngine {
 		Shader* skyboxShader = nullptr;
 		TextureCube* skybox = nullptr;
 
-		std::list<Mesh*> meshes{};
+		std::vector<Mesh*> meshes{};
 
 
 		bool ready = false;
@@ -37,6 +37,7 @@ namespace VeryCoolEngine {
 		void Reset() {
 			ready = false;
 			meshes.clear();
+			meshes = std::vector<Mesh*>();
 		};
 
 	};
@@ -79,6 +80,7 @@ namespace VeryCoolEngine {
 		LayerStack _layerStack;
 		bool _running = true;
 		bool OnWindowClose(WindowCloseEvent& e);
+
 	private:
 		std::thread _renderThread;
 		

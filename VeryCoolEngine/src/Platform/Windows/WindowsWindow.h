@@ -26,6 +26,7 @@ namespace VeryCoolEngine {
 		}
 		void SetVSync(bool enabled) override;
 		bool GetVSyncEnabled() const override;
+		virtual void Init(const WindowProperties& p);
 	private:
 		GLFWwindow* _pWindow;
 		struct WindowData {
@@ -36,7 +37,7 @@ namespace VeryCoolEngine {
 		} _data;
 		
 
-		virtual void Init(const WindowProperties& p);
+		
 		virtual void Shutdown();
 	};
 

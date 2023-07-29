@@ -111,13 +111,13 @@ namespace VeryCoolEngine {
 		float	bottom;
 
 		float	fov;
-		float	yaw;
-		float	pitch;
+		double	yaw;
+		double	pitch;
 
 		float _aspectRatio;
 
 		glm::vec3 position;
 
-		std::pair<float, float> prevMousePos = {std::numeric_limits<float>::max(),0};
+		std::pair<double, double> prevMousePos = {std::numeric_limits<float>::max(),0};
 	};
 }

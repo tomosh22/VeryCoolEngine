@@ -17,7 +17,7 @@ namespace VeryCoolEngine {
 		int state = glfwGetMouseButton(window, button);
 		return state == GLFW_PRESS;
 	}
-	std::pair<float, float> WindowsInput::GetMousePosImpl() {
+	std::pair<double, double> WindowsInput::GetMousePosImpl() {
 		GLFWwindow* window = reinterpret_cast<GLFWwindow*>(Application::GetInstance()->GetWindow().GetNativeWindow());
 		double x, y;
 		glfwGetCursorPos(window, &x, &y);

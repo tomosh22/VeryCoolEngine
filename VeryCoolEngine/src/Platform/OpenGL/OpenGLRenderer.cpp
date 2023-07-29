@@ -5,6 +5,7 @@
 #include "VeryCoolEngine/Application.h"
 #include <GLFW/glfw3.h>
 #include "VeryCoolEngine/ImGui/ImGuiLayer.h"
+#include "Platform/Windows/WindowsWindow.h"
 
 
 namespace VeryCoolEngine {
@@ -46,7 +47,7 @@ namespace VeryCoolEngine {
 
 	void OpenGLRenderer::Clear()
 	{
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
 	void OpenGLRenderer::BindViewProjMat(Shader* shader) {
@@ -94,15 +95,22 @@ namespace VeryCoolEngine {
 		}
 	}
 
+	
 
 	void OpenGLRenderer::OGLRenderThreadFunction()
 	{
 		Application* app = Application::GetInstance();
 
+		glfwSetInputMode((GLFWwindow*)app->_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		((WindowsWindow*)app->_window)->Init(WindowProperties());
+		
+		
 
 		glfwMakeContextCurrent((GLFWwindow*)app->_window->GetNativeWindow());
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		VCE_CORE_ASSERT(status, "failed to init glad");
+		((WindowsWindow*)app->_window)->SetVSync(false);
+
 
 		_spRenderer = Renderer::_spRenderer;
 		_spRenderer->Init();
@@ -120,13 +128,17 @@ namespace VeryCoolEngine {
 		app->_pImGuiLayer = new ImGuiLayer();
 		app->PushOverlay(app->_pImGuiLayer);
 
+		glEnable(GL_DEPTH_TEST);
+
 		app->renderInitialised = true;
 		app->renderThreadReady = true;
-		while (app->renderThreadShouldRun && app->_running) {
+		while (app->_running) {
 			std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 			
 			Scene* scene = app->scene;
-			while (!scene->ready) {  }
+			while (!scene->ready) { 
+				//std::cout << "waiting for main thread" << std::endl;
+			}
 			app->renderThreadReady = false;
 			glm::mat4 viewProjMat = scene->camera->BuildProjectionMatrix() * scene->camera->BuildViewMatrix();
 
@@ -135,18 +147,33 @@ namespace VeryCoolEngine {
 
 			_spRenderer->BeginScene(viewProjMat);
 
+			glDisable(GL_DEPTH_TEST);
 			SubmitSkybox(scene->skyboxShader, scene->camera, scene->skybox);
+			glEnable(GL_DEPTH_TEST);
 			//SubmitSkybox(app->_pFullscreenShader, &app->_Camera, app->_pCubemap);
 
- 			for (Mesh* mesh : scene->meshes) SubmitMesh(mesh);
+			GLsync* fences = new GLsync[scene->meshes.size()];
+			unsigned int meshIndex = 0;
+			for (size_t i = 0; i < scene->meshes.size(); i++) {
+				SubmitMesh(scene->meshes[i]);
+				fences[meshIndex++] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,0);
+			}
 			//SubmitMesh(app->_pMesh);
 
-			//app->_pImGuiLayer->Begin();
-			//for (Layer* layer : app->_layerStack)
-				//layer->OnImGuiRender();
-			//app->_pImGuiLayer->End();
+			app->_pImGuiLayer->Begin();
+			for (Layer* layer : app->_layerStack)
+				layer->OnImGuiRender();
+			app->_pImGuiLayer->End();
+
+			app->_window->OnUpdate();
 
 			glfwSwapBuffers((GLFWwindow*)app->_window->GetNativeWindow());
+
+			for (size_t i = 0; i < scene->meshes.size(); i++)
+			{
+				glWaitSync(fences[i],0, GL_TIMEOUT_IGNORED);
+			}
+
 			app->renderThreadReady = true;
 
 			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();

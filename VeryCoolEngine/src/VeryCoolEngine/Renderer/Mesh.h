@@ -24,6 +24,7 @@ namespace VeryCoolEngine {
 		Texture* GetTexture() const { return _pTexture; }
 
 		static Mesh* Create();
+
 	protected:
 		VertexArray* _pVertexArray;
 		Material* _pMaterial;

@@ -7,7 +7,7 @@ namespace VeryCoolEngine {
 	protected:
 		bool IsKeyPressedImpl(int keyCode) override;
 		bool IsMouseButtonPressedImpl(int button) override;
-		std::pair<float,float> GetMousePosImpl() override;
+		std::pair<double, double> GetMousePosImpl() override;
 	};
 }
 
