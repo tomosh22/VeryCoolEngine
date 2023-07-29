@@ -28,8 +28,12 @@ namespace VeryCoolEngine {
 		//_window->SetVSync(true);
 		
 		//_window->SetVSync(true);
-
-		_renderThread = std::thread([&]() {_pRenderer->RenderThreadFunction(); });
+		_pRenderer = Renderer::Create();
+		
+		_renderThread = std::thread([&]() {
+			_pRenderer->InitWindow();
+			_pRenderer->RenderThreadFunction();
+		});
 
 		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 0, 5), 0, 0, 45, 1, 1000, 1280.f/720.f);
 		//_Camera = Camera::BuildOrthoCamera(glm::vec3(0, 0, -5), 0, 0, -10, 10, 5, -5, 1, 100);

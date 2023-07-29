@@ -2,14 +2,17 @@
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLRenderer.h"
 #include "RenderCommand.h"
+#include "VeryCoolEngine/Application.h"
+#include "VeryCoolEngine/ImGui/ImGuiLayer.h"
 
 namespace VeryCoolEngine {
-	void Renderer::RenderThreadFunction()
-	{
+	uint32_t Renderer::_sMAXLIGHTS = 100;
+	//void Renderer::RenderThreadFunction()
+	//{
 #ifdef VCE_OPENGL
-		OpenGLRenderer::OGLRenderThreadFunction();
+		//OpenGLRenderer::OGLRenderThreadFunction();
 #endif
-	}
+	//}
 	void Renderer::Submit(VertexArray* vertexArray)
 	{
 		vertexArray->Bind();
@@ -46,5 +49,24 @@ namespace VeryCoolEngine {
 		return new OpenGLRenderer();
 #endif
 
+	}
+	void Renderer::GenericInit()
+	{
+		Application* app = Application::GetInstance();
+
+		app->_pImGuiLayer = new ImGuiLayer();
+		app->PushOverlay(app->_pImGuiLayer);
+
+		app->_pMesh = app->GenerateHeightmap(10, 10);
+		app->_pMesh->SetShader(Shader::Create("basic.vert", "basic.frag"));
+		app->_pMesh->SetTexture(Texture2D::Create("test1024x1024.png", false));
+
+		app->_pFullscreenShader = Shader::Create("fullscreen.vert", "fullscreen.frag");
+
+		app->_pDebugTexture = Texture2D::Create(app->_window->GetWidth(), app->_window->GetHeight());
+
+		app->_pCubemap = TextureCube::Create("CubemapTest", false);
+
+		_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS,1);//#todo frames in flight
 	}
 }

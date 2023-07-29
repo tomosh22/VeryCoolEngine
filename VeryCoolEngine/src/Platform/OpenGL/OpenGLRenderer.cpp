@@ -4,7 +4,6 @@
 #include "OpenGLTexture.h"
 #include "VeryCoolEngine/Application.h"
 #include <GLFW/glfw3.h>
-#include "VeryCoolEngine/ImGui/ImGuiLayer.h"
 #include "Platform/Windows/WindowsWindow.h"
 
 
@@ -25,7 +24,7 @@ namespace VeryCoolEngine {
 	}
 
 
-	void OpenGLRenderer::Init() {
+	void OpenGLRenderer::PlatformInit() {
 		glGenBuffers(1, &_matrixUBO);
 
 		//size of view proj matrix
@@ -38,6 +37,7 @@ namespace VeryCoolEngine {
 
 		//glClampColorARB(GL_CLAMP_VERTEX_COLOR_ARB, GL_FALSE);
 		//glClampColorARB(GL_CLAMP_FRAGMENT_COLOR_ARB, GL_FALSE);
+		glEnable(GL_DEPTH_TEST);
 	}
 
 	void OpenGLRenderer::SetClearColor(const glm::vec4 color)
@@ -51,7 +51,10 @@ namespace VeryCoolEngine {
 	}
 
 	void OpenGLRenderer::BindViewProjMat(Shader* shader) {
-		glBindBufferBase(GL_UNIFORM_BUFFER, 5, _matrixUBO);
+		glBindBufferBase(GL_UNIFORM_BUFFER, 0, _matrixUBO);
+	}
+	void OpenGLRenderer::BindLightUBO(Shader* shader) {
+		glBindBufferBase(GL_UNIFORM_BUFFER, 1, _matrixUBO);//#todo light ubo
 	}
 
 
@@ -71,6 +74,13 @@ namespace VeryCoolEngine {
 	{
 		glBindBuffer(GL_UNIFORM_BUFFER, _matrixUBO);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &projViewMat[0][0]);
+
+		Light light;
+		light.color = { 0.5,0,1 };
+		light.radius = 999;
+		light.position = { 0,10,0 };
+
+		_pLightUBO->UploadData(&light,sizeof(light),1,0);
 	}
 
 	void OpenGLRenderer::EndScene()
@@ -95,40 +105,29 @@ namespace VeryCoolEngine {
 		}
 	}
 
-	
-
-	void OpenGLRenderer::OGLRenderThreadFunction()
-	{
+	void OpenGLRenderer::InitWindow() {
 		Application* app = Application::GetInstance();
-
 		glfwSetInputMode((GLFWwindow*)app->_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		((WindowsWindow*)app->_window)->Init(WindowProperties());
-		
-		
+
 
 		glfwMakeContextCurrent((GLFWwindow*)app->_window->GetNativeWindow());
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		VCE_CORE_ASSERT(status, "failed to init glad");
 		((WindowsWindow*)app->_window)->SetVSync(false);
+		}
+
+	void OpenGLRenderer::RenderThreadFunction()
+	{
+		Application* app = Application::GetInstance();
+		
 
 
 		_spRenderer = Renderer::_spRenderer;
-		_spRenderer->Init();
+		_spRenderer->PlatformInit();
+		_spRenderer->GenericInit();
 
-		app->_pMesh = app->GenerateHeightmap(10, 10);
-		app->_pMesh->SetShader(Shader::Create("basic.vert", "basic.frag"));
-		app->_pMesh->SetTexture(Texture2D::Create("test1024x1024.png", false));
-
-		app->_pFullscreenShader = Shader::Create("fullscreen.vert", "fullscreen.frag");
-
-		app->_pDebugTexture = Texture2D::Create(app->_window->GetWidth(), app->_window->GetHeight());
-
-		app->_pCubemap = TextureCube::Create("CubemapTest", false);
-
-		app->_pImGuiLayer = new ImGuiLayer();
-		app->PushOverlay(app->_pImGuiLayer);
-
-		glEnable(GL_DEPTH_TEST);
+		
 
 		app->renderInitialised = true;
 		app->renderThreadReady = true;

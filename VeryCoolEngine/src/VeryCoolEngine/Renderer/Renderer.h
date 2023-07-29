@@ -6,12 +6,24 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "GraphicsContext.h"
+#include "VeryCoolEngine/Renderer/ManagedUniformBuffer.h"
 
 namespace VeryCoolEngine {
 	class Renderer
 	{
 	public:
-		virtual void Init() = 0;
+		static uint32_t _sMAXLIGHTS;
+		struct Light {
+			glm::vec3 position;
+			float radius;
+			glm::vec3 color;
+		};
+
+		virtual void InitWindow() = 0;
+		virtual void PlatformInit()=0;
+		void GenericInit();
+
+
 		virtual void SetClearColor(const glm::vec4 color) = 0;
 		virtual void Clear() = 0;
 		
@@ -19,10 +31,11 @@ namespace VeryCoolEngine {
 		virtual void EndScene() = 0;
 
 		virtual void BindViewProjMat(Shader* shader) = 0;
+		virtual void BindLightUBO(Shader* shader) = 0;
 
 		virtual void DrawFullScreenQuad() = 0;
 
-		static void RenderThreadFunction();
+		virtual void RenderThreadFunction() = 0;
 
 		static void Submit(VertexArray* vertexArray);
 		static void SubmitMesh(Mesh* mesh);
@@ -33,7 +46,7 @@ namespace VeryCoolEngine {
 
 		static Renderer* _spRenderer;
 		static GraphicsContext* _spContext;
-
+		ManagedUniformBuffer* _pLightUBO = nullptr;
 	private:
 	};
 
