@@ -9,14 +9,22 @@
 #include "VeryCoolEngine/Renderer/ManagedUniformBuffer.h"
 
 namespace VeryCoolEngine {
+	class Scene;
 	class Renderer
 	{
 	public:
 		static uint32_t _sMAXLIGHTS;
 		struct Light {
-			glm::vec3 position;
+			//glm::vec4 positionAndRadius;
+			//glm::vec4 color;
+			float x;
+			float y;
+			float z;
 			float radius;
-			glm::vec3 color;
+			float r;
+			float g;
+			float b;
+			float a;
 		};
 
 		virtual void InitWindow() = 0;
@@ -27,7 +35,7 @@ namespace VeryCoolEngine {
 		virtual void SetClearColor(const glm::vec4 color) = 0;
 		virtual void Clear() = 0;
 		
-		virtual void BeginScene(glm::mat4 viewProjMat) = 0;
+		virtual void BeginScene(Scene* scene) = 0;
 		virtual void EndScene() = 0;
 
 		virtual void BindViewProjMat(Shader* shader) = 0;

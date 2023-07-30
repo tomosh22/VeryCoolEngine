@@ -17,7 +17,7 @@ namespace VeryCoolEngine {
 		void BindViewProjMat(Shader* shader) override;
 		void BindLightUBO(Shader* shader) override;
 		void DrawFullScreenQuad() override;
-		void BeginScene(glm::mat4 viewProjMat) override;
+		void BeginScene(Scene* scene) override;
 		void EndScene() override;
 		void RenderThreadFunction() override;
 

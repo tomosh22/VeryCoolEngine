@@ -204,13 +204,31 @@ namespace VeryCoolEngine {
 			while (!renderThreadReady) {
 				//std::cout << "waiting for render thread" << std::endl;
 			}
+			sceneMutex.lock();
 			scene->Reset();
 			
 			scene->camera = &_Camera;
 			scene->skyboxShader = _pFullscreenShader;
 			scene->skybox = _pCubemap;
 			scene->meshes.push_back(_pMesh);
+			scene->lights[scene->numLights++] = {
+				1,2,3,4,
+				1,0,0,1
+				};
+			scene->lights[scene->numLights++] = {
+				1,2,3,4,
+				0,1,0,1
+			};
+			scene->lights[scene->numLights++] = {
+				1,2,3,4,
+				0,0,1,1
+			};
+			scene->lights[scene->numLights++] = {
+				1,2,3,4,
+				1,0,1,1
+			};
 			scene->ready = true;
+			sceneMutex.unlock();
 
 			
 			for (Layer* layer : _layerStack)

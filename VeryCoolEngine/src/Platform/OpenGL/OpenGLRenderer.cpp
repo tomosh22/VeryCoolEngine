@@ -70,17 +70,23 @@ namespace VeryCoolEngine {
 		glDrawElements(GL_TRIANGLES, vertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
 	}
 
-	void OpenGLRenderer::BeginScene(glm::mat4 projViewMat)
+	void OpenGLRenderer::BeginScene(Scene* scene)
 	{
+		glm::mat4 viewProjMat = scene->camera->BuildProjectionMatrix() * scene->camera->BuildViewMatrix();
 		glBindBuffer(GL_UNIFORM_BUFFER, _matrixUBO);
-		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &projViewMat[0][0]);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &viewProjMat[0][0]);
 
-		Light light;
-		light.color = { 0.5,0,1 };
-		light.radius = 999;
-		light.position = { 0,10,0 };
+		//VCE_ASSERT((scene->lights[0].color.r == 0.1), "waddafack");
 
-		_pLightUBO->UploadData(&light,sizeof(light),1,0);
+		const uint32_t dataSize = (sizeof(unsigned int)*4) + (sizeof(Light) * scene->lights.size());
+		char* data = new char[dataSize];
+		unsigned int numLightsWithPadding[4] = {scene->numLights,0,0,0 };//12 bytes of padding
+
+		memcpy(data, numLightsWithPadding, sizeof(unsigned int)*4);
+
+		memcpy(data + sizeof(unsigned int) * 4, scene->lights.data(), sizeof(Light) * scene->lights.size());
+		_pLightUBO->UploadData(data, dataSize,1,0);
+		delete[] data;
 	}
 
 	void OpenGLRenderer::EndScene()
@@ -138,13 +144,14 @@ namespace VeryCoolEngine {
 			while (!scene->ready) { 
 				//std::cout << "waiting for main thread" << std::endl;
 			}
+			
 			app->renderThreadReady = false;
-			glm::mat4 viewProjMat = scene->camera->BuildProjectionMatrix() * scene->camera->BuildViewMatrix();
+			
 
 			RenderCommand::SetClearColor({ 0.6, 0.2, 0.4, 1 });
 			RenderCommand::Clear();
-
-			_spRenderer->BeginScene(viewProjMat);
+			app->sceneMutex.lock();
+			_spRenderer->BeginScene(scene);
 
 			glDisable(GL_DEPTH_TEST);
 			SubmitSkybox(scene->skyboxShader, scene->camera, scene->skybox);
@@ -172,7 +179,7 @@ namespace VeryCoolEngine {
 			{
 				glWaitSync(fences[i],0, GL_TIMEOUT_IGNORED);
 			}
-
+			app->sceneMutex.unlock();
 			app->renderThreadReady = true;
 
 			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();

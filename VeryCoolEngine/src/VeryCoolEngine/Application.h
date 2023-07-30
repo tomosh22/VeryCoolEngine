@@ -30,7 +30,8 @@ namespace VeryCoolEngine {
 		TextureCube* skybox = nullptr;
 
 		std::vector<Mesh*> meshes{};
-
+		std::vector<Renderer::Light> lights{};
+		unsigned int numLights = 0;
 
 		bool ready = false;
 
@@ -38,6 +39,9 @@ namespace VeryCoolEngine {
 			ready = false;
 			meshes.clear();
 			meshes = std::vector<Mesh*>();
+			lights.clear();
+			lights.resize(100);
+			numLights = 0;
 		};
 
 	};
