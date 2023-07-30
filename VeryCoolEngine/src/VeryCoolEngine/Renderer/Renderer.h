@@ -55,6 +55,7 @@ namespace VeryCoolEngine {
 		static Renderer* _spRenderer;
 		static GraphicsContext* _spContext;
 		ManagedUniformBuffer* _pLightUBO = nullptr;
+		ManagedUniformBuffer* _pCameraUBO = nullptr;
 	private:
 	};
 

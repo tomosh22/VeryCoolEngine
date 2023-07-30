@@ -23,7 +23,6 @@ namespace VeryCoolEngine {
 
 		void OnEvent(Event& e);
 	private:
-		GLuint _matrixUBO = -1;
 	};
 }
 

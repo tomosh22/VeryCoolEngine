@@ -7,7 +7,9 @@ namespace VeryCoolEngine {
 	{
 	public:
 		virtual ~OpenGLTexture() = default;
-		GLuint GetID() const { return _id; }
+		GLuint GetID() const { 
+			return _id;
+		}
 	protected:
 		GLuint _id;
 	};

@@ -208,21 +208,21 @@ namespace VeryCoolEngine {
 			scene->skybox = _pCubemap;
 			scene->meshes.push_back(_pMesh);
 			scene->lights[scene->numLights++] = {
-				1,2,3,4,
+				0,100,0,100,
 				1,0,0,1
 				};
 			scene->lights[scene->numLights++] = {
-				1,2,3,4,
+				100,75,100,100,
 				0,1,0,1
 			};
-			scene->lights[scene->numLights++] = {
-				1,2,3,4,
-				0,0,1,1
-			};
-			scene->lights[scene->numLights++] = {
-				1,2,3,4,
-				1,0,1,1
-			};
+			//scene->lights[scene->numLights++] = {
+			//	1,2,3,4,
+			//	0,0,1,1
+			//};
+			//scene->lights[scene->numLights++] = {
+			//	1,2,3,4,
+			//	1,0,1,1
+			//};
 			scene->ready = true;
 			sceneMutex.unlock();
 

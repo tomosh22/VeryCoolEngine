@@ -6,7 +6,7 @@ namespace VeryCoolEngine {
 	class OpenGLManagedUniformBuffer : public ManagedUniformBuffer
 	{
 	public:
-		OpenGLManagedUniformBuffer(uint32_t size, uint8_t numFrames);
+		OpenGLManagedUniformBuffer(uint32_t size, uint8_t numFrames, uint32_t baseBinding);
 		void UploadData(const void* const data, uint32_t size, uint8_t frame, uint32_t offset = 0) override;
 	private:
 		GLuint* _pUBOs;

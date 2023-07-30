@@ -2,7 +2,7 @@
 #include "OpenGLManagedUniformBuffer.h"
 namespace VeryCoolEngine {
 
-	OpenGLManagedUniformBuffer::OpenGLManagedUniformBuffer(uint32_t size, uint8_t numFrames)
+	OpenGLManagedUniformBuffer::OpenGLManagedUniformBuffer(uint32_t size, uint8_t numFrames, uint32_t baseBinding)
 	{
 		numFrames = 1; //#todo is there ever any need for more than one in opengl?
 		_pUBOs = new GLuint[numFrames];
@@ -11,9 +11,9 @@ namespace VeryCoolEngine {
 		{
 			GLuint ubo = _pUBOs[i];
 			glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-			glBindBufferBase(GL_UNIFORM_BUFFER,1, ubo);//#todo stop hardcoding 1 (0 taken by viewProj)
+			glBindBufferBase(GL_UNIFORM_BUFFER, baseBinding, ubo);//#todo stop hardcoding 1 (0 taken by viewProj)
 			glBufferData(GL_UNIFORM_BUFFER, size, NULL, GL_STATIC_DRAW);//#todo check static draw is right
-			glBindBufferRange(GL_UNIFORM_BUFFER,1,ubo,0,size);//#todo stop hardcoding 1 again
+			glBindBufferRange(GL_UNIFORM_BUFFER, baseBinding,ubo,0,size);//#todo stop hardcoding 1 again
 		}
 	}
 

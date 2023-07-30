@@ -67,6 +67,7 @@ namespace VeryCoolEngine {
 
 		app->_pCubemap = TextureCube::Create("CubemapTest", false);
 
-		_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS,1);//#todo frames in flight
+		_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), 1,0);//#todo frames in flight
+		_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS,1,1);//#todo frames in flight
 	}
 }

@@ -25,12 +25,6 @@ namespace VeryCoolEngine {
 
 
 	void OpenGLRenderer::PlatformInit() {
-		glGenBuffers(1, &_matrixUBO);
-
-		//size of view proj matrix
-		glBindBufferBase(GL_UNIFORM_BUFFER, 0, _matrixUBO);
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), NULL, GL_STATIC_DRAW);//#todo check static draw is right
-		glBindBufferRange(GL_UNIFORM_BUFFER, 0, _matrixUBO, 0,sizeof(glm::mat4));
 
 		glEnable(GL_DEBUG_OUTPUT);
 		glDebugMessageCallback(MessageCallback, 0);
@@ -51,10 +45,10 @@ namespace VeryCoolEngine {
 	}
 
 	void OpenGLRenderer::BindViewProjMat(Shader* shader) {
-		glBindBufferBase(GL_UNIFORM_BUFFER, 0, _matrixUBO);
+		//glBindBufferBase(GL_UNIFORM_BUFFER, 0, _matrixUBO);
 	}
 	void OpenGLRenderer::BindLightUBO(Shader* shader) {
-		glBindBufferBase(GL_UNIFORM_BUFFER, 1, _matrixUBO);//#todo light ubo
+		//glBindBufferBase(GL_UNIFORM_BUFFER, 1, _matrixUBO);//#todo light ubo
 	}
 
 
@@ -72,9 +66,19 @@ namespace VeryCoolEngine {
 
 	void OpenGLRenderer::BeginScene(Scene* scene)
 	{
-		glm::mat4 viewProjMat = scene->camera->BuildProjectionMatrix() * scene->camera->BuildViewMatrix();
-		glBindBuffer(GL_UNIFORM_BUFFER, _matrixUBO);
-		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &viewProjMat[0][0]);
+		const uint32_t camDataSize = sizeof(glm::mat4) * 3 + sizeof(glm::vec4);//4 bytes of padding
+		glm::mat4 viewMat = scene->camera->BuildViewMatrix();
+		glm::mat4 projMat = scene->camera->BuildProjectionMatrix();
+		glm::mat4 viewProjMat = projMat * viewMat;
+		glm::vec3 tempCamPos = scene->camera->GetPosition();
+		glm::vec4 camPos = { tempCamPos.x, tempCamPos.y, tempCamPos.z,0 };//4 bytes of padding
+		char* camData = new char[camDataSize];
+		memcpy(camData + sizeof(glm::mat4) * 0, &viewMat[0][0], sizeof(glm::mat4));
+		memcpy(camData + sizeof(glm::mat4) * 1, &projMat[0][0], sizeof(glm::mat4));
+		memcpy(camData + sizeof(glm::mat4) * 2, &viewProjMat[0][0], sizeof(glm::mat4));
+		memcpy(camData + sizeof(glm::mat4) * 3, &camPos[0], sizeof(glm::vec4));
+		_pCameraUBO->UploadData(camData, camDataSize, 1, 0);
+		delete[] camData;
 
 		//VCE_ASSERT((scene->lights[0].color.r == 0.1), "waddafack");
 
@@ -155,11 +159,9 @@ namespace VeryCoolEngine {
 			SubmitSkybox(scene->skyboxShader, scene->camera, scene->skybox);
 			glEnable(GL_DEPTH_TEST);
 
-			GLsync* fences = new GLsync[scene->meshes.size()];
 			unsigned int meshIndex = 0;
 			for (size_t i = 0; i < scene->meshes.size(); i++) {
 				SubmitMesh(scene->meshes[i]);
-				fences[meshIndex++] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,0);
 			}
 
 			app->_pImGuiLayer->Begin();
@@ -171,10 +173,7 @@ namespace VeryCoolEngine {
 
 			glfwSwapBuffers((GLFWwindow*)app->_window->GetNativeWindow());
 
-			for (size_t i = 0; i < scene->meshes.size(); i++)
-			{
-				glWaitSync(fences[i],0, GL_TIMEOUT_IGNORED);
-			}
+			
 			app->sceneMutex.unlock();
 
 			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
