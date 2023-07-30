@@ -136,7 +136,6 @@ namespace VeryCoolEngine {
 		
 
 		app->renderInitialised = true;
-		app->renderThreadReady = true;
 		while (app->_running) {
 			std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 			
@@ -145,7 +144,6 @@ namespace VeryCoolEngine {
 				//std::cout << "waiting for main thread" << std::endl;
 			}
 			
-			app->renderThreadReady = false;
 			
 
 			RenderCommand::SetClearColor({ 0.6, 0.2, 0.4, 1 });
@@ -180,7 +178,6 @@ namespace VeryCoolEngine {
 				glWaitSync(fences[i],0, GL_TIMEOUT_IGNORED);
 			}
 			app->sceneMutex.unlock();
-			app->renderThreadReady = true;
 
 			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 			std::chrono::duration duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);

@@ -201,9 +201,9 @@ namespace VeryCoolEngine {
 			//std::cout << "delta time: " << _DeltaTime << std::endl;
 			_LastFrameTime = now;
 			_Camera.UpdateCamera(_DeltaTime);
-			while (!renderThreadReady) {
+			//while (!renderThreadReady) {
 				//std::cout << "waiting for render thread" << std::endl;
-			}
+			//}
 			sceneMutex.lock();
 			scene->Reset();
 			
