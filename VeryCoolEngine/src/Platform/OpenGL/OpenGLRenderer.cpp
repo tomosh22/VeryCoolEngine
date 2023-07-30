@@ -154,7 +154,6 @@ namespace VeryCoolEngine {
 			glDisable(GL_DEPTH_TEST);
 			SubmitSkybox(scene->skyboxShader, scene->camera, scene->skybox);
 			glEnable(GL_DEPTH_TEST);
-			//SubmitSkybox(app->_pFullscreenShader, &app->_Camera, app->_pCubemap);
 
 			GLsync* fences = new GLsync[scene->meshes.size()];
 			unsigned int meshIndex = 0;
@@ -162,7 +161,6 @@ namespace VeryCoolEngine {
 				SubmitMesh(scene->meshes[i]);
 				fences[meshIndex++] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,0);
 			}
-			//SubmitMesh(app->_pMesh);
 
 			app->_pImGuiLayer->Begin();
 			for (Layer* layer : app->_layerStack)
@@ -181,7 +179,6 @@ namespace VeryCoolEngine {
 
 			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 			std::chrono::duration duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-			//std::cout << "render thread duration: " << std::to_string(duration.count() / 1000.f) << "ms" << std::endl;
 		}
 	}
 

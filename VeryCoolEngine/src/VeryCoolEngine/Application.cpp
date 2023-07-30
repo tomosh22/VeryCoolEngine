@@ -198,12 +198,8 @@ namespace VeryCoolEngine {
 			std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
 			std::chrono::duration duration = std::chrono::duration_cast<std::chrono::microseconds>(now - _LastFrameTime);
 			_DeltaTime = duration.count()/1000.;
-			//std::cout << "delta time: " << _DeltaTime << std::endl;
 			_LastFrameTime = now;
 			_Camera.UpdateCamera(_DeltaTime);
-			//while (!renderThreadReady) {
-				//std::cout << "waiting for render thread" << std::endl;
-			//}
 			sceneMutex.lock();
 			scene->Reset();
 			
@@ -240,7 +236,6 @@ namespace VeryCoolEngine {
 
 			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 			std::chrono::duration frameDuration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-			//std::cout << "main thread duration: " << std::to_string(frameDuration.count() / 1000.f) << "ms" << std::endl;
 		}
 		_renderThread.join();
 	}
