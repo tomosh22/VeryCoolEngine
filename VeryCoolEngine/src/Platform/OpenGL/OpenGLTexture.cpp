@@ -55,9 +55,9 @@ namespace VeryCoolEngine {
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mipLevels > 1 ?GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_R, GL_REPEAT);
 
 		
 		GLenum type = internalFormat == GL_RGBA16F  ? GL_FLOAT : GL_UNSIGNED_BYTE;
@@ -81,8 +81,12 @@ namespace VeryCoolEngine {
 		glUniform1i(glGetUniformLocation(oglShader->GetProgramID(), uniformName.c_str()), bindPoint);
 		GLenum texUnit;
 		switch (bindPoint) {
-		case(0):
-			texUnit = GL_TEXTURE0;
+			case(0):
+				texUnit = GL_TEXTURE0;
+				break;
+			case(1):
+				texUnit = GL_TEXTURE1;
+				break;
 		}
 		glActiveTexture(texUnit);
 		glBindTexture(GL_TEXTURE_2D, _id);

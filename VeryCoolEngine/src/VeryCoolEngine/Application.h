@@ -57,7 +57,7 @@ namespace VeryCoolEngine {
 		void PushOverlay(Layer* layer);
 		Window& GetWindow() const { return *_window; };
 
-		Mesh* GenerateHeightmap(uint32_t x, uint32_t y);
+		
 
 
 		static Application* GetInstance() { return _spInstance; }

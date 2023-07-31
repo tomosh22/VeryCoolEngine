@@ -1,10 +1,14 @@
 #pragma once
 
 #include "VeryCoolEngine.h"
+#include "VeryCoolEngine/Application.h"
 
-class Game : public VeryCoolEngine::Application {
-public:
-	Game();
-	~Game();
-};
+namespace VeryCoolEngine {
+	class Game : public Application {
+	public:
+		Game();
+		~Game();
+	};
 
+
+}
