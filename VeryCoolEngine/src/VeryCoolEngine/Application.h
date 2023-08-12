@@ -64,6 +64,7 @@ namespace VeryCoolEngine {
 
 		Window* _window;
 
+		bool _renderThreadCanStart = false;
 		bool mainThreadReady = false;
 		bool renderThreadReady = false;
 		bool renderThreadShouldRun = true;

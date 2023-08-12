@@ -42,7 +42,7 @@ void point(inout vec4 finalColor, vec4 diffuse, Light light, vec3 bumpNormal) {
 	float distance = length(light.positionAndRadius.xyz - WorldPos);
 	float atten = 1.f - clamp(distance/light.positionAndRadius.w,0.f,1.f);
 
-	float specular = pow(clamp(dot(halfDir,bumpNormal),0.f,1.f),60.f);
+	float specular = pow(clamp(dot(halfDir,bumpNormal),0.f,1.f),120.f);
 
 	vec3 surface = diffuse.rgb * light.color.rgb;
 	finalColor.rgb += surface * lambert * atten;
@@ -60,11 +60,4 @@ void main(){
 		point(_oColor,diffuse,lights[i], bumpNormal);
 	}
 	_oColor.rgb += diffuse.rgb * 0.1f;
-	//Light light = lights[0];
-	//bool isWithinLight = length(WorldPos - light.positionAndRadius.xyz) < light.positionAndRadius.w;
-	//_oColor = isWithinLight ? vec4(1) : vec4(0);
-	//_oColor = vec4(length(WorldPos - light.positionAndRadius.xyz)/100.f);
-	//_oColor = texture2D(texture,UV);
-	//ivec2 coord = ivec2(1280 * UV.x,720 * UV.y);
-	//imageStore(debugTex,coord,vec4(length(WorldPos - light.positionAndRadius.xyz),light.positionAndRadius.w,0,1 ));
 }

@@ -6,6 +6,7 @@ namespace VeryCoolEngine {
 	class OpenGLTexture : public Texture
 	{
 	public:
+		OpenGLTexture() {}
 		virtual ~OpenGLTexture() = default;
 		GLuint GetID() const { 
 			return _id;
@@ -16,6 +17,7 @@ namespace VeryCoolEngine {
 
 	class OpenGLTexture2D : public OpenGLTexture, public Texture2D {
 	public:
+		OpenGLTexture2D() {};
 		OpenGLTexture2D(uint32_t width, uint32_t height, TextureFormat textureFormat = TextureFormat::RGBA, TextureWrapMode wrapMode = TextureWrapMode::Repeat);
 
 		OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool srgb);
@@ -28,10 +30,11 @@ namespace VeryCoolEngine {
 
 		uint32_t GetWidth() const override;
 		uint32_t GetHeight() const override;
+
+		void PlatformInit() override;
 	private:
 		uint32_t _width;
 		uint32_t _height;
-		std::string _filePath;
 
 		char* _pData = nullptr;
 		size_t _dataLength;
@@ -50,6 +53,7 @@ namespace VeryCoolEngine {
 
 		uint32_t GetWidth() const override { return _width; };
 		uint32_t GetHeight() const override { return _height; };
+		void PlatformInit() override {};
 	private:
 		uint32_t _width;
 		uint32_t _height;

@@ -58,11 +58,12 @@ namespace VeryCoolEngine {
 		app->_pImGuiLayer = new ImGuiLayer();
 		app->PushOverlay(app->_pImGuiLayer);
 
-		app->_pMesh = Mesh::GenerateHeightmap(100, 100);
+		//app->_pMesh = Mesh::GenerateHeightmap(100, 100);
+		app->_pMesh->PlatformInit();
 		app->_pMesh->SetShader(Shader::Create("basic.vert", "basic.frag"));
-		app->_pMesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
-		app->_pMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
 
+		app->_pMesh->GetTexture()->PlatformInit();
+		app->_pMesh->GetBumpMap()->PlatformInit();
 		app->_pFullscreenShader = Shader::Create("fullscreen.vert", "fullscreen.frag");
 
 		app->_pDebugTexture = Texture2D::Create(app->_window->GetWidth(), app->_window->GetHeight());

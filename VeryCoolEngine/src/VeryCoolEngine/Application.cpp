@@ -31,6 +31,7 @@ namespace VeryCoolEngine {
 		_pRenderer = Renderer::Create();
 		
 		_renderThread = std::thread([&]() {
+			while (!_renderThreadCanStart) {}
 			_pRenderer->InitWindow();
 			_pRenderer->RenderThreadFunction();
 		});

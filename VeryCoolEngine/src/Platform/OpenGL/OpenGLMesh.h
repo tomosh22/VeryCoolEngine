@@ -6,6 +6,7 @@ namespace VeryCoolEngine {
 	{
 		~OpenGLMesh() override {};
 
+		void PlatformInit() override;
 		//void Bind() const override;
 		//void Unbind() const override;
 

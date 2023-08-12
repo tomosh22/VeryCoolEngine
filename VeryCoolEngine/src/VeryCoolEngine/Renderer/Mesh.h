@@ -8,7 +8,7 @@ namespace VeryCoolEngine {
 	class Mesh
 	{
 	public:
-		virtual ~Mesh() { delete[] vertices; };
+		virtual ~Mesh() { delete[] vertexPositions; };
 
 		//virtual void Bind() const = 0;
 		//virtual void Unbind() const = 0;
@@ -20,27 +20,31 @@ namespace VeryCoolEngine {
 		void SetShader(Shader* shader) { _pShader = shader; }
 		Shader* GetShader() const { return _pShader; }
 
-		void SetTexture(Texture* texture) { _pTexture = texture; }
-		void SetBumpMap(Texture* bumpMap) { _pBumpMap = bumpMap; }
-		Texture* GetTexture() const { return _pTexture; }
-		Texture* GetBumpMap() const { return _pBumpMap; }
+		void SetTexture(Texture2D* texture) { _pTexture = texture; }
+		void SetBumpMap(Texture2D* bumpMap) { _pBumpMap = bumpMap; }
+		Texture2D* GetTexture() const { return _pTexture; }
+		Texture2D* GetBumpMap() const { return _pBumpMap; }
+
+		virtual void PlatformInit() = 0;
 
 		static Mesh* Create();
-		static Mesh* GenerateHeightmap(uint32_t width, uint32_t height);
+		static Mesh* GenerateGenericHeightmap(uint32_t width, uint32_t height);
 	protected:
 		VertexArray* _pVertexArray;
 		Material* _pMaterial;
 		Shader* _pShader;//#todo this should be in material
-		Texture* _pTexture; //#todo so should this
-		Texture* _pBumpMap; //#todo so should this
+		Texture2D* _pTexture; //#todo so should this
+		Texture2D* _pBumpMap; //#todo so should this
 
 		uint32_t numVerts;
 		uint32_t numIndices;
-		glm::vec3* vertices;
+		glm::vec3* vertexPositions;
 		glm::vec2* uvs;
 		glm::vec3* normals;
 		glm::vec4* tangents;
 		unsigned int* indices;
+
+		float* verts;
 
 		void GenerateNormals();
 		void GenerateTangents();

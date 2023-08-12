@@ -30,43 +30,9 @@ namespace VeryCoolEngine {
 	}
 
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool srgb)
-		: _filePath(path)
 	{
-		int width, height, channels;
-
-
-		
-		_pData = (char*)stbi_load((TEXTUREDIR +path).c_str(),&width, &height, &channels, srgb ? STBI_rgb :STBI_rgb_alpha);
-
-		//#todo implement other formats
-		_format = TextureFormat::RGBA;
-		GLenum format = GL_RGBA;
-		GLenum internalFormat = GL_RGBA;
-
-		VCE_ASSERT((_pData != nullptr), "couldn't load image");
-
-		_width = width;
-		_height = height;
-
-		uint32_t mipLevels = 1;
-		while ((width | height) >> mipLevels) mipLevels++;
-		glGenTextures(1, &_id);
-		glBindTexture(GL_TEXTURE_2D, _id);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mipLevels > 1 ?GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_R, GL_REPEAT);
-
-		
-		GLenum type = internalFormat == GL_RGBA16F  ? GL_FLOAT : GL_UNSIGNED_BYTE;
-		glTexImage2D(GL_TEXTURE_2D, 0,internalFormat, width, height, 0, format,type,_pData);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		glBindTexture(GL_TEXTURE_2D, 0);
-		
-		stbi_image_free(_pData);
+		_filePath = path;
+		_srgb = srgb;
 
 	}
 
@@ -104,6 +70,44 @@ namespace VeryCoolEngine {
 	uint32_t VeryCoolEngine::OpenGLTexture2D::GetHeight() const
 	{
 		return uint32_t();
+	}
+	void OpenGLTexture2D::PlatformInit()
+	{
+		int width, height, channels;
+
+
+
+		_pData = (char*)stbi_load((TEXTUREDIR + _filePath).c_str(), &width, &height, &channels, _srgb ? STBI_rgb : STBI_rgb_alpha);
+
+		//#todo implement other formats
+		_format = TextureFormat::RGBA;
+		GLenum format = GL_RGBA;
+		GLenum internalFormat = GL_RGBA;
+
+		VCE_ASSERT((_pData != nullptr), "couldn't load image");
+
+		_width = width;
+		_height = height;
+
+		uint32_t mipLevels = 1;
+		while ((width | height) >> mipLevels) mipLevels++;
+		glGenTextures(1, &_id);
+		glBindTexture(GL_TEXTURE_2D, _id);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mipLevels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+
+
+		GLenum type = internalFormat == GL_RGBA16F ? GL_FLOAT : GL_UNSIGNED_BYTE;
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, _pData);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		stbi_image_free(_pData);
 	}
 #pragma end region
 
