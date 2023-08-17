@@ -44,7 +44,7 @@ namespace VeryCoolEngine {
 		}
 		programID = 0;
 
-		ReloadShader();
+		//ReloadShader();
 	}
 
 	OpenGLShader::~OpenGLShader() {
@@ -60,6 +60,11 @@ namespace VeryCoolEngine {
 
 	void OpenGLShader::UploadVec3Uniform(const glm::vec3& matrix, const std::string& name) const{
 		glUniform3fv(glGetUniformLocation(programID, name.c_str()), 1, &matrix[0]);
+	}
+
+	void OpenGLShader::UploadIVec2Uniform(const glm::ivec2& ivec2, const std::string& name) const
+	{
+		glUniform2iv(glGetUniformLocation(programID, name.c_str()), 1, &ivec2[0]);
 	}
 
 	void OpenGLShader::ReloadShader() {

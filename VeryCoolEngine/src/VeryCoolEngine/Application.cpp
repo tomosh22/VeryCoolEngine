@@ -59,6 +59,7 @@ namespace VeryCoolEngine {
 
 	void Application::OnEvent(Event& e) {
 		if (e.GetType() == EventType::KeyPressed && dynamic_cast<KeyPressedEvent&>(e).GetKeyCode() == VCE_KEY_ESCAPE) _running = false;
+		if (e.GetType() == EventType::KeyPressed && dynamic_cast<KeyPressedEvent&>(e).GetKeyCode() == VCE_KEY_Q) _mouseEnabled = !_mouseEnabled;
 		EventDispatcher dispatcher(e);
 		if (e.GetType() == EventType::WindowClose) {
 			std::function function = [&](WindowCloseEvent& e) -> bool {return Application::OnWindowClose(e); };
@@ -108,6 +109,9 @@ namespace VeryCoolEngine {
 			std::chrono::duration duration = std::chrono::duration_cast<std::chrono::microseconds>(now - _LastFrameTime);
 			_DeltaTime = duration.count()/1000.;
 			_LastFrameTime = now;
+
+			
+
 			_Camera.UpdateCamera(_DeltaTime);
 			sceneMutex.lock();
 			scene->Reset();
@@ -115,19 +119,15 @@ namespace VeryCoolEngine {
 			scene->camera = &_Camera;
 			scene->skyboxShader = _pFullscreenShader;
 			scene->skybox = _pCubemap;
-			scene->meshes.push_back(_pMesh);
-			scene->lights[scene->numLights++] = {
-				0,100,0,100,
-				1,0,0,1
-				};
-			scene->lights[scene->numLights++] = {
-				100,75,100,100,
-				0,1,0,1
-			};
-			scene->lights[scene->numLights++] = {
-				250,100,250,1000,
-				0.8,0.8,0.8,1
-			};
+
+
+			//scene->meshes.push_back(_pMesh);
+			for (Mesh* mesh : _meshes)scene->meshes.push_back(mesh);
+
+
+			for (Renderer::Light& light : _lights) {
+				scene->lights[scene->numLights++] = light;
+			}
 			//scene->lights[scene->numLights++] = {
 			//	1,2,3,4,
 			//	1,0,1,1

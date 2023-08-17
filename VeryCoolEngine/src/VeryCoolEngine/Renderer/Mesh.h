@@ -2,8 +2,12 @@
 #include "VeryCoolEngine/Renderer/VertexArray.h"
 #include "VeryCoolEngine/Renderer/Shader.h"
 #include "VeryCoolEngine/Renderer/Texture.h"
+#include "VeryCoolEngine/Transform.h"
 namespace VeryCoolEngine {
-
+	enum class MeshTopolgy {
+		Triangles,
+		TriangleStrips
+	};
 	class Material;//todo implement
 	class Mesh
 	{
@@ -29,6 +33,13 @@ namespace VeryCoolEngine {
 
 		static Mesh* Create();
 		static Mesh* GenerateGenericHeightmap(uint32_t width, uint32_t height);
+		static Mesh* GenerateCubeFace();
+
+		Transform transform;
+
+		//#todo how do i want to handle this properly
+		glm::ivec2 customUniform;
+
 	protected:
 		VertexArray* _pVertexArray;
 		Material* _pMaterial;
@@ -38,13 +49,15 @@ namespace VeryCoolEngine {
 
 		uint32_t numVerts;
 		uint32_t numIndices;
-		glm::vec3* vertexPositions;
-		glm::vec2* uvs;
-		glm::vec3* normals;
-		glm::vec4* tangents;
-		unsigned int* indices;
+		glm::vec3* vertexPositions = nullptr;
+		glm::vec2* uvs = nullptr;
+		glm::vec3* normals = nullptr;
+		glm::vec4* tangents = nullptr;
+		unsigned int* indices = nullptr;
 
 		float* verts;
+
+		
 
 		void GenerateNormals();
 		void GenerateTangents();

@@ -9,6 +9,7 @@
 #include "VeryCoolEngine/Renderer/ManagedUniformBuffer.h"
 
 namespace VeryCoolEngine {
+	
 	class Scene;
 	class Renderer
 	{
@@ -49,7 +50,7 @@ namespace VeryCoolEngine {
 		static void SubmitMesh(Mesh* mesh);
 		static void SubmitSkybox(Shader* shader, Camera* camera, TextureCube* cubemap);
 
-		virtual void DrawIndexed(VertexArray* vertexArray) = 0;
+		virtual void DrawIndexed(VertexArray* vertexArray, MeshTopolgy topology = MeshTopolgy::Triangles) = 0;
 		static Renderer* Create();
 
 		static Renderer* _spRenderer;

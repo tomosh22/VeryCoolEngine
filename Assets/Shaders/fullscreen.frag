@@ -29,4 +29,7 @@ void main(){
 	vec3 rayDir = RayDir(UV);
 
 	_oColor = texture(cubemap, (rayDir));
+
+	_oColor = vec4(0.2,0.3,0.9,1);
+	_oColor += max(rayDir.y + 0.3,0);
 }

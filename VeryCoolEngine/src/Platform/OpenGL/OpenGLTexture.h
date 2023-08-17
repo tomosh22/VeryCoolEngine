@@ -40,6 +40,9 @@ namespace VeryCoolEngine {
 		size_t _dataLength;
 
 		TextureFormat _format;
+		TextureWrapMode _wrapMode;
+
+		bool _initFromFile;
 	};
 
 	class OpenGLTextureCube : public OpenGLTexture, public TextureCube {
@@ -53,11 +56,10 @@ namespace VeryCoolEngine {
 
 		uint32_t GetWidth() const override { return _width; };
 		uint32_t GetHeight() const override { return _height; };
-		void PlatformInit() override {};
+		void PlatformInit() override;
 	private:
 		uint32_t _width;
 		uint32_t _height;
-		std::string _filePath;
 
 		char* _pData = nullptr;
 		size_t _dataLength;

@@ -13,7 +13,7 @@ namespace VeryCoolEngine {
 		void PlatformInit() override;
 		void SetClearColor(const glm::vec4 color) override;
 		void Clear() override;
-		void DrawIndexed(VertexArray* vertexArray) override;
+		void DrawIndexed(VertexArray* vertexArray, MeshTopolgy topology = MeshTopolgy::Triangles) override;
 		void BindViewProjMat(Shader* shader) override;
 		void BindLightUBO(Shader* shader) override;
 		void DrawFullScreenQuad() override;

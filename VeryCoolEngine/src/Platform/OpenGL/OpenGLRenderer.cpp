@@ -59,9 +59,17 @@ namespace VeryCoolEngine {
 		glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT,indices);
 	}
 
-	void OpenGLRenderer::DrawIndexed(VertexArray* vertexArray)
+	void OpenGLRenderer::DrawIndexed(VertexArray* vertexArray, MeshTopolgy topology)
 	{
-		glDrawElements(GL_TRIANGLES, vertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+		switch (topology) {
+			case MeshTopolgy::Triangles:
+				glDrawElements(GL_TRIANGLES, vertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+				break;
+			case MeshTopolgy::TriangleStrips:
+				glDrawElements(GL_TRIANGLE_STRIP, vertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+				break;
+		}
+		
 	}
 
 	void OpenGLRenderer::BeginScene(Scene* scene)

@@ -81,14 +81,13 @@ namespace VeryCoolEngine {
 			CalculateOffsetsAndStrides();
 		};
 		BufferLayout() {};
-		const std::vector<BufferElement>& GetElements() const { return _Elements; };
+		std::vector<BufferElement>& GetElements() { return _Elements; };
 
 		std::vector<BufferElement>::iterator begin() { return _Elements.begin(); }
 		std::vector<BufferElement>::iterator end() { return _Elements.end(); }
 		std::vector<BufferElement>::const_iterator begin() const { return _Elements.begin(); }
 		std::vector<BufferElement>::const_iterator end() const { return _Elements.end(); }
 		uint32_t GetStride() const { return _Stride; }
-	private:
 		void CalculateOffsetsAndStrides() {
 			uint32_t offset = 0;
 			_Stride = 0;
@@ -99,6 +98,8 @@ namespace VeryCoolEngine {
 
 			}
 		}
+	private:
+		
 		std::vector<BufferElement> _Elements;
 		uint32_t _Stride = 0;
 	};

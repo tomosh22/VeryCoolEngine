@@ -39,6 +39,7 @@ namespace VeryCoolEngine {
 
 		virtual void UploadMatrix4Uniform(const glm::mat4& matrix, const std::string& name) const = 0;
 		virtual void UploadVec3Uniform(const glm::vec3& matrix, const std::string& name) const = 0;
+		virtual void UploadIVec2Uniform(const glm::ivec2& ivec2, const std::string& name) const = 0;
 
 		static Shader* Create(const std::string& vertex, const std::string& fragment, const std::string& geometry = "", const std::string& domain = "", const std::string& hull = "");
 	protected:

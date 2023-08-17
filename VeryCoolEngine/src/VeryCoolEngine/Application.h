@@ -77,15 +77,20 @@ namespace VeryCoolEngine {
 
 		Shader* _pFullscreenShader;
 
-		Mesh* _pMesh;
+		//Mesh* _pMesh;
+		std::vector<Mesh*> _meshes;
+		std::vector<Shader*> _shaders;
+		std::vector<Texture2D*> _textures;
+
 		Mesh* _pHeightmap;
+		std::vector<Renderer::Light> _lights{};
 		Texture2D* _pDebugTexture;
 		TextureCube* _pCubemap;
 		ImGuiLayer* _pImGuiLayer;
 		LayerStack _layerStack;
 		bool _running = true;
 		bool OnWindowClose(WindowCloseEvent& e);
-
+		bool _mouseEnabled = true;
 	private:
 		std::thread _renderThread;
 		

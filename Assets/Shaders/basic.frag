@@ -28,9 +28,12 @@ uint pad2;
 Light lights[100];
 };
 
+
 uniform sampler2D diffuseTex;
 uniform sampler2D bumpMap;
 layout(rgba32f) uniform writeonly image2D debugTex;
+
+uniform ivec2 _uAtlasOffset;
 
 void point(inout vec4 finalColor, vec4 diffuse, Light light, vec3 bumpNormal) {
 	
@@ -60,4 +63,10 @@ void main(){
 		point(_oColor,diffuse,lights[i], bumpNormal);
 	}
 	_oColor.rgb += diffuse.rgb * 0.1f;
+
+	vec2 atlasUV = UV/16;
+	atlasUV += _uAtlasOffset * 1./16.;
+
+	_oColor = texture2D(diffuseTex,atlasUV);
+	//_oColor = vec4(UV,0,1);
 }

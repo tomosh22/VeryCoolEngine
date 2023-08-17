@@ -14,8 +14,8 @@ namespace VeryCoolEngine {
 	Mesh* Mesh::GenerateGenericHeightmap(uint32_t width, uint32_t height)
 	{
 		Mesh* mesh = Mesh::Create();
-		glm::vec3 vertexScale = glm::vec3(8.0f, 1.0f, 8.0f);
-		glm::vec2 textureScale = glm::vec2(1 / 2.0f, 1 / 2.0f);
+		glm::vec3 vertexScale = glm::vec3(16.0f, 1.0f, 16.0f);
+		glm::vec2 textureScale = glm::vec2(1,1);
 		mesh->numVerts = width * height;
 		mesh->numIndices = (width - 1) * (height - 1) * 6;
 		mesh->vertexPositions = new glm::vec3[mesh->numVerts];
@@ -34,7 +34,7 @@ namespace VeryCoolEngine {
 		for (int z = 0; z < height; ++z) {
 			for (int x = 0; x < width; ++x) {
 				int offset = (z * width) + x;
-				mesh->vertexPositions[offset] = glm::vec3(x, rand() % 10 /*#todo read height tex*/, z) * vertexScale;
+				mesh->vertexPositions[offset] = glm::vec3(x, 1 /*rand() % 10*/ /*#todo read height tex*/, z) * vertexScale;
 				mesh->uvs[offset] = glm::vec2(x, z) * textureScale;
 			}
 		}
@@ -81,6 +81,40 @@ namespace VeryCoolEngine {
 		
 		return mesh;
 	}
+	
+	Mesh* Mesh::GenerateCubeFace() {
+		Mesh* mesh = Mesh::Create();
+		mesh->numVerts = 4;
+		mesh->numIndices = 6;
+		mesh->vertexPositions = new glm::vec3[mesh->numVerts];
+		mesh->uvs = new glm::vec2[mesh->numVerts];
+		mesh->verts = new float[mesh->numVerts * (3 + 2)];
+		mesh->indices = new unsigned int[mesh->numIndices] {0, 1, 2, 2, 1, 3};
+
+		mesh->vertexPositions[0] = { 0.5,0.5,1 };
+		mesh->vertexPositions[1] = { 0.5,-0.5,1 };
+		mesh->vertexPositions[2] = { -0.5,0.5,1 };
+		mesh->vertexPositions[3] = { -0.5,-0.5,1 };
+
+		mesh->uvs[0] = {1,0};
+		mesh->uvs[1] = {1,1};
+		mesh->uvs[2] = {0,0};
+		mesh->uvs[3] = {0,1};
+
+		size_t index = 0;
+		for (int i = 0; i < mesh->numVerts; i++)
+		{
+			mesh->verts[index++] = mesh->vertexPositions[i].x;
+			mesh->verts[index++] = mesh->vertexPositions[i].y;
+			mesh->verts[index++] = mesh->vertexPositions[i].z;
+
+			mesh->verts[index++] = mesh->uvs[i].x;
+			mesh->verts[index++] = mesh->uvs[i].y;
+		}
+
+		return mesh;
+	}
+
 	void Mesh::GenerateNormals()
 	{
 		for (size_t i = 0; i < numIndices / 3; i++)

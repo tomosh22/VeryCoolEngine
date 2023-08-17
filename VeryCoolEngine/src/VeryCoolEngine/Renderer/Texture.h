@@ -49,6 +49,9 @@ namespace VeryCoolEngine {
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
+
+		std::string _filePath;
+		bool _srgb;
 	};
 
 }

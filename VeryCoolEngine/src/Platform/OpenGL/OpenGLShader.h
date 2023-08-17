@@ -37,6 +37,7 @@ namespace VeryCoolEngine {
 
 			void UploadMatrix4Uniform(const glm::mat4& matrix, const std::string& name) const override;
 			void UploadVec3Uniform(const glm::vec3& matrix, const std::string& name) const override;
+			void UploadIVec2Uniform(const glm::ivec2& ivec2, const std::string& name) const override;
 
 		protected:
 			void	DeleteIDs();
