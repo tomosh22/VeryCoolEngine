@@ -42,13 +42,24 @@ namespace VeryCoolEngine {
 		int index = 0;
 		for (const auto& element : vertexBuffer->GetLayout()) {
 			glEnableVertexAttribArray(index);
-			glVertexAttribPointer(index,
-				element.GetComponentCount(),
-				ShaderDataTypeToOpenGLBaseType(element._Type),
-				element._Normalized ? GL_TRUE : GL_FALSE,
-				vertexBuffer->GetLayout().GetStride(),
-				(const void*)element._Offset);
-			index++;
+			if (element._Type == ShaderDataType::Int2) {
+				glVertexAttribIPointer(index,
+					element.GetComponentCount(),
+					ShaderDataTypeToOpenGLBaseType(element._Type),
+					vertexBuffer->GetLayout().GetStride(),
+					(const void*)element._Offset);
+				index++;
+			}
+			else {
+				glVertexAttribPointer(index,
+					element.GetComponentCount(),
+					ShaderDataTypeToOpenGLBaseType(element._Type),
+					element._Normalized ? GL_TRUE : GL_FALSE,
+					vertexBuffer->GetLayout().GetStride(),
+					(const void*)element._Offset);
+				index++;
+			}
+			
 		}
 		_VertexBuffers.push_back(vertexBuffer);
 	}

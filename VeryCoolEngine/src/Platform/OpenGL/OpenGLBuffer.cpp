@@ -2,7 +2,7 @@
 #include "OpenGLBuffer.h"
 
 namespace VeryCoolEngine {
-	OpenGLVertexBuffer::OpenGLVertexBuffer(float* verts, size_t size) {
+	OpenGLVertexBuffer::OpenGLVertexBuffer(void* verts, size_t size) {
 		glGenBuffers(1, &_id);
 		glBindBuffer(GL_ARRAY_BUFFER, _id);
 

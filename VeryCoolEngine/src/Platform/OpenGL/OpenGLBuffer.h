@@ -7,7 +7,7 @@ namespace VeryCoolEngine {
 
 	class OpenGLVertexBuffer : public VertexBuffer{
 	public:
-		OpenGLVertexBuffer(float* verts, size_t size);
+		OpenGLVertexBuffer(void* verts, size_t size);
 		~OpenGLVertexBuffer() override { glDeleteBuffers(1, &_id); };
 
 		void UploadData() override;

@@ -40,6 +40,10 @@ namespace VeryCoolEngine {
 		//#todo how do i want to handle this properly
 		glm::ivec2 customUniform;
 
+		void* instanceData = nullptr;
+		ShaderDataType instanceDataType = ShaderDataType::None;
+		std::string instanceDataName;
+
 	protected:
 		VertexArray* _pVertexArray;
 		Material* _pMaterial;
@@ -55,7 +59,10 @@ namespace VeryCoolEngine {
 		glm::vec4* tangents = nullptr;
 		unsigned int* indices = nullptr;
 
-		float* verts;
+		
+
+
+		void* verts;
 
 		
 

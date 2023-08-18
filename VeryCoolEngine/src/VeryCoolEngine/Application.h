@@ -30,6 +30,10 @@ namespace VeryCoolEngine {
 		TextureCube* skybox = nullptr;
 
 		std::vector<Mesh*> meshes{};
+
+		std::vector<Mesh*> instanceMeshes{};
+		std::vector<glm::vec2> instanceData{};
+
 		std::vector<Renderer::Light> lights{};
 		unsigned int numLights = 0;
 
@@ -39,8 +43,10 @@ namespace VeryCoolEngine {
 			ready = false;
 			meshes.clear();
 			meshes = std::vector<Mesh*>();
+			instanceMeshes.clear();
+			instanceMeshes = std::vector<Mesh*>();
 			lights.clear();
-			lights.resize(100);
+			lights.resize(Renderer::_sMAXLIGHTS);
 			numLights = 0;
 		};
 
@@ -79,6 +85,7 @@ namespace VeryCoolEngine {
 
 		//Mesh* _pMesh;
 		std::vector<Mesh*> _meshes;
+		std::vector<Mesh*> _instanceMeshes;
 		std::vector<Shader*> _shaders;
 		std::vector<Texture2D*> _textures;
 

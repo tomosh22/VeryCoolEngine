@@ -60,24 +60,24 @@ namespace VeryCoolEngine {
 
 		mesh->verts = new float[mesh->numVerts * (3 + 2 + 3 + 4)];
 		size_t index = 0;
-		for (i = 0; i < mesh->numVerts; i++)
-		{
-			mesh->verts[index++] = mesh->vertexPositions[i].x;
-			mesh->verts[index++] = mesh->vertexPositions[i].y;
-			mesh->verts[index++] = mesh->vertexPositions[i].z;
-
-			mesh->verts[index++] = mesh->uvs[i].x;
-			mesh->verts[index++] = mesh->uvs[i].y;
-
-			mesh->verts[index++] = mesh->normals[i].x;
-			mesh->verts[index++] = mesh->normals[i].y;
-			mesh->verts[index++] = mesh->normals[i].z;
-
-			mesh->verts[index++] = mesh->tangents[i].x;
-			mesh->verts[index++] = mesh->tangents[i].y;
-			mesh->verts[index++] = mesh->tangents[i].z;
-			mesh->verts[index++] = mesh->tangents[i].w;
-		}
+		//for (i = 0; i < mesh->numVerts; i++)
+		//{
+		//	mesh->verts[index++] = mesh->vertexPositions[i].x;
+		//	mesh->verts[index++] = mesh->vertexPositions[i].y;
+		//	mesh->verts[index++] = mesh->vertexPositions[i].z;
+		//
+		//	mesh->verts[index++] = mesh->uvs[i].x;
+		//	mesh->verts[index++] = mesh->uvs[i].y;
+		//
+		//	mesh->verts[index++] = mesh->normals[i].x;
+		//	mesh->verts[index++] = mesh->normals[i].y;
+		//	mesh->verts[index++] = mesh->normals[i].z;
+		//
+		//	mesh->verts[index++] = mesh->tangents[i].x;
+		//	mesh->verts[index++] = mesh->tangents[i].y;
+		//	mesh->verts[index++] = mesh->tangents[i].z;
+		//	mesh->verts[index++] = mesh->tangents[i].w;
+		//}
 		
 		return mesh;
 	}
@@ -88,7 +88,7 @@ namespace VeryCoolEngine {
 		mesh->numIndices = 6;
 		mesh->vertexPositions = new glm::vec3[mesh->numVerts];
 		mesh->uvs = new glm::vec2[mesh->numVerts];
-		mesh->verts = new float[mesh->numVerts * (3 + 2)];
+		
 		mesh->indices = new unsigned int[mesh->numIndices] {0, 1, 2, 2, 1, 3};
 
 		mesh->vertexPositions[0] = { 0.5,0.5,1 };
@@ -101,16 +101,7 @@ namespace VeryCoolEngine {
 		mesh->uvs[2] = {0,0};
 		mesh->uvs[3] = {0,1};
 
-		size_t index = 0;
-		for (int i = 0; i < mesh->numVerts; i++)
-		{
-			mesh->verts[index++] = mesh->vertexPositions[i].x;
-			mesh->verts[index++] = mesh->vertexPositions[i].y;
-			mesh->verts[index++] = mesh->vertexPositions[i].z;
-
-			mesh->verts[index++] = mesh->uvs[i].x;
-			mesh->verts[index++] = mesh->uvs[i].y;
-		}
+		
 
 		return mesh;
 	}

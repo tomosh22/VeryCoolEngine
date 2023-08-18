@@ -18,7 +18,8 @@ namespace VeryCoolEngine {
 		UInt4,
 		Mat3,
 		Mat4,
-		Bool
+		Bool,
+		None
 	};
 
 	static uint32_t ShaderDataTypeSize(ShaderDataType t) {
@@ -116,7 +117,7 @@ namespace VeryCoolEngine {
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 		virtual const BufferLayout& GetLayout() = 0;
 
-		static VertexBuffer* Create(float* verts, size_t size);
+		static VertexBuffer* Create(void* verts, size_t size);
 
 	protected:
 		BufferLayout _Layout;

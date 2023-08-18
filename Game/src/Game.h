@@ -24,6 +24,9 @@ namespace VeryCoolEngine {
 
 			Application* app = Application::GetInstance();
 
+			//#todo this is disgustingly inefficient
+			//should be generating one cube face
+			//that's instanced
 			_pPosX = Mesh::GenerateCubeFace();
 			_pPosX->transform._yaw = 90;
 			_pPosX->transform._position = position;
@@ -73,6 +76,37 @@ namespace VeryCoolEngine {
 			_pNegY->customUniform = atlasOffsets.find(type)->second;
 			_pPosZ->customUniform = atlasOffsets.find(type)->second;
 			_pNegZ->customUniform = atlasOffsets.find(type)->second;
+
+			//#todo free instanceData
+			_pPosX->instanceData = new glm::ivec2;
+			*(glm::ivec2*)(_pPosX->instanceData) = atlasOffsets.find(type)->second;
+			_pPosX->instanceDataType = ShaderDataType::Int2;
+			_pPosX->instanceDataName = "_aAtlasOffset";
+
+			_pNegX->instanceData = new glm::ivec2;
+			*(glm::ivec2*)(_pNegX->instanceData) = atlasOffsets.find(type)->second;
+			_pNegX->instanceDataType = ShaderDataType::Int2;
+			_pNegX->instanceDataName = "_aAtlasOffset";
+
+			_pPosY->instanceData = new glm::ivec2;
+			*(glm::ivec2*)(_pPosY->instanceData) = atlasOffsets.find(type)->second;
+			_pPosY->instanceDataType = ShaderDataType::Int2;
+			_pPosY->instanceDataName = "_aAtlasOffset";
+
+			_pNegY->instanceData = new glm::ivec2;
+			*(glm::ivec2*)(_pNegY->instanceData) = atlasOffsets.find(type)->second;
+			_pNegY->instanceDataType = ShaderDataType::Int2;
+			_pNegY->instanceDataName = "_aAtlasOffset";
+
+			_pPosZ->instanceData = new glm::ivec2;
+			*(glm::ivec2*)(_pPosZ->instanceData) = atlasOffsets.find(type)->second;
+			_pPosZ->instanceDataType = ShaderDataType::Int2;
+			_pPosZ->instanceDataName = "_aAtlasOffset";
+
+			_pNegZ->instanceData = new glm::ivec2;
+			*(glm::ivec2*)(_pNegZ->instanceData) = atlasOffsets.find(type)->second;
+			_pNegZ->instanceDataType = ShaderDataType::Int2;
+			_pNegZ->instanceDataName = "_aAtlasOffset";
 
 
 			app->_meshes.push_back(_pPosX);

@@ -122,8 +122,12 @@ namespace VeryCoolEngine {
 
 
 			//scene->meshes.push_back(_pMesh);
-			for (Mesh* mesh : _meshes)scene->meshes.push_back(mesh);
-
+			for (Mesh* mesh : _meshes) { 
+				scene->meshes.push_back(mesh);
+			}
+			for (Mesh* mesh : _meshes) {
+				scene->meshes.push_back(mesh);
+			}
 
 			for (Renderer::Light& light : _lights) {
 				scene->lights[scene->numLights++] = light;

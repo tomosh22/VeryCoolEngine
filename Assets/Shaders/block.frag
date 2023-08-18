@@ -7,6 +7,7 @@ in vec3 Normal;
 in vec3 WorldPos;
 in vec3 Tangent;
 in vec3 Binormal;
+in flat ivec2 AtlasOffset;
 
 struct Light{
 	vec4 positionAndRadius;
@@ -33,7 +34,7 @@ uniform sampler2D diffuseTex;
 uniform sampler2D bumpMap;
 layout(rgba32f) uniform writeonly image2D debugTex;
 
-uniform ivec2 _uAtlasOffset;
+//uniform ivec2 _uAtlasOffset;
 
 void point(inout vec4 finalColor, vec4 diffuse, Light light, vec3 bumpNormal) {
 	
@@ -65,7 +66,7 @@ void main(){
 	_oColor.rgb += diffuse.rgb * 0.1f;
 
 	vec2 atlasUV = UV/16;
-	atlasUV += _uAtlasOffset * 1./16.;
+	atlasUV += AtlasOffset * 1./16.;
 
 	_oColor = texture2D(diffuseTex,atlasUV);
 	//_oColor = vec4(UV,0,1);
