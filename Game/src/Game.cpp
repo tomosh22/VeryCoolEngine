@@ -31,6 +31,9 @@ namespace VeryCoolEngine {
 		_shaders.push_back(Shader::Create("block.vert", "block.frag"));
 		_textures.push_back(Texture2D::Create("atlas.png", false));
 
+		_pMesh = Mesh::GenerateCubeFace();
+		_pMesh->SetShader(_shaders[0]);
+		_pMesh->SetTexture(_textures[0]);
 
 		_blocks.emplace_back(Block({0,0,0}, Block::BlockType::Cobblestone));
 		_blocks.emplace_back(Block({1,0,0}, Block::BlockType::Stone));

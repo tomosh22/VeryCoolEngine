@@ -4,7 +4,8 @@ layout(location = 0) in vec3 _aPosition;
 layout(location = 1) in vec2 _aUV;
 //layout(location = 2) in vec3 _aNormal;
 //layout(location = 3) in vec4 _aTangent;
-layout(location = 2) in ivec2 _aAtlasOffset;
+layout(location = 2) in mat4 _aInstanceMat;
+layout(location = 6) in ivec2 _aInstanceAtlasOffset;
 
 uniform mat4 _uModelMat;
 
@@ -23,7 +24,7 @@ out vec3 Binormal;
 out flat ivec2 AtlasOffset;
 
 void main(){
-	WorldPos = (_uModelMat * vec4(_aPosition,1)).xyz;
+	WorldPos = (_aInstanceMat * vec4(_aPosition,1)).xyz;
 	UV = _aUV;
 	//mat3 normalMat = mat3(1);//#todo transpose(inverse(mat3(modelMatrix)));
 	//Normal = normalize(normalMat * normalize(_aNormal));
@@ -32,7 +33,7 @@ void main(){
 	//Tangent = wTangent;
 	//Binormal = cross(wTangent,wNormal) * _aTangent.w;
 
-	AtlasOffset = _aAtlasOffset;
+	AtlasOffset = _aInstanceAtlasOffset;
 
 
 

@@ -48,9 +48,11 @@ namespace VeryCoolEngine {
 
 		static void Submit(VertexArray* vertexArray);
 		static void SubmitMesh(Mesh* mesh);
+		static void SubmitMeshInstanced(Mesh* mesh, unsigned int count);
 		static void SubmitSkybox(Shader* shader, Camera* camera, TextureCube* cubemap);
 
 		virtual void DrawIndexed(VertexArray* vertexArray, MeshTopolgy topology = MeshTopolgy::Triangles) = 0;
+		virtual void DrawIndexedInstanced(VertexArray* vertexArray, unsigned int count, MeshTopolgy topology = MeshTopolgy::Triangles) = 0;
 		static Renderer* Create();
 
 		static Renderer* _spRenderer;

@@ -120,6 +120,9 @@ namespace VeryCoolEngine {
 			scene->skyboxShader = _pFullscreenShader;
 			scene->skybox = _pCubemap;
 
+			scene->_pInstancedMesh = _pMesh;
+			scene->_numInstances = _numInstances;
+
 
 			//scene->meshes.push_back(_pMesh);
 			for (Mesh* mesh : _meshes) { 

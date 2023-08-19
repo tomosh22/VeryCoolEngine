@@ -15,6 +15,7 @@ namespace VeryCoolEngine {
 		IndexBuffer* GetIndexBuffer() const { return _pIndexBuffer; }
 
 		static VertexArray* Create();
+		unsigned int _numVertAttribs = 0;
 	protected:
 		std::vector<VertexBuffer*> _VertexBuffers;
 		IndexBuffer* _pIndexBuffer;

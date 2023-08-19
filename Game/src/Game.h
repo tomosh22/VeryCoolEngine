@@ -2,6 +2,7 @@
 
 #include "VeryCoolEngine.h"
 #include "VeryCoolEngine/Application.h"
+#include <glm/glm.hpp>
 
 namespace VeryCoolEngine {
 
@@ -24,6 +25,57 @@ namespace VeryCoolEngine {
 
 			Application* app = Application::GetInstance();
 
+			Transform posX;
+			posX._yaw = 90;
+			posX._position = position;
+			posX._position.x -= 0.5;
+			posX.UpdateRotation();
+			posX.UpdateMatrix();
+			app->_instanceMats.push_back(posX._matrix);
+
+			Transform negX;
+			negX._yaw = 270;
+			negX._position = position;
+			negX._position.x += 0.5;
+			negX.UpdateRotation();
+			negX.UpdateMatrix();
+			app->_instanceMats.push_back(negX._matrix);
+
+			Transform posY;
+			posY._roll = 270;
+			posY._position = position;
+			posY._position.y -= 0.5;
+			posY.UpdateRotation();
+			posY.UpdateMatrix();
+			app->_instanceMats.push_back(posY._matrix);
+
+			Transform negY;
+			negY._roll = 90;
+			negY._position = position;
+			negY._position.y += 0.5;
+			negY.UpdateRotation();
+			negY.UpdateMatrix();
+			app->_instanceMats.push_back(negY._matrix);
+
+			Transform posZ;
+			posZ._position = position;
+			posZ._position.z -= 0.5;
+			posZ.UpdateRotation();
+			posZ.UpdateMatrix();
+			app->_instanceMats.push_back(posZ._matrix);
+
+			Transform negZ;
+			negZ._yaw = 180;
+			negZ._position = position;
+			negZ._position.z += 0.5;
+			negZ.UpdateRotation();
+			negZ.UpdateMatrix();
+			app->_instanceMats.push_back(negZ._matrix);
+
+			app->_instanceOffsets.push_back(atlasOffsets.find(type)->second);
+
+			app->_numInstances+=6;
+			return;
 			//#todo this is disgustingly inefficient
 			//should be generating one cube face
 			//that's instanced

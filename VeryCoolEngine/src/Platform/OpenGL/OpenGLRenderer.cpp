@@ -72,6 +72,19 @@ namespace VeryCoolEngine {
 		
 	}
 
+	void OpenGLRenderer::DrawIndexedInstanced(VertexArray* vertexArray, unsigned int count, MeshTopolgy topology)
+	{
+		switch (topology) {
+		case MeshTopolgy::Triangles:
+			glDrawElementsInstanced(GL_TRIANGLES, vertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr, count);
+			break;
+		case MeshTopolgy::TriangleStrips:
+			glDrawElementsInstanced(GL_TRIANGLE_STRIP, vertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr, count);
+			break;
+		}
+
+	}
+
 	void OpenGLRenderer::BeginScene(Scene* scene)
 	{
 		const uint32_t camDataSize = sizeof(glm::mat4) * 3 + sizeof(glm::vec4);//4 bytes of padding
@@ -166,6 +179,8 @@ namespace VeryCoolEngine {
 			glDisable(GL_DEPTH_TEST);
 			SubmitSkybox(scene->skyboxShader, scene->camera, scene->skybox);
 			glEnable(GL_DEPTH_TEST);
+
+			SubmitMeshInstanced(scene->_pInstancedMesh, scene->_numInstances);
 
 			unsigned int meshIndex = 0;
 			for (size_t i = 0; i < scene->meshes.size(); i++) {

@@ -56,7 +56,7 @@ namespace VeryCoolEngine {
 		//ImGui::SliderFloat3("Pos", &app->_pMesh->transform._position[0],-10,10);
 		//ImGui::SliderFloat3("Rotation", &app->_pMesh->transform._roll,0,360);
 
-
+		return;
 		ImGui::SliderFloat3("PosX", &app->_meshes[0]->transform._roll, 0, 360);
 		ImGui::SliderFloat3("NegX", &app->_meshes[1]->transform._roll, 0, 360);
 		ImGui::SliderFloat3("PosY", &app->_meshes[2]->transform._roll, 0, 360);

@@ -39,26 +39,20 @@ namespace VeryCoolEngine {
 	void OpenGLVertexArray::AddVertexBuffer(VertexBuffer* vertexBuffer) {
 		glBindVertexArray(_id);
 		vertexBuffer->Bind();
-		int index = 0;
 		for (const auto& element : vertexBuffer->GetLayout()) {
-			glEnableVertexAttribArray(index);
-			if (element._Type == ShaderDataType::Int2) {
-				glVertexAttribIPointer(index,
-					element.GetComponentCount(),
-					ShaderDataTypeToOpenGLBaseType(element._Type),
-					vertexBuffer->GetLayout().GetStride(),
-					(const void*)element._Offset);
-				index++;
-			}
-			else {
-				glVertexAttribPointer(index,
+			glEnableVertexAttribArray(_numVertAttribs);
+			
+				
+			
+			
+				glVertexAttribPointer(_numVertAttribs,
 					element.GetComponentCount(),
 					ShaderDataTypeToOpenGLBaseType(element._Type),
 					element._Normalized ? GL_TRUE : GL_FALSE,
 					vertexBuffer->GetLayout().GetStride(),
 					(const void*)element._Offset);
-				index++;
-			}
+				_numVertAttribs++;
+			
 			
 		}
 		_VertexBuffers.push_back(vertexBuffer);

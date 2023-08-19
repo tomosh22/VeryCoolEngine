@@ -39,6 +39,20 @@ namespace VeryCoolEngine {
 		RenderCommand::DrawIndexed(vertexArray);
 	}
 
+	void Renderer::SubmitMeshInstanced(Mesh* mesh, unsigned int count) {
+		mesh->GetShader()->Bind();
+
+		_spRenderer->BindViewProjMat(mesh->GetShader());
+
+
+
+		mesh->GetTexture()->BindToShader(mesh->GetShader(), "diffuseTex", 0);//#todo how to determine bind point
+		//mesh->GetBumpMap()->BindToShader(mesh->GetShader(), "bumpMap", 1);//#todo how to determine bind point
+		VertexArray* vertexArray = mesh->GetVertexArray();
+		vertexArray->Bind();
+		RenderCommand::DrawIndexedInstanced(vertexArray,count);
+	}
+
 	void Renderer::SubmitSkybox(Shader* shader, Camera* camera, TextureCube* cubemap)
 	{
 		shader->Bind();
@@ -70,10 +84,10 @@ namespace VeryCoolEngine {
 
 		//app->_pMesh = Mesh::GenerateHeightmap(100, 100);
 		for (Shader* shader : app->_shaders) shader->ReloadShader();
-
+		app->_pMesh->PlatformInit();
+		app->_pMesh->GetTexture()->PlatformInit();
 		for (Mesh* mesh : app->_meshes) {
 			mesh->PlatformInit();
-			mesh->GetShader()->ReloadShader();
 
 			mesh->GetTexture()->PlatformInit();
 			//mesh->GetBumpMap()->PlatformInit();

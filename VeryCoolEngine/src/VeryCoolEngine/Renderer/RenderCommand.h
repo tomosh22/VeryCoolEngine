@@ -14,6 +14,9 @@ namespace VeryCoolEngine {
 		static void DrawIndexed(VertexArray* vertexArray) {
 			_spRenderer->DrawIndexed(vertexArray);
 		}
+		static void DrawIndexedInstanced(VertexArray* vertexArray, unsigned int count) {
+			_spRenderer->DrawIndexedInstanced(vertexArray, count);
+		}
 	private:
 		static Renderer* _spRenderer;
 	};

@@ -31,6 +31,9 @@ namespace VeryCoolEngine {
 
 		std::vector<Mesh*> meshes{};
 
+		Mesh* _pInstancedMesh;
+		unsigned int _numInstances = 0;
+
 		std::vector<Mesh*> instanceMeshes{};
 		std::vector<glm::vec2> instanceData{};
 
@@ -48,6 +51,9 @@ namespace VeryCoolEngine {
 			lights.clear();
 			lights.resize(Renderer::_sMAXLIGHTS);
 			numLights = 0;
+			_numInstances = 0;
+			_pInstancedMesh = nullptr;
+
 		};
 
 	};
@@ -83,7 +89,11 @@ namespace VeryCoolEngine {
 
 		Shader* _pFullscreenShader;
 
-		//Mesh* _pMesh;
+		Mesh* _pMesh;
+		std::vector<glm::mat4> _instanceMats;
+		std::vector<glm::ivec2> _instanceOffsets;
+		unsigned int _numInstances = 0;
+
 		std::vector<Mesh*> _meshes;
 		std::vector<Mesh*> _instanceMeshes;
 		std::vector<Shader*> _shaders;

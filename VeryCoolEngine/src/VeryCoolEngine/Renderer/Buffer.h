@@ -48,8 +48,9 @@ namespace VeryCoolEngine {
 		uint32_t _Size;
 		ShaderDataType _Type;
 		bool _Normalized;
+		bool _Instanced = false;
 
-		BufferElement(ShaderDataType type, const std::string& name, bool normalized = false) : _Name(name), _Type(type), _Size(ShaderDataTypeSize(type)), _Offset(0), _Normalized(normalized) {
+		BufferElement(ShaderDataType type, const std::string& name, bool normalized = false, bool instanced = false) : _Name(name), _Type(type), _Size(ShaderDataTypeSize(type)), _Offset(0), _Normalized(normalized), _Instanced(instanced) {
 			
 		}
 

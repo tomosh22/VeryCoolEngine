@@ -1,5 +1,7 @@
 #include "vcepch.h"
 #include "OpenGLMesh.h"
+#include <glad/glad.h>
+#include "VeryCoolEngine/Application.h"
 
 void VeryCoolEngine::OpenGLMesh::PlatformInit()
 {
@@ -21,12 +23,6 @@ void VeryCoolEngine::OpenGLMesh::PlatformInit()
 	if (tangents != nullptr) {
 		layout.GetElements().push_back({ ShaderDataType::Float4, "_aTangent" });
 		numFloats += 4;
-	}
-	if (instanceData != nullptr) {
-		layout.GetElements().push_back({ instanceDataType, instanceDataName });
-		//#todo do properly
-		numFloats += 2;
-		//numFloats += ShaderDataTypeSize(instanceDataType) / sizeof(float);
 	}
 
 	verts = new float[numVerts * numFloats];
@@ -55,14 +51,6 @@ void VeryCoolEngine::OpenGLMesh::PlatformInit()
 			((float*)verts)[index++] = tangents[i].z;
 			((float*)verts)[index++] = tangents[i].w;
 		}
-		if (instanceData != nullptr) {
-			
-			//#todo do this properly
-			glm::ivec2 val = *((glm::ivec2*)instanceData);
-			((int*)verts)[index++] = val.x;
-			((int*)verts)[index++] = val.y;
-			
-		}
 }
 	
 #if 0
@@ -83,6 +71,55 @@ void VeryCoolEngine::OpenGLMesh::PlatformInit()
 
 	IndexBuffer* indexBuffer = IndexBuffer::Create(indices, numIndices);
 	vertexArray->SetIndexBuffer(indexBuffer);
+
+	//#todo do properly
+#pragma region DoProperly
+
+	Application* app = Application::GetInstance();
+
+	unsigned int mats;
+	glGenBuffers(1, &mats);
+	glBindBuffer(GL_ARRAY_BUFFER, mats);
+	glBufferData(GL_ARRAY_BUFFER, app->_instanceMats.size() * sizeof(glm::mat4), app->_instanceMats.data(), GL_STATIC_DRAW);
+
+
+	vertexArray->Bind();
+	// vertex attributes
+	std::size_t vec4Size = sizeof(glm::vec4);
+
+	glEnableVertexAttribArray(vertexArray->_numVertAttribs);
+	glVertexAttribPointer(vertexArray->_numVertAttribs, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)0);
+	glVertexAttribDivisor(vertexArray->_numVertAttribs++, 1);
+
+	glEnableVertexAttribArray(vertexArray->_numVertAttribs);
+	glVertexAttribPointer(vertexArray->_numVertAttribs, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(1 * vec4Size));
+	glVertexAttribDivisor(vertexArray->_numVertAttribs++, 1);
+
+	glEnableVertexAttribArray(vertexArray->_numVertAttribs);
+	glVertexAttribPointer(vertexArray->_numVertAttribs, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(2 * vec4Size));
+	glVertexAttribDivisor(vertexArray->_numVertAttribs++, 1);
+
+	glEnableVertexAttribArray(vertexArray->_numVertAttribs);
+	glVertexAttribPointer(vertexArray->_numVertAttribs, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(3 * vec4Size));
+	glVertexAttribDivisor(vertexArray->_numVertAttribs++, 1);
+
+	
+	
+
+	unsigned int offsets;
+	glGenBuffers(1, &offsets);
+	glBindBuffer(GL_ARRAY_BUFFER, offsets);
+	glBufferData(GL_ARRAY_BUFFER, app->_instanceOffsets.size() * sizeof(glm::ivec2), app->_instanceOffsets.data(), GL_STATIC_DRAW);
+
+	vertexArray->Bind();
+
+	std::size_t ivec2Size = sizeof(glm::ivec2);
+	glEnableVertexAttribArray(vertexArray->_numVertAttribs);
+	glVertexAttribIPointer(vertexArray->_numVertAttribs, 2, GL_INT, ivec2Size, (void*)0);
+	glVertexAttribDivisor(vertexArray->_numVertAttribs++, 6);
+
+#pragma endregion
+
 
 	vertexArray->Unbind();
 
