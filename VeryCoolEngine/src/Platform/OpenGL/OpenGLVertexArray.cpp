@@ -40,13 +40,13 @@ namespace VeryCoolEngine {
 		glBindVertexArray(_id);
 		vertexBuffer->Bind();
 		for (const BufferElement& element : vertexBuffer->GetLayout()) {
-			//should probably tidy this up so there's no need to branch here, problem is stride is used for non instanced buffers and not for instanced buffers, and offset works differently
+			//#todo should probably tidy this up so there's no need to branch here, problem is stride is used for non instanced buffers and not for instanced buffers, and offset works differently
 			if (instanced) {
 				//can only fit 16 bytes in one attribute slot, anything bigger than this will occupy multiple slots
-				for (size_t i = 0; i <= ShaderDataTypeSize(element._Type) / 16 || i == 0; i++)
+				for (size_t i = 0; i < ShaderDataTypeSize(element._Type) / 16 || i == 0; i++)
 				{
 					glEnableVertexAttribArray(_numVertAttribs);
-					if (element._Type >= ShaderDataType::Int && element._Type <= ShaderDataType::UInt4) { //#todo write utlity function for this (this will be true if the data type is made of integers)
+					if (element._Type >= ShaderDataType::Int && element._Type <= ShaderDataType::UInt4) { //#todo write utility function for this (this will be true if the data type is made of integers)
 						glVertexAttribIPointer(_numVertAttribs,
 							ShaderDataTypeNumElements(element._Type),
 							ShaderDataTypeToOpenGLBaseType(element._Type),
