@@ -15,6 +15,9 @@ Credit Rich Davison
 #include "VeryCoolEngine/Input.h"
 #include "VeryCoolEngine/KeyCodes.h"
 
+#include <limits>
+#include <utility>
+
 namespace VeryCoolEngine {
 	enum class CameraType {
 		Orthographic,
@@ -118,6 +121,6 @@ namespace VeryCoolEngine {
 
 		glm::vec3 position;
 
-		std::pair<double, double> prevMousePos = {std::numeric_limits<float>::max(),0};
+		std::pair<double, double> prevMousePos = { FLT_MAX,0};
 	};
 }

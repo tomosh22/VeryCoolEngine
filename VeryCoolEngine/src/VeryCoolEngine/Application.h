@@ -90,8 +90,6 @@ namespace VeryCoolEngine {
 		Shader* _pFullscreenShader;
 
 		Mesh* _pMesh;
-		std::vector<glm::mat4> _instanceMats;
-		std::vector<glm::ivec2> _instanceOffsets;
 		unsigned int _numInstances = 0;
 
 		std::vector<Mesh*> _meshes;

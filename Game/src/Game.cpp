@@ -1,6 +1,9 @@
 #include "Game.h"
 #include <imgui.h>
 
+
+#include "VeryCoolEngine.h"
+
 namespace VeryCoolEngine {
 
 	const std::unordered_map<Block::BlockType, glm::ivec2> Block::atlasOffsets = {
@@ -35,16 +38,20 @@ namespace VeryCoolEngine {
 		_pMesh->SetShader(_shaders[0]);
 		_pMesh->SetTexture(_textures[0]);
 
-		_blocks.emplace_back(Block({0,0,0}, Block::BlockType::Cobblestone));
-		_blocks.emplace_back(Block({1,0,0}, Block::BlockType::Stone));
-		_blocks.emplace_back(Block({2,0,0}, Block::BlockType::Dirt));
-		_blocks.emplace_back(Block({3,0,0}, Block::BlockType::Grass));
-		_blocks.emplace_back(Block({4,0,0}, Block::BlockType::WoodenPlanks));
-		_blocks.emplace_back(Block({5,0,0}, Block::BlockType::StoneSlab));
-		_blocks.emplace_back(Block({6,0,0}, Block::BlockType::PolishedStone));
-		_blocks.emplace_back(Block({7,0,0}, Block::BlockType::Brick));
-		_blocks.emplace_back(Block({8,0,0}, Block::BlockType::TNT));
-
+		for (int x = 0; x < 16; x++)
+		{
+			for (int y = 0; y < 64; y++)
+			{
+				for (int z = 0; z < 16; z++)
+				{
+					if (rand() % 2)
+						_blocks.emplace_back(Block({ x,y,z }, Block::BlockType::TNT));
+					else _blocks.emplace_back(Block({ x,y,z }, Block::BlockType::Dirt));
+				}
+			}
+		}
+		_pMesh->_instanceData.push_back({ ShaderDataType::Mat4, 1, _instanceMats.data(), (unsigned int)_instanceMats.size()});
+		_pMesh->_instanceData.push_back({ ShaderDataType::Int2,6,_instanceOffsets.data(), (unsigned int)_instanceOffsets.size()});
 
 		_pFullscreenShader = Shader::Create("fullscreen.vert", "fullscreen.frag");
 

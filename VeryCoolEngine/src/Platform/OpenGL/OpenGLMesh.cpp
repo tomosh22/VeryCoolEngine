@@ -72,53 +72,27 @@ void VeryCoolEngine::OpenGLMesh::PlatformInit()
 	IndexBuffer* indexBuffer = IndexBuffer::Create(indices, numIndices);
 	vertexArray->SetIndexBuffer(indexBuffer);
 
-	//#todo do properly
-#pragma region DoProperly
+	//#todo make this part of vertex array
+	for (InstanceData& instanceData : _instanceData) {
+		unsigned int vbo;
+		glGenBuffers(1, &vbo);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, instanceData._numElements * ShaderDataTypeSize(instanceData._type), instanceData._data, GL_STATIC_DRAW);
+		_instanceVBOs.push_back(vbo);
 
-	Application* app = Application::GetInstance();
+		for (size_t i = 0; i < ShaderDataTypeSize(instanceData._type) / 16 || i==0; i++)
+	{
+		glEnableVertexAttribArray(vertexArray->_numVertAttribs);
+		if (instanceData._type >= ShaderDataType::Int && instanceData._type <= ShaderDataType::UInt4) { //#todo write utlity function for this (this will be true if the data type is made of integers)
+			glVertexAttribIPointer(vertexArray->_numVertAttribs, ShaderDataTypeNumElements(instanceData._type), GL_INT, ShaderDataTypeSize(instanceData._type), (void*)(i * 16));//#todo check for unsigned int
+		}
+		else {
+			glVertexAttribPointer(vertexArray->_numVertAttribs, ShaderDataTypeNumElements(instanceData._type), GL_FLOAT, GL_FALSE, ShaderDataTypeSize(instanceData._type), (void*)(i * 16));
+		}
+		glVertexAttribDivisor(vertexArray->_numVertAttribs++, instanceData._divisor);
+	}
+	}
 
-	unsigned int mats;
-	glGenBuffers(1, &mats);
-	glBindBuffer(GL_ARRAY_BUFFER, mats);
-	glBufferData(GL_ARRAY_BUFFER, app->_instanceMats.size() * sizeof(glm::mat4), app->_instanceMats.data(), GL_STATIC_DRAW);
-
-
-	vertexArray->Bind();
-	// vertex attributes
-	std::size_t vec4Size = sizeof(glm::vec4);
-
-	glEnableVertexAttribArray(vertexArray->_numVertAttribs);
-	glVertexAttribPointer(vertexArray->_numVertAttribs, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)0);
-	glVertexAttribDivisor(vertexArray->_numVertAttribs++, 1);
-
-	glEnableVertexAttribArray(vertexArray->_numVertAttribs);
-	glVertexAttribPointer(vertexArray->_numVertAttribs, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(1 * vec4Size));
-	glVertexAttribDivisor(vertexArray->_numVertAttribs++, 1);
-
-	glEnableVertexAttribArray(vertexArray->_numVertAttribs);
-	glVertexAttribPointer(vertexArray->_numVertAttribs, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(2 * vec4Size));
-	glVertexAttribDivisor(vertexArray->_numVertAttribs++, 1);
-
-	glEnableVertexAttribArray(vertexArray->_numVertAttribs);
-	glVertexAttribPointer(vertexArray->_numVertAttribs, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(3 * vec4Size));
-	glVertexAttribDivisor(vertexArray->_numVertAttribs++, 1);
-
-	
-	
-
-	unsigned int offsets;
-	glGenBuffers(1, &offsets);
-	glBindBuffer(GL_ARRAY_BUFFER, offsets);
-	glBufferData(GL_ARRAY_BUFFER, app->_instanceOffsets.size() * sizeof(glm::ivec2), app->_instanceOffsets.data(), GL_STATIC_DRAW);
-
-	vertexArray->Bind();
-
-	std::size_t ivec2Size = sizeof(glm::ivec2);
-	glEnableVertexAttribArray(vertexArray->_numVertAttribs);
-	glVertexAttribIPointer(vertexArray->_numVertAttribs, 2, GL_INT, ivec2Size, (void*)0);
-	glVertexAttribDivisor(vertexArray->_numVertAttribs++, 6);
-
-#pragma endregion
 
 
 	vertexArray->Unbind();

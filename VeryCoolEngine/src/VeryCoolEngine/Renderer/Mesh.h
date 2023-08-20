@@ -8,6 +8,14 @@ namespace VeryCoolEngine {
 		Triangles,
 		TriangleStrips
 	};
+	struct InstanceData {
+	public:
+		InstanceData(ShaderDataType type, unsigned int divisor, void* data, unsigned int numElements) : _type(type),_divisor(divisor),_data(data), _numElements(numElements) {};
+		ShaderDataType _type;
+		unsigned int _divisor;
+		void* _data;
+		unsigned int _numElements;
+	};
 	class Material;//todo implement
 	class Mesh
 	{
@@ -40,9 +48,7 @@ namespace VeryCoolEngine {
 		//#todo how do i want to handle this properly
 		glm::ivec2 customUniform;
 
-		void* instanceData = nullptr;
-		ShaderDataType instanceDataType = ShaderDataType::None;
-		std::string instanceDataName;
+		std::vector<InstanceData> _instanceData;
 
 	protected:
 		VertexArray* _pVertexArray;

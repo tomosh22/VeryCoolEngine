@@ -4,6 +4,7 @@
 namespace VeryCoolEngine {
 	class OpenGLMesh : public Mesh
 	{
+	public:
 		~OpenGLMesh() override {};
 
 		void PlatformInit() override;
@@ -11,6 +12,8 @@ namespace VeryCoolEngine {
 		//void Unbind() const override;
 
 		void SetVertexArray(VertexArray* vertexArray) override { _pVertexArray = vertexArray; }
+
+		std::vector<unsigned int> _instanceVBOs;//#todo make this part of vertex array
 	};
 }
 

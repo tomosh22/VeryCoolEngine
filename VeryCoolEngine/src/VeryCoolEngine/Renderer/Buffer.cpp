@@ -4,6 +4,8 @@
 
 namespace VeryCoolEngine {
 
+
+
 	VertexBuffer* VertexBuffer::Create(void* verts, size_t size) {
 #ifdef VCE_OPENGL
 		return new OpenGLVertexBuffer(verts, size);

@@ -2,7 +2,7 @@
 
 namespace VeryCoolEngine {
 
-
+	
 	enum class ShaderDataType : uint8_t {
 		Float,
 		Float2,
@@ -22,6 +22,27 @@ namespace VeryCoolEngine {
 		None
 	};
 
+	static uint32_t ShaderDataTypeNumElements(ShaderDataType t) {
+		switch (t) {
+		case ShaderDataType::Float: return 1;
+		case ShaderDataType::Float2: return 2;
+		case ShaderDataType::Float3: return 3;
+		case ShaderDataType::Float4: return 4;
+		case ShaderDataType::Int: return 1;
+		case ShaderDataType::Int2: return 2;
+		case ShaderDataType::Int3: return  3;
+		case ShaderDataType::Int4: return  4;
+		case ShaderDataType::UInt: return 1;
+		case ShaderDataType::UInt2: return 2;
+		case ShaderDataType::UInt3: return 3;
+		case ShaderDataType::UInt4: return 4;
+		case ShaderDataType::Mat3: return  3;
+		case ShaderDataType::Mat4: return  4;
+		case ShaderDataType::Bool: return 1;
+		}
+		VCE_ERROR("Trying to calculate number of elements in ShaderDataType::None");
+	}
+
 	static uint32_t ShaderDataTypeSize(ShaderDataType t) {
 		switch (t) {
 		case ShaderDataType::Float: return sizeof(float);
@@ -40,6 +61,7 @@ namespace VeryCoolEngine {
 		case ShaderDataType::Mat4: return sizeof(float) * 4 * 4;
 		case ShaderDataType::Bool: return sizeof(bool);
 		}
+		VCE_ERROR("Trying to calculate size of ShaderDataType::None");
 	}
 
 	struct BufferElement {
