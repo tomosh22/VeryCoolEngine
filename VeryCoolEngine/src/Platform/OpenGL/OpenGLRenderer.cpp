@@ -18,6 +18,7 @@ namespace VeryCoolEngine {
 			const GLchar* message,
 			const void* userParam)
 	{
+		if (severity == GL_DEBUG_SEVERITY_NOTIFICATION)return;
 		fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
 			(type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
 			type, severity, message);
@@ -101,7 +102,6 @@ namespace VeryCoolEngine {
 		_pCameraUBO->UploadData(camData, camDataSize, 1, 0);
 		delete[] camData;
 
-		//VCE_ASSERT((scene->lights[0].color.r == 0.1), "waddafack");
 
 		const uint32_t dataSize = (sizeof(unsigned int)*4) + (sizeof(Light) * scene->lights.size());
 		char* data = new char[dataSize];

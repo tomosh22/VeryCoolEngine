@@ -77,7 +77,7 @@ namespace VeryCoolEngine {
 			GLenum format = GL_RGBA;
 			GLenum internalFormat = GL_RGBA;
 
-			VCE_ASSERT((_pData != nullptr), "couldn't load image");
+			VCE_ASSERT(_pData != nullptr, "couldn't load image");
 
 			_width = width;
 			_height = height;
