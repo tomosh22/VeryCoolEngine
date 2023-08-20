@@ -73,24 +73,23 @@ void VeryCoolEngine::OpenGLMesh::PlatformInit()
 	vertexArray->SetIndexBuffer(indexBuffer);
 
 	//#todo make this part of vertex array
-	for (InstanceData& instanceData : _instanceData) {
-		unsigned int vbo;
-		glGenBuffers(1, &vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, instanceData._numElements * ShaderDataTypeSize(instanceData._type), instanceData._data, GL_STATIC_DRAW);
-		_instanceVBOs.push_back(vbo);
+	for (BufferElement& instanceData : _instanceData) {
 
-		for (size_t i = 0; i < ShaderDataTypeSize(instanceData._type) / 16 || i==0; i++)
-	{
-		glEnableVertexAttribArray(vertexArray->_numVertAttribs);
-		if (instanceData._type >= ShaderDataType::Int && instanceData._type <= ShaderDataType::UInt4) { //#todo write utlity function for this (this will be true if the data type is made of integers)
-			glVertexAttribIPointer(vertexArray->_numVertAttribs, ShaderDataTypeNumElements(instanceData._type), GL_INT, ShaderDataTypeSize(instanceData._type), (void*)(i * 16));//#todo check for unsigned int
-		}
-		else {
-			glVertexAttribPointer(vertexArray->_numVertAttribs, ShaderDataTypeNumElements(instanceData._type), GL_FLOAT, GL_FALSE, ShaderDataTypeSize(instanceData._type), (void*)(i * 16));
-		}
-		glVertexAttribDivisor(vertexArray->_numVertAttribs++, instanceData._divisor);
-	}
+		vertexBuffer = VertexBuffer::Create(instanceData._data, instanceData._numEntries * ShaderDataTypeSize(instanceData._Type));
+
+		BufferLayout layout = {
+		BufferElement(
+			instanceData._Type,
+			instanceData._Name,
+			false,
+			true,
+			instanceData._divisor,
+			instanceData._data,
+			instanceData._numEntries
+		)
+		};
+		vertexBuffer->SetLayout(layout);
+		vertexArray->AddVertexBuffer(vertexBuffer, true);
 	}
 
 

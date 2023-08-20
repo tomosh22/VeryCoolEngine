@@ -50,8 +50,27 @@ namespace VeryCoolEngine {
 				}
 			}
 		}
-		_pMesh->_instanceData.push_back({ ShaderDataType::Mat4, 1, _instanceMats.data(), (unsigned int)_instanceMats.size()});
-		_pMesh->_instanceData.push_back({ ShaderDataType::Int2,6,_instanceOffsets.data(), (unsigned int)_instanceOffsets.size()});
+		_pMesh->_instanceData.push_back(BufferElement (
+			ShaderDataType::Mat4,
+			"_aInstanceMat",
+			false,
+			true,
+			1,
+			_instanceMats.data(),
+			_instanceMats.size()
+			));
+
+		
+
+		_pMesh->_instanceData.push_back(BufferElement(
+			ShaderDataType::Int2,
+			"_aInstanceAtlasOffset",
+			false,
+			true,
+			6,
+			_instanceOffsets.data(),
+			_instanceOffsets.size()
+		));
 
 		_pFullscreenShader = Shader::Create("fullscreen.vert", "fullscreen.frag");
 

@@ -71,8 +71,11 @@ namespace VeryCoolEngine {
 		ShaderDataType _Type;
 		bool _Normalized;
 		bool _Instanced = false;
+		unsigned int _divisor = 0;
+		void* _data = nullptr;
+		unsigned int _numEntries = 0;
 
-		BufferElement(ShaderDataType type, const std::string& name, bool normalized = false, bool instanced = false) : _Name(name), _Type(type), _Size(ShaderDataTypeSize(type)), _Offset(0), _Normalized(normalized), _Instanced(instanced) {
+		BufferElement(ShaderDataType type, const std::string& name, bool normalized = false, bool instanced = false, unsigned int divisor = 0, void* data = nullptr,unsigned int numEntries = 0) : _Name(name), _Type(type), _Size(ShaderDataTypeSize(type)), _Offset(0), _Normalized(normalized), _Instanced(instanced), _divisor(divisor), _data(data), _numEntries(numEntries) {
 			
 		}
 

@@ -48,7 +48,7 @@ namespace VeryCoolEngine {
 		//#todo how do i want to handle this properly
 		glm::ivec2 customUniform;
 
-		std::vector<InstanceData> _instanceData;
+		std::vector<BufferElement> _instanceData;
 
 	protected:
 		VertexArray* _pVertexArray;
