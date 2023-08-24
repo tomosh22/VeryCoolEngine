@@ -159,17 +159,17 @@ namespace VeryCoolEngine {
 		_spRenderer->GenericInit();
 
 		
-
+		printf("setting render init true");
 		app->renderInitialised = true;
 		while (app->_running) {
 			std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 			
 			Scene* scene = app->scene;
-			while (!scene->ready) { 
-				//std::cout << "waiting for main thread" << std::endl;
+
+			while (true) { 
+				printf(__FUNCTION__);
+				if (scene->ready)break;//#todo implement mutex here
 			}
-			
-			
 
 			RenderCommand::SetClearColor({ 0.6, 0.2, 0.4, 1 });
 			RenderCommand::Clear();

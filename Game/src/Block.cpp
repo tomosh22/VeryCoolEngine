@@ -3,7 +3,7 @@
 
 namespace VeryCoolEngine {
 
-	Block::Block(const glm::vec3& position, BlockType type) : _blockType(type) {
+	Block::Block(const glm::ivec3& position, BlockType type) : _blockType(type) {
 
 		Game* app = (Game*)Application::GetInstance();
 

@@ -28,7 +28,7 @@ namespace VeryCoolEngine {
 		bool GetVSyncEnabled() const override;
 		virtual void Init(const WindowProperties& p);
 	private:
-		GLFWwindow* _pWindow;
+		GLFWwindow* _pWindow = nullptr;
 		struct WindowData {
 			unsigned int _width, _height;
 			std::string _title;

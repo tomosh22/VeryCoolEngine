@@ -38,47 +38,16 @@ namespace VeryCoolEngine {
 		_pMesh->SetShader(_shaders[0]);
 		_pMesh->SetTexture(_textures[0]);
 
-		Chunk chunk = _chunk;
-		for (int x = 0; x < 16; x++)
+		for (size_t x = 0; x < 5; x++)
 		{
-			for (int y = 0; y < 256; y++)
+			for (size_t z = 0; z < 5; z++)
 			{
-				for (int z = 0; z < 16; z++)
-				{
-					Block block = chunk._blocks[x][y][z];
-					if (x == 15) {
-						_instanceMats.push_back(block.posX._matrix);
-						_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
-						_numInstances++;
-					}
-					if (x == 0) {
-						_instanceMats.push_back(block.negX._matrix);
-						_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
-						_numInstances++;
-					}
-					if (y == 255) {
-						_instanceMats.push_back(block.posY._matrix);
-						_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
-						_numInstances++;
-					}
-					if (y == 0) {
-						_instanceMats.push_back(block.negY._matrix);
-						_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
-						_numInstances++;
-					}
-					if (z == 15) {
-						_instanceMats.push_back(block.posZ._matrix);
-						_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
-						_numInstances++;
-					}
-					if (z == 0) {
-						_instanceMats.push_back(block.negZ._matrix);
-						_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
-						_numInstances++;
-					}
-				}
+				_chunks.emplace_back(Chunk({ x,0,z }));
 			}
 		}
+
+		for(Chunk& chunk : _chunks) chunk.UploadVisibleFaces();
+		
 		_pMesh->_instanceData.push_back(BufferElement (
 			ShaderDataType::Mat4,
 			"_aInstanceMat",

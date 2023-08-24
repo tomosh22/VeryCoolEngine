@@ -17,6 +17,7 @@ namespace VeryCoolEngine {
 
 	void WindowsWindow::Init(const WindowProperties& p) {
 		
+		std::cout << "hello\n";
 
 		_data._title = p._title;
 		_data._width = p._width;
@@ -24,7 +25,8 @@ namespace VeryCoolEngine {
 
 		VCE_CORE_INFO("Creating window {0} ({1},{2})", p._title, p._width, p._height);
 		if (!glfwInititliazed) {
-			VCE_CORE_ASSERT(glfwInit() == GLFW_TRUE, "failed to init glfw");
+			int glfwinit = glfwInit();
+			VCE_CORE_ASSERT(glfwinit == GLFW_TRUE, "failed to init glfw");
 			glfwSetErrorCallback([](int error, const char* desc) {VCE_CORE_ERROR("glfw error {0} {1}",error,desc); });
 			glfwInititliazed = true;
 		}

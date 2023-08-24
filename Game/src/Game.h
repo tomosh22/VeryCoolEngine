@@ -14,7 +14,7 @@ namespace VeryCoolEngine {
 		Game();
 		~Game();
 
-		Chunk _chunk;
+		std::vector<Chunk> _chunks;
 
 		std::vector<Block> _blocks;
 		std::vector<glm::mat4> _instanceMats;

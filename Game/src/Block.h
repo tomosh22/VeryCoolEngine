@@ -20,7 +20,7 @@ namespace VeryCoolEngine {
 		};
 		static const std::unordered_map<BlockType, glm::ivec2> atlasOffsets;
 		Block() = default;
-		Block(const glm::vec3& position, BlockType type);
+		Block(const glm::ivec3& position, BlockType type);
 		
 		BlockType _blockType;
 

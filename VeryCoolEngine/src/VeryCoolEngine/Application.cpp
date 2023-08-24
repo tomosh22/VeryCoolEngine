@@ -31,7 +31,11 @@ namespace VeryCoolEngine {
 		_pRenderer = Renderer::Create();
 		
 		_renderThread = std::thread([&]() {
-			while (!_renderThreadCanStart) {}
+			int temp = 0;
+			while (true) {
+				printf(__FUNCTION__);
+				if (_renderThreadCanStart)break;//#todo implement mutex here
+			}
 			_pRenderer->InitWindow();
 			_pRenderer->RenderThreadFunction();
 		});
@@ -101,7 +105,10 @@ namespace VeryCoolEngine {
 
 
 	void Application::Run() {
-		while (!renderInitialised) {}
+		while (true) { 
+			printf(__FUNCTION__);
+			if (renderInitialised)break;//#todo implement mutex here
+		}
 		while (_running) {
 			std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 			mainThreadReady = true;
