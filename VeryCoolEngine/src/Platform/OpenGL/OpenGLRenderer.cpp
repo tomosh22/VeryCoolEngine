@@ -166,6 +166,7 @@ namespace VeryCoolEngine {
 			
 			Scene* scene = app->scene;
 
+
 			while (true) { 
 				printf(__FUNCTION__);
 				if (scene->ready)break;//#todo implement mutex here
