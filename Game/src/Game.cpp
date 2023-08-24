@@ -38,15 +38,44 @@ namespace VeryCoolEngine {
 		_pMesh->SetShader(_shaders[0]);
 		_pMesh->SetTexture(_textures[0]);
 
+		Chunk chunk = _chunk;
 		for (int x = 0; x < 16; x++)
 		{
-			for (int y = 0; y < 64; y++)
+			for (int y = 0; y < 256; y++)
 			{
 				for (int z = 0; z < 16; z++)
 				{
-					if (rand() % 2)
-						_blocks.emplace_back(Block({ x,y,z }, Block::BlockType::TNT));
-					else _blocks.emplace_back(Block({ x,y,z }, Block::BlockType::Dirt));
+					Block block = chunk._blocks[x][y][z];
+					if (x == 15) {
+						_instanceMats.push_back(block.posX._matrix);
+						_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
+						_numInstances++;
+					}
+					if (x == 0) {
+						_instanceMats.push_back(block.negX._matrix);
+						_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
+						_numInstances++;
+					}
+					if (y == 255) {
+						_instanceMats.push_back(block.posY._matrix);
+						_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
+						_numInstances++;
+					}
+					if (y == 0) {
+						_instanceMats.push_back(block.negY._matrix);
+						_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
+						_numInstances++;
+					}
+					if (z == 15) {
+						_instanceMats.push_back(block.posZ._matrix);
+						_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
+						_numInstances++;
+					}
+					if (z == 0) {
+						_instanceMats.push_back(block.negZ._matrix);
+						_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
+						_numInstances++;
+					}
 				}
 			}
 		}
@@ -67,7 +96,7 @@ namespace VeryCoolEngine {
 			"_aInstanceAtlasOffset",
 			false,
 			true,
-			6,
+			1,
 			_instanceOffsets.data(),
 			_instanceOffsets.size()
 		));

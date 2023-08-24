@@ -3,6 +3,7 @@
 #include "VeryCoolEngine/Application.h"
 #include <glm/glm.hpp>
 #include "Block.h"
+#include "Chunk.h"
 
 namespace VeryCoolEngine {
 
@@ -12,6 +13,8 @@ namespace VeryCoolEngine {
 	public:
 		Game();
 		~Game();
+
+		Chunk _chunk;
 
 		std::vector<Block> _blocks;
 		std::vector<glm::mat4> _instanceMats;
