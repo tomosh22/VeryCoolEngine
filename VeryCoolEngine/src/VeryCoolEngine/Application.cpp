@@ -25,7 +25,7 @@ namespace VeryCoolEngine {
 		_window = Window::Create();
 		std::function callback = [this](Event& e) {OnEvent(e); };
 		_window->SetEventCallback(callback);
-		//_window->SetVSync(true);
+		_window->SetVSync(true);
 		
 		//_window->SetVSync(true);
 		_pRenderer = Renderer::Create();

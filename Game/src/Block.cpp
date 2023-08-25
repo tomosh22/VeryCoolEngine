@@ -51,8 +51,6 @@ namespace VeryCoolEngine {
 
 		//app->_instanceOffsets.push_back(atlasOffsets.find(type)->second);
 
-		app->_numInstances += 6;
-
 	}
 }
 
