@@ -38,27 +38,47 @@ namespace VeryCoolEngine {
 		_pMesh->SetShader(_shaders[0]);
 		_pMesh->SetTexture(_textures[0]);
 
-		for (size_t x = 0; x < 5; x++)
+		for (size_t x = 0; x < 1; x++)
 		{
-			for (size_t z = 0; z < 5; z++)
+			for (size_t z = 0; z < 1; z++)
 			{
 				_chunks.emplace_back(Chunk({ x,0,z }));
 			}
 		}
 
 		for(Chunk& chunk : _chunks) chunk.UploadVisibleFaces();
+
+		std::cout << "unique quats " << Transform::uniqueQuats.size() << '\n';
 		
-		_pMesh->_instanceData.push_back(BufferElement (
+		_pMesh->_instanceData.push_back(BufferElement(
 			ShaderDataType::Mat4,
-			"_aInstanceMat",
+			"_aInstancePosition",
 			false,
 			true,
 			1,
 			_instanceMats.data(),
 			_instanceMats.size()
-			));
+		));
 
-		
+		//_pMesh->_instanceData.push_back(BufferElement (
+		//	ShaderDataType::Float4,
+		//	"_aInstanceQuat",
+		//	false,
+		//	true,
+		//	1,
+		//	_instanceQuats.data(),
+		//	_instanceQuats.size()
+		//	));
+
+		_pMesh->_instanceData.push_back(BufferElement(
+			ShaderDataType::Float3,
+			"_aInstancePosition",
+			false,
+			true,
+			1,
+			_instancePositions.data(),
+			_instancePositions.size()
+		));
 
 		_pMesh->_instanceData.push_back(BufferElement(
 			ShaderDataType::Int2,

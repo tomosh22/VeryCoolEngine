@@ -18,6 +18,8 @@ namespace VeryCoolEngine {
 
 		std::vector<Block> _blocks;
 		std::vector<glm::mat4> _instanceMats;
+		std::vector<glm::quat> _instanceQuats;
+		std::vector<glm::vec3> _instancePositions;
 		std::vector<glm::ivec2> _instanceOffsets;
 	};
 

@@ -3,6 +3,8 @@
  
 namespace VeryCoolEngine {
 
+	std::vector<glm::quat> Transform::uniqueQuats;
+
 	inline void Transform::UpdateMatrix() {
 		glm::mat4 trans = glm::translate(glm::identity<glm::mat4>(), _position);
 		glm::mat4 rotation = RotationMatFromQuat(_rotationQuat);
@@ -12,7 +14,8 @@ namespace VeryCoolEngine {
 	}
 	void Transform::UpdateRotation()
 	{
-		if (_prevRoll != _roll || _prevYaw != _yaw || _prevPitch != _pitch) _rotationQuat = EulerAnglesToQuat(_roll, _yaw, _pitch);
+		//#todo remove or true
+		if (_prevRoll != _roll || _prevYaw != _yaw || _prevPitch != _pitch || true) _rotationQuat = EulerAnglesToQuat(_roll, _yaw, _pitch);
 		_prevRoll = _roll;
 		_prevYaw = _yaw;
 		_prevPitch = _pitch;
@@ -92,6 +95,7 @@ namespace VeryCoolEngine {
 	glm::quat Transform::EulerAnglesToQuat(float roll, float yaw, float pitch)
 	{
 		float cos1 = (float)cos(glm::radians(yaw * 0.5f));
+		if (yaw == 180) cos1 = 0;//#todo is this necessary?
 		float cos2 = (float)cos(glm::radians(pitch * 0.5f));
 		float cos3 = (float)cos(glm::radians(roll * 0.5f));
 
@@ -106,6 +110,11 @@ namespace VeryCoolEngine {
 		q.z = (cos1 * sin2 * cos3) - (sin1 * cos2 * sin3);
 		q.w = (cos1 * cos2 * cos3) - (sin1 * sin2 * sin3);
 
+		bool found = false;
+		for (glm::quat quat : Transform::uniqueQuats) {
+			if (quat == q)found = true;
+		}
+		if(!found)uniqueQuats.push_back(q);
 		return q;
 	}
 }
