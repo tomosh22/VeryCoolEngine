@@ -51,24 +51,15 @@ namespace VeryCoolEngine {
 		std::cout << "unique quats " << Transform::uniqueQuats.size() << '\n';
 		
 		_pMesh->_instanceData.push_back(BufferElement(
-			ShaderDataType::Mat4,
-			"_aInstancePosition",
+			ShaderDataType::Float4,
+			"_aInstanceQuat",
 			false,
 			true,
 			1,
-			_instanceMats.data(),
-			_instanceMats.size()
+			_instanceQuats.data(),
+			_instanceQuats.size()
 		));
-
-		//_pMesh->_instanceData.push_back(BufferElement (
-		//	ShaderDataType::Float4,
-		//	"_aInstanceQuat",
-		//	false,
-		//	true,
-		//	1,
-		//	_instanceQuats.data(),
-		//	_instanceQuats.size()
-		//	));
+		
 
 		_pMesh->_instanceData.push_back(BufferElement(
 			ShaderDataType::Float3,

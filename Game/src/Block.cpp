@@ -22,14 +22,14 @@ namespace VeryCoolEngine {
 		negX.UpdateMatrix();
 		//app->_instanceMats.push_back(negX._matrix);
 
-		posY._roll = 270;
+		posY._pitch = 270;
 		posY._position = position;
 		posY._position.y -= 0.5;
 		posY.UpdateRotation();
 		posY.UpdateMatrix();
 		//app->_instanceMats.push_back(posY._matrix);
 
-		negY._roll = 90;
+		negY._pitch = 90;
 		negY._position = position;
 		negY._position.y += 0.5;
 		negY.UpdateRotation();

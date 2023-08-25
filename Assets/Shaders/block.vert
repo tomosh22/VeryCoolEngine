@@ -2,9 +2,9 @@
 
 layout(location = 0) in vec3 _aPosition;
 layout(location = 1) in vec2 _aUV;
-layout(location = 2) in mat4 _aInstanceMat;
-layout(location = 6) in vec3 _aInstancePosition;
-layout(location = 7) in ivec2 _aInstanceAtlasOffset;
+layout(location = 2) in vec4 _aInstanceQuat;
+layout(location = 3) in vec3 _aInstancePosition;
+layout(location = 4) in ivec2 _aInstanceAtlasOffset;
 
 uniform mat4 _uModelMat;
 
@@ -23,53 +23,20 @@ out vec3 Binormal;
 out flat ivec2 AtlasOffset;
 
 vec3 RotateVertex(vec3 vertex, vec4 quat) {
-    //vec3 qvec = quaternion.xyz;
-    //float qscalar = quaternion.w;
-    //
-    //vec3 uv = cross(qvec, vertex) + qscalar * vertex;
-    //uv += cross(qvec, uv) * 2.0;
-    //
-    //return uv;
-
-	mat4 mat;
-	float yy = quat.y * quat.y;
-	float zz = quat.z * quat.z;
-	float xy = quat.x * quat.y;
-	float zw = quat.z * quat.w;
-	float xz = quat.x * quat.z;
-	float yw = quat.y * quat.w;
-	float xx = quat.x * quat.x;
-	float yz = quat.y * quat.z;
-	float xw = quat.x * quat.w;
-
-	mat[0][0] = 1 - 2 * yy - 2 * zz;
-	mat[0][1] = 2 * xy + 2 * zw;
-	mat[0][2] = 2 * xz - 2 * yw;
-
-	mat[1][0] = 2 * xy - 2 * zw;
-	mat[1][1] = 1 - 2 * xx - 2 * zz;
-	mat[1][2] = 2 * yz + 2 * xw;
-
-	mat[2][0] = 2 * xz + 2 * yw;
-	mat[2][1] = 2 * yz - 2 * xw;
-	mat[2][2] = 1 - 2 * xx - 2 * yy;
-
-	mat[0][3] = 0;
-	mat[1][3] = 0;
-	mat[2][3] = 0;
-	mat[3][3] = 1;
-
-	mat[3][0] = 0;
-	mat[3][1] = 0;
-	mat[3][2] = 0;
-
-	return (mat * vec4(vertex,1)).xyz;
+	return vertex + 2.0 * cross(quat.xyz, cross(quat.xyz, vertex) + quat.w * vertex);
+    vec3 qvec = quat.xyz;
+    float qscalar = quat.w;
+    
+    vec3 uv = cross(qvec, vertex) + qscalar * vertex;
+    uv += cross(qvec, uv) * 2.0;
+    
+    return uv;
 }
 
 void main(){
 	//WorldPos = (_aInstanceMat * vec4(_aPosition,1)).xyz;
 	WorldPos = _aPosition;
-	WorldPos = (_aInstanceMat * vec4(WorldPos,1)).xyz;
+	WorldPos = RotateVertex(WorldPos, _aInstanceQuat.wzyx);
 	WorldPos = _aInstancePosition + WorldPos;
 	//WorldPos = RotateVertex(WorldPos, _aInstanceQuat);
 	UV = _aUV;

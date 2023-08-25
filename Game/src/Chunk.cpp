@@ -33,7 +33,7 @@ namespace VeryCoolEngine {
 	void Chunk::UploadFace(const Transform& trans, Block::BlockType type) {
 		Game* game = (Game*)Application::GetInstance();
 
-		//game->_instanceQuats.push_back(trans._rotationQuat);
+		game->_instanceQuats.push_back(trans._rotationQuat);
 		game->_instanceMats.push_back(Transform::RotationMatFromQuat(trans._rotationQuat));
 		game->_instancePositions.push_back(trans._position);
 		game->_instanceOffsets.push_back(Block::atlasOffsets.find(type)->second);
