@@ -8,6 +8,7 @@ namespace VeryCoolEngine {
 	class Block {
 	public:
 		enum class BlockType {
+			Air,
 			Cobblestone,
 			Stone,
 			Dirt,

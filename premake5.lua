@@ -107,6 +107,7 @@ project "Game"
 		"VeryCoolEngine/vendor/glm",
 		"VeryCoolEngine/vendor/Glad/include",
 		"%{prj.name}/vendor/stb",
+		"Game/vendor/PerlinNoise",
 
 	}
 
