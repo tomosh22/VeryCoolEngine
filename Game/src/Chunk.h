@@ -11,6 +11,7 @@ namespace VeryCoolEngine {
 		~Chunk() = default;
 
 		void UploadVisibleFaces();
+		void UploadFace(const Transform& trans, Block::BlockType type);
 
 		Block*** _blocks;//xyz
 

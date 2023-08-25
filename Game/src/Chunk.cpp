@@ -29,6 +29,14 @@ namespace VeryCoolEngine {
 			}
 		}
 	}
+
+	void Chunk::UploadFace(const Transform& trans, Block::BlockType type) {
+		Game* game = (Game*)Application::GetInstance();
+
+		game->_instanceMats.push_back(trans._matrix);
+		game->_instanceOffsets.push_back(Block::atlasOffsets.find(type)->second);
+		game->_numInstances++;
+	}
 	
 	void Chunk::UploadVisibleFaces()
 	{
@@ -43,34 +51,22 @@ namespace VeryCoolEngine {
 				{
 					Block block = _blocks[x][y][z];
 					if (x == 15) {
-						game->_instanceMats.push_back(block.posX._matrix);
-						game->_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
-						game->_numInstances++;
+						UploadFace(block.posX, block._blockType);
 					}
 					if (x == 0) {
-						game->_instanceMats.push_back(block.negX._matrix);
-						game->_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
-						game->_numInstances++;
+						UploadFace(block.negX, block._blockType);
 					}
 					if (y == 255) {
-						game->_instanceMats.push_back(block.posY._matrix);
-						game->_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
-						game->_numInstances++;
+						UploadFace(block.posY, block._blockType);
 					}
 					if (y == 0) {
-						game->_instanceMats.push_back(block.negY._matrix);
-						game->_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
-						game->_numInstances++;
+						UploadFace(block.negY, block._blockType);
 					}
 					if (z == 15) {
-						game->_instanceMats.push_back(block.posZ._matrix);
-						game->_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
-						game->_numInstances++;
+						UploadFace(block.posZ, block._blockType);
 					}
 					if (z == 0) {
-						game->_instanceMats.push_back(block.negZ._matrix);
-						game->_instanceOffsets.push_back(Block::atlasOffsets.find(block._blockType)->second);
-						game->_numInstances++;
+						UploadFace(block.negZ, block._blockType);
 					}
 				}
 			}
