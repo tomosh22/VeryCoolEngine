@@ -38,15 +38,31 @@ namespace VeryCoolEngine {
 		_pMesh->SetShader(_shaders[0]);
 		_pMesh->SetTexture(_textures[0]);
 
-		for (size_t x = 0; x < 10; x++)
+		int maxX = 10;
+		int maxZ = 10;
+		std::vector<std::thread> threads;
+
+		Chunk* pChunks = (Chunk*)malloc(sizeof(Chunk) * maxX * maxZ);
+
+		for (size_t x = 0; x < maxX; x++)
 		{
-			for (size_t z = 0; z < 10; z++)
+			for (size_t z = 0; z < maxZ; z++)
 			{
-				_chunks.emplace_back(Chunk({ x,0,z }));
+				int index = (maxZ * x + z);
+				Chunk* chunk = pChunks + index;
+				auto func = [](Chunk* chunk, int x, int z) {
+					*chunk = Chunk({ x,0,z });
+				};
+				threads.emplace_back(std::thread(func, chunk,x,z));
 			}
 		}
-
-		for(Chunk& chunk : _chunks) chunk.UploadVisibleFaces();
+		for (std::thread& thread : threads) thread.join();
+		for (size_t i = 0; i < maxX * maxZ; i++)
+		{	
+			Chunk chunk = pChunks[i];
+			chunk.UploadVisibleFaces();
+			free((Chunk*)&chunk);
+		}
 
 		std::cout << "unique quats " << Transform::uniqueQuats.size() << '\n';
 		
