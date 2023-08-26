@@ -69,6 +69,6 @@ void main(){
 	atlasUV += AtlasOffset * 1./16.;
 
 	_oColor = texture2D(diffuseTex,atlasUV);
-	if(AtlasOffset == ivec2(0,0)) _oColor *= vec4(0.3,1,0.3,1);
+	if(AtlasOffset == ivec2(0,0)) _oColor *= vec4(0.5,1,0.5,1);
 	//_oColor = vec4(UV,0,1);
 }

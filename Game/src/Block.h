@@ -76,12 +76,14 @@ namespace VeryCoolEngine {
 		
 		BlockType _blockType;
 
-		Transform posX;
-		Transform negX;
-		Transform posY;
-		Transform negY;
-		Transform posZ;
-		Transform negZ;
+		glm::ivec3 _position;
+
+		//Transform posX;
+		//Transform negX;
+		//Transform posY;
+		//Transform negY;
+		//Transform posZ;
+		//Transform negZ;
 	};
 
 }

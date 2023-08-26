@@ -11,7 +11,8 @@ namespace VeryCoolEngine {
 		~Chunk() = default;
 
 		void UploadVisibleFaces();
-		void UploadFace(const Transform& trans, Block::BlockType blockType, Block::Side side);
+		static void UploadFace(Block block, Block::Side side);
+		static Transform GetTransformForSide(Block::Side side, const glm::ivec3& position);
 
 		//#todo this is a bit lazy
 		bool ShouldUploadRight(const Block& block, int x, int y, int z);

@@ -114,7 +114,6 @@ namespace VeryCoolEngine {
 		for (glm::quat quat : Transform::uniqueQuats) {
 			if (quat == q)found = true;
 		}
-		if(!found)uniqueQuats.push_back(q);
 		return q;
 	}
 }
