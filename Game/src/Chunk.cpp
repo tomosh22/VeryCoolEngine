@@ -40,14 +40,17 @@ namespace VeryCoolEngine {
 		int baseStoneLevel = 48;
 		int freq = 16;
 		int amp = 10;
-		float seed = rand();
+		float seed = 345349608;
 
 		//#todo can probably do all this in the above 3 deep loop
 		for (int x = 0; x < 16; x++)
 		{
 			for (int z = 0; z < 16; z++)
 			{
-				int surfaceLevel = waterLevel + db::perlin((float)z / freq, (float)x / freq, seed) * amp;
+				int chunkX = _chunkPos.x * 16 + x;
+				int chunkZ = _chunkPos.z * 16 + z;
+
+				int surfaceLevel = waterLevel + db::perlin((float)chunkZ / freq, (float)chunkX / freq, seed) * amp;
 				for (int y = 0; y < surfaceLevel; y++)
 				{
 					glm::ivec3 blockPos = {
@@ -71,7 +74,9 @@ namespace VeryCoolEngine {
 		{
 			for (int z = 0; z < 16; z++)
 			{
-				int rockLevel = baseStoneLevel + db::perlin((float)z / freq, (float)x / freq, seed) * amp;
+				int chunkX = _chunkPos.x * 16 + x;
+				int chunkZ = _chunkPos.z * 16 + z;
+				int rockLevel = baseStoneLevel + db::perlin((float)chunkZ / freq, (float)chunkX / freq, seed + rand() * 10) * amp;
 				for (int y = 0; y < rockLevel; y++)
 				{
 					glm::ivec3 blockPos = {
@@ -86,13 +91,16 @@ namespace VeryCoolEngine {
 
 	}
 
-	void Chunk::UploadFace(const Transform& trans, Block::BlockType type) {
+	void Chunk::UploadFace(const Transform& trans, Block::BlockType blockType, Block::Side side){
 		Game* game = (Game*)Application::GetInstance();
 
 		game->_instanceQuats.push_back(trans._rotationQuat);
 		game->_instanceMats.push_back(Transform::RotationMatFromQuat(trans._rotationQuat));
 		game->_instancePositions.push_back(trans._position);
-		game->_instanceOffsets.push_back(Block::atlasOffsets.find(type)->second);
+
+		Block::FaceType faceType = Block::BlockToFace(blockType, side);
+
+		game->_instanceOffsets.push_back(Block::atlasOffsets.find(faceType)->second);
 		game->_numInstances++;
 	}
 
@@ -143,12 +151,15 @@ namespace VeryCoolEngine {
 					//air doesn't have any faces
 					if (block._blockType == Block::BlockType::Air)continue;
 
-					if (ShouldUploadRight(block, x, y, z)) UploadFace(block.posX, block._blockType);
-					if (ShouldUploadLeft(block, x, y, z)) UploadFace(block.negX, block._blockType);
-					if (ShouldUploadTop(block,x,y,z)) UploadFace(block.posY, block._blockType);
-					if (ShouldUploadBottom(block, x, y, z)) UploadFace(block.negY, block._blockType);
-					if (ShouldUploadFront(block, x, y, z)) UploadFace(block.posZ, block._blockType);
-					if (ShouldUploadBack(block, x, y, z)) UploadFace(block.negZ, block._blockType);
+					if (ShouldUploadRight(block, x, y, z)) UploadFace(block.posX, block._blockType, Block::Side::Right);
+					if (ShouldUploadLeft(block, x, y, z)) UploadFace(block.negX, block._blockType, Block::Side::Left);
+					if (ShouldUploadTop(block, x, y, z)) {
+						if(block._blockType == Block::BlockType::Grass)
+						UploadFace(block.posY, block._blockType, Block::Side::Top);
+					}
+					if (ShouldUploadBottom(block, x, y, z)) UploadFace(block.negY, block._blockType, Block::Side::Bottom);
+					if (ShouldUploadFront(block, x, y, z)) UploadFace(block.posZ, block._blockType, Block::Side::Front);
+					if (ShouldUploadBack(block, x, y, z)) UploadFace(block.negZ, block._blockType, Block::Side::Back);
 				}
 			}
 		}

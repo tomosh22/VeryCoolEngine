@@ -6,16 +6,16 @@
 
 namespace VeryCoolEngine {
 
-	const std::unordered_map<Block::BlockType, glm::ivec2> Block::atlasOffsets = {
-		{ Block::BlockType::Cobblestone, {0,0} },
-		{ Block::BlockType::Stone, {1,0} },
-		{ Block::BlockType::Dirt, {2,0} },
-		{ Block::BlockType::Grass, {3,0} },
-		{ Block::BlockType::WoodenPlanks, {4,0} },
-		{ Block::BlockType::StoneSlab, {5,0} },
-		{ Block::BlockType::PolishedStone, {6,0} },
-		{ Block::BlockType::Brick, {7,0} },
-		{ Block::BlockType::TNT, {8,0} },
+	const std::unordered_map<Block::FaceType, glm::ivec2> Block::atlasOffsets = {
+		{ Block::FaceType::GrassFull, {0,0} },
+		{ Block::FaceType::Stone, {1,0} },
+		{ Block::FaceType::Dirt, {2,0} },
+		{ Block::FaceType::GrassSide, {3,0} },
+		{ Block::FaceType::WoodenPlanks, {4,0} },
+		{ Block::FaceType::StoneSlab, {5,0} },
+		{ Block::FaceType::PolishedStone, {6,0} },
+		{ Block::FaceType::Brick, {7,0} },
+		{ Block::FaceType::TNT, {8,0} },
 	};
 
 	Game::Game() {
@@ -38,9 +38,9 @@ namespace VeryCoolEngine {
 		_pMesh->SetShader(_shaders[0]);
 		_pMesh->SetTexture(_textures[0]);
 
-		for (size_t x = 0; x < 1; x++)
+		for (size_t x = 0; x < 10; x++)
 		{
-			for (size_t z = 0; z < 1; z++)
+			for (size_t z = 0; z < 10; z++)
 			{
 				_chunks.emplace_back(Chunk({ x,0,z }));
 			}
