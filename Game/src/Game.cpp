@@ -38,7 +38,7 @@ namespace VeryCoolEngine {
 		_pMesh->SetShader(_shaders[0]);
 		_pMesh->SetTexture(_textures[0]);
 
-		constexpr int maxX = 10, maxZ = 10;
+		constexpr int maxX = 15, maxZ = 15;
 		std::thread threads[maxX * maxZ];
 		Chunk* pChunks = (Chunk*)malloc(sizeof(Chunk) * maxX * maxZ);
 
@@ -58,7 +58,16 @@ namespace VeryCoolEngine {
 			threads[i].join();
 			Chunk chunk = pChunks[i];
 			chunk.UploadVisibleFaces();
-			//#todo delete blocks (currently a huge memory leak)
+			for (int x = 0; x < 16; x++)
+			{
+				for (int y = 0; y < 256; y++)
+				{
+					delete[] chunk._blocks[x][y];
+					
+				}
+				delete[] chunk._blocks[x];
+			}
+			delete[] chunk._blocks;
 		}
 		free(pChunks);
 
