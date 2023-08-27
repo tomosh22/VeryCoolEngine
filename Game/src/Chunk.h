@@ -6,12 +6,15 @@ namespace VeryCoolEngine {
 	class Chunk
 	{
 	public:
+
+		static glm::ivec3 _chunkSize;
+
 		Chunk() = default;
 		Chunk(const glm::ivec3 pos);
 		~Chunk() = default;
 
 		void UploadVisibleFaces();
-		static void UploadFace(Block block, Block::Side side);
+		void UploadFace(Block block, Block::Side side, int x, int y, int z);
 		static Transform GetTransformForSide(Block::Side side, const glm::ivec3& position);
 
 		//#todo this is a bit lazy
@@ -21,6 +24,12 @@ namespace VeryCoolEngine {
 		bool ShouldUploadBottom(const Block& block, int x, int y, int z);
 		bool ShouldUploadFront(const Block& block, int x, int y, int z);
 		bool ShouldUploadBack(const Block& block, int x, int y, int z);
+
+		glm::ivec4 GetAOValuesTop(const Block& block, int x, int y, int z);
+		glm::ivec4 GetAOValuesFront(const Block& block, int x, int y, int z);
+		glm::ivec4 GetAOValuesRight(const Block& block, int x, int y, int z);
+		glm::ivec4 GetAOValuesLeft(const Block& block, int x, int y, int z);
+		glm::ivec4 GetAOValuesBack(const Block& block, int x, int y, int z);
 
 		Block*** _blocks;//xyz
 

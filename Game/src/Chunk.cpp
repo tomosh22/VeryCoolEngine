@@ -6,29 +6,32 @@
 #include <db_perlin.hpp>
 
 namespace VeryCoolEngine {
+
+	glm::ivec3 Chunk::_chunkSize = glm::ivec3(1024, 256, 1024);
+
 	Chunk::Chunk(const glm::ivec3 pos) : _chunkPos(pos)
 	{
-		_blocks = new Block**[16];
+		_blocks = new Block**[Chunk::_chunkSize.x];
 
-		for (int i = 0; i < 16; ++i) {
-			_blocks[i] = new Block * [256];
-			for (int j = 0; j < 256; ++j) {
-				_blocks[i][j] = new Block[16];
+		for (int i = 0; i < Chunk::_chunkSize.x; ++i) {
+			_blocks[i] = new Block * [Chunk::_chunkSize.y];
+			for (int j = 0; j < Chunk::_chunkSize.y; ++j) {
+				_blocks[i][j] = new Block[Chunk::_chunkSize.z];
 			}
 		}
 
 		
 
-		for (int x = 0; x < 16; x++)
+		for (int x = 0; x < Chunk::_chunkSize.x; x++)
 		{
-			for (int y = 0; y < 256; y++)
+			for (int y = 0; y < Chunk::_chunkSize.y; y++)
 			{
-				for (int z = 0; z < 16; z++)
+				for (int z = 0; z < Chunk::_chunkSize.z; z++)
 				{
 					glm::ivec3 blockPos = {
-						_chunkPos.x * 16 + x,
-						_chunkPos.y * 255 + y,//#todo probably dont need to bother with y
-						_chunkPos.z * 16 + z
+						_chunkPos.x * Chunk::_chunkSize.x + x,
+						_chunkPos.y * Chunk::_chunkSize.y + y,//#todo probably dont need to bother with y
+						_chunkPos.z * Chunk::_chunkSize.z + z
 					};
 					_blocks[x][y][z] = Block(blockPos, Block::BlockType::Air);
 				}
@@ -43,46 +46,46 @@ namespace VeryCoolEngine {
 		float seed = 345349608;
 
 		//#todo can probably do all this in the above 3 deep loop
-		for (int x = 0; x < 16; x++)
+		for (int x = 0; x < Chunk::_chunkSize.x; x++)
 		{
-			for (int z = 0; z < 16; z++)
+			for (int z = 0; z < Chunk::_chunkSize.z; z++)
 			{
-				int chunkX = _chunkPos.x * 16 + x;
-				int chunkZ = _chunkPos.z * 16 + z;
+				int chunkX = _chunkPos.x * Chunk::_chunkSize.x + x;
+				int chunkZ = _chunkPos.z * Chunk::_chunkSize.z + z;
 
 				int surfaceLevel = waterLevel + db::perlin((float)chunkZ / freq, (float)chunkX / freq, seed) * amp;
 				for (int y = 0; y < surfaceLevel; y++)
 				{
 					glm::ivec3 blockPos = {
-						   _chunkPos.x * 16 + x,
-						   _chunkPos.y * 255 + y,//#todo probably dont need to bother with y
-						   _chunkPos.z * 16 + z
+						   _chunkPos.x * Chunk::_chunkSize.x + x,
+						   _chunkPos.y * Chunk::_chunkSize.y + y,//#todo probably dont need to bother with y
+						   _chunkPos.z * Chunk::_chunkSize.z + z
 					};
 					_blocks[x][y][z] = Block(blockPos, Block::BlockType::Dirt);
 				}
 				glm::ivec3 blockPos = {
-						   _chunkPos.x * 16 + x,
-						   _chunkPos.y * 255 + surfaceLevel,//#todo probably dont need to bother with y
-						   _chunkPos.z * 16 + z
+						   _chunkPos.x * Chunk::_chunkSize.x + x,
+						   _chunkPos.y * Chunk::_chunkSize.y + surfaceLevel,//#todo probably dont need to bother with y
+						   _chunkPos.z * Chunk::_chunkSize.z + z
 				};
 				_blocks[x][surfaceLevel][z] = Block(blockPos, Block::BlockType::Grass);
 			}
 		}
 
 		//#todo again probably dont need so many loops
-		for (int x = 0; x < 16; x++)
+		for (int x = 0; x < Chunk::_chunkSize.x; x++)
 		{
-			for (int z = 0; z < 16; z++)
+			for (int z = 0; z < Chunk::_chunkSize.z; z++)
 			{
-				int chunkX = _chunkPos.x * 16 + x;
-				int chunkZ = _chunkPos.z * 16 + z;
+				int chunkX = _chunkPos.x * Chunk::_chunkSize.x + x;
+				int chunkZ = _chunkPos.z * Chunk::_chunkSize.z + z;
 				int rockLevel = baseStoneLevel + db::perlin((float)chunkZ / freq, (float)chunkX / freq, seed + rand() * 10) * amp;
 				for (int y = 0; y < rockLevel; y++)
 				{
 					glm::ivec3 blockPos = {
-						   _chunkPos.x * 16 + x,
-						   _chunkPos.y * 255 + y,//#todo probably dont need to bother with y
-						   _chunkPos.z * 16 + z
+						   _chunkPos.x * Chunk::_chunkSize.x + x,
+						   _chunkPos.y * Chunk::_chunkSize.y + y,//#todo probably dont need to bother with y
+						   _chunkPos.z * Chunk::_chunkSize.z + z
 					};
 					_blocks[x][y][z] = Block(blockPos, Block::BlockType::Stone);
 				}
@@ -123,7 +126,7 @@ namespace VeryCoolEngine {
 		return trans;
 	}
 
-	void Chunk::UploadFace(Block block, Block::Side side){
+	void Chunk::UploadFace(Block block, Block::Side side, int x, int y, int z){
 		Game* game = (Game*)Application::GetInstance();
 
 		Transform trans = GetTransformForSide(side, block._position);
@@ -135,12 +138,333 @@ namespace VeryCoolEngine {
 		Block::FaceType faceType = Block::BlockToFace(block._blockType, side);
 
 		game->_instanceOffsets.push_back(Block::atlasOffsets.find(faceType)->second);
+
+		
+
+		switch (side) {
+		case Block::Side::Left:
+			game->_instanceAOValues.push_back(GetAOValuesLeft(block, x, y, z));
+			break;
+		case Block::Side::Right:
+			game->_instanceAOValues.push_back(GetAOValuesRight(block, x, y, z));
+			break;
+		case Block::Side::Front:
+			game->_instanceAOValues.push_back(GetAOValuesFront(block, x, y, z));
+			break;
+		case Block::Side::Back:
+			game->_instanceAOValues.push_back(GetAOValuesBack(block, x, y, z));
+			break;
+		case Block::Side::Top:
+			game->_instanceAOValues.push_back(GetAOValuesTop(block, x, y, z));
+			break;
+		case Block::Side::Bottom:
+			//#todo implement bottom side AO
+			game->_instanceAOValues.push_back(GetAOValuesFront(block, x, y, z));
+			break;
+		}
+
 		game->_numInstances++;
+	}
+
+	glm::ivec4 Chunk::GetAOValuesTop(const Block& block, int x, int y, int z) {
+		if (y == Chunk::_chunkSize.y-1)return{0,0,0,0};
+		int frontLeft = 0, frontRight = 0, backLeft = 0, backRight = 0;
+		bool checkSides = true;
+		bool checkCorners = true;
+#pragma region sides
+		if (checkSides) {
+			if (x > 0) {
+				if (_blocks[x - 1][y + 1][z]._blockType != Block::BlockType::Air) {
+					frontLeft++;
+					backLeft++;
+				}
+			}
+			if (x < Chunk::_chunkSize.x-1) {
+				if (_blocks[x + 1][y + 1][z]._blockType != Block::BlockType::Air) {
+					frontRight++;
+					backRight++;
+				}
+			}
+			if (z > 0) {
+				if (_blocks[x][y + 1][z - 1]._blockType != Block::BlockType::Air) {
+					frontLeft++;
+					frontRight++;
+				}
+			}
+			if (z < Chunk::_chunkSize.z-1) {
+				if (_blocks[x][y + 1][z + 1]._blockType != Block::BlockType::Air) {
+					backLeft++;
+					backRight++;
+				}
+			}
+		}
+#pragma endregion
+#pragma region corners
+		if (checkCorners) {
+			if (x > 0 && z > 0) {
+				if (_blocks[x - 1][y + 1][z - 1]._blockType != Block::BlockType::Air) {
+					frontLeft++;
+				}
+			}
+			if (x < Chunk::_chunkSize.x-1 && z > 0) {
+				if (_blocks[x + 1][y + 1][z - 1]._blockType != Block::BlockType::Air) {
+					frontRight++;
+				}
+			}
+			if (x > 0 && z < Chunk::_chunkSize.z-1) {
+				if (_blocks[x - 1][y + 1][z + 1]._blockType != Block::BlockType::Air) {
+					backLeft++;
+				}
+			}
+			if (x < Chunk::_chunkSize.x-1 && z < Chunk::_chunkSize.z-1) {
+				if (_blocks[x + 1][y + 1][z + 1]._blockType != Block::BlockType::Air) {
+					backRight++;
+				}
+			}
+		}
+#pragma endregion
+		return { frontRight,backRight,frontLeft,backLeft };
+	}
+	glm::ivec4 Chunk::GetAOValuesFront(const Block& block, int x, int y, int z) {
+		if (z == Chunk::_chunkSize.z-1)return{ 0,0,0,0 };
+		int topLeft = 0, topRight = 0, bottomLeft = 0, bottomRight = 0;
+		bool checkSides = true;
+		bool checkCorners = true;
+#pragma region sides
+		if (checkSides) {
+			if (x > 0) {
+				if (_blocks[x-1][y][z+1]._blockType != Block::BlockType::Air) {
+					topLeft++;
+					bottomLeft++;
+				}
+			}
+			if (x < Chunk::_chunkSize.x-1) {
+				if (_blocks[x+1][y][z+1]._blockType != Block::BlockType::Air) {
+					topRight++;
+					bottomRight++;
+				}
+			}
+			if (y > 0) {
+				if (_blocks[x][y-1][z+1]._blockType != Block::BlockType::Air) {
+					bottomLeft++;
+					bottomRight++;
+				}
+			}
+			if (y < Chunk::_chunkSize.y-1) {
+				if (_blocks[x][y+1][z+1]._blockType != Block::BlockType::Air) {
+					topLeft++;
+					topRight++;
+				}
+			}
+		}
+#pragma endregion
+#pragma region corners
+		if (checkCorners) {
+			if (x > 0 && y > 0) {
+				if (_blocks[x - 1][y - 1][z + 1]._blockType != Block::BlockType::Air) {
+					bottomLeft++;
+				}
+			}
+			if (x < Chunk::_chunkSize.x-1 && y > 0) {
+				if (_blocks[x + 1][y - 1][z + 1]._blockType != Block::BlockType::Air) {
+					bottomRight++;
+				}
+			}
+			if (x > 0 && y < Chunk::_chunkSize.y-1) {
+				if (_blocks[x - 1][y + 1][z + 1]._blockType != Block::BlockType::Air) {
+					topLeft++;
+				}
+			}
+			if (x < Chunk::_chunkSize.x-1 && y < Chunk::_chunkSize.y-1) {
+				if (_blocks[x + 1][y + 1][z + 1]._blockType != Block::BlockType::Air) {
+					topRight++;
+				}
+			}
+		}
+#pragma endregion
+		return { topRight,bottomRight,topLeft,bottomLeft };
+	}
+	glm::ivec4 Chunk::GetAOValuesRight(const Block& block, int x, int y, int z) {
+		if (x == Chunk::_chunkSize.x-1)return{ 0,0,0,0 };
+		int topFront = 0, topBack = 0, bottomFront = 0, bottomBack = 0;
+		bool checkSides = true;
+		bool checkCorners = true;
+#pragma region sides
+		if (checkSides) {
+			if (z > 0) {
+				if (_blocks[x + 1][y][z - 1]._blockType != Block::BlockType::Air) {
+					topFront++;
+					bottomFront++;
+				}
+			}
+			if (z < Chunk::_chunkSize.z-1) {
+				if (_blocks[x + 1][y][z + 1]._blockType != Block::BlockType::Air) {
+					topBack++;
+					bottomBack++;
+				}
+			}
+			if (y > 0) {
+				if (_blocks[x + 1][y - 1][z]._blockType != Block::BlockType::Air) {
+					bottomFront++;
+					bottomBack++;
+				}
+			}
+			if (y < Chunk::_chunkSize.y-1) {
+				if (_blocks[x + 1][y + 1][z]._blockType != Block::BlockType::Air) {
+					topFront++;
+					topBack++;
+				}
+			}
+		}
+#pragma endregion
+#pragma region corners
+		if (checkCorners) {
+			if (z > 0 && y > 0) {
+				if (_blocks[x + 1][y - 1][z - 1]._blockType != Block::BlockType::Air) {
+					bottomFront++;
+				}
+			}
+			if (z < Chunk::_chunkSize.z-1 && y > 0) {
+				if (_blocks[x + 1][y - 1][z + 1]._blockType != Block::BlockType::Air) {
+					bottomBack++;
+				}
+			}
+			if (z > 0 && y < Chunk::_chunkSize.y-1) {
+				if (_blocks[x + 1][y + 1][z - 1]._blockType != Block::BlockType::Air) {
+					topFront++;
+				}
+			}
+			if (z < Chunk::_chunkSize.z-1 && y < Chunk::_chunkSize.y-1) {
+				if (_blocks[x + 1][y + 1][z + 1]._blockType != Block::BlockType::Air) {
+					topBack++;
+				}
+			}
+		}
+#pragma endregion
+		return { topFront,bottomFront,topBack,bottomBack };
+	}
+	glm::ivec4 Chunk::GetAOValuesLeft(const Block& block, int x, int y, int z) {
+		if (x == 0)return{ 0,0,0,0 };
+		int topFront = 0, topBack = 0, bottomFront = 0, bottomBack = 0;
+		bool checkSides = true;
+		bool checkCorners = true;
+#pragma region sides
+		if (checkSides) {
+			if (z > 0) {
+				if (_blocks[x - 1][y][z - 1]._blockType != Block::BlockType::Air) {
+					topFront++;
+					bottomFront++;
+				}
+			}
+			if (z < Chunk::_chunkSize.z-1) {
+				if (_blocks[x - 1][y][z + 1]._blockType != Block::BlockType::Air) {
+					topBack++;
+					bottomBack++;
+				}
+			}
+			if (y > 0) {
+				if (_blocks[x - 1][y - 1][z]._blockType != Block::BlockType::Air) {
+					bottomFront++;
+					bottomBack++;
+				}
+			}
+			if (y < Chunk::_chunkSize.y-1) {
+				if (_blocks[x - 1][y + 1][z]._blockType != Block::BlockType::Air) {
+					topFront++;
+					topBack++;
+				}
+			}
+		}
+#pragma endregion
+#pragma region corners
+		if (checkCorners) {
+			if (z > 0 && y > 0) {
+				if (_blocks[x - 1][y - 1][z - 1]._blockType != Block::BlockType::Air) {
+					bottomFront++;
+				}
+			}
+			if (z < Chunk::_chunkSize.z-1 && y > 0) {
+				if (_blocks[x - 1][y - 1][z + 1]._blockType != Block::BlockType::Air) {
+					bottomBack++;
+				}
+			}
+			if (z > 0 && y < Chunk::_chunkSize.y-1) {
+				if (_blocks[x - 1][y + 1][z - 1]._blockType != Block::BlockType::Air) {
+					topFront++;
+				}
+			}
+			if (z < Chunk::_chunkSize.z-1 && y < Chunk::_chunkSize.y-1) {
+				if (_blocks[x - 1][y + 1][z + 1]._blockType != Block::BlockType::Air) {
+					topBack++;
+				}
+			}
+		}
+#pragma endregion
+		return { topBack,bottomBack,topFront,bottomFront };
+	}
+	glm::ivec4 Chunk::GetAOValuesBack(const Block& block, int x, int y, int z) {
+		if (z == 0)return{ 0,0,0,0 };
+		int topLeft = 0, topRight = 0, bottomLeft = 0, bottomRight = 0;
+		bool checkSides = true;
+		bool checkCorners = true;
+#pragma region sides
+		if (checkSides) {
+			if (x > 0) {
+				if (_blocks[x - 1][y][z - 1]._blockType != Block::BlockType::Air) {
+					topLeft++;
+					bottomLeft++;
+				}
+			}
+			if (x < Chunk::_chunkSize.x-1) {
+				if (_blocks[x + 1][y][z - 1]._blockType != Block::BlockType::Air) {
+					topRight++;
+					bottomRight++;
+				}
+			}
+			if (y > 0) {
+				if (_blocks[x][y - 1][z - 1]._blockType != Block::BlockType::Air) {
+					bottomLeft++;
+					bottomRight++;
+				}
+			}
+			if (y < Chunk::_chunkSize.y-1) {
+				if (_blocks[x][y + 1][z - 1]._blockType != Block::BlockType::Air) {
+					topLeft++;
+					topRight++;
+				}
+			}
+		}
+#pragma endregion
+#pragma region corners
+		if (checkCorners) {
+			if (x > 0 && y > 0) {
+				if (_blocks[x - 1][y - 1][z - 1]._blockType != Block::BlockType::Air) {
+					bottomLeft++;
+				}
+			}
+			if (x < Chunk::_chunkSize.x-1 && y > 0) {
+				if (_blocks[x + 1][y - 1][z - 1]._blockType != Block::BlockType::Air) {
+					bottomRight++;
+				}
+			}
+			if (x > 0 && y < Chunk::_chunkSize.y-1) {
+				if (_blocks[x - 1][y + 1][z - 1]._blockType != Block::BlockType::Air) {
+					topLeft++;
+				}
+			}
+			if (x < Chunk::_chunkSize.x-1 && y < Chunk::_chunkSize.y-1) {
+				if (_blocks[x + 1][y + 1][z - 1]._blockType != Block::BlockType::Air) {
+					topRight++;
+				}
+			}
+		}
+#pragma endregion
+		return { topLeft,bottomLeft,topRight,bottomRight };
 	}
 
 #pragma region FaceCheckFunctions
 	bool Chunk::ShouldUploadRight(const Block& block, int x, int y, int z) {
-		if (x == 15)return true;
+		if (x == Chunk::_chunkSize.x-1)return true;
 		if (_blocks[x+1][y][z]._blockType == Block::BlockType::Air)return true;
 		return false;
 	}
@@ -150,7 +474,7 @@ namespace VeryCoolEngine {
 		return false;
 	}
 	bool Chunk::ShouldUploadTop(const Block& block,int x, int y, int z) {
-		if (y == 255)return true;
+		if (y == Chunk::_chunkSize.y-1)return true;
 		if (_blocks[x][y + 1][z]._blockType == Block::BlockType::Air)return true;
 		return false;
 	}
@@ -160,7 +484,7 @@ namespace VeryCoolEngine {
 		return false;
 	}
 	bool Chunk::ShouldUploadFront(const Block& block, int x, int y, int z) {
-		if (z == 15)return true;
+		if (z == Chunk::_chunkSize.z-1)return true;
 		if (_blocks[x][y][z+1]._blockType == Block::BlockType::Air)return true;
 		return false;
 	}
@@ -176,26 +500,23 @@ namespace VeryCoolEngine {
 		//#todo should probably cache this
 		Game* game = (Game*)Application::GetInstance();
 
-		for (int x = 0; x < 16; x++)
+		for (int x = 0; x < Chunk::_chunkSize.x; x++)
 		{
-			for (int y = 0; y < 256; y++)
+			for (int y = 0; y < Chunk::_chunkSize.y; y++)
 			{
-				for (int z = 0; z < 16; z++)
+				for (int z = 0; z < Chunk::_chunkSize.z; z++)
 				{
 					Block block = _blocks[x][y][z];
 
 					//air doesn't have any faces
 					if (block._blockType == Block::BlockType::Air)continue;
 
-					if (ShouldUploadRight(block, x, y, z)) UploadFace(block, Block::Side::Right);
-					if (ShouldUploadLeft(block, x, y, z)) UploadFace(block, Block::Side::Left);
-					if (ShouldUploadTop(block, x, y, z)) {
-						if(block._blockType == Block::BlockType::Grass)
-						UploadFace(block, Block::Side::Top);
-					}
-					if (ShouldUploadBottom(block, x, y, z)) UploadFace(block, Block::Side::Bottom);
-					if (ShouldUploadFront(block, x, y, z)) UploadFace(block, Block::Side::Front);
-					if (ShouldUploadBack(block, x, y, z)) UploadFace(block, Block::Side::Back);
+					if (ShouldUploadRight(block, x, y, z)) UploadFace(block, Block::Side::Right, x, y, z);
+					if (ShouldUploadLeft(block, x, y, z)) UploadFace(block, Block::Side::Left, x, y, z);
+					if (ShouldUploadTop(block, x, y, z))UploadFace(block, Block::Side::Top, x, y, z);
+					if (ShouldUploadBottom(block, x, y, z)) UploadFace(block, Block::Side::Bottom, x, y, z);
+					if (ShouldUploadFront(block, x, y, z)) UploadFace(block, Block::Side::Front, x, y, z);
+					if (ShouldUploadBack(block, x, y, z)) UploadFace(block, Block::Side::Back, x, y, z);
 				}
 			}
 		}

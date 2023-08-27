@@ -19,7 +19,7 @@ namespace VeryCoolEngine {
 	};
 
 	Game::Game() {
-		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 0, 5), 0, 0, 45, 1, 1000, 1280.f / 720.f);
+		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, 1280.f / 720.f);
 #pragma region old
 		//_pMesh = Mesh::GenerateGenericHeightmap(2,2);
 		//_pMesh = Mesh::GenerateCubeFace();
@@ -38,7 +38,7 @@ namespace VeryCoolEngine {
 		_pMesh->SetShader(_shaders[0]);
 		_pMesh->SetTexture(_textures[0]);
 
-		constexpr int maxX = 15, maxZ = 15;
+		constexpr int maxX = 1, maxZ = 1;
 		std::thread threads[maxX * maxZ];
 		Chunk* pChunks = (Chunk*)malloc(sizeof(Chunk) * maxX * maxZ);
 
@@ -58,9 +58,9 @@ namespace VeryCoolEngine {
 			threads[i].join();
 			Chunk chunk = pChunks[i];
 			chunk.UploadVisibleFaces();
-			for (int x = 0; x < 16; x++)
+			for (int x = 0; x < Chunk::_chunkSize.x; x++)
 			{
-				for (int y = 0; y < 256; y++)
+				for (int y = 0; y < Chunk::_chunkSize.y; y++)
 				{
 					delete[] chunk._blocks[x][y];
 					
@@ -102,6 +102,16 @@ namespace VeryCoolEngine {
 			1,
 			_instanceOffsets.data(),
 			_instanceOffsets.size()
+		));
+
+		_pMesh->_instanceData.push_back(BufferElement(
+			ShaderDataType::Int4,
+			"_ainstanceAOValues",
+			false,
+			true,
+			1,
+			_instanceAOValues.data(),
+			_instanceAOValues.size()
 		));
 
 		_pFullscreenShader = Shader::Create("fullscreen.vert", "fullscreen.frag");

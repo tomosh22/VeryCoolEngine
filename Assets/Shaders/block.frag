@@ -8,6 +8,7 @@ in vec3 WorldPos;
 in vec3 Tangent;
 in vec3 Binormal;
 in flat ivec2 AtlasOffset;
+in float AO;
 
 struct Light{
 	vec4 positionAndRadius;
@@ -69,6 +70,8 @@ void main(){
 	atlasUV += AtlasOffset * 1./16.;
 
 	_oColor = texture2D(diffuseTex,atlasUV);
-	if(AtlasOffset == ivec2(0,0)) _oColor *= vec4(0.5,1,0.5,1);
+	if(AtlasOffset == ivec2(0,0)) _oColor *= vec4(0.569,0.741,0.5,349);
+
+	_oColor *= 1 - (AO/4.f);
 	//_oColor = vec4(UV,0,1);
 }

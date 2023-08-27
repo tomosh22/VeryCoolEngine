@@ -5,6 +5,7 @@ layout(location = 1) in vec2 _aUV;
 layout(location = 2) in vec4 _aInstanceQuat;
 layout(location = 3) in vec3 _aInstancePosition;
 layout(location = 4) in ivec2 _aInstanceAtlasOffset;
+layout(location = 5) in ivec4 _ainstanceAOValues;//one value per face vertex, hence 4 components
 
 uniform mat4 _uModelMat;
 
@@ -21,6 +22,7 @@ out vec3 WorldPos;
 out vec3 Tangent;
 out vec3 Binormal;
 out flat ivec2 AtlasOffset;
+out float AO;
 
 vec3 RotateVertex(vec3 vertex, vec4 quat) {
 	return vertex + 2.0 * cross(quat.xyz, cross(quat.xyz, vertex) + quat.w * vertex);
@@ -48,6 +50,11 @@ void main(){
 	//Binormal = cross(wTangent,wNormal) * _aTangent.w;
 
 	AtlasOffset = _aInstanceAtlasOffset;
+
+	if(gl_VertexID == 0) AO = _ainstanceAOValues.x;
+	if(gl_VertexID == 1) AO = _ainstanceAOValues.y;
+	if(gl_VertexID == 2) AO = _ainstanceAOValues.z;
+	if(gl_VertexID == 3) AO = _ainstanceAOValues.w;
 
 
 

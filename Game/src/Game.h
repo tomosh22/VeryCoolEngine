@@ -21,6 +21,7 @@ namespace VeryCoolEngine {
 		std::vector<glm::quat> _instanceQuats;
 		std::vector<glm::vec3> _instancePositions;
 		std::vector<glm::ivec2> _instanceOffsets;
+		std::vector<glm::ivec4> _instanceAOValues;
 	};
 
 
