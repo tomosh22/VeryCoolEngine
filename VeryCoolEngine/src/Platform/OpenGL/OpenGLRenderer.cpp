@@ -33,6 +33,9 @@ namespace VeryCoolEngine {
 		//glClampColorARB(GL_CLAMP_VERTEX_COLOR_ARB, GL_FALSE);
 		//glClampColorARB(GL_CLAMP_FRAGMENT_COLOR_ARB, GL_FALSE);
 		glEnable(GL_DEPTH_TEST);
+#ifdef VCE_SAMPLES
+		glEnable(GL_MULTISAMPLE);
+#endif
 	}
 
 	void OpenGLRenderer::SetClearColor(const glm::vec4 color)

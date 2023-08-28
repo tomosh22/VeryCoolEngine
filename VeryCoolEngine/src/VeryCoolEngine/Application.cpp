@@ -3,7 +3,6 @@
 #include "Events/ApplicationEvent.h"
 #include "Log.h"
 #include "Input.h"
-#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/mat4x4.hpp>
 #include "Platform/OpenGL/OpenGLShader.h"

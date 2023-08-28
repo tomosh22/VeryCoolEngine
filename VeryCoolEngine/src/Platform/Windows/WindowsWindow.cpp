@@ -27,6 +27,9 @@ namespace VeryCoolEngine {
 		if (!glfwInititliazed) {
 			int glfwinit = glfwInit();
 			VCE_CORE_ASSERT(glfwinit == GLFW_TRUE, "failed to init glfw");
+#ifdef VCE_SAMPLES
+			glfwWindowHint(GLFW_SAMPLES, VCE_SAMPLES);
+#endif
 			glfwSetErrorCallback([](int error, const char* desc) {VCE_CORE_ERROR("glfw error {0} {1}",error,desc); });
 			glfwInititliazed = true;
 		}
