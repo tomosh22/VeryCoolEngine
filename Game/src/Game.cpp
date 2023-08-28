@@ -38,6 +38,7 @@ namespace VeryCoolEngine {
 		_pMesh->SetShader(_shaders[0]);
 		_pMesh->SetTexture(_textures[0]);
 
+		//#todo just one big chunk for now until I fix AO between chunks
 		constexpr int maxX = 1, maxZ = 1;
 		std::thread threads[maxX * maxZ];
 		Chunk* pChunks = (Chunk*)malloc(sizeof(Chunk) * maxX * maxZ);
@@ -71,7 +72,7 @@ namespace VeryCoolEngine {
 		}
 		free(pChunks);
 
-		std::cout << "unique quats " << Transform::uniqueQuats.size() << '\n';
+		//std::cout << "unique quats " << Transform::uniqueQuats.size() << '\n';
 		
 		_pMesh->_instanceData.push_back(BufferElement(
 			ShaderDataType::Float4,

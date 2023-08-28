@@ -33,7 +33,7 @@ namespace VeryCoolEngine {
 		_renderThread = std::thread([&]() {
 			int temp = 0;
 			while (true) {
-				printf(__FUNCTION__);
+				printf("Waiting on game constructor\n");
 				if (_renderThreadCanStart)break;//#todo implement mutex here
 			}
 			_pRenderer->InitWindow();
@@ -106,7 +106,7 @@ namespace VeryCoolEngine {
 
 	void Application::Run() {
 		while (true) { 
-			printf(__FUNCTION__);
+			printf("Waiting on render thread init\n");
 			if (renderInitialised)break;//#todo implement mutex here
 		}
 		while (_running) {

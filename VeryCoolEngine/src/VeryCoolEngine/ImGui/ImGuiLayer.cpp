@@ -47,22 +47,26 @@ namespace VeryCoolEngine {
 		//ImGui::ShowDemoWindow();
 		std::string cameraText = std::string("Camera ") + (app->_mouseEnabled ? "enabled" : "disabled") + ". Q to toggle.";
 		ImGui::Text(cameraText.c_str());
-		int lightIndex = 1;
-		for(Renderer::Light& light : app->_lights )
-		{
-			std::string label = "Light" + std::to_string(lightIndex++);
-			ImGui::ColorEdit4(label.c_str(), &light.r);
+		if (ImGui::TreeNode("Point Lights")) {
+			int lightIndex = 1;
+			for (Renderer::Light& light : app->_lights)
+			{
+				std::string label = "Light" + std::to_string(lightIndex++);
+				ImGui::ColorEdit4(label.c_str(), &light.r);
+			}
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("Ambient Occlusion")) {
+			Application* app = Application::GetInstance();
+			ImGui::Checkbox("Enabled", &(app->_aoEnabled));
+			ImGui::TreePop();
 		}
 		//ImGui::SliderFloat3("Pos", &app->_pMesh->transform._position[0],-10,10);
 		//ImGui::SliderFloat3("Rotation", &app->_pMesh->transform._roll,0,360);
 
-		return;
-		ImGui::SliderFloat3("PosX", &app->_meshes[0]->transform._roll, 0, 360);
-		ImGui::SliderFloat3("NegX", &app->_meshes[1]->transform._roll, 0, 360);
-		ImGui::SliderFloat3("PosY", &app->_meshes[2]->transform._roll, 0, 360);
-		ImGui::SliderFloat3("NegY", &app->_meshes[3]->transform._roll, 0, 360);
-		ImGui::SliderFloat3("PosZ", &app->_meshes[4]->transform._roll, 0, 360);
-		ImGui::SliderFloat3("NegZ", &app->_meshes[5]->transform._roll, 0, 360);
+		
+
+		
 	}
 
 	void ImGuiLayer::End() {

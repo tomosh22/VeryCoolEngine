@@ -67,6 +67,11 @@ namespace VeryCoolEngine {
 		glUniform2iv(glGetUniformLocation(programID, name.c_str()), 1, &ivec2[0]);
 	}
 
+	void OpenGLShader::UploadBoolUniform(const bool b, const std::string& name) const
+	{
+		glUniform1i(glGetUniformLocation(programID, name.c_str()), b ? 1 : 0);
+	}
+
 	void OpenGLShader::ReloadShader() {
 		DeleteIDs();
 		programID = glCreateProgram();

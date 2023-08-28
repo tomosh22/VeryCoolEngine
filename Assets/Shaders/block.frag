@@ -35,6 +35,8 @@ uniform sampler2D diffuseTex;
 uniform sampler2D bumpMap;
 layout(rgba32f) uniform writeonly image2D debugTex;
 
+uniform bool aoEnabled;
+
 //uniform ivec2 _uAtlasOffset;
 
 void point(inout vec4 finalColor, vec4 diffuse, Light light, vec3 bumpNormal) {
@@ -72,6 +74,6 @@ void main(){
 	_oColor = texture2D(diffuseTex,atlasUV);
 	if(AtlasOffset == ivec2(0,0)) _oColor *= vec4(0.569,0.741,0.5,349);
 
-	_oColor *= 1 - (AO/4.f);
+	if(aoEnabled)_oColor *= 1 - (AO/4.f);
 	//_oColor = vec4(UV,0,1);
 }

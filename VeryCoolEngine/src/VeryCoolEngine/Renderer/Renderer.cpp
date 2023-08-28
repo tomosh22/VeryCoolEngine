@@ -31,6 +31,9 @@ namespace VeryCoolEngine {
 
 		mesh->GetShader()->UploadIVec2Uniform(mesh->customUniform, "_uAtlasOffset");
 
+		
+
+
 
 		mesh->GetTexture()->BindToShader(mesh->GetShader(),"diffuseTex",0);//#todo how to determine bind point
 		//mesh->GetBumpMap()->BindToShader(mesh->GetShader(), "bumpMap", 1);//#todo how to determine bind point
@@ -48,6 +51,12 @@ namespace VeryCoolEngine {
 
 		mesh->GetTexture()->BindToShader(mesh->GetShader(), "diffuseTex", 0);//#todo how to determine bind point
 		//mesh->GetBumpMap()->BindToShader(mesh->GetShader(), "bumpMap", 1);//#todo how to determine bind point
+
+		//#todo temporary, need to implement proper uniform system
+		Application* app = Application::GetInstance();
+		mesh->GetShader()->UploadBoolUniform(app->_aoEnabled, "aoEnabled");
+
+
 		VertexArray* vertexArray = mesh->GetVertexArray();
 		vertexArray->Bind();
 		RenderCommand::DrawIndexedInstanced(vertexArray,count);

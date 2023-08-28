@@ -168,7 +168,7 @@ namespace VeryCoolEngine {
 
 
 			while (true) { 
-				printf(__FUNCTION__);
+				printf("Waiting on scene to be ready\n");
 				if (scene->ready)break;//#todo implement mutex here
 			}
 
