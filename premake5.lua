@@ -64,7 +64,6 @@ project "VeryCoolEngine"
 			"VCE_WINDOWS",
 			"VCE_BUILD_DLL",
 			"GLFW_INCLUDE_NONE",
-			"VCE_SAMPLES=8",
 		}
 
 		postbuildcommands{

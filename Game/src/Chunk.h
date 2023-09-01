@@ -3,9 +3,14 @@
 #include <glm/glm.hpp>
 
 namespace VeryCoolEngine {
+
+	typedef long long ChunkKey_t;
+
 	class Chunk
 	{
 	public:
+
+		
 
 		static glm::ivec3 _chunkSize;
 
@@ -16,6 +21,9 @@ namespace VeryCoolEngine {
 		void UploadVisibleFaces();
 		void UploadFace(Block block, Block::Side side, int x, int y, int z);
 		static Transform GetTransformForSide(Block::Side side, const glm::ivec3& position);
+
+		//stores x in leftmost 32 bits and z in rightmost 32 bits
+		static ChunkKey_t CalcKey(int x, int z) {return ChunkKey_t(x)<<32|z;}
 
 		//#todo this is a bit lazy
 		bool ShouldUploadRight(const Block& block, int x, int y, int z);

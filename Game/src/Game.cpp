@@ -39,38 +39,67 @@ namespace VeryCoolEngine {
 		_pMesh->SetTexture(_textures[0]);
 
 		//#todo just one big chunk for now until I fix AO between chunks
-		constexpr int maxX = 1, maxZ = 1;
+		constexpr int maxX = 8, maxZ = 8;
 		std::thread threads[maxX * maxZ];
-		Chunk* pChunks = (Chunk*)malloc(sizeof(Chunk) * maxX * maxZ);
 
-		for (int x = 0; x < maxX; x++){
-			for (int z = 0; z < maxZ; z++)	{
+		Chunk* chunkPtrs[maxX * maxZ];//saving ptrs to be free later
+		
+
+		for (int x = 0; x < maxX; x++) {
+			for (int z = 0; z < maxZ; z++) {
 				int index = maxZ * x + z;
-				Chunk* chunk = pChunks + index;
+				Chunk* chunk = (Chunk*)malloc(sizeof(Chunk));
+
+				//x is first 32 bits, z is second 32 bits
+				long long key = Chunk::CalcKey(x, z);
+
+				std::cout << key << std::endl;
+				std::pair<long long, Chunk*> pair = std::make_pair(key, chunk);
+				_chunks.emplace(pair);
 				auto func = [](Chunk* chunk, int x, int z) {
 					*chunk = Chunk({ x,0,z });
 				};
-				threads[index] = std::thread(func, chunk,x,z);
+				threads[index] = std::thread(func, chunk, x, z);
+
+
+				chunkPtrs[index] = chunk;
 			}
 		}
 
-		for (int i = 0; i < maxX * maxZ; i++)
-		{	
-			threads[i].join();
-			Chunk chunk = pChunks[i];
-			chunk.UploadVisibleFaces();
-			for (int x = 0; x < Chunk::_chunkSize.x; x++)
+		for (int x = 0; x < maxX; x++)
+		{
+			for (int z = 0; z < maxZ; z++)
 			{
-				for (int y = 0; y < Chunk::_chunkSize.y; y++)
-				{
-					delete[] chunk._blocks[x][y];
-					
-				}
-				delete[] chunk._blocks[x];
+				int i = maxZ * x + z;
+				threads[i].join();
 			}
-			delete[] chunk._blocks;
+
 		}
-		free(pChunks);
+
+
+		for (int x = 0; x < maxX; x++)
+		{	
+			for (int z = 0; z < maxZ; z++)
+			{
+				long long key = Chunk::CalcKey(x, z);
+				Chunk chunk = *(_chunks.find(key))->second;
+				chunk.UploadVisibleFaces();
+				for (int x = 0; x < Chunk::_chunkSize.x; x++)
+				{
+					for (int y = 0; y < Chunk::_chunkSize.y; y++)
+					{
+						//delete[] chunk._blocks[x][y];
+
+					}
+					//delete[] chunk._blocks[x];
+				}
+				//delete[] chunk._blocks;
+			}
+			
+		}
+
+		
+		for (int i = 0; i < maxZ * maxX; i++) free(chunkPtrs[i]);
 
 		//std::cout << "unique quats " << Transform::uniqueQuats.size() << '\n';
 		
@@ -142,6 +171,42 @@ namespace VeryCoolEngine {
 	}
 
 	Game::~Game() {}
+
+	Block Game::GetAdjacentBlock(const Chunk* chunk, int x, int y, int z, int offsetX, int offsetY, int offsetZ)
+	{
+		VCE_ASSERT(abs(offsetX) <= 1 && abs(offsetY) <= 1 && abs(offsetX) <= 1, "can't check more than one block away");
+
+		auto withinChunkFunc = [&](int x, int y, int z) {
+			return
+				x >= 0 && x < Chunk::_chunkSize.x &&
+				y >= 0 && y < Chunk::_chunkSize.y &&
+				z >= 0 && z < Chunk::_chunkSize.z;
+		};
+
+		int newX = x + offsetX, newY = y + offsetY, newZ = z + offsetZ;
+		if (withinChunkFunc(newX, newY, newZ)) return chunk->_blocks[newX][newY][newZ];
+		if (newY < 0 || newY >= Chunk::_chunkSize.y) { Block block; block._blockType = Block::BlockType::Air; return block; }
+
+		int chunkOffsetX = (newX >= 0 && newX < Chunk::_chunkSize.x) ? 0 : (newX < 0 ? -1 : 1);
+		int chunkOffsetZ = (newZ >= 0 && newZ < Chunk::_chunkSize.z) ? 0 : (newZ < 0 ? -1 : 1);
+
+		int keyX = chunk->_chunkPos.x + chunkOffsetX;
+		int keyZ = chunk->_chunkPos.z + chunkOffsetZ;
+
+		ChunkKey_t key = Chunk::CalcKey(keyX, keyZ);
+		if (_chunks.contains(key)) {
+			int indexX = (chunkOffsetX == 0) ? newX : (chunkOffsetX == -1 ? Chunk::_chunkSize.x - 1 : 0);
+			int indexZ = (chunkOffsetZ == 0) ? newZ : (chunkOffsetZ == -1 ? Chunk::_chunkSize.z - 1 : 0);
+
+			Chunk* newChunk = _chunks.find(key)->second;
+			Block block = newChunk->_blocks[indexX][newY][indexZ];
+			return block;
+		}
+
+		Block block;
+		block._blockType = Block::BlockType::Air;
+		return block;
+	}
 
 	//extern definition (EntryPoint.h)
 	VeryCoolEngine::Application* VeryCoolEngine::CreateApplication() {

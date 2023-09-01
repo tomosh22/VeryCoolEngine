@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include "Block.h"
 #include "Chunk.h"
+#include <map>
 
 namespace VeryCoolEngine {
 
@@ -14,7 +15,9 @@ namespace VeryCoolEngine {
 		Game();
 		~Game();
 
-		std::vector<Chunk> _chunks;
+
+		std::map<long long, Chunk*> _chunks;
+		Block GetAdjacentBlock(const Chunk* chunk, int x, int y, int z, int offsetX, int offsetY, int offsetZ);
 
 		std::vector<Block> _blocks;
 		std::vector<glm::mat4> _instanceMats;
