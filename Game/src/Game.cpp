@@ -39,7 +39,7 @@ namespace VeryCoolEngine {
 		_pMesh->SetTexture(_textures[0]);
 
 		//#todo just one big chunk for now until I fix AO between chunks
-		constexpr int maxX = 1, maxZ = 1;
+		constexpr int maxX = 8, maxZ = 8;
 		std::thread threads[maxX * maxZ];
 
 		Chunk* chunkPtrs[maxX * maxZ];//saving ptrs to be free later

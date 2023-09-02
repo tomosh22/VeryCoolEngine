@@ -451,34 +451,28 @@ namespace VeryCoolEngine {
 
 #pragma region FaceCheckFunctions
 	bool Chunk::ShouldUploadRight(const Block& block, int x, int y, int z) {
-		if (x == Chunk::_chunkSize.x-1)return true;
-		if (_blocks[x+1][y][z]._blockType == Block::BlockType::Air)return true;
-		return false;
+		Game* game = (Game*)Application::GetInstance();
+		return (game->GetAdjacentBlock(this, x, y, z, 1, 0, 0)._blockType == Block::BlockType::Air);
 	}
 	bool Chunk::ShouldUploadLeft(const Block& block, int x, int y, int z) {
-		if (x == 0)return true;
-		if (_blocks[x-1][y][z]._blockType == Block::BlockType::Air)return true;
-		return false;
+		Game* game = (Game*)Application::GetInstance();
+		return (game->GetAdjacentBlock(this, x, y, z, -1, 0, 0)._blockType == Block::BlockType::Air);
 	}
 	bool Chunk::ShouldUploadTop(const Block& block,int x, int y, int z) {
-		if (y == Chunk::_chunkSize.y-1)return true;
-		if (_blocks[x][y + 1][z]._blockType == Block::BlockType::Air)return true;
-		return false;
+		Game* game = (Game*)Application::GetInstance();
+		return (game->GetAdjacentBlock(this, x, y, z, 0, 1, 0)._blockType == Block::BlockType::Air);
 	}
 	bool Chunk::ShouldUploadBottom(const Block& block, int x, int y, int z) {
-		if (y == 0)return true;
-		if (_blocks[x][y - 1][z]._blockType == Block::BlockType::Air)return true;
-		return false;
+		Game* game = (Game*)Application::GetInstance();
+		return (game->GetAdjacentBlock(this, x, y, z, 0, -1, 0)._blockType == Block::BlockType::Air);
 	}
 	bool Chunk::ShouldUploadFront(const Block& block, int x, int y, int z) {
-		if (z == Chunk::_chunkSize.z-1)return true;
-		if (_blocks[x][y][z+1]._blockType == Block::BlockType::Air)return true;
-		return false;
+		Game* game = (Game*)Application::GetInstance();
+		return (game->GetAdjacentBlock(this, x, y, z, 0, 0, 1)._blockType == Block::BlockType::Air);
 	}
 	bool Chunk::ShouldUploadBack(const Block& block, int x, int y, int z) {
-		if (z == 0)return true;
-		if (_blocks[x][y][z-1]._blockType == Block::BlockType::Air)return true;
-		return false;
+		Game* game = (Game*)Application::GetInstance();
+		return (game->GetAdjacentBlock(this, x, y, z, 0, 0, -1)._blockType == Block::BlockType::Air);
 	}
 #pragma endregion
 	
