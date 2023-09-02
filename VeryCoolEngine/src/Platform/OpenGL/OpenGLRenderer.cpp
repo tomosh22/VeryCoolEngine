@@ -91,6 +91,9 @@ namespace VeryCoolEngine {
 
 	void OpenGLRenderer::BeginScene(Scene* scene)
 	{
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		glFrontFace(GL_CCW);
 		const uint32_t camDataSize = sizeof(glm::mat4) * 3 + sizeof(glm::vec4);//4 bytes of padding
 		glm::mat4 viewMat = scene->camera->BuildViewMatrix();
 		glm::mat4 projMat = scene->camera->BuildProjectionMatrix();

@@ -89,7 +89,7 @@ namespace VeryCoolEngine {
 		mesh->vertexPositions = new glm::vec3[mesh->numVerts];
 		mesh->uvs = new glm::vec2[mesh->numVerts];
 		
-		mesh->indices = new unsigned int[mesh->numIndices] {0, 1, 2, 2, 1, 3};
+		mesh->indices = new unsigned int[mesh->numIndices] {0, 2, 1, 2, 3, 1};
 
 		mesh->vertexPositions[0] = { 0.5,0.5,1 };
 		mesh->vertexPositions[1] = { 0.5,-0.5,1 };
