@@ -40,40 +40,30 @@ namespace VeryCoolEngine {
 		glBindVertexArray(_id);
 		vertexBuffer->Bind();
 		for (const BufferElement& element : vertexBuffer->GetLayout()) {
-			//#todo should probably tidy this up so there's no need to branch here, problem is stride is used for non instanced buffers and not for instanced buffers, and offset works differently
-			if (instanced) {
-				//can only fit 16 bytes in one attribute slot, anything bigger than this will occupy multiple slots
-				for (size_t i = 0; i < ShaderDataTypeSize(element._Type) / 16 || i == 0; i++)
-				{
-					glEnableVertexAttribArray(_numVertAttribs);
-					if (element._Type >= ShaderDataType::Int && element._Type <= ShaderDataType::UInt4) { //#todo write utility function for this (this will be true if the data type is made of integers)
-						glVertexAttribIPointer(_numVertAttribs,
-							ShaderDataTypeNumElements(element._Type),
-							ShaderDataTypeToOpenGLBaseType(element._Type),
-							ShaderDataTypeSize(element._Type),
-							(void*)(i * 16));
-					}
-					else {
-						glVertexAttribPointer(_numVertAttribs,
-							ShaderDataTypeNumElements(element._Type),
-							ShaderDataTypeToOpenGLBaseType(element._Type),
-							element._Normalized ? GL_TRUE : GL_FALSE,
-							ShaderDataTypeSize(element._Type),
-							(void*)(i * 16));
-					}
-					glVertexAttribDivisor(_numVertAttribs++, element._divisor);
-				}
+			
+			//#todo re add support for matrices
+			VCE_ASSERT(element._Type != ShaderDataType::Mat3 && element._Type != ShaderDataType::Mat4,
+				"matricesnot supported, too big");
+				
+			glEnableVertexAttribArray(_numVertAttribs);
+			if (element._Type >= ShaderDataType::Int && element._Type <= ShaderDataType::UInt4) { //#todowrite utility function for this (this will be true if the data type is made of integers)
+				glVertexAttribIPointer(_numVertAttribs,
+					ShaderDataTypeNumElements(element._Type),
+					ShaderDataTypeToOpenGLBaseType(element._Type),
+					vertexBuffer->GetLayout().GetStride(),
+					(const void*)element._Offset);
 			}
 			else {
-				glEnableVertexAttribArray(_numVertAttribs);
 				glVertexAttribPointer(_numVertAttribs,
-					element.GetComponentCount(),
+					ShaderDataTypeNumElements(element._Type),
 					ShaderDataTypeToOpenGLBaseType(element._Type),
 					element._Normalized ? GL_TRUE : GL_FALSE,
 					vertexBuffer->GetLayout().GetStride(),
 					(const void*)element._Offset);
-				_numVertAttribs++;
 			}
+			glVertexAttribDivisor(_numVertAttribs++, element._divisor);
+				
+			
 		}
 		_VertexBuffers.push_back(vertexBuffer);
 	}

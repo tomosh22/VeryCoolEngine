@@ -72,27 +72,92 @@ void VeryCoolEngine::OpenGLMesh::PlatformInit()
 	IndexBuffer* indexBuffer = IndexBuffer::Create(indices, numIndices);
 	vertexArray->SetIndexBuffer(indexBuffer);
 
-	//#todo make this part of vertex array
-	for (BufferElement& instanceData : _instanceData) {
 
-		vertexBuffer = VertexBuffer::Create(instanceData._data, instanceData._numEntries * ShaderDataTypeSize(instanceData._Type));
 
-		BufferLayout layout = {
-		BufferElement(
-			instanceData._Type,
-			instanceData._Name,
-			false,
-			true,
-			instanceData._divisor,
-			instanceData._data,
-			instanceData._numEntries
-		)
-		};
-		vertexBuffer->SetLayout(layout);
-		vertexArray->AddVertexBuffer(vertexBuffer, true);
+	if (_instanceData.size() > 0) {
+		BufferLayout instancedLayout;
+		unsigned int instanceDataSize = 0;
+
+		for (BufferElement& instanceData : _instanceData) {
+			BufferElement element = BufferElement(instanceData._Type,
+				instanceData._Name,
+				false, //normalised
+				true,  //instanced
+				instanceData._divisor,
+				instanceData._data,
+				instanceData._numEntries);
+			instancedLayout.GetElements().push_back(element);
+			instanceDataSize += instanceData._Size * instanceData._numEntries;
+		}
+
+
+#ifdef VCE_DEBUG
+		unsigned int iNumEntriesCheck = -1;
+		unsigned int iNumElements = 0;
+		for (BufferElement& instanceData : _instanceData) {
+			if (iNumEntriesCheck == -1)iNumEntriesCheck = instanceData._numEntries;
+			else VCE_ASSERT(instanceData._numEntries == iNumEntriesCheck, "don't support varying number of entries")
+				VCE_ASSERT(instanceData._divisor == 1, "need to implement support for different divisors");
+			iNumElements++;
+		}
+#else
+		unsigned int iNumElements = _instanceData.size();
+#endif
+
+		char* pData = new char[instanceDataSize];
+
+		//keeps track of how far into the overall buffer we are combining each element
+		unsigned int iDataOffset = 0;
+
+		//keeps track of how far into each individual element's data we are
+		unsigned int* elementOffsets = new unsigned int[iNumElements] {0};
+
+
+#ifdef VCE_DEBUG
+		unsigned int testCount = 0;
+#endif
+
+		//interweaving instance data into pData
+		//ex. position rotation colour position rotation colour
+		//as opposed to position position rotation rotation colour colour
+
+		while (iDataOffset < instanceDataSize) {
+			unsigned int iCurrentElement = 0;
+			for (BufferElement& instanceData : _instanceData) {
+				int offset = elementOffsets[iCurrentElement];
+				memcpy(pData + iDataOffset,
+					(char*)instanceData._data + offset,
+					instanceData._Size
+				);
+				elementOffsets[iCurrentElement] += instanceData._Size;
+				iDataOffset += instanceData._Size;
+				iCurrentElement++;
+			}
+#ifdef VCE_DEBUG
+			testCount++;
+#endif
+		}
+
+#ifdef VCE_DEBUG
+		int testIndex = 0;
+		for (BufferElement& instanceData : _instanceData) {
+			VCE_ASSERT(elementOffsets[testIndex] == instanceData._Size * instanceData._numEntries, "error");
+			testIndex++;
+		}
+		VCE_ASSERT(testCount == iNumEntriesCheck, "incorrect number of entries");
+		VCE_ASSERT(iDataOffset == instanceDataSize, "incorrect data offset");
+#endif
+
+		delete[] elementOffsets;
+
+
+		instancedLayout.CalculateOffsetsAndStrides();
+		VertexBuffer* instancedVertexBuffer = VertexBuffer::Create(pData, instanceDataSize);
+		instancedVertexBuffer->SetLayout(instancedLayout);
+		vertexArray->AddVertexBuffer(instancedVertexBuffer, true);
+
+		delete[] pData;
 	}
-
-
 
 	vertexArray->Unbind();
 

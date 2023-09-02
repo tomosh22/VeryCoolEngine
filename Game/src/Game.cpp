@@ -39,7 +39,7 @@ namespace VeryCoolEngine {
 		_pMesh->SetTexture(_textures[0]);
 
 		//#todo just one big chunk for now until I fix AO between chunks
-		constexpr int maxX = 8, maxZ = 8;
+		constexpr int maxX = 1, maxZ = 1;
 		std::thread threads[maxX * maxZ];
 
 		Chunk* chunkPtrs[maxX * maxZ];//saving ptrs to be free later
@@ -53,7 +53,7 @@ namespace VeryCoolEngine {
 				//x is first 32 bits, z is second 32 bits
 				long long key = Chunk::CalcKey(x, z);
 
-				std::cout << key << std::endl;
+				//std::cout << key << std::endl;
 				std::pair<long long, Chunk*> pair = std::make_pair(key, chunk);
 				_chunks.emplace(pair);
 				auto func = [](Chunk* chunk, int x, int z) {

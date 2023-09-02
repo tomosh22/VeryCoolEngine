@@ -30,12 +30,10 @@ namespace VeryCoolEngine {
 		_pRenderer = Renderer::Create();
 		
 		_renderThread = std::thread([&]() {
-			int temp = 0;
 			while (true) {
-				temp++;//literally just junk to fill in while loop
+				printf("implement mutex\n");
 				if (_renderThreadCanStart)break;//#todo implement mutex here
 			}
-			if (temp == -1) printf("lol xD");
 			_pRenderer->InitWindow();
 			_pRenderer->RenderThreadFunction();
 		});
