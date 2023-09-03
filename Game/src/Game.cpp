@@ -38,6 +38,7 @@ namespace VeryCoolEngine {
 		_pMesh->SetShader(_shaders[0]);
 		_pMesh->SetTexture(_textures[0]);
 
+		Chunk::seed = rand();
 		GenerateChunks();
 		
 		UploadChunks();
@@ -129,7 +130,7 @@ namespace VeryCoolEngine {
 		}
 
 
-		for (int i = 0; i < s_xNumChunks.z * s_xNumChunks.x; i++) free(chunkPtrs[i]);
+		//for (int i = 0; i < s_xNumChunks.z * s_xNumChunks.x; i++) free(chunkPtrs[i]);
 
 		//std::cout << "unique quats " << Transform::uniqueQuats.size() << '\n';
 
@@ -219,15 +220,26 @@ namespace VeryCoolEngine {
 		printf("game loop\n");
 		bool rState = Input::IsKeyPressed(VCE_KEY_R);
 		if (Input::IsKeyPressed(VCE_KEY_R) && prevRState != rState) {
+			Chunk::seed = rand();
+			game->_chunks.clear();
+			game->_pMesh->_instanceData.clear();
+			game->_instanceMats.clear();
+			game->_instanceQuats.clear();
+			game->_instancePositions.clear();
+			game->_instanceOffsets.clear();
+			game->_instanceAOValues.clear();
+			game->GenerateChunks();
+			
+			game->UploadChunks();
 			scene->_functionsToRun.push_back([]() {
-				printf("hello");
-				printf("hello again");
-				printf("hello again again");
-				Application* app = Application::GetInstance();
-					app->_pMesh->GetVertexArray()->DisableVertexBuffer(app->_pMesh->GetVertexArray()->_VertexBuffers.back());
 				
-					VertexBuffer* instancedVertexBuffer = app->_pMesh->CreateInstancedVertexBuffer();
-					app->_pMesh->GetVertexArray()->AddVertexBuffer(instancedVertexBuffer, true);
+				Game* game = (Game*)Application::GetInstance();
+					game->_pMesh->GetVertexArray()->DisableVertexBuffer(game->_pMesh->GetVertexArray()->_VertexBuffers.back());
+				
+					
+
+					VertexBuffer* instancedVertexBuffer = game->_pMesh->CreateInstancedVertexBuffer();
+					game->_pMesh->GetVertexArray()->AddVertexBuffer(instancedVertexBuffer, true);
 				
 				});
 

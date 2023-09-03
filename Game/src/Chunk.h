@@ -13,6 +13,7 @@ namespace VeryCoolEngine {
 		
 
 		static glm::ivec3 _chunkSize;
+		static float seed;
 
 		Chunk() = default;
 		Chunk(const glm::ivec3 pos);

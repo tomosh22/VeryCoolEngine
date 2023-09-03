@@ -7,6 +7,8 @@
 
 namespace VeryCoolEngine {
 
+	float Chunk::seed = rand();
+
 	glm::ivec3 Chunk::_chunkSize = glm::ivec3(16, 256, 16);
 
 	Chunk::Chunk(const glm::ivec3 pos) : _chunkPos(pos)
@@ -43,7 +45,6 @@ namespace VeryCoolEngine {
 		int baseStoneLevel = 48;
 		int freq = 16;
 		int amp = 10;
-		float seed = 345349608;
 
 		//#todo can probably do all this in the above 3 deep loop
 		for (int x = 0; x < Chunk::_chunkSize.x; x++)
