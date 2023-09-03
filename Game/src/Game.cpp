@@ -217,31 +217,22 @@ namespace VeryCoolEngine {
 	void Application::GameLoop() {
 		Game* game = (Game*)Application::GetInstance();
 		printf("game loop\n");
-		if (Input::IsKeyPressed(VCE_KEY_E) && !game->ePressedLastFrame) {
-			game->ePressedLastFrame = true;
-			auto fn = [&]() {
-				if (_pMesh->GetVertexArray()->_VertexBuffers.size() == 1) {
-					VertexBuffer* instancedVertexBuffer = _pMesh->CreateInstancedVertexBuffer();
-					_pMesh->GetVertexArray()->AddVertexBuffer(instancedVertexBuffer, true);
-				}
-			};
-			scene->_functionsToRun.push_back(fn);
+		bool rState = Input::IsKeyPressed(VCE_KEY_R);
+		if (Input::IsKeyPressed(VCE_KEY_R) && prevRState != rState) {
+			scene->_functionsToRun.push_back([]() {
+				printf("hello");
+				printf("hello again");
+				printf("hello again again");
+				Application* app = Application::GetInstance();
+					app->_pMesh->GetVertexArray()->DisableVertexBuffer(app->_pMesh->GetVertexArray()->_VertexBuffers.back());
+				
+					VertexBuffer* instancedVertexBuffer = app->_pMesh->CreateInstancedVertexBuffer();
+					app->_pMesh->GetVertexArray()->AddVertexBuffer(instancedVertexBuffer, true);
+				
+				});
+
 		}
-		else {
-			game->ePressedLastFrame = false;
-		}
-		if (Input::IsKeyPressed(VCE_KEY_R) && !game->rPressedLastFrame) {
-			game->rPressedLastFrame = true;
-			auto fn = [&]() {
-				if (_pMesh->GetVertexArray()->_VertexBuffers.size() == 2) {
-					_pMesh->GetVertexArray()->DisableVertexBuffer(_pMesh->GetVertexArray()->_VertexBuffers.back());
-				}
-			};
-			scene->_functionsToRun.push_back(fn);
-		}
-		else {
-			game->rPressedLastFrame = false;
-		}
+		prevRState = rState;
 	}
 
 	//extern definition (EntryPoint.h)

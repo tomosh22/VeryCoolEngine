@@ -62,6 +62,8 @@ namespace VeryCoolEngine {
 	void Application::OnEvent(Event& e) {
 		if (e.GetType() == EventType::KeyPressed && dynamic_cast<KeyPressedEvent&>(e).GetKeyCode() == VCE_KEY_ESCAPE) _running = false;
 		if (e.GetType() == EventType::KeyPressed && dynamic_cast<KeyPressedEvent&>(e).GetKeyCode() == VCE_KEY_Q) _mouseEnabled = !_mouseEnabled;
+
+		
 		EventDispatcher dispatcher(e);
 		if (e.GetType() == EventType::WindowClose) {
 			std::function function = [&](WindowCloseEvent& e) -> bool {return Application::OnWindowClose(e); };
@@ -108,6 +110,9 @@ namespace VeryCoolEngine {
 			if (renderInitialised)break;//#todo implement mutex here
 		}
 		while (_running) {
+
+			
+
 			std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 			mainThreadReady = true;
 			std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
@@ -162,7 +167,6 @@ namespace VeryCoolEngine {
 			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 			std::chrono::duration frameDuration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-			
 		}
 		_renderThread.join();
 	}

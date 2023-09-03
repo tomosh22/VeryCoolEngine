@@ -31,8 +31,6 @@ namespace VeryCoolEngine {
 		std::vector<glm::ivec4> _instanceAOValues;
 
 
-		bool ePressedLastFrame = false;
-		bool rPressedLastFrame = false;
 
 		Chunk* chunkPtrs[s_xNumChunks.x * s_xNumChunks.z];
 	};

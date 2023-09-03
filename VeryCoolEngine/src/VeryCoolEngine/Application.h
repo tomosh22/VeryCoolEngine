@@ -111,6 +111,9 @@ namespace VeryCoolEngine {
 
 		//#todo temporary, need to implement a proper uniform system
 		bool _aoEnabled = true;
+
+		bool prevRState = false;
+
 	private:
 		std::thread _renderThread;
 		
