@@ -64,6 +64,7 @@ namespace VeryCoolEngine {
 		Application();
 		virtual ~Application();
 		void Run();
+		void GameLoop();
 		void OnEvent(Event& e);
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);

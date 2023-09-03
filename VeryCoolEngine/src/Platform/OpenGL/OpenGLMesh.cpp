@@ -3,78 +3,94 @@
 #include <glad/glad.h>
 #include "VeryCoolEngine/Application.h"
 
-void VeryCoolEngine::OpenGLMesh::PlatformInit()
-{
+namespace VeryCoolEngine {
 
-	int numFloats = 0;
-	BufferLayout layout;
-	if (vertexPositions != nullptr) {
-		layout.GetElements().push_back({ ShaderDataType::Float3, "_aPosition" });
-		numFloats += 3;
-	}
-	if (uvs != nullptr) {
-		layout.GetElements().push_back({ ShaderDataType::Float2, "_aUV" });
-		numFloats += 2;
-	}
-	if (normals != nullptr) {
-		layout.GetElements().push_back({ ShaderDataType::Float3, "_aNormal" });
-		numFloats += 3;
-	}
-	if (tangents != nullptr) {
-		layout.GetElements().push_back({ ShaderDataType::Float4, "_aTangent" });
-		numFloats += 4;
-	}
 
-	verts = new float[numVerts * numFloats];
-
-	size_t index = 0;
-	for (int i = 0; i < numVerts; i++)
+	void OpenGLMesh::PlatformInit()
 	{
-		if (vertexPositions != nullptr) {
-			((float*)verts)[index++] = vertexPositions[i].x;
-			((float*)verts)[index++] = vertexPositions[i].y;
-			((float*)verts)[index++] = vertexPositions[i].z;
-		}
 
+		int numFloats = 0;
+		BufferLayout layout;
+		if (vertexPositions != nullptr) {
+			layout.GetElements().push_back({ ShaderDataType::Float3, "_aPosition" });
+			numFloats += 3;
+		}
 		if (uvs != nullptr) {
-			((float*)verts)[index++] = uvs[i].x;
-			((float*)verts)[index++] = uvs[i].y;
+			layout.GetElements().push_back({ ShaderDataType::Float2, "_aUV" });
+			numFloats += 2;
 		}
 		if (normals != nullptr) {
-			((float*)verts)[index++] = normals[i].x;
-			((float*)verts)[index++] = normals[i].y;
-			((float*)verts)[index++] = normals[i].z;
+			layout.GetElements().push_back({ ShaderDataType::Float3, "_aNormal" });
+			numFloats += 3;
 		}
 		if (tangents != nullptr) {
-			((float*)verts)[index++] = tangents[i].x;
-			((float*)verts)[index++] = tangents[i].y;
-			((float*)verts)[index++] = tangents[i].z;
-			((float*)verts)[index++] = tangents[i].w;
+			layout.GetElements().push_back({ ShaderDataType::Float4, "_aTangent" });
+			numFloats += 4;
 		}
-}
-	
+
+		verts = new float[numVerts * numFloats];
+
+		size_t index = 0;
+		for (int i = 0; i < numVerts; i++)
+		{
+			if (vertexPositions != nullptr) {
+				((float*)verts)[index++] = vertexPositions[i].x;
+				((float*)verts)[index++] = vertexPositions[i].y;
+				((float*)verts)[index++] = vertexPositions[i].z;
+			}
+
+			if (uvs != nullptr) {
+				((float*)verts)[index++] = uvs[i].x;
+				((float*)verts)[index++] = uvs[i].y;
+			}
+			if (normals != nullptr) {
+				((float*)verts)[index++] = normals[i].x;
+				((float*)verts)[index++] = normals[i].y;
+				((float*)verts)[index++] = normals[i].z;
+			}
+			if (tangents != nullptr) {
+				((float*)verts)[index++] = tangents[i].x;
+				((float*)verts)[index++] = tangents[i].y;
+				((float*)verts)[index++] = tangents[i].z;
+				((float*)verts)[index++] = tangents[i].w;
+			}
+		}
+
 #if 0
-	BufferLayout layout = {
-		{ShaderDataType::Float3, "_aPosition"},
-		{ShaderDataType::Float2, "_aUV"},
-		{ShaderDataType::Float3, "_aNormal"},
-		{ShaderDataType::Float4, "_aTangent"}
-	};
+		BufferLayout layout = {
+			{ShaderDataType::Float3, "_aPosition"},
+			{ShaderDataType::Float2, "_aUV"},
+			{ShaderDataType::Float3, "_aNormal"},
+			{ShaderDataType::Float4, "_aTangent"}
+		};
 #else
-	
-	layout.CalculateOffsetsAndStrides();
+
+		layout.CalculateOffsetsAndStrides();
 #endif
-	VertexBuffer* vertexBuffer = VertexBuffer::Create(verts, numVerts * sizeof(float) * (numFloats));
-	vertexBuffer->SetLayout(layout);
-	VertexArray* vertexArray = VertexArray::Create();
-	vertexArray->AddVertexBuffer(vertexBuffer);
+		VertexBuffer* vertexBuffer = VertexBuffer::Create(verts, numVerts * sizeof(float) * (numFloats));
+		vertexBuffer->SetLayout(layout);
+		VertexArray* vertexArray = VertexArray::Create();
+		vertexArray->AddVertexBuffer(vertexBuffer);
 
-	IndexBuffer* indexBuffer = IndexBuffer::Create(indices, numIndices);
-	vertexArray->SetIndexBuffer(indexBuffer);
+		IndexBuffer* indexBuffer = IndexBuffer::Create(indices, numIndices);
+		vertexArray->SetIndexBuffer(indexBuffer);
 
 
 
-	if (_instanceData.size() > 0) {
+		if (_instanceData.size() > 0) {
+			VertexBuffer* instancedVertexBuffer = CreateInstancedVertexBuffer();
+			vertexArray->AddVertexBuffer(instancedVertexBuffer, true);
+		}
+
+		vertexArray->Unbind();
+
+
+		SetVertexArray(vertexArray);
+	}
+
+
+	VertexBuffer* OpenGLMesh::CreateInstancedVertexBuffer()
+	{
 		BufferLayout instancedLayout;
 		unsigned int instanceDataSize = 0;
 
@@ -154,13 +170,9 @@ void VeryCoolEngine::OpenGLMesh::PlatformInit()
 		instancedLayout.CalculateOffsetsAndStrides();
 		VertexBuffer* instancedVertexBuffer = VertexBuffer::Create(pData, instanceDataSize);
 		instancedVertexBuffer->SetLayout(instancedLayout);
-		vertexArray->AddVertexBuffer(instancedVertexBuffer, true);
+		
 
 		delete[] pData;
+		return instancedVertexBuffer;
 	}
-
-	vertexArray->Unbind();
-
-
-	SetVertexArray(vertexArray);
 }

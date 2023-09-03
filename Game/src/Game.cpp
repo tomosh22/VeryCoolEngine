@@ -208,6 +208,11 @@ namespace VeryCoolEngine {
 		return block;
 	}
 
+	//declared in Application.h, defined by game
+	void Application::GameLoop() {
+		printf("game loop\n");
+	}
+
 	//extern definition (EntryPoint.h)
 	VeryCoolEngine::Application* VeryCoolEngine::CreateApplication() {
 		return new Game();

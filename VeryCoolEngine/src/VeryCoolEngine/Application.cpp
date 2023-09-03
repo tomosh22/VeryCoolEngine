@@ -157,6 +157,8 @@ namespace VeryCoolEngine {
 
 			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 			std::chrono::duration frameDuration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+			GameLoop();
 		}
 		_renderThread.join();
 	}
