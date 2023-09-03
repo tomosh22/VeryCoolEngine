@@ -38,16 +38,45 @@ namespace VeryCoolEngine {
 		_pMesh->SetShader(_shaders[0]);
 		_pMesh->SetTexture(_textures[0]);
 
-		//#todo just one big chunk for now until I fix AO between chunks
-		constexpr int maxX = 8, maxZ = 8;
-		std::thread threads[maxX * maxZ];
+		GenerateChunks();
+		
+		UploadChunks();
 
-		Chunk* chunkPtrs[maxX * maxZ];//saving ptrs to be freed later
+
+		_pFullscreenShader = Shader::Create("fullscreen.vert", "fullscreen.frag");
+
+		_pCubemap = TextureCube::Create("CubemapTest", false);
+
+		_lights.push_back({
+				500,75,100,100,
+				0,1,0,1
+			});
+		_lights.push_back({
+				100,75,100,100,
+				0,1,0,1
+			});
+		_lights.push_back({
+			250, 100, 250, 1000,
+				0.8, 0.8, 0.8, 1
+			});
+		_lights.push_back({
+			0, 5, 0, 1000,
+				0.8, 0.8, 0.8, 1
+			});
+
 		
 
-		for (int x = 0; x < maxX; x++) {
-			for (int z = 0; z < maxZ; z++) {
-				int index = maxZ * x + z;
+		_renderThreadCanStart = true;
+	}
+
+	void Game::GenerateChunks() {
+		std::thread threads[s_xNumChunks.x * s_xNumChunks.z];
+
+
+
+		for (int x = 0; x < s_xNumChunks.x; x++) {
+			for (int z = 0; z < s_xNumChunks.z; z++) {
+				int index = s_xNumChunks.z * x + z;
 				Chunk* chunk = (Chunk*)malloc(sizeof(Chunk));
 
 				//x is first 32 bits, z is second 32 bits
@@ -66,20 +95,21 @@ namespace VeryCoolEngine {
 			}
 		}
 
-		for (int x = 0; x < maxX; x++)
+		for (int x = 0; x < s_xNumChunks.x; x++)
 		{
-			for (int z = 0; z < maxZ; z++)
+			for (int z = 0; z < s_xNumChunks.z; z++)
 			{
-				int i = maxZ * x + z;
+				int i = s_xNumChunks.z * x + z;
 				threads[i].join();
 			}
 
 		}
+	}
 
-
-		for (int x = 0; x < maxX; x++)
-		{	
-			for (int z = 0; z < maxZ; z++)
+	void Game::UploadChunks() {
+		for (int x = 0; x < s_xNumChunks.x; x++)
+		{
+			for (int z = 0; z < s_xNumChunks.z; z++)
 			{
 				long long key = Chunk::CalcKey(x, z);
 				Chunk chunk = *(_chunks.find(key))->second;
@@ -95,14 +125,14 @@ namespace VeryCoolEngine {
 				}
 				//delete[] chunk._blocks;
 			}
-			
+
 		}
 
 
-		for (int i = 0; i < maxZ * maxX; i++) free(chunkPtrs[i]);
+		for (int i = 0; i < s_xNumChunks.z * s_xNumChunks.x; i++) free(chunkPtrs[i]);
 
 		//std::cout << "unique quats " << Transform::uniqueQuats.size() << '\n';
-		
+
 		_pMesh->_instanceData.push_back(BufferElement(
 			ShaderDataType::Float4,
 			"_aInstanceQuat",
@@ -112,7 +142,7 @@ namespace VeryCoolEngine {
 			_instanceQuats.data(),
 			_instanceQuats.size()
 		));
-		
+
 
 		_pMesh->_instanceData.push_back(BufferElement(
 			ShaderDataType::Float3,
@@ -143,31 +173,6 @@ namespace VeryCoolEngine {
 			_instanceAOValues.data(),
 			_instanceAOValues.size()
 		));
-
-		_pFullscreenShader = Shader::Create("fullscreen.vert", "fullscreen.frag");
-
-		_pCubemap = TextureCube::Create("CubemapTest", false);
-
-		_lights.push_back({
-				500,75,100,100,
-				0,1,0,1
-			});
-		_lights.push_back({
-				100,75,100,100,
-				0,1,0,1
-			});
-		_lights.push_back({
-			250, 100, 250, 1000,
-				0.8, 0.8, 0.8, 1
-			});
-		_lights.push_back({
-			0, 5, 0, 1000,
-				0.8, 0.8, 0.8, 1
-			});
-
-		
-
-		_renderThreadCanStart = true;
 	}
 
 	Game::~Game() {}

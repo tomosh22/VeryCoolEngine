@@ -15,6 +15,10 @@ namespace VeryCoolEngine {
 		Game();
 		~Game();
 
+		void GenerateChunks();
+		void UploadChunks();
+
+		static constexpr glm::ivec3 s_xNumChunks = { 8,1,8 };
 
 		std::map<long long, Chunk*> _chunks;
 		Block GetAdjacentBlock(const Chunk* chunk, int x, int y, int z, int offsetX, int offsetY, int offsetZ);
@@ -29,6 +33,8 @@ namespace VeryCoolEngine {
 
 		bool ePressedLastFrame = false;
 		bool rPressedLastFrame = false;
+
+		Chunk* chunkPtrs[s_xNumChunks.x * s_xNumChunks.z];
 	};
 
 
