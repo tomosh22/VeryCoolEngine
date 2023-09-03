@@ -42,7 +42,7 @@ namespace VeryCoolEngine {
 		constexpr int maxX = 8, maxZ = 8;
 		std::thread threads[maxX * maxZ];
 
-		Chunk* chunkPtrs[maxX * maxZ];//saving ptrs to be free later
+		Chunk* chunkPtrs[maxX * maxZ];//saving ptrs to be freed later
 		
 
 		for (int x = 0; x < maxX; x++) {
@@ -51,10 +51,10 @@ namespace VeryCoolEngine {
 				Chunk* chunk = (Chunk*)malloc(sizeof(Chunk));
 
 				//x is first 32 bits, z is second 32 bits
-				long long key = Chunk::CalcKey(x, z);
+				ChunkKey_t key = Chunk::CalcKey(x, z);
 
 				//std::cout << key << std::endl;
-				std::pair<long long, Chunk*> pair = std::make_pair(key, chunk);
+				std::pair<ChunkKey_t, Chunk*> pair = std::make_pair(key, chunk);
 				_chunks.emplace(pair);
 				auto func = [](Chunk* chunk, int x, int z) {
 					*chunk = Chunk({ x,0,z });
@@ -98,7 +98,7 @@ namespace VeryCoolEngine {
 			
 		}
 
-		
+
 		for (int i = 0; i < maxZ * maxX; i++) free(chunkPtrs[i]);
 
 		//std::cout << "unique quats " << Transform::uniqueQuats.size() << '\n';

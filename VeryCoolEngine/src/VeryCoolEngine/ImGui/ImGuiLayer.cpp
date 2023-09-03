@@ -49,8 +49,13 @@ namespace VeryCoolEngine {
 		ImGui::Text(cameraText.c_str());
 
 		const glm::ivec3& camPos = app->_Camera.GetPosition();
-		std::string camPosText = std::to_string(camPos.x) + " " + std::to_string(camPos.y) + " " + std::to_string(camPos.z);
+		std::string camPosText = "Camera Position: " + std::to_string(camPos.x) + " " + std::to_string(camPos.y) + " " + std::to_string(camPos.z);
 		ImGui::Text(camPosText.c_str());
+
+		const glm::vec3& camDir = app->_Camera.ViewDirection();
+		std::string camDirText = "Camera View Direction: " + std::to_string(camDir.x) + " " + std::to_string(camDir.y) + " " + std::to_string(camDir.z);
+		ImGui::Text(camDirText.c_str());
+
 		if (ImGui::TreeNode("Point Lights")) {
 			int lightIndex = 1;
 			for (Renderer::Light& light : app->_lights)

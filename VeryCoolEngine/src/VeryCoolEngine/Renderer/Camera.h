@@ -101,6 +101,8 @@ namespace VeryCoolEngine {
 		//Sets pitch, in degrees
 		Camera& SetPitch(float p) { pitch = p; return *this; }
 
+		glm::vec3 ViewDirection();
+
 		static Camera BuildPerspectiveCamera(const glm::vec3& pos, float pitch, float yaw, float fov, float near, float far, float aspectRatio);
 		static Camera BuildOrthoCamera(const glm::vec3& pos, float pitch, float yaw, float left, float right, float top, float bottom, float near, float far);
 	protected:

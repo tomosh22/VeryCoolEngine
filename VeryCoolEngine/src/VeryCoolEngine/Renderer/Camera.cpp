@@ -128,6 +128,17 @@ namespace VeryCoolEngine {
 		}
 	}
 
+	glm::vec3 Camera::ViewDirection()
+	{
+		glm::vec3 result;
+
+		result.z = -cos(yaw) * cos(pitch);
+		result.x = -sin(yaw) * cos(pitch);
+		result.y = sin(pitch);
+
+		return glm::normalize(result);
+	}
+
 	Camera Camera::BuildPerspectiveCamera(const glm::vec3& pos, float pitch, float yaw, float fov, float nearPlane, float farPlane, float aspectRatio) {
 		Camera c;
 		c.camType = CameraType::Perspective;
