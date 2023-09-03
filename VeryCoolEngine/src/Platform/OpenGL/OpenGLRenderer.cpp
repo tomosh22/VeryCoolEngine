@@ -78,6 +78,7 @@ namespace VeryCoolEngine {
 
 	void OpenGLRenderer::DrawIndexedInstanced(VertexArray* vertexArray, unsigned int count, MeshTopolgy topology)
 	{
+		vertexArray->Bind();
 		switch (topology) {
 		case MeshTopolgy::Triangles:
 			glDrawElementsInstanced(GL_TRIANGLES, vertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr, count);
@@ -181,6 +182,10 @@ namespace VeryCoolEngine {
 			RenderCommand::SetClearColor({ 0.6, 0.2, 0.4, 1 });
 			RenderCommand::Clear();
 			app->sceneMutex.lock();
+			while (scene->_functionsToRun.size() > 0) {
+				scene->_functionsToRun.back()();
+				scene->_functionsToRun.pop_back();
+			}
 			_spRenderer->BeginScene(scene);
 
 			glDisable(GL_DEPTH_TEST);

@@ -11,7 +11,9 @@ namespace VeryCoolEngine {
 		//void Bind() const override;
 		//void Unbind() const override;
 
-		VertexBuffer* CreateInstancedVertexBuffer();
+		VertexBuffer* CreateInstancedVertexBuffer() override;
+
+		
 
 		void SetVertexArray(VertexArray* vertexArray) override { _pVertexArray = vertexArray; }
 

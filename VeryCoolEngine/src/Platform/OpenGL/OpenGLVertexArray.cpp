@@ -1,5 +1,6 @@
 #include "vcepch.h"
 #include "OpenGLVertexArray.h"
+#include "OpenGLBuffer.h"
 
 
 namespace VeryCoolEngine {
@@ -66,6 +67,30 @@ namespace VeryCoolEngine {
 			
 		}
 		_VertexBuffers.push_back(vertexBuffer);
+	}
+
+	void OpenGLVertexArray::DisableVertexBuffer(VertexBuffer* vertexBuffer)
+	{
+		glBindVertexArray(_id);
+		vertexBuffer->Bind();
+		for (const BufferElement& element : vertexBuffer->GetLayout()) {
+			//#todo this will work fine for now as we only have one vbo
+			//that will be en/disabled, will need to store attribute ids
+			//per vertex buffer in future
+			glVertexAttribPointer(_numVertAttribs,
+				0,
+				0,
+				0,
+				0,
+				0);
+			glDisableVertexAttribArray(_numVertAttribs--);
+		}
+		//same for this
+		vertexBuffer->Unbind();
+		VCE_ASSERT(_VertexBuffers.size() == 2, "vertex buffer has come out of nowhere");
+		_VertexBuffers.pop_back();
+		glBindVertexArray(0);
+		glDeleteBuffers(1, &(((OpenGLVertexBuffer*)vertexBuffer)->_id));
 	}
 
 	void OpenGLVertexArray::SetIndexBuffer(IndexBuffer* indexBuffer) {

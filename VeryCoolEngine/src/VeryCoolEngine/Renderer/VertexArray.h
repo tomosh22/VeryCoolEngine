@@ -9,6 +9,7 @@ namespace VeryCoolEngine {
 		virtual void Unbind() const = 0;
 
 		virtual void AddVertexBuffer(VertexBuffer* vertexBuffer, bool instanced = false) = 0;
+		virtual void DisableVertexBuffer(VertexBuffer* vertexBuffer) = 0;
 		virtual void SetIndexBuffer(IndexBuffer* indexBuffer) = 0;
 
 		std::vector<VertexBuffer*>& GetVertexBuffers() { return _VertexBuffers; }
@@ -16,8 +17,8 @@ namespace VeryCoolEngine {
 
 		static VertexArray* Create();
 		unsigned int _numVertAttribs = 0;
-	protected:
 		std::vector<VertexBuffer*> _VertexBuffers;
+	protected:
 		IndexBuffer* _pIndexBuffer;
 	};
 }

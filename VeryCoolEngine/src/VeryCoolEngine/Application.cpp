@@ -115,9 +115,9 @@ namespace VeryCoolEngine {
 			_DeltaTime = duration.count()/1000.;
 			_LastFrameTime = now;
 
-			
 
 			_Camera.UpdateCamera(_DeltaTime);
+			GameLoop();
 			sceneMutex.lock();
 			scene->Reset();
 			
@@ -144,9 +144,13 @@ namespace VeryCoolEngine {
 			//	1,2,3,4,
 			//	1,0,1,1
 			//};
+
+			
+
 			scene->ready = true;
 			sceneMutex.unlock();
 
+			
 			
 			for (Layer* layer : _layerStack)
 				layer->OnUpdate();
@@ -158,7 +162,7 @@ namespace VeryCoolEngine {
 			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
 			std::chrono::duration frameDuration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-			GameLoop();
+			
 		}
 		_renderThread.join();
 	}

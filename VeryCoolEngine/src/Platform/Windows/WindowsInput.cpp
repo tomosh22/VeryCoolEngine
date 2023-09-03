@@ -10,7 +10,7 @@ namespace VeryCoolEngine {
 	bool WindowsInput::IsKeyPressedImpl(int keyCode){
 		GLFWwindow* window = reinterpret_cast<GLFWwindow*>(Application::GetInstance()->GetWindow().GetNativeWindow());
 		int state = glfwGetKey(window, keyCode);
-		return state == GLFW_PRESS || state == GLFW_REPEAT;
+		return state == GLFW_PRESS;
 	}
 	bool WindowsInput::IsMouseButtonPressedImpl(int button) {
 		GLFWwindow* window = reinterpret_cast<GLFWwindow*>(Application::GetInstance()->GetWindow().GetNativeWindow());

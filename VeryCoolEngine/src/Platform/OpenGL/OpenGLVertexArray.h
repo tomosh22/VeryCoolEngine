@@ -16,6 +16,7 @@ namespace VeryCoolEngine {
 		void Unbind() const override;
 
 		void AddVertexBuffer(VertexBuffer* vertexBuffer, bool instanced = false) override;
+		void DisableVertexBuffer(VertexBuffer* vertexBuffer) override;
 		void SetIndexBuffer(IndexBuffer* indexBuffer) override;
 
 	private:

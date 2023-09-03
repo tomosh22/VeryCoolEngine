@@ -11,8 +11,10 @@ namespace VeryCoolEngine {
 	void OpenGLVertexBuffer::UploadData(){
 	}
 	void OpenGLVertexBuffer::Bind() const{
+		glBindBuffer(GL_ARRAY_BUFFER, _id);
 	}
 	void OpenGLVertexBuffer::Unbind() const	{
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
 

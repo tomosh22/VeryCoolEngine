@@ -26,6 +26,7 @@ namespace VeryCoolEngine {
 		//virtual void Unbind() const = 0;
 
 		virtual void SetVertexArray(VertexArray* vertexArray) = 0;
+		virtual VertexBuffer* CreateInstancedVertexBuffer() = 0;
 
 		VertexArray* GetVertexArray() const { return _pVertexArray; }
 

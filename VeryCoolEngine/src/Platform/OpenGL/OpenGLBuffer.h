@@ -17,8 +17,8 @@ namespace VeryCoolEngine {
 
 		void SetLayout(const BufferLayout& layout) override { _Layout = layout; }
 		const BufferLayout& GetLayout() override { return _Layout; }
-	private:
 		GLuint _id;
+	private:
 	};
 
 	class OpenGLIndexBuffer : public IndexBuffer {

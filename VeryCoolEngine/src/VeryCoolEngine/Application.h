@@ -24,6 +24,7 @@ namespace VeryCoolEngine {
 
 	struct Scene {
 	public:
+		std::vector<std::function<void(void)>> _functionsToRun;
 		Camera* camera = nullptr;
 
 		Shader* skyboxShader = nullptr;

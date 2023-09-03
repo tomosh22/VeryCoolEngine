@@ -210,7 +210,33 @@ namespace VeryCoolEngine {
 
 	//declared in Application.h, defined by game
 	void Application::GameLoop() {
+		Game* game = (Game*)Application::GetInstance();
 		printf("game loop\n");
+		if (Input::IsKeyPressed(VCE_KEY_E) && !game->ePressedLastFrame) {
+			game->ePressedLastFrame = true;
+			auto fn = [&]() {
+				if (_pMesh->GetVertexArray()->_VertexBuffers.size() == 1) {
+					VertexBuffer* instancedVertexBuffer = _pMesh->CreateInstancedVertexBuffer();
+					_pMesh->GetVertexArray()->AddVertexBuffer(instancedVertexBuffer, true);
+				}
+			};
+			scene->_functionsToRun.push_back(fn);
+		}
+		else {
+			game->ePressedLastFrame = false;
+		}
+		if (Input::IsKeyPressed(VCE_KEY_R) && !game->rPressedLastFrame) {
+			game->rPressedLastFrame = true;
+			auto fn = [&]() {
+				if (_pMesh->GetVertexArray()->_VertexBuffers.size() == 2) {
+					_pMesh->GetVertexArray()->DisableVertexBuffer(_pMesh->GetVertexArray()->_VertexBuffers.back());
+				}
+			};
+			scene->_functionsToRun.push_back(fn);
+		}
+		else {
+			game->rPressedLastFrame = false;
+		}
 	}
 
 	//extern definition (EntryPoint.h)
