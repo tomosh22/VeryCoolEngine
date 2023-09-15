@@ -17,7 +17,7 @@ namespace VeryCoolEngine {
 
 	class VCE_API Window {
 	public:
-		using EventCallBackFunction = std::function<void(Event&)>;
+		using EventCallBackFunction = std::function<void(Event&&)>;
 
 		virtual ~Window() {}
 

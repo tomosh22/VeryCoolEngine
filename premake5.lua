@@ -18,7 +18,7 @@ project "VeryCoolEngine"
 	location"VeryCoolEngine"
 	kind "StaticLib"
 	language "C++"
-	cppdialect "C++17"
+	cppdialect "C++20"
 	staticruntime "on"
 
 	targetdir ("bin/" .. outputDir .. "/%{prj.name}")
@@ -89,7 +89,7 @@ project "Game"
 	location "Game"
 	kind "ConsoleApp"
 	language "C++"
-	cppdialect "C++17"
+	cppdialect "C++20"
 	staticruntime "on"
 
 	targetdir ("bin/" .. outputDir .. "/%{prj.name}")

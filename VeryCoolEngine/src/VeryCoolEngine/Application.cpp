@@ -22,7 +22,7 @@ namespace VeryCoolEngine {
 		srand(time(0));
 		_spInstance = this;
 		_window = Window::Create();
-		std::function callback = [this](Event& e) {OnEvent(e); };
+		std::function callback = [this](Event&& e) {OnEvent(e); };
 		_window->SetEventCallback(callback);
 		_window->SetVSync(true);
 		

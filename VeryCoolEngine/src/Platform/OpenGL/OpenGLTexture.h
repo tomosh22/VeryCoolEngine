@@ -20,7 +20,7 @@ namespace VeryCoolEngine {
 		OpenGLTexture2D() {};
 		OpenGLTexture2D(uint32_t width, uint32_t height, TextureFormat textureFormat = TextureFormat::RGBA, TextureWrapMode wrapMode = TextureWrapMode::Repeat);
 
-		OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool srgb);
+		OpenGLTexture2D(const std::string& path, bool srgb);
 
 		~OpenGLTexture2D() = default;
 
