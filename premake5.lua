@@ -66,9 +66,7 @@ project "VeryCoolEngine"
 			"GLFW_INCLUDE_NONE",
 		}
 
-		postbuildcommands{
-			("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputDir .. "/Game")
-		}
+		
 
 	filter "configurations:Debug"
 		defines "VCE_DEBUG"
