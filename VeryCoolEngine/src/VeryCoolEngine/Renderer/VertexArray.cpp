@@ -8,5 +8,7 @@ namespace VeryCoolEngine {
 #ifdef VCE_OPENGL
 		return new OpenGLVertexArray();
 #endif
+		VCE_INFO("implement me");
+		return nullptr;
 	}
 }

@@ -22,19 +22,29 @@ namespace VeryCoolEngine {
 		srand(time(0));
 		_spInstance = this;
 		_window = Window::Create();
+#ifdef VCE_VULKAN
+#endif
 		std::function callback = [this](Event&& e) {OnEvent(e); };
 		_window->SetEventCallback(callback);
 		_window->SetVSync(true);
 		
 		//_window->SetVSync(true);
 		_pRenderer = Renderer::Create();
+#ifdef VCE_VULKAN
+		_pRenderer->InitWindow();
+		_pRenderer->PlatformInit();
+		_pRenderer->GenericInit();
+
+#endif
 		
 		_renderThread = std::thread([&]() {
 			while (true) {
 				printf("implement mutex\n");
 				if (_renderThreadCanStart)break;//#todo implement mutex here
 			}
+#ifdef VCE_OPENGL
 			_pRenderer->InitWindow();
+#endif
 			_pRenderer->RenderThreadFunction();
 		});
 
@@ -112,7 +122,11 @@ namespace VeryCoolEngine {
 		while (_running) {
 
 			
-
+#ifdef VCE_VULKAN
+			_window->OnUpdate();
+			VCE_WARN("early continue for vulkan");
+			continue;
+#endif
 			std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 			mainThreadReady = true;
 			std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();

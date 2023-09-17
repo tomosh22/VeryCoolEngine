@@ -3,7 +3,14 @@
 #include "VeryCoolEngine/Window.h"
 #include "VeryCoolEngine/Log.h"
 #include "VeryCoolEngine/core.h"
+#ifdef VCE_VULKAN
+#define GLFW_INCLUDE_VULKAN
+#endif
 #include "GLFW/glfw3.h"
+#ifdef VCE_VULKAN
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#endif
 
 #include "VeryCoolEngine/Renderer/GraphicsContext.h"
 

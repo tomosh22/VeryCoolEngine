@@ -30,6 +30,8 @@ namespace VeryCoolEngine {
 #ifdef VCE_OPENGL
 		return new OpenGLShader(vertex, fragment, geometry, domain,  hull);
 #endif
+		VCE_INFO("implement me");
+		return nullptr;
 	}
 }
 

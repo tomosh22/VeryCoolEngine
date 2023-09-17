@@ -30,7 +30,7 @@ project "VeryCoolEngine"
 	assetPath = "/Assets/"
 	defines{
 		"ASSETROOTLOCATION=" .. '\"' .. _WORKING_DIR .. assetPath .. '\"',
-		"VCE_OPENGL"
+		"VCE_VULKAN"
 	}
 
 	files{
@@ -47,14 +47,18 @@ project "VeryCoolEngine"
 		"%{prj.name}/vendor/imgui",
 		"%{prj.name}/vendor/glm",
 		"%{prj.name}/vendor/stb",
-		"%{prj.name}/src"
+		"%{prj.name}/src",
+		"$(VULKAN_SDK)/include",
 	}
-
+	libdirs {
+		"$(VULKAN_SDK)/lib"
+	}
 	links{
 		"GLFW",
 		"Glad",
 		"opengl32.lib",
-		"ImGui"
+		"ImGui",
+		"vulkan-1.lib"
 	}
 
 	filter "system:windows"

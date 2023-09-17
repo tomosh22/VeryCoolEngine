@@ -8,6 +8,8 @@ namespace VeryCoolEngine {
 #ifdef VCE_OPENGL
 		return new OpenGLMesh();
 #endif
+		VCE_INFO("implement me");
+		return nullptr;
 	}
 	//credit rich davison
 	//#todo cleanup, was written on laptop

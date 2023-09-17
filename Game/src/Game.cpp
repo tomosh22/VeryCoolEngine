@@ -19,6 +19,10 @@ namespace VeryCoolEngine {
 	};
 
 	Game::Game() {
+#ifdef VCE_VULKAN
+		VCE_WARN("early return for vulkan");
+		return;
+#endif
 		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, 1280.f / 720.f);
 #pragma region old
 		//_pMesh = Mesh::GenerateGenericHeightmap(2,2);

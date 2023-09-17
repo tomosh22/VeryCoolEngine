@@ -30,9 +30,13 @@ namespace VeryCoolEngine {
 #ifdef VCE_SAMPLES
 			glfwWindowHint(GLFW_SAMPLES, VCE_SAMPLES);
 #endif
+#ifdef VCE_VULKAN
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+#endif
 			glfwSetErrorCallback([](int error, const char* desc) {VCE_CORE_ERROR("glfw error {0} {1}",error,desc); });
 			glfwInititliazed = true;
 		}
+
 		_pWindow = glfwCreateWindow((int)p._width, (int)p._height, p._title.c_str(), nullptr, nullptr);
 		
 

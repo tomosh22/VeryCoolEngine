@@ -1,5 +1,8 @@
 #include "vcepch.h"
 #include "ImGuiLayer.h"
+#ifdef VCE_VULKAN
+#define GLFW_INCLUDE_VULKAN
+#endif
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 

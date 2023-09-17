@@ -1,6 +1,7 @@
 #include "vcepch.h"
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLRenderer.h"
+#include "Platform/Vulkan/VulkanRenderer.h"
 #include "RenderCommand.h"
 #include "VeryCoolEngine/Application.h"
 #include "VeryCoolEngine/ImGui/ImGuiLayer.h"
@@ -81,11 +82,17 @@ namespace VeryCoolEngine {
 	Renderer* Renderer::Create() {
 #ifdef VCE_OPENGL
 		return new OpenGLRenderer();
+#elif defined VCE_VULKAN
+	return new VulkanRenderer();
 #endif
 
 	}
 	void Renderer::GenericInit()
 	{
+#ifdef VCE_VULKAN
+		VCE_WARN("early return for vulkan");
+		return;
+#endif
 		Application* app = Application::GetInstance();
 
 		app->_pImGuiLayer = new ImGuiLayer();

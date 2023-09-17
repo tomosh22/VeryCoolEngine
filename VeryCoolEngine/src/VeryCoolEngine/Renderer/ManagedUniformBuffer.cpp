@@ -8,5 +8,7 @@ namespace VeryCoolEngine {
 #ifdef VCE_OPENGL
 		return new OpenGLManagedUniformBuffer(size, numFrames, baseBinding);
 #endif
+		VCE_INFO("implement me");
+		return nullptr;
 	}
 }

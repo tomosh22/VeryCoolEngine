@@ -8,12 +8,16 @@ namespace VeryCoolEngine {
 #ifdef VCE_OPENGL
 		return new OpenGLTexture2D(width,height,format,wrapMode);
 #endif
+		VCE_INFO("implement me");
+		return nullptr;
 	}
 	Texture2D* Texture2D::Create(const std::string& path, bool srgb)
 	{
 #ifdef VCE_OPENGL
 		return new OpenGLTexture2D(path,srgb);
 #endif
+		VCE_INFO("implement me");
+		return nullptr;
 	}
 
 
@@ -22,6 +26,8 @@ namespace VeryCoolEngine {
 #ifdef VCE_OPENGL
 		return new OpenGLTextureCube(path, srgb);
 #endif
+		VCE_INFO("implement me");
+		return nullptr;
 	}
 }
 
