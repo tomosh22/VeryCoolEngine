@@ -1,102 +1,230 @@
 #pragma once
-#define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan.hpp>
-#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
+#include <iostream>
+#include <stdexcept>
+#include <vector>
+#include <string>
+#include <set>
+#include <cstdint>
+#include <limits>
+#include <algorithm>
+#include <fstream>
 
 #include "VeryCoolEngine/Renderer/Renderer.h"
-#include "VeryCoolEngine/Events/Event.h"
+#include "VeryCoolEngine/Application.h"
+
+#define DEBUG 1
 
 namespace VeryCoolEngine {
-	class VulkanRenderer : public Renderer {
-	public:
-		~VulkanRenderer();
 
-		void InitWindow() override;
-		void PlatformInit() override;
+#define MAX_FRAMES_IN_FLIGHT 2
+		struct QueueFamilyIndices {
+			uint32_t graphicsFamily = -1;
+			uint32_t presentFamily = -1;
+		};
+		struct SwapChainSupportDetails {
+			vk::SurfaceCapabilitiesKHR capabilities;
+			std::vector <vk::SurfaceFormatKHR> formats;
+			std::vector <vk::PresentModeKHR> presentModes;
+		};
+		class VulkanRenderer : public Renderer {
+		public:
 
-		void SetClearColor(const glm::vec4 color) override;
-		void Clear() override;
-		void DrawIndexed(VertexArray* vertexArray, MeshTopolgy topology = MeshTopolgy::Triangles) override;
-		void DrawIndexedInstanced(VertexArray* vertexArray, unsigned int count, MeshTopolgy topology = MeshTopolgy::Triangles) override;
-		void BindViewProjMat(Shader* shader) override;
-		void BindLightUBO(Shader* shader) override;
-		void DrawFullScreenQuad() override;
-		void BeginScene(Scene* scene) override;
-		void EndScene() override;
-		void RenderThreadFunction() override;
+			VulkanRenderer();
 
-		void OnEvent(Event& e);
-	private:
+#pragma region overrides
+			virtual void PlatformInit() override;
+			virtual void OnResize(uint32_t uWidth, uint32_t uHeight) override;
 
-		void RecordCmdBuffer(vk::CommandBuffer xCmd, uint32_t uImageIndex);
 
-		void OnResize(uint32_t uWidth, uint32_t uHeight);
+			virtual void SetClearColor(const glm::vec4 color) override;
+			virtual void Clear() override;
 
-		void WaitForCmdBuffer(vk::CommandBuffer& buffer);
+			virtual void BeginScene(Scene* scene) override;
+			virtual void EndScene() override;
 
-		std::vector<char> ReadFile(const char* szFilename);
+			virtual void BindViewProjMat(Shader* shader) override;
+			virtual void BindLightUBO(Shader* shader) override;
 
-		vk::ShaderModule CreateShaderModule(const std::vector<char>& xCode);
+			virtual void DrawFullScreenQuad() override;
 
-		vk::Instance m_xInstance;
-		std::vector<const char*> m_xInstanceExtensions;
-		std::vector<const char*> m_xInstanceLayers;
-		vk::DebugUtilsMessengerEXT m_xDebugMessenger;
+			virtual void RenderThreadFunction() override;
 
-		vk::PhysicalDevice m_xPhysicalDevice;
-		vk::Device m_xDevice;
-		std::vector<const char*> m_xDeviceLayers;
-		std::vector<const char*> m_xDeviceExtensions;
+			virtual void DrawIndexed(VertexArray* vertexArray, MeshTopolgy topology = MeshTopolgy::Triangles) override;
+			virtual void DrawIndexedInstanced(VertexArray* vertexArray, unsigned int count, MeshTopolgy topology = MeshTopolgy::Triangles) override;
+#pragma endregion
 
-		vk::SurfaceKHR m_xSurface;
-		vk::Format m_xSurfaceFormat;
-		vk::ColorSpaceKHR m_xSurfaceColorSpace;
 
-		std::vector<vk::QueueFamilyProperties> m_xQueueProps;
-		uint32_t m_xGraphicsQueueIndex = -1;
-		uint32_t m_xComputeQueueIndex = -1;
-		uint32_t m_xCopyQueueIndex = -1;
-		uint32_t m_xPresentQueueIndex = -1;
+			/*void run() {
+				InitWindow();
+				InitVulkan();
+				MainLoop();
+				Cleanup();
+			}*/
+		protected:
 
-		vk::Queue m_xGraphicsQueue;
-		vk::Queue m_xComputeQueue;
-		vk::Queue m_xCopyQueue;
-		vk::Queue m_xPresentQueue;
+			void InitWindow() override;
+			void InitVulkan();
+			void MainLoop() override;
+			void Cleanup();
 
-		vk::DescriptorPool m_xDefaultDescriptorPool;
-		vk::CommandPool	m_xGraphicsCommandPool;	
-		vk::CommandPool m_xComputeCommandPool;
+			void CleanupSwapChain();
 
-		uint32_t m_uWidth;
-		uint32_t m_uHeight;
-		vk::Extent2D m_xSwapExtent;
-		vk::Rect2D m_xScreenRect;
-		vk::Viewport m_xViewport;
-		vk::Rect2D m_xScissor;
-		vk::SwapchainKHR m_xSwapchain;
-		std::vector<vk::Image> m_xSwapchainImages;
-		std::vector<vk::ImageView> m_xSwapchainImageViews;
+			void CreateInstance();
 
-		vk::ClearValue m_xClearColor;
 
-		vk::RenderPass m_xRenderPass;
-		vk::RenderPassBeginInfo m_xRenderPassBeginInfo;
 
-		std::vector<vk::Framebuffer> m_xFramebuffers;
+			void InitDebugMessenger();
 
-		vk::Semaphore m_xImageAvailableSem;
-		vk::Semaphore m_xRenderFinishedSem;
-		vk::Fence m_xInFlightFence;
-		uint32_t m_uCurrentFrameIndex;
+			void SelectPhysicalDevice();
 
-		vk::PipelineLayout m_xPipelineLayout;
+			void CreateLogicalDevice();
 
-		vk::Pipeline m_xPipeline;
+			bool CheckDeviceIsUsable(vk::PhysicalDevice physDevice) {
+				//vk::PhysicalDeviceProperties props;
+				//physDevice.getProperties(&props);
+				//vk::PhysicalDeviceFeatures features;
+				//physDevice.getFeatures(features);
+				//
+				//QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(physDevice);
+				//if (!(props.deviceType == vk::PhysicalDeviceType::eDiscreteGpu &&
+				//	queueFamilyIndices.graphicsFamily != -1 &&
+				//	queueFamilyIndices.presentFamily != -1
+				//	&& CheckDeviceExtensionsSupport(physDevice))) {
+				//	std::cerr << "incompatible gpu\n";
+				//	return false;
+				//}
+				//SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(physDevice);
+				//return !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+				return true;
 
-		vk::CommandBuffer m_xCmdBuffer;
-	};
+			}
+			bool CheckDeviceExtensionsSupport(vk::PhysicalDevice physDevice) {
+				//uint32_t numExtensions = 0;
+				//
+				//physDevice.enumerateDeviceExtensionProperties(nullptr, &numExtensions, nullptr);
+				//std::vector<vk::ExtensionProperties> availableExtensions;
+				//availableExtensions.resize(numExtensions);
+				//physDevice.enumerateDeviceExtensionProperties(nullptr, &numExtensions, availableExtensions.data());
+				//std::set<std::string> requiredExtensions;
+				//for (const char* ext : deviceExtensions) {
+				//	requiredExtensions.insert(ext);
+				//}
+				//for (const vk::ExtensionProperties& ext : availableExtensions) {
+				//	requiredExtensions.erase(ext.extensionName);
+				//}
+				//return requiredExtensions.empty();
+				return true;
+			}
+
+			QueueFamilyIndices FindQueueFamilies(vk::PhysicalDevice physDevice);
+
+			SwapChainSupportDetails QuerySwapChainSupport(vk::PhysicalDevice physDevice);
+
+			void CreateSwapChain();
+
+			vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
+
+			vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes) {
+				for (const vk::PresentModeKHR& mode : availablePresentModes) {
+					if (mode == vk::PresentModeKHR::eMailbox)return mode;
+				}
+				std::cerr << "mailbox not supported";
+			}
+
+			vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
+
+			void CreateImageViews();
+
+			vk::ShaderModule CreateShaderModule(const std::vector<char>& code);
+
+			void CreateRenderPass();
+
+			void CreateGraphicsPipeline();
+
+			void CreateFrameBuffers();
+
+			void CreateCommandPool();
+
+			void CreateCommandBuffers();
+
+			void RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex);
+
+			void CreateSyncObjects();
+
+			void DrawFrame();
+
+			void RecreateSwapChain();
+
+
+
+			static std::vector<char> ReadFile(const std::string& filename) {
+				std::ifstream file(filename, std::ios::ate | std::ios::binary);
+				if (!file.is_open())std::cerr << "couldnt open file";
+				int fileSize = file.tellg();
+				std::vector<char> buffer(fileSize);
+				file.seekg(0);
+				file.read(buffer.data(), fileSize);
+				file.close();
+				return buffer;
+			}
+
+#if DEBUG
+			bool CheckValidationLayerSupport();
+#endif
+
+			static void FramebufferResizeCallback(GLFWwindow* window, int width, int height);
+
+			static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+				vk::DebugUtilsMessageTypeFlagsEXT messageType,
+				const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
+				void* pUserData);
+
+			GLFWwindow* m_window;
+			const int m_width = 1280, m_height = 720;
+			vk::Instance m_instance;
+			vk::DebugUtilsMessengerEXT m_debugMessenger;
+			vk::PhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
+			vk::Device m_device;
+			vk::Queue m_graphicsQueue;
+			vk::Queue m_presentQueue;
+			vk::SurfaceKHR m_surface;
+			vk::SwapchainKHR m_swapChain;
+			std::vector<vk::Image> m_swapChainImages;
+			vk::Format m_swapChainImageFormat;
+			vk::Extent2D m_swapChainExtent;
+			std::vector<vk::ImageView> m_swapChainImageViews;
+
+			vk::RenderPass m_renderPass;
+			vk::PipelineLayout m_pipelineLayout;
+			vk::Pipeline m_graphicsPipeline;
+
+			std::vector<vk::Framebuffer> m_swapChainFramebuffers;
+
+			vk::CommandPool m_commandPool;
+			std::vector<vk::CommandBuffer> m_commandBuffers;
+
+			std::vector<vk::Semaphore> m_imageAvailableSemaphores;
+			std::vector<vk::Semaphore> m_renderFinishedSemaphores;
+			std::vector<vk::Fence> m_inFlightFences;
+
+			uint32_t m_currentFrame = 0;
+
+			bool m_framebufferResized = false;
+
+			const std::vector<const char*> m_deviceExtensions = {
+				VK_KHR_SWAPCHAIN_EXTENSION_NAME
+			};
+
+#if DEBUG
+			std::vector<const char*> m_validationLayers = { "VK_LAYER_KHRONOS_validation" };
+
+#endif
+		};
+	
+
+
+
 }

@@ -28,6 +28,9 @@ namespace VeryCoolEngine {
 		inline unsigned int GetWidth() const override { return _data._width; }
 		inline unsigned int GetHeight() const override { return _data._height; }
 
+		inline void SetWidth(unsigned int width)  override { _data._width = width; }
+		inline void SetHeight(unsigned int height)  override { _data._height = height; }
+
 		inline void SetEventCallback(const EventCallBackFunction& c) override {
 			_data._eventCallback = c;
 		}

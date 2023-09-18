@@ -9,8 +9,10 @@ namespace VeryCoolEngine {
 	class OpenGLRenderer : public Renderer
 	{
 	public:
+		void MainLoop() override;
 		void InitWindow() override;
 		void PlatformInit() override;
+		void OnResize(uint32_t uWidth, uint32_t uHeight) override;
 		void SetClearColor(const glm::vec4 color) override;
 		void Clear() override;
 		void DrawIndexed(VertexArray* vertexArray, MeshTopolgy topology = MeshTopolgy::Triangles) override;

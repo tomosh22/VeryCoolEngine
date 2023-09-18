@@ -21,17 +21,20 @@ namespace VeryCoolEngine {
 	Application::Application() {
 		srand(time(0));
 		_spInstance = this;
+#ifdef VCE_OPENGL
 		_window = Window::Create();
-#ifdef VCE_VULKAN
-#endif
 		std::function callback = [this](Event&& e) {OnEvent(e); };
 		_window->SetEventCallback(callback);
 		_window->SetVSync(true);
-		
+
 		//_window->SetVSync(true);
-		_pRenderer = Renderer::Create();
+#endif
+		
+		_pRenderer = Renderer::_spRenderer;
+
 #ifdef VCE_VULKAN
-		_pRenderer->InitWindow();
+		return;
+		//_pRenderer->InitWindow();
 		_pRenderer->PlatformInit();
 		_pRenderer->GenericInit();
 
@@ -73,6 +76,12 @@ namespace VeryCoolEngine {
 		if (e.GetType() == EventType::KeyPressed && dynamic_cast<KeyPressedEvent&>(e).GetKeyCode() == VCE_KEY_ESCAPE) _running = false;
 		if (e.GetType() == EventType::KeyPressed && dynamic_cast<KeyPressedEvent&>(e).GetKeyCode() == VCE_KEY_Q) _mouseEnabled = !_mouseEnabled;
 
+		if (e.GetType() == EventType::WindowResize) {
+			WindowResizeEvent& xWindowResizeEvent = (WindowResizeEvent&)e;
+			_window->SetWidth(xWindowResizeEvent.GetWidth());
+			_window->SetHeight(xWindowResizeEvent.GetHeight());
+			_pRenderer->m_bShouldResize = true;
+		}
 		
 		EventDispatcher dispatcher(e);
 		if (e.GetType() == EventType::WindowClose) {
@@ -115,15 +124,17 @@ namespace VeryCoolEngine {
 
 
 	void Application::Run() {
+#ifdef VCE_OPENGL
 		while (true) { 
 			printf("Waiting on render thread init\n");
 			if (renderInitialised)break;//#todo implement mutex here
 		}
+#endif
 		while (_running) {
-
+			_pRenderer->MainLoop();
 			
 #ifdef VCE_VULKAN
-			_window->OnUpdate();
+			//_window->OnUpdate();
 			VCE_WARN("early continue for vulkan");
 			continue;
 #endif

@@ -28,6 +28,9 @@ namespace VeryCoolEngine {
 		virtual unsigned int GetWidth() const = 0;
 		virtual unsigned int GetHeight() const = 0;
 
+		virtual inline void SetWidth(unsigned int width) = 0;
+		virtual inline void SetHeight(unsigned int height) = 0;
+
 		virtual inline void SetEventCallback(const EventCallBackFunction& c) = 0;
 		virtual void SetVSync(bool enabled) = 0;
 		virtual bool GetVSyncEnabled() const = 0;

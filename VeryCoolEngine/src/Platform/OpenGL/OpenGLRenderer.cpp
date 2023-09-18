@@ -38,6 +38,10 @@ namespace VeryCoolEngine {
 #endif
 	}
 
+	void OpenGLRenderer::OnResize(uint32_t uWidth, uint32_t uHeight)
+	{
+	}
+
 	void OpenGLRenderer::SetClearColor(const glm::vec4 color)
 	{
 		glClearColor(color.r,color.g,color.b,color.a);
@@ -141,6 +145,10 @@ namespace VeryCoolEngine {
 			(*--it)->OnEvent(e);
 			if (e.GetHandled()) break;
 		}
+	}
+
+	void OpenGLRenderer::MainLoop()
+	{
 	}
 
 	void OpenGLRenderer::InitWindow() {
