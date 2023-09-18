@@ -11,7 +11,7 @@
 
 namespace VeryCoolEngine {
 
-	Renderer* Renderer::_spRenderer = Renderer::Create();
+	Renderer* Renderer::_spRenderer = nullptr;
 	Renderer* RenderCommand::_spRenderer = Renderer::_spRenderer;
 
 	Application* Application::_spInstance = nullptr;
@@ -30,13 +30,9 @@ namespace VeryCoolEngine {
 		//_window->SetVSync(true);
 #endif
 		
-		_pRenderer = Renderer::_spRenderer;
 
 #ifdef VCE_VULKAN
-		return;
-		//_pRenderer->InitWindow();
-		_pRenderer->PlatformInit();
-		_pRenderer->GenericInit();
+		_renderThreadCanStart = true;
 
 #endif
 		
@@ -48,6 +44,8 @@ namespace VeryCoolEngine {
 #ifdef VCE_OPENGL
 			_pRenderer->InitWindow();
 #endif
+			_pRenderer = Renderer::Create();
+			Renderer::_spRenderer = _pRenderer;
 			_pRenderer->RenderThreadFunction();
 		});
 
@@ -131,7 +129,6 @@ namespace VeryCoolEngine {
 		}
 #endif
 		while (_running) {
-			_pRenderer->MainLoop();
 			
 #ifdef VCE_VULKAN
 			//_window->OnUpdate();

@@ -678,6 +678,7 @@ void VeryCoolEngine::VulkanRenderer::DrawFullScreenQuad()
 
 void VeryCoolEngine::VulkanRenderer::RenderThreadFunction()
 {
+	MainLoop();
 }
 
 void VeryCoolEngine::VulkanRenderer::DrawIndexed(VertexArray* vertexArray, MeshTopolgy topology)
