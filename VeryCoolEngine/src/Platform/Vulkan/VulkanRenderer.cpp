@@ -1,5 +1,6 @@
 #include "vcepch.h"
 #include "VulkanRenderer.h"
+#include "Platform/Windows/WindowsWindow.h"
 
 
 
@@ -14,18 +15,23 @@ VulkanRenderer::VulkanRenderer() {
 }
 
 void VulkanRenderer::InitWindow() {
+	Application* app = Application::GetInstance();
+	((WindowsWindow*)app->_window)->Init(WindowProperties());
+#if 0
 	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	m_window = glfwCreateWindow(m_width, m_height, "VulkanTutorial", nullptr, nullptr);
 	glfwSetWindowUserPointer(m_window, this);
 	glfwSetFramebufferSizeCallback(m_window, FramebufferResizeCallback);
+#endif
 }
 
 void VulkanRenderer::InitVulkan() {
 	CreateInstance();
 	InitDebugMessenger();
-	glfwCreateWindowSurface(m_instance, m_window, nullptr, (VkSurfaceKHR*)(&m_surface));
+	GLFWwindow* pxWindow = (GLFWwindow*)Application::GetInstance()->GetWindow().GetNativeWindow();
+	glfwCreateWindowSurface(m_instance, pxWindow, nullptr, (VkSurfaceKHR*)(&m_surface));
 	SelectPhysicalDevice();
 	CreateLogicalDevice();
 	CreateSwapChain();
@@ -39,12 +45,8 @@ void VulkanRenderer::InitVulkan() {
 }
 
 void VulkanRenderer::MainLoop() {
-	while (!glfwWindowShouldClose(m_window)) {
-		glfwPollEvents();
-		DrawFrame();
-	}
-
-	m_device.waitIdle();
+	glfwPollEvents();
+	DrawFrame();
 }
 
 void VulkanRenderer::Cleanup() {
@@ -72,7 +74,8 @@ void VulkanRenderer::Cleanup() {
 
 	m_instance.destroySurfaceKHR(m_surface, nullptr);
 	m_instance.destroy();
-	glfwDestroyWindow(m_window);
+	GLFWwindow* pxWindow = (GLFWwindow*)Application::GetInstance()->GetWindow().GetNativeWindow();
+	glfwDestroyWindow(pxWindow);
 	glfwTerminate();
 }
 
@@ -272,7 +275,8 @@ vk::SurfaceFormatKHR VulkanRenderer::ChooseSwapSurfaceFormat(const std::vector<v
 vk::Extent2D VulkanRenderer::ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities) {
 	if (capabilities.currentExtent.width != std::numeric_limits <uint32_t>::max()) return capabilities.currentExtent;
 	int extentWidth, extentHeight;
-	glfwGetFramebufferSize(m_window, &extentWidth, &extentHeight);
+	GLFWwindow* pxWindow = (GLFWwindow*)Application::GetInstance()->GetWindow().GetNativeWindow();
+	glfwGetFramebufferSize(pxWindow, &extentWidth, &extentHeight);
 	vk::Extent2D extent = { (uint32_t)extentWidth,(uint32_t)extentHeight };
 	extent.width = std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
 	extent.height = std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
@@ -596,9 +600,10 @@ void VulkanRenderer::DrawFrame() {
 
 void VulkanRenderer::RecreateSwapChain() {
 	int tempWidth = 0, tempHeight = 0;
-	glfwGetFramebufferSize(m_window, &tempWidth, &tempHeight);
+	GLFWwindow* pxWindow = (GLFWwindow*)Application::GetInstance()->GetWindow().GetNativeWindow();
+	glfwGetFramebufferSize(pxWindow, &tempWidth, &tempHeight);
 	while (tempWidth == 0 || tempHeight == 0) {
-		glfwGetFramebufferSize(m_window, &tempWidth, &tempHeight);
+		glfwGetFramebufferSize(pxWindow, &tempWidth, &tempHeight);
 		glfwWaitEvents();
 	}
 	m_device.waitIdle();
@@ -678,7 +683,11 @@ void VeryCoolEngine::VulkanRenderer::DrawFullScreenQuad()
 
 void VeryCoolEngine::VulkanRenderer::RenderThreadFunction()
 {
-	MainLoop();
+	Application* app = Application::GetInstance();
+	while (app->_running) {
+		MainLoop();
+	}
+
 }
 
 void VeryCoolEngine::VulkanRenderer::DrawIndexed(VertexArray* vertexArray, MeshTopolgy topology)

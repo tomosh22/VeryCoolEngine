@@ -44,8 +44,14 @@ namespace VeryCoolEngine {
 #ifdef VCE_OPENGL
 			_pRenderer->InitWindow();
 #endif
+#ifdef VCE_VULKAN
+			_window = Window::Create();
+			std::function callback = [this](Event&& e) {OnEvent(e); };
+			_window->SetEventCallback(callback);
+			_window->SetVSync(true);
 			_pRenderer = Renderer::Create();
 			Renderer::_spRenderer = _pRenderer;
+#endif
 			_pRenderer->RenderThreadFunction();
 		});
 

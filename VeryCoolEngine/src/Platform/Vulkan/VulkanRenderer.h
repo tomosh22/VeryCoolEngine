@@ -182,7 +182,6 @@ namespace VeryCoolEngine {
 				const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
 				void* pUserData);
 
-			GLFWwindow* m_window;
 			const int m_width = 1280, m_height = 720;
 			vk::Instance m_instance;
 			vk::DebugUtilsMessengerEXT m_debugMessenger;
