@@ -19,6 +19,8 @@
 
 namespace VeryCoolEngine {
 
+	class VulkanMesh;
+
 #define MAX_FRAMES_IN_FLIGHT 2
 		struct QueueFamilyIndices {
 			uint32_t graphicsFamily = -1;
@@ -31,6 +33,8 @@ namespace VeryCoolEngine {
 		};
 		class VulkanRenderer : public Renderer {
 		public:
+			vk::Device m_device;
+			vk::PhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
 
 			VulkanRenderer();
 
@@ -63,7 +67,11 @@ namespace VeryCoolEngine {
 				MainLoop();
 				Cleanup();
 			}*/
+
+			static VulkanRenderer* GetInstance() { return s_pInstance; }
+
 		protected:
+			static VulkanRenderer* s_pInstance;
 
 			void InitWindow() override;
 			void InitVulkan();
@@ -185,8 +193,8 @@ namespace VeryCoolEngine {
 			const int m_width = 1280, m_height = 720;
 			vk::Instance m_instance;
 			vk::DebugUtilsMessengerEXT m_debugMessenger;
-			vk::PhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
-			vk::Device m_device;
+			
+			
 			vk::Queue m_graphicsQueue;
 			vk::Queue m_presentQueue;
 			vk::SurfaceKHR m_surface;
@@ -221,6 +229,8 @@ namespace VeryCoolEngine {
 			std::vector<const char*> m_validationLayers = { "VK_LAYER_KHRONOS_validation" };
 
 #endif
+			VulkanMesh* m_pMesh;
+
 		};
 	
 

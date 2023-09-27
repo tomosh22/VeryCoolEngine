@@ -1,6 +1,7 @@
 #include "vcepch.h"
 #include "Mesh.h"
 #include "Platform/OpenGL/OpenGLMesh.h"
+#include "Platform/Vulkan/VulkanMesh.h"
 
 namespace VeryCoolEngine {
 
@@ -8,8 +9,9 @@ namespace VeryCoolEngine {
 #ifdef VCE_OPENGL
 		return new OpenGLMesh();
 #endif
-		VCE_INFO("implement me");
-		return nullptr;
+#ifdef VCE_VULKAN
+		return new VulkanMesh();
+#endif
 	}
 	//credit rich davison
 	//#todo cleanup, was written on laptop
@@ -104,6 +106,29 @@ namespace VeryCoolEngine {
 		mesh->uvs[3] = {0,1};
 
 		
+
+		return mesh;
+	}
+
+	Mesh* Mesh::GenerateVulkanTest()
+	{
+		Mesh* mesh = Mesh::Create();
+		mesh->numVerts = 3;
+		mesh->numIndices = 3;
+		mesh->vertexPositions = new glm::vec3[mesh->numVerts];
+		mesh->normals = new glm::vec3[mesh->numVerts];
+
+		mesh->indices = new unsigned int[mesh->numIndices] {0, 2, 1};
+
+		mesh->vertexPositions[0] = { 0.0,-0.5,1 };
+		mesh->vertexPositions[1] = { 0.5,0.5,1 };
+		mesh->vertexPositions[2] = { -0.5,0.5,1 };
+
+		mesh->normals[0] = { 1,0,0 };
+		mesh->normals[1] = { 0,1,0 };
+		mesh->normals[2] = { 0,0,1 };
+
+
 
 		return mesh;
 	}

@@ -138,7 +138,7 @@ namespace VeryCoolEngine {
 			
 #ifdef VCE_VULKAN
 			//_window->OnUpdate();
-			VCE_WARN("early continue for vulkan");
+			//VCE_WARN("early continue for vulkan");
 			continue;
 #endif
 			std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();

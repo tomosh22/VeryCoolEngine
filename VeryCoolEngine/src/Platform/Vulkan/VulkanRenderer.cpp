@@ -2,12 +2,14 @@
 #include "VulkanRenderer.h"
 #include "Platform/Windows/WindowsWindow.h"
 
-
+#include "Platform/Vulkan/VulkanMesh.h"
 
 
 
 
 using namespace VeryCoolEngine;
+
+VulkanRenderer* VulkanRenderer::s_pInstance = nullptr;
 
 VulkanRenderer::VulkanRenderer() {
 	InitWindow();
@@ -28,6 +30,7 @@ void VulkanRenderer::InitWindow() {
 }
 
 void VulkanRenderer::InitVulkan() {
+	VulkanRenderer::s_pInstance = this;
 	CreateInstance();
 	InitDebugMessenger();
 	GLFWwindow* pxWindow = (GLFWwindow*)Application::GetInstance()->GetWindow().GetNativeWindow();
@@ -37,7 +40,11 @@ void VulkanRenderer::InitVulkan() {
 	CreateSwapChain();
 	CreateImageViews();
 	CreateRenderPass();
+
+	m_pMesh = (VulkanMesh*)Mesh::GenerateVulkanTest();
+	m_pMesh->PlatformInit();
 	CreateGraphicsPipeline();
+
 	CreateFrameBuffers();
 	CreateCommandPool();
 	CreateCommandBuffers();
@@ -375,10 +382,10 @@ void VulkanRenderer::CreateGraphicsPipeline() {
 
 
 	vk::PipelineVertexInputStateCreateInfo vertexInputInfo{};
-	vertexInputInfo.vertexBindingDescriptionCount = 0;
-	vertexInputInfo.pVertexBindingDescriptions = nullptr;
-	vertexInputInfo.vertexAttributeDescriptionCount = 0;
-	vertexInputInfo.pVertexAttributeDescriptions = nullptr;
+	vertexInputInfo.vertexBindingDescriptionCount = m_pMesh->m_axBindDescs.size();
+	vertexInputInfo.pVertexBindingDescriptions = m_pMesh->m_axBindDescs.data();
+	vertexInputInfo.vertexAttributeDescriptionCount = m_pMesh->m_axAttrDescs.size();
+	vertexInputInfo.pVertexAttributeDescriptions = m_pMesh->m_axAttrDescs.data();
 
 	vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.topology = vk::PrimitiveTopology::eTriangleList;
@@ -401,7 +408,7 @@ void VulkanRenderer::CreateGraphicsPipeline() {
 	rasterizer.rasterizerDiscardEnable = VK_FALSE;
 	rasterizer.polygonMode = vk::PolygonMode::eFill;
 	rasterizer.lineWidth = 1;
-	rasterizer.cullMode = vk::CullModeFlagBits::eBack;
+	rasterizer.cullMode = vk::CullModeFlagBits::eNone;
 	rasterizer.frontFace = vk::FrontFace::eClockwise;//TODO change to ccw
 	rasterizer.depthBiasEnable = VK_FALSE;
 
@@ -506,6 +513,10 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_graphicsPipeline);
 
+	vk::Buffer xBuffer = m_pMesh->m_pxVertexBuffer->m_xVertexBuffer;
+	vk::DeviceSize offsets[] = { 0 };
+	commandBuffer.bindVertexBuffers(0, 1, &xBuffer, offsets);
+
 	vk::Viewport viewport{};
 	viewport.x = 0;
 	viewport.y = 0;
@@ -520,7 +531,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 	commandBuffer.setViewport(0, 1, &viewport);
 	commandBuffer.setScissor(0, 1, &scissor);
-	commandBuffer.draw(3, 1, 0, 0);
+	commandBuffer.draw(m_pMesh->numVerts, 1, 0, 0);
 	commandBuffer.endRenderPass();
 	commandBuffer.end();
 }
@@ -684,6 +695,9 @@ void VeryCoolEngine::VulkanRenderer::DrawFullScreenQuad()
 void VeryCoolEngine::VulkanRenderer::RenderThreadFunction()
 {
 	Application* app = Application::GetInstance();
+#pragma region GenericInit
+	app->_pMesh->PlatformInit();
+#pragma endregion
 	while (app->_running) {
 		MainLoop();
 	}

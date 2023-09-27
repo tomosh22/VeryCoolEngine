@@ -43,6 +43,7 @@ namespace VeryCoolEngine {
 		static Mesh* Create();
 		static Mesh* GenerateGenericHeightmap(uint32_t width, uint32_t height);
 		static Mesh* GenerateCubeFace();
+		static Mesh* GenerateVulkanTest();
 
 		Transform transform;
 
@@ -51,6 +52,9 @@ namespace VeryCoolEngine {
 
 		std::vector<BufferElement> _instanceData;
 
+		uint32_t numVerts;
+		uint32_t numIndices;
+
 	protected:
 		VertexArray* _pVertexArray;
 		Material* _pMaterial;
@@ -58,8 +62,6 @@ namespace VeryCoolEngine {
 		Texture2D* _pTexture; //#todo so should this
 		Texture2D* _pBumpMap; //#todo so should this
 
-		uint32_t numVerts;
-		uint32_t numIndices;
 		glm::vec3* vertexPositions = nullptr;
 		glm::vec2* uvs = nullptr;
 		glm::vec3* normals = nullptr;
