@@ -10,6 +10,7 @@ namespace VeryCoolEngine {
 	public:
 		VulkanVertexBuffer(void* verts, size_t size);
 		VulkanVertexBuffer() = default;
+		~VulkanVertexBuffer() { delete m_pxVertexBuffer; }
 		void UploadData() override;
 		void Bind() const override {}
 		void Unbind() const override {}

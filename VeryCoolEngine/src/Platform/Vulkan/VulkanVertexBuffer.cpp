@@ -8,8 +8,6 @@
 
 VeryCoolEngine::VulkanVertexBuffer::VulkanVertexBuffer(void* verts, size_t size)
 {
-	
-
 	m_pxVertexBuffer = new VulkanBuffer(size, vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
 	VulkanRenderer* pRenderer = VulkanRenderer::GetInstance();
