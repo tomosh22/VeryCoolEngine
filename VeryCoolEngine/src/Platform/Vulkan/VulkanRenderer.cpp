@@ -513,7 +513,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_graphicsPipeline);
 
-	vk::Buffer xBuffer = m_pMesh->m_pxVertexBuffer->m_xVertexBuffer;
+	vk::Buffer xBuffer = m_pMesh->m_pxVertexBuffer->m_pxVertexBuffer->m_xBuffer;
 	vk::DeviceSize offsets[] = { 0 };
 	commandBuffer.bindVertexBuffers(0, 1, &xBuffer, offsets);
 

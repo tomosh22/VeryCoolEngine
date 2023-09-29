@@ -1,6 +1,7 @@
 #pragma once
 #include "VeryCoolEngine/Renderer/Buffer.h"
 #include "Platform/Vulkan/VulkanRenderer.h"
+#include "Platform/Vulkan/VulkanBuffer.h"
 
 namespace VeryCoolEngine {
 	
@@ -8,10 +9,7 @@ namespace VeryCoolEngine {
 	{
 	public:
 		VulkanVertexBuffer(void* verts, size_t size);
-		VulkanVertexBuffer() {
-			VulkanRenderer::GetInstance()->m_device.destroyBuffer(m_xVertexBuffer);
-			VulkanRenderer::GetInstance()->m_device.freeMemory(m_xDeviceMem);
-		}
+		VulkanVertexBuffer() = default;
 		void UploadData() override;
 		void Bind() const override {}
 		void Unbind() const override {}
@@ -19,8 +17,7 @@ namespace VeryCoolEngine {
 		void SetLayout(const BufferLayout& layout) override { _Layout = layout; }
 		const BufferLayout& GetLayout() override { return _Layout; }
 
-		vk::Buffer m_xVertexBuffer;
-		vk::DeviceMemory m_xDeviceMem;
+		VulkanBuffer* m_pxVertexBuffer;
 	private:
 		
 	};
