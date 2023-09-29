@@ -19,7 +19,6 @@ namespace VeryCoolEngine {
 		const BufferLayout& GetLayout() override { return _Layout; }
 
 		VulkanBuffer* m_pxVertexBuffer;
-		VulkanBuffer* m_pxStagingBuffer;
 	private:
 		
 	};

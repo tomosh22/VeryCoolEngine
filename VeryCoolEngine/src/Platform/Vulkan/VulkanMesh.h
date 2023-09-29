@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan.hpp>
 #include "Platform/Vulkan/VulkanVertexBuffer.h"
+#include "Platform/Vulkan/VulkanIndexBuffer.h"
 
 namespace VeryCoolEngine {
 
@@ -17,6 +18,7 @@ namespace VeryCoolEngine {
 		std::vector<vk::VertexInputAttributeDescription> m_axAttrDescs;
 
 		VulkanVertexBuffer* m_pxVertexBuffer;
+		VulkanIndexBuffer* m_pxIndexBuffer;
 	private:
 		
 	};

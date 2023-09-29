@@ -95,6 +95,8 @@ namespace VeryCoolEngine {
 		m_axBindDescs.push_back(xBindDesc);
 
 		m_pxVertexBuffer = new VulkanVertexBuffer(verts, numVerts * numFloats * sizeof(float));
+
+		m_pxIndexBuffer = new VulkanIndexBuffer(indices, sizeof(unsigned int) * numIndices);
     }
 
     void VulkanMesh::SetVertexArray(VertexArray* vertexArray)

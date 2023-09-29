@@ -113,20 +113,22 @@ namespace VeryCoolEngine {
 	Mesh* Mesh::GenerateVulkanTest()
 	{
 		Mesh* mesh = Mesh::Create();
-		mesh->numVerts = 3;
-		mesh->numIndices = 3;
+		mesh->numVerts = 4;
+		mesh->numIndices = 6;
 		mesh->vertexPositions = new glm::vec3[mesh->numVerts];
 		mesh->normals = new glm::vec3[mesh->numVerts];
 
-		mesh->indices = new unsigned int[mesh->numIndices] {0, 2, 1};
+		mesh->indices = new unsigned int[mesh->numIndices] {0, 2, 1,1,2,3};
 
-		mesh->vertexPositions[0] = { 0.0,-0.5,1 };
-		mesh->vertexPositions[1] = { 0.5,0.5,1 };
+		mesh->vertexPositions[0] = { -0.5,-0.5,1 };
+		mesh->vertexPositions[1] = { 0.5,-0.5,1 };
 		mesh->vertexPositions[2] = { -0.5,0.5,1 };
+		mesh->vertexPositions[3] = { 0.5,0.5,1 };
 
 		mesh->normals[0] = { 1,0,0 };
 		mesh->normals[1] = { 0,1,0 };
 		mesh->normals[2] = { 0,0,1 };
+		mesh->normals[3] = { 1,1,1 };
 
 
 

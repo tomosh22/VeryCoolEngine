@@ -513,9 +513,12 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_graphicsPipeline);
 
-	vk::Buffer xBuffer = m_pMesh->m_pxVertexBuffer->m_pxVertexBuffer->m_xBuffer;
+	vk::Buffer xVertexBuffer = m_pMesh->m_pxVertexBuffer->m_pxVertexBuffer->m_xBuffer;
 	vk::DeviceSize offsets[] = { 0 };
-	commandBuffer.bindVertexBuffers(0, 1, &xBuffer, offsets);
+	commandBuffer.bindVertexBuffers(0, 1, &xVertexBuffer, offsets);
+
+	vk::Buffer xIndexBuffer = m_pMesh->m_pxIndexBuffer->m_pxIndexBuffer->m_xBuffer;
+	commandBuffer.bindIndexBuffer(xIndexBuffer, 0, vk::IndexType::eUint32);
 
 	vk::Viewport viewport{};
 	viewport.x = 0;
@@ -531,7 +534,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 	commandBuffer.setViewport(0, 1, &viewport);
 	commandBuffer.setScissor(0, 1, &scissor);
-	commandBuffer.draw(m_pMesh->numVerts, 1, 0, 0);
+	commandBuffer.drawIndexed(m_pMesh->numIndices, 1, 0, 0,0);
 	commandBuffer.endRenderPass();
 	commandBuffer.end();
 }
