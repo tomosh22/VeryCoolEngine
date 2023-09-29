@@ -40,13 +40,13 @@ void VulkanRenderer::InitVulkan() {
 	CreateSwapChain();
 	CreateImageViews();
 	CreateRenderPass();
-
+	CreateCommandPool();
 	m_pMesh = (VulkanMesh*)Mesh::GenerateVulkanTest();
 	m_pMesh->PlatformInit();
 	CreateGraphicsPipeline();
 
 	CreateFrameBuffers();
-	CreateCommandPool();
+	
 	CreateCommandBuffers();
 	CreateSyncObjects();
 }

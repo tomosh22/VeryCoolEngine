@@ -33,8 +33,7 @@ namespace VeryCoolEngine {
 		};
 		class VulkanRenderer : public Renderer {
 		public:
-			vk::Device m_device;
-			vk::PhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
+			
 
 			VulkanRenderer();
 
@@ -69,6 +68,11 @@ namespace VeryCoolEngine {
 			}*/
 
 			static VulkanRenderer* GetInstance() { return s_pInstance; }
+
+			vk::Device& const GetDevice() { return m_device; }
+			vk::PhysicalDevice& const GetPhysicalDevice() { return m_physicalDevice; }
+			vk::CommandPool& const GetCommandPool() { return m_commandPool; }
+			vk::Queue& const GetGraphicsQueue() { return m_graphicsQueue; }
 
 		protected:
 			static VulkanRenderer* s_pInstance;
@@ -194,6 +198,8 @@ namespace VeryCoolEngine {
 			vk::Instance m_instance;
 			vk::DebugUtilsMessengerEXT m_debugMessenger;
 			
+			vk::Device m_device;
+			vk::PhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
 			
 			vk::Queue m_graphicsQueue;
 			vk::Queue m_presentQueue;
