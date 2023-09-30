@@ -95,7 +95,7 @@ namespace VeryCoolEngine {
 		rasterizer.rasterizerDiscardEnable = VK_FALSE;
 		rasterizer.polygonMode = vk::PolygonMode::eFill;
 		rasterizer.lineWidth = 1;
-		rasterizer.cullMode = vk::CullModeFlagBits::eNone;
+		rasterizer.cullMode = vk::CullModeFlagBits::eBack;
 		rasterizer.frontFace = vk::FrontFace::eClockwise;//TODO change to ccw
 		rasterizer.depthBiasEnable = VK_FALSE;
 

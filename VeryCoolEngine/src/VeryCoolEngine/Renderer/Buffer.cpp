@@ -1,6 +1,7 @@
 #include "vcepch.h"
 #include "Buffer.h"
 #include "Platform/OpenGL/OpenGLBuffer.h"
+#include "Platform/Vulkan/VulkanVertexBuffer.h"
 
 namespace VeryCoolEngine {
 
@@ -10,8 +11,9 @@ namespace VeryCoolEngine {
 #ifdef VCE_OPENGL
 		return new OpenGLVertexBuffer(verts, size);
 #endif
-		VCE_INFO("implement me");
-		return nullptr;
+#ifdef VCE_VULKAN
+		return new VulkanVertexBuffer(verts, size);
+#endif
 	}
 
 	IndexBuffer* IndexBuffer::Create(uint32_t* indices, uint32_t count){

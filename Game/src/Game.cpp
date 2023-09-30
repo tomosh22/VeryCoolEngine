@@ -20,12 +20,19 @@ namespace VeryCoolEngine {
 
 	Game::Game() {
 #ifdef VCE_VULKAN
-		_pMesh = Mesh::GenerateVulkanTest();
-		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, 1280.f / 720.f);
-		_shaders.push_back(Shader::Create("../Assets/Shaders/vulkan/vert.spv", "../Assets/Shaders/vulkan/frag.spv"));
+		_pMesh = Mesh::GenerateCubeFace();
+
+		Chunk::seed = rand();
+		GenerateChunks();
+
+		UploadChunks();
+
+		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 0, 3), 0, 0, 90, 1, 1000, 1280.f / 720.f);
+		_shaders.push_back(Shader::Create("../Assets/Shaders/vulkan/blockVert.spv", "../Assets/Shaders/vulkan/blockFrag.spv"));
 		std::vector<ManagedUniformBuffer**> ubos;
 		ubos.push_back(&_pCameraUBO);
 		m_pxPipeline = Pipeline::Create(_shaders.back(), _pMesh->m_xBufferLayout, MeshTopolgy::Triangles, ubos, &m_pxRenderPass);
+		_renderThreadCanStart = true;
 		return;
 #endif
 		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, 1280.f / 720.f);
@@ -79,7 +86,7 @@ namespace VeryCoolEngine {
 
 		
 
-		_renderThreadCanStart = true;
+		
 	}
 
 	void Game::GenerateChunks() {

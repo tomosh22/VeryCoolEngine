@@ -5,7 +5,7 @@
 
 namespace VeryCoolEngine {
 	
-	class VulkanVertexBuffer : VertexBuffer
+	class VulkanVertexBuffer : public VertexBuffer
 	{
 	public:
 		VulkanVertexBuffer(void* verts, size_t size);

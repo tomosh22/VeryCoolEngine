@@ -31,10 +31,7 @@ namespace VeryCoolEngine {
 #endif
 		
 
-#ifdef VCE_VULKAN
-		_renderThreadCanStart = true;
 
-#endif
 		
 		_renderThread = std::thread([&]() {
 			while (true) {

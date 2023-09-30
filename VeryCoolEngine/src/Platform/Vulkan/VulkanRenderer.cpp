@@ -470,7 +470,14 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 		vk::Buffer xIndexBuffer = pxVulkanMesh->m_pxIndexBuffer->m_pxIndexBuffer->m_xBuffer;
 		commandBuffer.bindIndexBuffer(xIndexBuffer, 0, vk::IndexType::eUint32);
-		commandBuffer.drawIndexed(pxVulkanMesh->numIndices, 1, 0, 0, 0);
+
+		if (pxVulkanMesh->m_pxInstanceBuffer != nullptr) {
+			vk::Buffer xInstanceBuffer = pxVulkanMesh->m_pxInstanceBuffer->m_pxVertexBuffer->m_xBuffer;
+			commandBuffer.bindVertexBuffers(1, 1, &xInstanceBuffer, offsets);
+		}
+
+		commandBuffer.drawIndexed(pxVulkanMesh->numIndices, app->_numInstances, 0, 0, 0);
+		
 	}
 	
 
