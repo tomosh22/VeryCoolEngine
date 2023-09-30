@@ -13,6 +13,6 @@ namespace VeryCoolEngine {
 		BufferLayout  m_xVertexBufferLayout;
 		MeshTopolgy m_xTopology; //TODO typo lol
 
-		static Pipeline* Create(Shader* pxShader, BufferLayout xLayout, MeshTopolgy xTopology, const std::vector<ManagedUniformBuffer*>& apxUBOs, RenderPass* xRenderPass);
+		static Pipeline* Create(Shader* pxShader, BufferLayout* xLayout, MeshTopolgy xTopology, const std::vector<ManagedUniformBuffer*>& apxUBOs, RenderPass* xRenderPass);
 	};
 }

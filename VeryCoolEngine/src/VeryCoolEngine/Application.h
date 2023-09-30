@@ -15,6 +15,7 @@
 #include "VeryCoolEngine/Renderer/RenderCommand.h"
 #include "VeryCoolEngine/Renderer/Camera.h"
 #include "VeryCoolEngine/Renderer/Mesh.h"
+#include "VeryCoolEngine/Renderer/Pipeline.h"
 
 
 
@@ -87,6 +88,12 @@ namespace VeryCoolEngine {
 		Scene* scene;
 
 		Renderer* _pRenderer;
+		Pipeline* m_pxPipeline;
+		RenderPass* m_pxRenderPass;
+
+		ManagedUniformBuffer* _pLightUBO = nullptr;
+		ManagedUniformBuffer* _pCameraUBO = nullptr;
+
 		Camera _Camera;
 
 		Shader* _pFullscreenShader;

@@ -5,6 +5,7 @@
 #include "Platform/Vulkan/VulkanMesh.h"
 
 #include "Platform/Vulkan/VulkanManagedUniformBuffer.h"
+#include "Platform/Vulkan/VulkanRenderPass.h"
 
 
 
@@ -42,11 +43,11 @@ void VulkanRenderer::InitVulkan() {
 	CreateLogicalDevice();
 	CreateSwapChain();
 	CreateImageViews();
-	CreateRenderPass();
+	m_pxRenderPass = new VulkanRenderPass();
 	CreateCommandPool();
 	CreateDescriptorPool();
 	app->_pMesh->PlatformInit();
-	_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
+	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
 	
 	CreateGraphicsPipeline();
 
@@ -85,7 +86,7 @@ void VulkanRenderer::Cleanup() {
 	m_device.destroyDescriptorSetLayout(m_descriptorLayout, nullptr);
 	m_device.destroyPipeline(m_graphicsPipeline, nullptr);
 	m_device.destroyPipelineLayout(m_pipelineLayout, nullptr);
-	m_device.destroyRenderPass(m_renderPass, nullptr);
+	delete m_pxRenderPass;
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
@@ -343,45 +344,7 @@ vk::ShaderModule VulkanRenderer::CreateShaderModule(const std::vector<char>& cod
 	return module;
 }
 
-void VulkanRenderer::CreateRenderPass() {
-	vk::AttachmentDescription colorAttachment{};
-	colorAttachment.format = m_swapChainImageFormat;
-	colorAttachment.samples = vk::SampleCountFlagBits::e1;
-	colorAttachment.loadOp = vk::AttachmentLoadOp::eClear;
-	colorAttachment.storeOp = vk::AttachmentStoreOp::eStore;
-	colorAttachment.stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
-	colorAttachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
-	colorAttachment.initialLayout = vk::ImageLayout::eUndefined;
-	colorAttachment.finalLayout = vk::ImageLayout::ePresentSrcKHR;
 
-	vk::AttachmentReference colorAttachmentRef{};
-	colorAttachmentRef.attachment = 0;
-	colorAttachmentRef.layout = vk::ImageLayout::eColorAttachmentOptimal;
-
-	vk::SubpassDescription subpass{};
-	subpass.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
-	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &colorAttachmentRef;
-
-	vk::SubpassDependency dependency{};
-	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-	dependency.dstSubpass = 0;
-	dependency.srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-	dependency.srcAccessMask = vk::AccessFlagBits::eNone;
-	dependency.dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-	dependency.dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
-
-	vk::RenderPassCreateInfo renderPassInfo{};
-	renderPassInfo.attachmentCount = 1;
-	renderPassInfo.pAttachments = &colorAttachment;
-	renderPassInfo.subpassCount = 1;
-	renderPassInfo.pSubpasses = &subpass;
-	renderPassInfo.dependencyCount = 1;
-	renderPassInfo.pDependencies = &dependency;
-	m_renderPass = m_device.createRenderPass(renderPassInfo);
-
-
-}
 
 void VulkanRenderer::CreateDescriptorPool() {
 	
@@ -424,6 +387,7 @@ vk::DescriptorSet VulkanRenderer::CreateDescriptorSet(const vk::DescriptorSetLay
 
 void VulkanRenderer::CreateGraphicsPipeline() {
 
+	Application* app = Application::GetInstance();
 
 	std::vector<char> vertShaderCode = ReadFile("../Assets/Shaders/vulkan/vert.spv");
 	std::vector<char> fragShaderCode = ReadFile("../Assets/Shaders/vulkan/frag.spv");
@@ -444,7 +408,6 @@ void VulkanRenderer::CreateGraphicsPipeline() {
 	vk::PipelineShaderStageCreateInfo stages[] = { vertStageInfo,fragStageInfo };
 
 
-	Application* app = Application::GetInstance();
 	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(app->_pMesh);
 	vk::PipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.vertexBindingDescriptionCount = pxVulkanMesh->m_axBindDescs.size();
@@ -500,7 +463,7 @@ void VulkanRenderer::CreateGraphicsPipeline() {
 	colorBlending.pAttachments = &colorBlendAttachment;
 
 	vk::DescriptorSetLayout aLayouts[] = {
-		dynamic_cast<VulkanManagedUniformBuffer*>(_pCameraUBO)->m_xDescriptorLayout
+		dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO)->m_xDescriptorLayout
 	};
 
 	vk::PipelineLayoutCreateInfo xPipelineLayoutInfo = vk::PipelineLayoutCreateInfo()
@@ -520,7 +483,7 @@ void VulkanRenderer::CreateGraphicsPipeline() {
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.pDynamicState = &dynamicState;
 	pipelineInfo.layout = m_pipelineLayout;
-	pipelineInfo.renderPass = m_renderPass;
+	pipelineInfo.renderPass = m_pxRenderPass->m_xRenderPass;
 	pipelineInfo.subpass = 0;
 
 
@@ -535,7 +498,7 @@ void VulkanRenderer::CreateFrameBuffers() {
 	int swapchainIndex = 0;
 	for (vk::ImageView imageView : m_swapChainImageViews) {
 		vk::FramebufferCreateInfo framebufferInfo{};
-		framebufferInfo.renderPass = m_renderPass;
+		framebufferInfo.renderPass = m_pxRenderPass->m_xRenderPass;
 		framebufferInfo.attachmentCount = 1;
 		framebufferInfo.pAttachments = &imageView;
 		framebufferInfo.width = m_swapChainExtent.width;
@@ -564,13 +527,14 @@ void VulkanRenderer::CreateCommandBuffers() {
 }
 
 void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene) {
+	Application* app = Application::GetInstance();
 	vk::CommandBufferBeginInfo beginInfo{};
 	beginInfo.pInheritanceInfo = nullptr;
 
 	commandBuffer.begin(beginInfo);
 
 	vk::RenderPassBeginInfo renderPassInfo{};
-	renderPassInfo.renderPass = m_renderPass;
+	renderPassInfo.renderPass = m_pxRenderPass->m_xRenderPass;
 	renderPassInfo.framebuffer = m_swapChainFramebuffers[imageIndex];
 	renderPassInfo.renderArea.offset = vk::Offset2D(0, 0);
 	renderPassInfo.renderArea.extent = m_swapChainExtent;
@@ -585,7 +549,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_graphicsPipeline);
 
 	vk::DescriptorSet aSets[] = {
-		dynamic_cast<VulkanManagedUniformBuffer*>(_pCameraUBO)->m_axDescriptorSets[m_currentFrame]
+		dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO)->m_axDescriptorSets[m_currentFrame]
 	};
 
 	commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pipelineLayout, 0, sizeof(aSets) / sizeof(aSets[0]), aSets, 0, nullptr);
@@ -760,6 +724,7 @@ void VeryCoolEngine::VulkanRenderer::Clear()
 
 void VeryCoolEngine::VulkanRenderer::BeginScene(Scene* scene)
 {
+	Application* app = Application::GetInstance();
 	const uint32_t camDataSize = sizeof(glm::mat4) * 3 + sizeof(glm::vec4);//4 bytes of padding
 	glm::mat4 viewMat = scene->camera->BuildViewMatrix();
 	glm::mat4 projMat = scene->camera->BuildProjectionMatrix();
@@ -771,7 +736,7 @@ void VeryCoolEngine::VulkanRenderer::BeginScene(Scene* scene)
 	memcpy(camData + sizeof(glm::mat4) * 1, &projMat[0][0], sizeof(glm::mat4));
 	memcpy(camData + sizeof(glm::mat4) * 2, &viewProjMat[0][0], sizeof(glm::mat4));
 	memcpy(camData + sizeof(glm::mat4) * 3, &camPos[0], sizeof(glm::vec4));
-	_pCameraUBO->UploadData(camData, camDataSize, m_currentFrame, 0);
+	app->_pCameraUBO->UploadData(camData, camDataSize, m_currentFrame, 0);
 	delete[] camData;
 }
 

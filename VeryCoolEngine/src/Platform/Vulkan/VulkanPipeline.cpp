@@ -10,7 +10,7 @@
 
 namespace VeryCoolEngine {
 	
-	VulkanPipeline::VulkanPipeline(Shader* pxShader, BufferLayout xLayout, MeshTopolgy xTopology, const std::vector<ManagedUniformBuffer*>& apxUBOs, RenderPass* xRenderPass) {
+	VulkanPipeline::VulkanPipeline(Shader* pxShader, BufferLayout* xLayout, MeshTopolgy xTopology, const std::vector<ManagedUniformBuffer*>& apxUBOs, RenderPass* xRenderPass) {
 
 		vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
 		
@@ -35,10 +35,10 @@ namespace VeryCoolEngine {
 		std::vector<vk::VertexInputBindingDescription> axBindDescs;
 		std::vector<vk::VertexInputAttributeDescription> axAttrDescs;
 
-		xLayout.CalculateOffsetsAndStrides();
+		xLayout->CalculateOffsetsAndStrides();
 		uint32_t uBindPoint = 0;
 		uint32_t uTotalSize = 0;
-		for (BufferElement& element : xLayout.GetElements()) {
+		for (BufferElement& element : xLayout->GetElements()) {
 
 
 			vk::VertexInputAttributeDescription xAttrDesc = vk::VertexInputAttributeDescription()
@@ -53,7 +53,7 @@ namespace VeryCoolEngine {
 
 		vk::VertexInputBindingDescription xBindDesc = vk::VertexInputBindingDescription()
 			.setBinding(0)
-			.setStride(xLayout._Stride)//I changed this from sizeof(float) * numFloats
+			.setStride(xLayout->_Stride)//I changed this from sizeof(float) * numFloats
 			.setInputRate(vk::VertexInputRate::eVertex);
 		axBindDescs.push_back(xBindDesc);
 #pragma endregion

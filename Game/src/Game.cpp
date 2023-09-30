@@ -39,9 +39,12 @@ namespace VeryCoolEngine {
 		_shaders.push_back(Shader::Create("block.vert", "block.frag"));
 		_textures.push_back(Texture2D::Create("atlas.png", false));
 
+
 		_pMesh = Mesh::GenerateCubeFace();
 		_pMesh->SetShader(_shaders[0]);
 		_pMesh->SetTexture(_textures[0]);
+
+		m_pxPipeline = Pipeline::Create(_shaders.back(), _pMesh->m_xBufferLayout, MeshTopolgy::Triangles, { _pCameraUBO }, m_pxRenderPass);
 
 		Chunk::seed = rand();
 		GenerateChunks();

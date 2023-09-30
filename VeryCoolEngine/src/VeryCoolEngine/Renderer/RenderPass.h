@@ -3,7 +3,7 @@ namespace VeryCoolEngine {
 	class RenderPass
 	{
 	public:
-		virtual ~RenderPass() = 0;
+		virtual ~RenderPass() {};
 	};
 
 }

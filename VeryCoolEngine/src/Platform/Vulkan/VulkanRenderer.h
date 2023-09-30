@@ -20,6 +20,7 @@
 namespace VeryCoolEngine {
 
 	class VulkanMesh;
+	class VulkanRenderPass;
 
 	static constexpr const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -75,6 +76,7 @@ namespace VeryCoolEngine {
 			vk::CommandPool& const GetCommandPool() { return m_commandPool; }
 			vk::Queue& const GetGraphicsQueue() { return m_graphicsQueue; }
 			vk::DescriptorPool& const GetDescriptorPool() { return m_descriptorPool; }
+			vk::Format& const GetSwapchainFormat() { return m_swapChainImageFormat; }
 
 			vk::DescriptorSet CreateDescriptorSet(const vk::DescriptorSetLayout& xLayout, const vk::DescriptorPool& xPool);
 
@@ -167,11 +169,8 @@ namespace VeryCoolEngine {
 
 			vk::ShaderModule CreateShaderModule(const std::vector<char>& code);
 
-			void CreateRenderPass();
 
 			void CreateDescriptorPool();
-
-			void CreateDescriptorSets();
 
 			
 
@@ -225,7 +224,7 @@ namespace VeryCoolEngine {
 			vk::DescriptorPool m_descriptorPool;
 
 
-			vk::RenderPass m_renderPass;
+			VulkanRenderPass* m_pxRenderPass;
 			vk::DescriptorSetLayout m_descriptorLayout;
 			vk::PipelineLayout m_pipelineLayout;
 			vk::Pipeline m_graphicsPipeline;

@@ -55,6 +55,8 @@ namespace VeryCoolEngine {
 		uint32_t numVerts;
 		uint32_t numIndices;
 
+		BufferLayout* m_xBufferLayout;
+
 	protected:
 		VertexArray* _pVertexArray;
 		Material* _pMaterial;

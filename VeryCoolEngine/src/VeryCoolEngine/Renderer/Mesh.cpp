@@ -88,6 +88,7 @@ namespace VeryCoolEngine {
 	
 	Mesh* Mesh::GenerateCubeFace() {
 		Mesh* mesh = Mesh::Create();
+		mesh->m_xBufferLayout = new BufferLayout();
 		mesh->numVerts = 4;
 		mesh->numIndices = 6;
 		mesh->vertexPositions = new glm::vec3[mesh->numVerts];
@@ -105,7 +106,53 @@ namespace VeryCoolEngine {
 		mesh->uvs[2] = {0,0};
 		mesh->uvs[3] = {0,1};
 
-		
+		int numFloats = 0;
+		if (mesh->vertexPositions != nullptr) {
+			mesh->m_xBufferLayout->GetElements().push_back({ ShaderDataType::Float3, "_aPosition" });
+			numFloats += 3;
+		}
+		if (mesh->uvs != nullptr) {
+			mesh->m_xBufferLayout->GetElements().push_back({ ShaderDataType::Float2, "_aUV" });
+			numFloats += 2;
+		}
+		if (mesh->normals != nullptr) {
+			mesh->m_xBufferLayout->GetElements().push_back({ ShaderDataType::Float3, "_aNormal" });
+			numFloats += 3;
+		}
+		if (mesh->tangents != nullptr) {
+			mesh->m_xBufferLayout->GetElements().push_back({ ShaderDataType::Float4, "_aTangent" });
+			numFloats += 4;
+		}
+
+		mesh->verts = new float[mesh->numVerts * numFloats];
+
+		size_t index = 0;
+		for (int i = 0; i < mesh->numVerts; i++)
+		{
+			if (mesh->vertexPositions != nullptr) {
+				((float*)mesh->verts)[index++] = mesh->vertexPositions[i].x;
+				((float*)mesh->verts)[index++] = mesh->vertexPositions[i].y;
+				((float*)mesh->verts)[index++] = mesh->vertexPositions[i].z;
+			}
+
+			if (mesh->uvs != nullptr) {
+				((float*)mesh->verts)[index++] = mesh->uvs[i].x;
+				((float*)mesh->verts)[index++] = mesh->uvs[i].y;
+			}
+			if (mesh->normals != nullptr) {
+				((float*)mesh->verts)[index++] = mesh->normals[i].x;
+				((float*)mesh->verts)[index++] = mesh->normals[i].y;
+				((float*)mesh->verts)[index++] = mesh->normals[i].z;
+			}
+			if (mesh->tangents != nullptr) {
+				((float*)mesh->verts)[index++] = mesh->tangents[i].x;
+				((float*)mesh->verts)[index++] = mesh->tangents[i].y;
+				((float*)mesh->verts)[index++] = mesh->tangents[i].z;
+				((float*)mesh->verts)[index++] = mesh->tangents[i].w;
+			}
+		}
+
+		mesh->m_xBufferLayout->CalculateOffsetsAndStrides();
 
 		return mesh;
 	}
@@ -113,6 +160,7 @@ namespace VeryCoolEngine {
 	Mesh* Mesh::GenerateVulkanTest()
 	{
 		Mesh* mesh = Mesh::Create();
+		mesh->m_xBufferLayout = new BufferLayout();
 		mesh->numVerts = 4;
 		mesh->numIndices = 6;
 		mesh->vertexPositions = new glm::vec3[mesh->numVerts];
@@ -135,8 +183,55 @@ namespace VeryCoolEngine {
 		mesh->normals[2] = { 0,0,1 };
 		mesh->normals[3] = { 1,1,1 };
 
+#pragma region MoveToGenericInitFunction
+		int numFloats = 0;
+		if (mesh->vertexPositions != nullptr) {
+			mesh->m_xBufferLayout->GetElements().push_back({ ShaderDataType::Float3, "_aPosition" });
+			numFloats += 3;
+		}
+		if (mesh->uvs != nullptr) {
+			mesh->m_xBufferLayout->GetElements().push_back({ ShaderDataType::Float2, "_aUV" });
+			numFloats += 2;
+		}
+		if (mesh->normals != nullptr) {
+			mesh->m_xBufferLayout->GetElements().push_back({ ShaderDataType::Float3, "_aNormal" });
+			numFloats += 3;
+		}
+		if (mesh->tangents != nullptr) {
+			mesh->m_xBufferLayout->GetElements().push_back({ ShaderDataType::Float4, "_aTangent" });
+			numFloats += 4;
+		}
 
+		mesh->verts = new float[mesh->numVerts * numFloats];
 
+		size_t index = 0;
+		for (int i = 0; i < mesh->numVerts; i++)
+		{
+			if (mesh->vertexPositions != nullptr) {
+				((float*)mesh->verts)[index++] = mesh->vertexPositions[i].x;
+				((float*)mesh->verts)[index++] = mesh->vertexPositions[i].y;
+				((float*)mesh->verts)[index++] = mesh->vertexPositions[i].z;
+			}
+
+			if (mesh->uvs != nullptr) {
+				((float*)mesh->verts)[index++] = mesh->uvs[i].x;
+				((float*)mesh->verts)[index++] = mesh->uvs[i].y;
+			}
+			if (mesh->normals != nullptr) {
+				((float*)mesh->verts)[index++] = mesh->normals[i].x;
+				((float*)mesh->verts)[index++] = mesh->normals[i].y;
+				((float*)mesh->verts)[index++] = mesh->normals[i].z;
+			}
+			if (mesh->tangents != nullptr) {
+				((float*)mesh->verts)[index++] = mesh->tangents[i].x;
+				((float*)mesh->verts)[index++] = mesh->tangents[i].y;
+				((float*)mesh->verts)[index++] = mesh->tangents[i].z;
+				((float*)mesh->verts)[index++] = mesh->tangents[i].w;
+			}
+		}
+
+		mesh->m_xBufferLayout->CalculateOffsetsAndStrides();
+#pragma endregion
 		return mesh;
 	}
 

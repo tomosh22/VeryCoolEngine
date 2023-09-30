@@ -96,6 +96,7 @@ namespace VeryCoolEngine {
 
 	void OpenGLRenderer::BeginScene(Scene* scene)
 	{
+		Application* app = Application::GetInstance();
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glFrontFace(GL_CCW);
@@ -110,7 +111,7 @@ namespace VeryCoolEngine {
 		memcpy(camData + sizeof(glm::mat4) * 1, &projMat[0][0], sizeof(glm::mat4));
 		memcpy(camData + sizeof(glm::mat4) * 2, &viewProjMat[0][0], sizeof(glm::mat4));
 		memcpy(camData + sizeof(glm::mat4) * 3, &camPos[0], sizeof(glm::vec4));
-		_pCameraUBO->UploadData(camData, camDataSize, 1, 0);
+		app->_pCameraUBO->UploadData(camData, camDataSize, 1, 0);
 		delete[] camData;
 
 
@@ -121,7 +122,7 @@ namespace VeryCoolEngine {
 		memcpy(data, numLightsWithPadding, sizeof(unsigned int)*4);
 
 		memcpy(data + sizeof(unsigned int) * 4, scene->lights.data(), sizeof(Light) * scene->lights.size());
-		_pLightUBO->UploadData(data, dataSize,1,0);
+		app->_pLightUBO->UploadData(data, dataSize,1,0);
 		delete[] data;
 	}
 
