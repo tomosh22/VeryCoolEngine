@@ -169,11 +169,11 @@ namespace VeryCoolEngine {
 
 			void CreateCommandBuffers();
 
-			void RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex);
+			void RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
 
 			void CreateSyncObjects();
 
-			void DrawFrame();
+			void DrawFrame(Scene* scene);
 
 			void RecreateSwapChain();
 
@@ -247,7 +247,6 @@ namespace VeryCoolEngine {
 			std::vector<const char*> m_validationLayers = { "VK_LAYER_KHRONOS_validation" };
 
 #endif
-			VulkanMesh* m_pMesh;
 
 		};
 	

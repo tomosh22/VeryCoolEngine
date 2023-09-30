@@ -153,8 +153,9 @@ namespace VeryCoolEngine {
 			scene->_pInstancedMesh = _pMesh;
 			scene->_numInstances = _numInstances;
 
-
-			//scene->meshes.push_back(_pMesh);
+#ifdef VCE_VULKAN
+			scene->meshes.push_back(_pMesh);
+#endif
 			for (Mesh* mesh : _meshes) { 
 				scene->meshes.push_back(mesh);
 			}

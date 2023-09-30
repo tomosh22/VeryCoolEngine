@@ -33,6 +33,7 @@ void VulkanRenderer::InitWindow() {
 
 void VulkanRenderer::InitVulkan() {
 	VulkanRenderer::s_pInstance = this;
+	Application* app = Application::GetInstance();
 	CreateInstance();
 	InitDebugMessenger();
 	GLFWwindow* pxWindow = (GLFWwindow*)Application::GetInstance()->GetWindow().GetNativeWindow();
@@ -43,8 +44,7 @@ void VulkanRenderer::InitVulkan() {
 	CreateImageViews();
 	CreateRenderPass();
 	CreateCommandPool();
-	m_pMesh = (VulkanMesh*)Mesh::GenerateVulkanTest();
-	m_pMesh->PlatformInit();
+	app->_pMesh->PlatformInit();
 	CreateDescriptorPool();
 	CreateGraphicsPipeline();
 
@@ -71,7 +71,7 @@ void VulkanRenderer::MainLoop() {
 	app->sceneMutex.lock();
 	BeginScene(scene);
 
-	DrawFrame();
+	DrawFrame(app->scene);
 
 	app->sceneMutex.unlock();
 }
@@ -479,12 +479,13 @@ void VulkanRenderer::CreateGraphicsPipeline() {
 	vk::PipelineShaderStageCreateInfo stages[] = { vertStageInfo,fragStageInfo };
 
 
-
+	Application* app = Application::GetInstance();
+	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(app->_pMesh);
 	vk::PipelineVertexInputStateCreateInfo vertexInputInfo{};
-	vertexInputInfo.vertexBindingDescriptionCount = m_pMesh->m_axBindDescs.size();
-	vertexInputInfo.pVertexBindingDescriptions = m_pMesh->m_axBindDescs.data();
-	vertexInputInfo.vertexAttributeDescriptionCount = m_pMesh->m_axAttrDescs.size();
-	vertexInputInfo.pVertexAttributeDescriptions = m_pMesh->m_axAttrDescs.data();
+	vertexInputInfo.vertexBindingDescriptionCount = pxVulkanMesh->m_axBindDescs.size();
+	vertexInputInfo.pVertexBindingDescriptions = pxVulkanMesh->m_axBindDescs.data();
+	vertexInputInfo.vertexAttributeDescriptionCount = pxVulkanMesh->m_axAttrDescs.size();
+	vertexInputInfo.pVertexAttributeDescriptions = pxVulkanMesh->m_axAttrDescs.data();
 
 	vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.topology = vk::PrimitiveTopology::eTriangleList;
@@ -593,7 +594,7 @@ void VulkanRenderer::CreateCommandBuffers() {
 	m_commandBuffers = m_device.allocateCommandBuffers(allocInfo);
 }
 
-void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex) {
+void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene) {
 	vk::CommandBufferBeginInfo beginInfo{};
 	beginInfo.pInheritanceInfo = nullptr;
 
@@ -614,12 +615,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_graphicsPipeline);
 
-	vk::Buffer xVertexBuffer = m_pMesh->m_pxVertexBuffer->m_pxVertexBuffer->m_xBuffer;
-	vk::DeviceSize offsets[] = { 0 };
-	commandBuffer.bindVertexBuffers(0, 1, &xVertexBuffer, offsets);
-
-	vk::Buffer xIndexBuffer = m_pMesh->m_pxIndexBuffer->m_pxIndexBuffer->m_xBuffer;
-	commandBuffer.bindIndexBuffer(xIndexBuffer, 0, vk::IndexType::eUint32);
+	
 
 	commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pipelineLayout, 0, 1, &m_cameraDescriptor[m_currentFrame], 0, nullptr);
 
@@ -637,7 +633,20 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 	commandBuffer.setViewport(0, 1, &viewport);
 	commandBuffer.setScissor(0, 1, &scissor);
-	commandBuffer.drawIndexed(m_pMesh->numIndices, 1, 0, 0,0);
+
+	for (Mesh* mesh : scene->meshes) {
+		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
+		vk::Buffer xVertexBuffer = pxVulkanMesh->m_pxVertexBuffer->m_pxVertexBuffer->m_xBuffer;
+		vk::DeviceSize offsets[] = { 0 };
+		commandBuffer.bindVertexBuffers(0, 1, &xVertexBuffer, offsets);
+
+		vk::Buffer xIndexBuffer = pxVulkanMesh->m_pxIndexBuffer->m_pxIndexBuffer->m_xBuffer;
+		commandBuffer.bindIndexBuffer(xIndexBuffer, 0, vk::IndexType::eUint32);
+		commandBuffer.drawIndexed(pxVulkanMesh->numIndices, 1, 0, 0, 0);
+	}
+	
+
+
 	commandBuffer.endRenderPass();
 	commandBuffer.end();
 }
@@ -659,7 +668,7 @@ void VulkanRenderer::CreateSyncObjects() {
 
 }
 
-void VulkanRenderer::DrawFrame() {
+void VulkanRenderer::DrawFrame(Scene* scene) {
 #define UINT64_MAX std::numeric_limits<uint64_t>::max()
 	m_device.waitForFences(1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -676,7 +685,7 @@ void VulkanRenderer::DrawFrame() {
 
 	m_device.resetFences(1, &m_inFlightFences[m_currentFrame]);
 	m_commandBuffers[m_currentFrame].reset();
-	RecordCommandBuffer(m_commandBuffers[m_currentFrame], imageIndex);
+	RecordCommandBuffer(m_commandBuffers[m_currentFrame], imageIndex, scene);
 
 	vk::SubmitInfo submitInfo{};
 
