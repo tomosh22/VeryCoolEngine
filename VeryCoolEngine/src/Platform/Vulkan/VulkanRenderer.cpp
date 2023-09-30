@@ -44,12 +44,13 @@ void VulkanRenderer::InitVulkan() {
 	CreateImageViews();
 	CreateRenderPass();
 	CreateCommandPool();
-	app->_pMesh->PlatformInit();
 	CreateDescriptorPool();
+	app->_pMesh->PlatformInit();
+	_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
+	
 	CreateGraphicsPipeline();
 
-	_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
-	CreateDescriptorSets();
+	
 
 	CreateFrameBuffers();
 	
@@ -409,30 +410,7 @@ void VulkanRenderer::CreateDescriptorPool() {
 
 }
 
-void VulkanRenderer::CreateDescriptorSets()
-{
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-	{
-		m_cameraDescriptor[i] = CreateDescriptorSet(m_descriptorLayout, m_descriptorPool);
-		vk::Buffer& xUniformBuffer = ((VulkanManagedUniformBuffer*)_pCameraUBO)->ppBuffers[i]->m_xBuffer;
-		uint32_t uSize = ((VulkanManagedUniformBuffer*)_pCameraUBO)->m_uSize;
-		uint32_t uBinding = ((VulkanManagedUniformBuffer*)_pCameraUBO)->m_uBaseBinding;
-		vk::DescriptorBufferInfo xBufferInfo = vk::DescriptorBufferInfo()
-			.setBuffer(xUniformBuffer)
-			.setOffset(0)
-			.setRange(uSize);
 
-		vk::WriteDescriptorSet xDescWrite = vk::WriteDescriptorSet()
-			.setDstSet(m_cameraDescriptor[i])
-			.setDstBinding(uBinding)
-			.setDstArrayElement(0)
-			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-			.setDescriptorCount(1)
-			.setPBufferInfo(&xBufferInfo);
-
-		VulkanRenderer::GetInstance()->GetDevice().updateDescriptorSets(1, &xDescWrite, 0, nullptr);
-	}
-}
 
 vk::DescriptorSet VulkanRenderer::CreateDescriptorSet(const vk::DescriptorSetLayout& xLayout, const vk::DescriptorPool& xPool)
 {
@@ -446,19 +424,6 @@ vk::DescriptorSet VulkanRenderer::CreateDescriptorSet(const vk::DescriptorSetLay
 
 void VulkanRenderer::CreateGraphicsPipeline() {
 
-#pragma region DescriptorSet
-	vk::DescriptorSetLayoutBinding xBinding = vk::DescriptorSetLayoutBinding()
-		.setBinding(0)
-		.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-		.setDescriptorCount(1)
-		.setStageFlags(vk::ShaderStageFlagBits::eVertex);
-
-	vk::DescriptorSetLayoutCreateInfo xCreateInfo = vk::DescriptorSetLayoutCreateInfo()
-		.setBindingCount(1)
-		.setPBindings(&xBinding);
-
-	m_descriptorLayout = m_device.createDescriptorSetLayout(xCreateInfo);
-#pragma endregion
 
 	std::vector<char> vertShaderCode = ReadFile("../Assets/Shaders/vulkan/vert.spv");
 	std::vector<char> fragShaderCode = ReadFile("../Assets/Shaders/vulkan/frag.spv");
@@ -534,9 +499,13 @@ void VulkanRenderer::CreateGraphicsPipeline() {
 	colorBlending.attachmentCount = 1;
 	colorBlending.pAttachments = &colorBlendAttachment;
 
+	vk::DescriptorSetLayout aLayouts[] = {
+		dynamic_cast<VulkanManagedUniformBuffer*>(_pCameraUBO)->m_xDescriptorLayout
+	};
+
 	vk::PipelineLayoutCreateInfo xPipelineLayoutInfo = vk::PipelineLayoutCreateInfo()
-		.setSetLayoutCount(1)
-		.setPSetLayouts(&m_descriptorLayout);
+		.setSetLayoutCount(sizeof(aLayouts)/sizeof(aLayouts[0]))
+		.setPSetLayouts(aLayouts);
 	m_pipelineLayout = m_device.createPipelineLayout(xPipelineLayoutInfo);
 
 	vk::GraphicsPipelineCreateInfo pipelineInfo{};
@@ -615,9 +584,11 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_graphicsPipeline);
 
-	
+	vk::DescriptorSet aSets[] = {
+		dynamic_cast<VulkanManagedUniformBuffer*>(_pCameraUBO)->m_axDescriptorSets[m_currentFrame]
+	};
 
-	commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pipelineLayout, 0, 1, &m_cameraDescriptor[m_currentFrame], 0, nullptr);
+	commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pipelineLayout, 0, sizeof(aSets) / sizeof(aSets[0]), aSets, 0, nullptr);
 
 	vk::Viewport viewport{};
 	viewport.x = 0;

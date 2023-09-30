@@ -29,6 +29,9 @@ namespace VeryCoolEngine {
 		uint8_t m_uNumFrames;
 		uint32_t m_uSize;
 		uint32_t m_uBaseBinding;
+
+		vk::DescriptorSetLayout m_xDescriptorLayout;
+		vk::DescriptorSet m_axDescriptorSets[MAX_FRAMES_IN_FLIGHT];
 	};
 
 }

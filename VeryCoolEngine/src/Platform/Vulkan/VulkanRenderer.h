@@ -74,6 +74,9 @@ namespace VeryCoolEngine {
 			vk::PhysicalDevice& const GetPhysicalDevice() { return m_physicalDevice; }
 			vk::CommandPool& const GetCommandPool() { return m_commandPool; }
 			vk::Queue& const GetGraphicsQueue() { return m_graphicsQueue; }
+			vk::DescriptorPool& const GetDescriptorPool() { return m_descriptorPool; }
+
+			vk::DescriptorSet CreateDescriptorSet(const vk::DescriptorSetLayout& xLayout, const vk::DescriptorPool& xPool);
 
 		protected:
 			static VulkanRenderer* s_pInstance;
@@ -159,7 +162,7 @@ namespace VeryCoolEngine {
 
 			void CreateDescriptorSets();
 
-			vk::DescriptorSet CreateDescriptorSet(const vk::DescriptorSetLayout& xLayout, const vk::DescriptorPool& xPool);
+			
 
 			void CreateGraphicsPipeline();
 
@@ -219,7 +222,6 @@ namespace VeryCoolEngine {
 
 			vk::DescriptorPool m_descriptorPool;
 
-			vk::DescriptorSet m_cameraDescriptor[MAX_FRAMES_IN_FLIGHT];
 
 			vk::RenderPass m_renderPass;
 			vk::DescriptorSetLayout m_descriptorLayout;
