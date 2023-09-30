@@ -22,6 +22,10 @@ namespace VeryCoolEngine {
 #ifdef VCE_VULKAN
 		_pMesh = Mesh::GenerateVulkanTest();
 		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, 1280.f / 720.f);
+		_shaders.push_back(Shader::Create("../Assets/Shaders/vulkan/vert.spv", "../Assets/Shaders/vulkan/frag.spv"));
+		std::vector<ManagedUniformBuffer**> ubos;
+		ubos.push_back(&_pCameraUBO);
+		m_pxPipeline = Pipeline::Create(_shaders.back(), _pMesh->m_xBufferLayout, MeshTopolgy::Triangles, ubos, &m_pxRenderPass);
 		return;
 #endif
 		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, 1280.f / 720.f);
@@ -36,7 +40,7 @@ namespace VeryCoolEngine {
 #pragma endregion
 		//#todo these should probably be in string maps?
 		//or do i store them individually?
-		_shaders.push_back(Shader::Create("block.vert", "block.frag"));
+		
 		_textures.push_back(Texture2D::Create("atlas.png", false));
 
 
@@ -44,7 +48,7 @@ namespace VeryCoolEngine {
 		_pMesh->SetShader(_shaders[0]);
 		_pMesh->SetTexture(_textures[0]);
 
-		m_pxPipeline = Pipeline::Create(_shaders.back(), _pMesh->m_xBufferLayout, MeshTopolgy::Triangles, { _pCameraUBO }, m_pxRenderPass);
+		
 
 		Chunk::seed = rand();
 		GenerateChunks();

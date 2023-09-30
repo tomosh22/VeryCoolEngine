@@ -87,6 +87,7 @@ namespace VeryCoolEngine {
 		std::mutex sceneMutex;
 		Scene* scene;
 
+		//TODO delete these
 		Renderer* _pRenderer;
 		Pipeline* m_pxPipeline;
 		RenderPass* m_pxRenderPass;

@@ -5,13 +5,18 @@ namespace VeryCoolEngine {
 	VulkanShader::VulkanShader(const std::string& vertex, const std::string& fragment, const std::string& geometry, const std::string& domain, const std::string& hull)
 	{
 
-		std::vector<char> vertShaderCode = VulkanRenderer::ReadFile(vertex.c_str());
-		std::vector<char> fragShaderCode = VulkanRenderer::ReadFile(fragment.c_str());
+		m_vertShaderCode = VulkanRenderer::ReadFile(vertex.c_str());
+		m_fragShaderCode = VulkanRenderer::ReadFile(fragment.c_str());
 
-		xVertShaderModule = CreateShaderModule(vertShaderCode);
-		xFragShaderModule = CreateShaderModule(fragShaderCode);
+		
 
 	}
+
+	void VulkanShader::PlatformInit() {
+		xVertShaderModule = CreateShaderModule(m_vertShaderCode);
+		xFragShaderModule = CreateShaderModule(m_fragShaderCode);
+	}
+
 	void VulkanShader::ReloadShader()
 	{
 	}

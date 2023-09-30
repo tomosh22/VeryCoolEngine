@@ -113,6 +113,10 @@ namespace VeryCoolEngine {
 		}
 	}
 
+	void OpenGLShader::PlatformInit()
+	{
+	}
+
 	void	OpenGLShader::DeleteIDs() {
 		if (!programID) {
 			return;

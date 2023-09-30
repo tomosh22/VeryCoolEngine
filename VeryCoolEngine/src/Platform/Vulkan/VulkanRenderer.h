@@ -224,10 +224,8 @@ namespace VeryCoolEngine {
 			vk::DescriptorPool m_descriptorPool;
 
 
-			VulkanRenderPass* m_pxRenderPass;
 			vk::DescriptorSetLayout m_descriptorLayout;
 			vk::PipelineLayout m_pipelineLayout;
-			vk::Pipeline m_graphicsPipeline;
 
 			std::vector<vk::Framebuffer> m_swapChainFramebuffers;
 

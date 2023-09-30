@@ -21,6 +21,7 @@ namespace VeryCoolEngine {
 			~OpenGLShader();
 
 			void ReloadShader() override;
+			void PlatformInit() override;
 
 			bool LoadSuccess() const {
 				return programValid == GL_TRUE;

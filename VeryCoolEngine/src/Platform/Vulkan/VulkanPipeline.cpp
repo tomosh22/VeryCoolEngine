@@ -9,12 +9,19 @@
 #include <vulkan/vulkan.hpp>
 
 namespace VeryCoolEngine {
-	
-	VulkanPipeline::VulkanPipeline(Shader* pxShader, BufferLayout* xLayout, MeshTopolgy xTopology, const std::vector<ManagedUniformBuffer*>& apxUBOs, RenderPass* xRenderPass) {
+	VulkanPipeline::VulkanPipeline(Shader* pxShader, BufferLayout* xLayout, MeshTopolgy xTopology, std::vector<ManagedUniformBuffer**> apxUBOs, RenderPass** xRenderPass)
+	{
+		m_pxShader = pxShader;
+		m_xVertexBufferLayout = xLayout;
+		m_xTopology = xTopology;
+		m_apxUBOs = apxUBOs;
+		m_pxRenderPass = xRenderPass;
+	}
+	void VulkanPipeline::PlatformInit() {
 
 		vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
 		
-		VulkanShader* pxVulkanShader = dynamic_cast<VulkanShader*>(pxShader);
+		VulkanShader* pxVulkanShader = dynamic_cast<VulkanShader*>(m_pxShader);
 
 		vk::ShaderModule vertShaderModule = pxVulkanShader->xVertShaderModule;
 		vk::ShaderModule fragShaderModule = pxVulkanShader->xFragShaderModule;
@@ -35,10 +42,10 @@ namespace VeryCoolEngine {
 		std::vector<vk::VertexInputBindingDescription> axBindDescs;
 		std::vector<vk::VertexInputAttributeDescription> axAttrDescs;
 
-		xLayout->CalculateOffsetsAndStrides();
+		m_xVertexBufferLayout->CalculateOffsetsAndStrides();
 		uint32_t uBindPoint = 0;
 		uint32_t uTotalSize = 0;
-		for (BufferElement& element : xLayout->GetElements()) {
+		for (BufferElement& element : m_xVertexBufferLayout->GetElements()) {
 
 
 			vk::VertexInputAttributeDescription xAttrDesc = vk::VertexInputAttributeDescription()
@@ -53,7 +60,7 @@ namespace VeryCoolEngine {
 
 		vk::VertexInputBindingDescription xBindDesc = vk::VertexInputBindingDescription()
 			.setBinding(0)
-			.setStride(xLayout->_Stride)//I changed this from sizeof(float) * numFloats
+			.setStride(m_xVertexBufferLayout->_Stride)//I changed this from sizeof(float) * numFloats
 			.setInputRate(vk::VertexInputRate::eVertex);
 		axBindDescs.push_back(xBindDesc);
 #pragma endregion
@@ -114,15 +121,15 @@ namespace VeryCoolEngine {
 		colorBlending.attachmentCount = 1;
 		colorBlending.pAttachments = &colorBlendAttachment;
 
-		vk::DescriptorSetLayout* axLayouts = new vk::DescriptorSetLayout[apxUBOs.size()];
+		vk::DescriptorSetLayout* axLayouts = new vk::DescriptorSetLayout[m_apxUBOs.size()];
 		uint32_t uIndex = 0;
-		for (const ManagedUniformBuffer* ubo : apxUBOs) {
-			const VulkanManagedUniformBuffer* pxVulkanUBO = dynamic_cast<const VulkanManagedUniformBuffer*>(ubo);
+		for (ManagedUniformBuffer** ubo : m_apxUBOs) {
+			VulkanManagedUniformBuffer* pxVulkanUBO = dynamic_cast< VulkanManagedUniformBuffer*>(*ubo);
 			axLayouts[uIndex] = pxVulkanUBO->m_xDescriptorLayout;
 		}
 
 		vk::PipelineLayoutCreateInfo xPipelineLayoutInfo = vk::PipelineLayoutCreateInfo()
-			.setSetLayoutCount(apxUBOs.size())
+			.setSetLayoutCount(m_apxUBOs.size())
 			.setPSetLayouts(axLayouts);
 		m_xPipelineLayout = xDevice.createPipelineLayout(xPipelineLayoutInfo);
 
@@ -138,7 +145,7 @@ namespace VeryCoolEngine {
 		pipelineInfo.pColorBlendState = &colorBlending;
 		pipelineInfo.pDynamicState = &dynamicState;
 		pipelineInfo.layout = m_xPipelineLayout;
-		pipelineInfo.renderPass = dynamic_cast<VulkanRenderPass*>(xRenderPass)->m_xRenderPass;
+		pipelineInfo.renderPass = dynamic_cast<VulkanRenderPass*>(*m_pxRenderPass)->m_xRenderPass;
 		pipelineInfo.subpass = 0;
 
 

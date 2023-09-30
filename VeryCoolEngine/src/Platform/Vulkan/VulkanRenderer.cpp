@@ -6,6 +6,7 @@
 
 #include "Platform/Vulkan/VulkanManagedUniformBuffer.h"
 #include "Platform/Vulkan/VulkanRenderPass.h"
+#include "Platform/Vulkan/VulkanPipeline.h"
 
 
 
@@ -43,13 +44,14 @@ void VulkanRenderer::InitVulkan() {
 	CreateLogicalDevice();
 	CreateSwapChain();
 	CreateImageViews();
-	m_pxRenderPass = new VulkanRenderPass();
+	app->m_pxRenderPass = new VulkanRenderPass();
 	CreateCommandPool();
 	CreateDescriptorPool();
 	app->_pMesh->PlatformInit();
 	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
-	
-	CreateGraphicsPipeline();
+	app->_shaders.back()->PlatformInit();
+	//CreateGraphicsPipeline();
+	dynamic_cast<VulkanPipeline*>(app->m_pxPipeline)->PlatformInit();
 
 	
 
@@ -83,10 +85,6 @@ void VulkanRenderer::Cleanup() {
 
 	CleanupSwapChain();
 	m_device.destroyDescriptorPool(m_descriptorPool, nullptr);
-	m_device.destroyDescriptorSetLayout(m_descriptorLayout, nullptr);
-	m_device.destroyPipeline(m_graphicsPipeline, nullptr);
-	m_device.destroyPipelineLayout(m_pipelineLayout, nullptr);
-	delete m_pxRenderPass;
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
@@ -385,120 +383,15 @@ vk::DescriptorSet VulkanRenderer::CreateDescriptorSet(const vk::DescriptorSetLay
 	return std::move(VulkanRenderer::GetInstance()->GetDevice().allocateDescriptorSets(xInfo)[0]);
 }
 
-void VulkanRenderer::CreateGraphicsPipeline() {
 
-	Application* app = Application::GetInstance();
-
-	std::vector<char> vertShaderCode = ReadFile("../Assets/Shaders/vulkan/vert.spv");
-	std::vector<char> fragShaderCode = ReadFile("../Assets/Shaders/vulkan/frag.spv");
-
-	vk::ShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
-	vk::ShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
-
-	vk::PipelineShaderStageCreateInfo vertStageInfo{};
-	vertStageInfo.stage = vk::ShaderStageFlagBits::eVertex;
-	vertStageInfo.module = vertShaderModule;
-	vertStageInfo.pName = "main";
-
-	vk::PipelineShaderStageCreateInfo fragStageInfo{};
-	fragStageInfo.stage = vk::ShaderStageFlagBits::eFragment;
-	fragStageInfo.module = fragShaderModule;
-	fragStageInfo.pName = "main";
-
-	vk::PipelineShaderStageCreateInfo stages[] = { vertStageInfo,fragStageInfo };
-
-
-	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(app->_pMesh);
-	vk::PipelineVertexInputStateCreateInfo vertexInputInfo{};
-	vertexInputInfo.vertexBindingDescriptionCount = pxVulkanMesh->m_axBindDescs.size();
-	vertexInputInfo.pVertexBindingDescriptions = pxVulkanMesh->m_axBindDescs.data();
-	vertexInputInfo.vertexAttributeDescriptionCount = pxVulkanMesh->m_axAttrDescs.size();
-	vertexInputInfo.pVertexAttributeDescriptions = pxVulkanMesh->m_axAttrDescs.data();
-
-	vk::PipelineInputAssemblyStateCreateInfo inputAssembly{};
-	inputAssembly.topology = vk::PrimitiveTopology::eTriangleList;
-	inputAssembly.primitiveRestartEnable = VK_FALSE;
-
-
-
-
-	vk::DynamicState dynamicStates[] = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
-	vk::PipelineDynamicStateCreateInfo dynamicState{};
-	dynamicState.dynamicStateCount = 2;
-	dynamicState.pDynamicStates = dynamicStates;
-
-	vk::PipelineViewportStateCreateInfo viewportState{};
-	viewportState.viewportCount = 1;
-	viewportState.scissorCount = 1;
-
-	vk::PipelineRasterizationStateCreateInfo rasterizer{};
-	rasterizer.depthClampEnable = VK_FALSE;
-	rasterizer.rasterizerDiscardEnable = VK_FALSE;
-	rasterizer.polygonMode = vk::PolygonMode::eFill;
-	rasterizer.lineWidth = 1;
-	rasterizer.cullMode = vk::CullModeFlagBits::eNone;
-	rasterizer.frontFace = vk::FrontFace::eClockwise;//TODO change to ccw
-	rasterizer.depthBiasEnable = VK_FALSE;
-
-	vk::PipelineMultisampleStateCreateInfo multisampling{};
-	multisampling.sampleShadingEnable = VK_FALSE;
-	multisampling.rasterizationSamples = vk::SampleCountFlagBits::e1;
-
-	//TODO depth testing
-
-	vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
-	colorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
-	colorBlendAttachment.blendEnable = VK_TRUE;
-
-	colorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eSrcAlpha;
-	colorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha;
-	colorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd;
-	colorBlendAttachment.srcAlphaBlendFactor = vk::BlendFactor::eOne;
-	colorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eZero;
-	colorBlendAttachment.alphaBlendOp = vk::BlendOp::eAdd;
-
-	vk::PipelineColorBlendStateCreateInfo colorBlending{};
-	colorBlending.logicOpEnable = VK_FALSE;
-	colorBlending.attachmentCount = 1;
-	colorBlending.pAttachments = &colorBlendAttachment;
-
-	vk::DescriptorSetLayout aLayouts[] = {
-		dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO)->m_xDescriptorLayout
-	};
-
-	vk::PipelineLayoutCreateInfo xPipelineLayoutInfo = vk::PipelineLayoutCreateInfo()
-		.setSetLayoutCount(sizeof(aLayouts)/sizeof(aLayouts[0]))
-		.setPSetLayouts(aLayouts);
-	m_pipelineLayout = m_device.createPipelineLayout(xPipelineLayoutInfo);
-
-	vk::GraphicsPipelineCreateInfo pipelineInfo{};
-	pipelineInfo.stageCount = 2;
-	pipelineInfo.pStages = stages;
-	pipelineInfo.pVertexInputState = &vertexInputInfo;
-	pipelineInfo.pInputAssemblyState = &inputAssembly;
-	pipelineInfo.pViewportState = &viewportState;
-	pipelineInfo.pRasterizationState = &rasterizer;
-	pipelineInfo.pMultisampleState = &multisampling;
-	pipelineInfo.pDepthStencilState = nullptr;
-	pipelineInfo.pColorBlendState = &colorBlending;
-	pipelineInfo.pDynamicState = &dynamicState;
-	pipelineInfo.layout = m_pipelineLayout;
-	pipelineInfo.renderPass = m_pxRenderPass->m_xRenderPass;
-	pipelineInfo.subpass = 0;
-
-
-	m_graphicsPipeline = m_device.createGraphicsPipeline(VK_NULL_HANDLE, pipelineInfo).value;
-
-	m_device.destroyShaderModule(vertShaderModule, nullptr);
-	m_device.destroyShaderModule(fragShaderModule, nullptr);
-}
 
 void VulkanRenderer::CreateFrameBuffers() {
+	Application* app = Application::GetInstance();
 	m_swapChainFramebuffers.resize(m_swapChainImageViews.size());
 	int swapchainIndex = 0;
 	for (vk::ImageView imageView : m_swapChainImageViews) {
 		vk::FramebufferCreateInfo framebufferInfo{};
-		framebufferInfo.renderPass = m_pxRenderPass->m_xRenderPass;
+		framebufferInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxRenderPass)->m_xRenderPass;
 		framebufferInfo.attachmentCount = 1;
 		framebufferInfo.pAttachments = &imageView;
 		framebufferInfo.width = m_swapChainExtent.width;
@@ -534,7 +427,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	commandBuffer.begin(beginInfo);
 
 	vk::RenderPassBeginInfo renderPassInfo{};
-	renderPassInfo.renderPass = m_pxRenderPass->m_xRenderPass;
+	renderPassInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxRenderPass)->m_xRenderPass;
 	renderPassInfo.framebuffer = m_swapChainFramebuffers[imageIndex];
 	renderPassInfo.renderArea.offset = vk::Offset2D(0, 0);
 	renderPassInfo.renderArea.extent = m_swapChainExtent;
@@ -546,13 +439,13 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	renderPassInfo.pClearValues = &clearColor;
 
 	commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
-	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, m_graphicsPipeline);
+	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, dynamic_cast<VulkanPipeline*>(app->m_pxPipeline)->m_xPipeline);
 
 	vk::DescriptorSet aSets[] = {
 		dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO)->m_axDescriptorSets[m_currentFrame]
 	};
 
-	commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pipelineLayout, 0, sizeof(aSets) / sizeof(aSets[0]), aSets, 0, nullptr);
+	commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, dynamic_cast<VulkanPipeline*>(app->m_pxPipeline)->m_xPipelineLayout, 0, sizeof(aSets) / sizeof(aSets[0]), aSets, 0, nullptr);
 
 	vk::Viewport viewport{};
 	viewport.x = 0;
