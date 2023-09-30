@@ -78,6 +78,17 @@ namespace VeryCoolEngine {
 
 			vk::DescriptorSet CreateDescriptorSet(const vk::DescriptorSetLayout& xLayout, const vk::DescriptorPool& xPool);
 
+			static std::vector<char> ReadFile(const std::string& filename) {
+				std::ifstream file(filename, std::ios::ate | std::ios::binary);
+				if (!file.is_open())std::cerr << "couldnt open file";
+				int fileSize = file.tellg();
+				std::vector<char> buffer(fileSize);
+				file.seekg(0);
+				file.read(buffer.data(), fileSize);
+				file.close();
+				return buffer;
+			}
+
 		protected:
 			static VulkanRenderer* s_pInstance;
 
@@ -182,16 +193,7 @@ namespace VeryCoolEngine {
 
 
 
-			static std::vector<char> ReadFile(const std::string& filename) {
-				std::ifstream file(filename, std::ios::ate | std::ios::binary);
-				if (!file.is_open())std::cerr << "couldnt open file";
-				int fileSize = file.tellg();
-				std::vector<char> buffer(fileSize);
-				file.seekg(0);
-				file.read(buffer.data(), fileSize);
-				file.close();
-				return buffer;
-			}
+			
 
 #if DEBUG
 			bool CheckValidationLayerSupport();

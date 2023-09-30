@@ -4,7 +4,7 @@
 
 namespace VeryCoolEngine {
 
-	static vk::Format ShaderDataTypeToVulkanFormat(ShaderDataType t) {
+	vk::Format VulkanMesh::ShaderDataTypeToVulkanFormat(ShaderDataType t) {
 		switch (t) {
 		case ShaderDataType::Float: return vk::Format::eR32Sfloat;
 		case ShaderDataType::Float2: return vk::Format::eR32G32Sfloat;

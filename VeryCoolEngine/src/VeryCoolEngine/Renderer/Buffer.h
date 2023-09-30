@@ -125,10 +125,11 @@ namespace VeryCoolEngine {
 
 			}
 		}
+		uint32_t _Stride = 0;
 	private:
 		
 		std::vector<BufferElement> _Elements;
-		uint32_t _Stride = 0;
+		
 	};
 
 	class VertexBuffer{

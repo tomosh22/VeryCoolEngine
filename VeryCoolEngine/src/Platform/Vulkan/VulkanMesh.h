@@ -17,6 +17,8 @@ namespace VeryCoolEngine {
 		std::vector<vk::VertexInputBindingDescription> m_axBindDescs;
 		std::vector<vk::VertexInputAttributeDescription> m_axAttrDescs;
 
+		static vk::Format ShaderDataTypeToVulkanFormat(ShaderDataType t);
+
 		VulkanVertexBuffer* m_pxVertexBuffer;
 		VulkanIndexBuffer* m_pxIndexBuffer;
 	private:
