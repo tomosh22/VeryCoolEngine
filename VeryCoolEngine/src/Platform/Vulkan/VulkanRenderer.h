@@ -21,7 +21,8 @@ namespace VeryCoolEngine {
 
 	class VulkanMesh;
 
-#define MAX_FRAMES_IN_FLIGHT 2
+	static constexpr const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+
 		struct QueueFamilyIndices {
 			uint32_t graphicsFamily = -1;
 			uint32_t presentFamily = -1;
@@ -154,6 +155,12 @@ namespace VeryCoolEngine {
 
 			void CreateRenderPass();
 
+			void CreateDescriptorPool();
+
+			void CreateDescriptorSets();
+
+			vk::DescriptorSet CreateDescriptorSet(const vk::DescriptorSetLayout& xLayout, const vk::DescriptorPool& xPool);
+
 			void CreateGraphicsPipeline();
 
 			void CreateFrameBuffers();
@@ -210,7 +217,12 @@ namespace VeryCoolEngine {
 			vk::Extent2D m_swapChainExtent;
 			std::vector<vk::ImageView> m_swapChainImageViews;
 
+			vk::DescriptorPool m_descriptorPool;
+
+			vk::DescriptorSet m_cameraDescriptor[MAX_FRAMES_IN_FLIGHT];
+
 			vk::RenderPass m_renderPass;
+			vk::DescriptorSetLayout m_descriptorLayout;
 			vk::PipelineLayout m_pipelineLayout;
 			vk::Pipeline m_graphicsPipeline;
 

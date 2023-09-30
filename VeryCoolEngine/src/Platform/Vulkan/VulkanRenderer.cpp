@@ -4,6 +4,8 @@
 
 #include "Platform/Vulkan/VulkanMesh.h"
 
+#include "Platform/Vulkan/VulkanManagedUniformBuffer.h"
+
 
 
 
@@ -43,23 +45,43 @@ void VulkanRenderer::InitVulkan() {
 	CreateCommandPool();
 	m_pMesh = (VulkanMesh*)Mesh::GenerateVulkanTest();
 	m_pMesh->PlatformInit();
+	CreateDescriptorPool();
 	CreateGraphicsPipeline();
+
+	_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
+	CreateDescriptorSets();
 
 	CreateFrameBuffers();
 	
 	CreateCommandBuffers();
 	CreateSyncObjects();
+
+	Application::GetInstance()->renderInitialised = true;
 }
 
 void VulkanRenderer::MainLoop() {
 	glfwPollEvents();
+
+	Application* app = Application::GetInstance();
+	Scene* scene = app->scene;
+	while (true) {
+		printf("Waiting on scene to be ready\n");
+		if (scene->ready)break;//#todo implement mutex here
+	}
+	app->sceneMutex.lock();
+	BeginScene(scene);
+
 	DrawFrame();
+
+	app->sceneMutex.unlock();
 }
 
 void VulkanRenderer::Cleanup() {
 
 
 	CleanupSwapChain();
+	m_device.destroyDescriptorPool(m_descriptorPool, nullptr);
+	m_device.destroyDescriptorSetLayout(m_descriptorLayout, nullptr);
 	m_device.destroyPipeline(m_graphicsPipeline, nullptr);
 	m_device.destroyPipelineLayout(m_pipelineLayout, nullptr);
 	m_device.destroyRenderPass(m_renderPass, nullptr);
@@ -360,7 +382,84 @@ void VulkanRenderer::CreateRenderPass() {
 
 }
 
+void VulkanRenderer::CreateDescriptorPool() {
+	
+	vk::DescriptorPoolSize axPoolSizes[] =
+	{
+		{ vk::DescriptorType::eSampler, 1000 },
+		{ vk::DescriptorType::eCombinedImageSampler, 1000 },
+		{ vk::DescriptorType::eSampledImage, 1000 },
+		{ vk::DescriptorType::eStorageImage, 1000 },
+		{ vk::DescriptorType::eUniformTexelBuffer, 1000 },
+		{ vk::DescriptorType::eStorageTexelBuffer, 1000 },
+		{ vk::DescriptorType::eUniformBuffer, 1000 },
+		{ vk::DescriptorType::eStorageBuffer, 1000 },
+		{ vk::DescriptorType::eUniformBufferDynamic, 1000 },
+		{ vk::DescriptorType::eStorageBufferDynamic, 1000 },
+		{ vk::DescriptorType::eInputAttachment, 1000 }
+	};
+
+	vk::DescriptorPoolCreateInfo xPoolInfo = vk::DescriptorPoolCreateInfo()
+		.setPoolSizeCount(sizeof(axPoolSizes) / sizeof(axPoolSizes[0]))
+		.setPPoolSizes(axPoolSizes)
+		.setMaxSets(1000)
+		.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet);
+
+	m_descriptorPool = m_device.createDescriptorPool(xPoolInfo);
+
+}
+
+void VulkanRenderer::CreateDescriptorSets()
+{
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	{
+		m_cameraDescriptor[i] = CreateDescriptorSet(m_descriptorLayout, m_descriptorPool);
+		vk::Buffer& xUniformBuffer = ((VulkanManagedUniformBuffer*)_pCameraUBO)->ppBuffers[i]->m_xBuffer;
+		uint32_t uSize = ((VulkanManagedUniformBuffer*)_pCameraUBO)->m_uSize;
+		uint32_t uBinding = ((VulkanManagedUniformBuffer*)_pCameraUBO)->m_uBaseBinding;
+		vk::DescriptorBufferInfo xBufferInfo = vk::DescriptorBufferInfo()
+			.setBuffer(xUniformBuffer)
+			.setOffset(0)
+			.setRange(uSize);
+
+		vk::WriteDescriptorSet xDescWrite = vk::WriteDescriptorSet()
+			.setDstSet(m_cameraDescriptor[i])
+			.setDstBinding(uBinding)
+			.setDstArrayElement(0)
+			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+			.setDescriptorCount(1)
+			.setPBufferInfo(&xBufferInfo);
+
+		VulkanRenderer::GetInstance()->GetDevice().updateDescriptorSets(1, &xDescWrite, 0, nullptr);
+	}
+}
+
+vk::DescriptorSet VulkanRenderer::CreateDescriptorSet(const vk::DescriptorSetLayout& xLayout, const vk::DescriptorPool& xPool)
+{
+	vk::DescriptorSetAllocateInfo xInfo = vk::DescriptorSetAllocateInfo()
+		.setDescriptorPool(xPool)
+		.setDescriptorSetCount(1)
+		.setPSetLayouts(&xLayout);
+
+	return std::move(VulkanRenderer::GetInstance()->GetDevice().allocateDescriptorSets(xInfo)[0]);
+}
+
 void VulkanRenderer::CreateGraphicsPipeline() {
+
+#pragma region DescriptorSet
+	vk::DescriptorSetLayoutBinding xBinding = vk::DescriptorSetLayoutBinding()
+		.setBinding(0)
+		.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+		.setDescriptorCount(1)
+		.setStageFlags(vk::ShaderStageFlagBits::eVertex);
+
+	vk::DescriptorSetLayoutCreateInfo xCreateInfo = vk::DescriptorSetLayoutCreateInfo()
+		.setBindingCount(1)
+		.setPBindings(&xBinding);
+
+	m_descriptorLayout = m_device.createDescriptorSetLayout(xCreateInfo);
+#pragma endregion
+
 	std::vector<char> vertShaderCode = ReadFile("../Assets/Shaders/vulkan/vert.spv");
 	std::vector<char> fragShaderCode = ReadFile("../Assets/Shaders/vulkan/frag.spv");
 
@@ -434,8 +533,10 @@ void VulkanRenderer::CreateGraphicsPipeline() {
 	colorBlending.attachmentCount = 1;
 	colorBlending.pAttachments = &colorBlendAttachment;
 
-	vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
-	m_pipelineLayout = m_device.createPipelineLayout(pipelineLayoutInfo);
+	vk::PipelineLayoutCreateInfo xPipelineLayoutInfo = vk::PipelineLayoutCreateInfo()
+		.setSetLayoutCount(1)
+		.setPSetLayouts(&m_descriptorLayout);
+	m_pipelineLayout = m_device.createPipelineLayout(xPipelineLayoutInfo);
 
 	vk::GraphicsPipelineCreateInfo pipelineInfo{};
 	pipelineInfo.stageCount = 2;
@@ -519,6 +620,8 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 	vk::Buffer xIndexBuffer = m_pMesh->m_pxIndexBuffer->m_pxIndexBuffer->m_xBuffer;
 	commandBuffer.bindIndexBuffer(xIndexBuffer, 0, vk::IndexType::eUint32);
+
+	commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pipelineLayout, 0, 1, &m_cameraDescriptor[m_currentFrame], 0, nullptr);
 
 	vk::Viewport viewport{};
 	viewport.x = 0;
@@ -677,6 +780,19 @@ void VeryCoolEngine::VulkanRenderer::Clear()
 
 void VeryCoolEngine::VulkanRenderer::BeginScene(Scene* scene)
 {
+	const uint32_t camDataSize = sizeof(glm::mat4) * 3 + sizeof(glm::vec4);//4 bytes of padding
+	glm::mat4 viewMat = scene->camera->BuildViewMatrix();
+	glm::mat4 projMat = scene->camera->BuildProjectionMatrix();
+	glm::mat4 viewProjMat = projMat * viewMat;
+	glm::vec3 tempCamPos = scene->camera->GetPosition();
+	glm::vec4 camPos = { tempCamPos.x, tempCamPos.y, tempCamPos.z,0 };//4 bytes of padding
+	char* camData = new char[camDataSize];
+	memcpy(camData + sizeof(glm::mat4) * 0, &viewMat[0][0], sizeof(glm::mat4));
+	memcpy(camData + sizeof(glm::mat4) * 1, &projMat[0][0], sizeof(glm::mat4));
+	memcpy(camData + sizeof(glm::mat4) * 2, &viewProjMat[0][0], sizeof(glm::mat4));
+	memcpy(camData + sizeof(glm::mat4) * 3, &camPos[0], sizeof(glm::vec4));
+	_pCameraUBO->UploadData(camData, camDataSize, m_currentFrame, 0);
+	delete[] camData;
 }
 
 void VeryCoolEngine::VulkanRenderer::EndScene()
@@ -698,9 +814,7 @@ void VeryCoolEngine::VulkanRenderer::DrawFullScreenQuad()
 void VeryCoolEngine::VulkanRenderer::RenderThreadFunction()
 {
 	Application* app = Application::GetInstance();
-#pragma region GenericInit
 	app->_pMesh->PlatformInit();
-#pragma endregion
 	while (app->_running) {
 		MainLoop();
 	}

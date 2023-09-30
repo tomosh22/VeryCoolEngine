@@ -15,4 +15,13 @@ namespace VeryCoolEngine {
 
 		VulkanBuffer::CopyBufferToBuffer(&pxStagingBuffer, m_pxIndexBuffer, size);
 	}
+	void VulkanIndexBuffer::UploadData()
+	{
+	}
+	void VulkanIndexBuffer::Bind() const
+	{
+	}
+	void VulkanIndexBuffer::Unbind() const
+	{
+	}
 }

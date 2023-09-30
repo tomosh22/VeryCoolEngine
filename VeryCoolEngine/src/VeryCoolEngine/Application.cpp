@@ -128,19 +128,11 @@ namespace VeryCoolEngine {
 
 
 	void Application::Run() {
-#ifdef VCE_OPENGL
 		while (true) { 
 			printf("Waiting on render thread init\n");
 			if (renderInitialised)break;//#todo implement mutex here
 		}
-#endif
 		while (_running) {
-			
-#ifdef VCE_VULKAN
-			//_window->OnUpdate();
-			//VCE_WARN("early continue for vulkan");
-			continue;
-#endif
 			std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 			mainThreadReady = true;
 			std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();

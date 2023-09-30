@@ -89,12 +89,8 @@ namespace VeryCoolEngine {
 	}
 	void Renderer::GenericInit()
 	{
-#ifdef VCE_VULKAN
-		VCE_WARN("early return for vulkan");
-		return;
-#endif
 		Application* app = Application::GetInstance();
-
+#ifndef VCE_VULKAN
 		app->_pImGuiLayer = new ImGuiLayer();
 		app->PushOverlay(app->_pImGuiLayer);
 
@@ -115,8 +111,8 @@ namespace VeryCoolEngine {
 		app->_pDebugTexture = Texture2D::Create(app->_window->GetWidth(), app->_window->GetHeight());
 
 		app->_pCubemap->PlatformInit();
-
-		_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), 1,0);//#todo frames in flight
-		_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS,1,1);//#todo frames in flight
+#endif
+		_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT,0);//#todo frames in flight
+		_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS,MAX_FRAMES_IN_FLIGHT,1);//#todo frames in flight
 	}
 }

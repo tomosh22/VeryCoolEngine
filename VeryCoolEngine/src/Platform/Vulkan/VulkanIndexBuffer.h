@@ -5,13 +5,18 @@
 
 namespace VeryCoolEngine {
 
-	class VulkanIndexBuffer
+	class VulkanIndexBuffer : IndexBuffer
 	{
 	public:
 		VulkanIndexBuffer() = default;
 		VulkanIndexBuffer(const VulkanIndexBuffer& other) = delete;
 
 		VulkanIndexBuffer(void* indices, size_t size);
+
+		void UploadData() override;
+		void Bind() const override;
+		void Unbind() const override;
+
 		
 		VulkanBuffer* m_pxIndexBuffer;
 	};
