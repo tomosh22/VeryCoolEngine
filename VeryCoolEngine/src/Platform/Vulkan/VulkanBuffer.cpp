@@ -34,28 +34,49 @@ namespace VeryCoolEngine {
 		xDevice.bindBufferMemory(m_xBuffer, m_xDeviceMem, 0);
 	}
 
+	void VulkanBuffer::UploadData(void* pData, vk::DeviceSize uSize)
+	{
+		vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
+		void* pMappedPtr;
+		vkMapMemory(xDevice, m_xDeviceMem, 0, uSize, 0, &pMappedPtr);
+		memcpy(pMappedPtr, pData, uSize);
+		vkUnmapMemory(xDevice, m_xDeviceMem);
+	}
+
 	void VulkanBuffer::CopyBufferToBuffer(VulkanBuffer* pxSrc, VulkanBuffer* pxDst, size_t uSize)
 	{
-		vk::CommandBufferAllocateInfo xCmdInfo = vk::CommandBufferAllocateInfo()
-			.setLevel(vk::CommandBufferLevel::ePrimary)
-			.setCommandPool(VulkanRenderer::GetInstance()->GetCommandPool())
-			.setCommandBufferCount(1);
-		vk::CommandBuffer xCmd = VulkanRenderer::GetInstance()->GetDevice().allocateCommandBuffers(xCmdInfo)[0];
-
-		vk::CommandBufferBeginInfo xBeginInfo = vk::CommandBufferBeginInfo()
-			.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-		xCmd.begin(xBeginInfo);
+		
+		vk::CommandBuffer xCmd = VulkanRenderer::GetInstance()->BeginSingleUseCmdBuffer();
+		
 
 		vk::BufferCopy xCopyRegion(0,0,uSize);
 		xCmd.copyBuffer(pxSrc->m_xBuffer, pxDst->m_xBuffer, xCopyRegion);
-		xCmd.end();
+		
 
-		vk::SubmitInfo xSubmitInfo = vk::SubmitInfo()
-			.setCommandBufferCount(1)
-			.setPCommandBuffers(&xCmd);
-		VulkanRenderer::GetInstance()->GetGraphicsQueue().submit(1, &xSubmitInfo, VK_NULL_HANDLE);
-		VulkanRenderer::GetInstance()->GetGraphicsQueue().waitIdle();
-		VulkanRenderer::GetInstance()->GetDevice().freeCommandBuffers(VulkanRenderer::GetInstance()->GetCommandPool(), 1, &xCmd);
+		VulkanRenderer::GetInstance()->EndSingleUseCmdBuffer(xCmd);
 
+	}
+	void VulkanBuffer::CopyBufferToImage(VulkanBuffer* pxSrc, VulkanTexture2D* pxDst, uint32_t uWidth, uint32_t uHeight)
+	{
+		vk::CommandBuffer xCmd = VulkanRenderer::GetInstance()->BeginSingleUseCmdBuffer();
+
+		vk::ImageSubresourceLayers xSubresource = vk::ImageSubresourceLayers()
+			.setAspectMask(vk::ImageAspectFlagBits::eColor)
+			.setMipLevel(0)
+			.setBaseArrayLayer(0)
+			.setLayerCount(1);
+
+
+		vk::BufferImageCopy region = vk::BufferImageCopy()
+			.setBufferOffset(0)
+			.setBufferRowLength(0)
+			.setBufferImageHeight(0)
+			.setImageSubresource(xSubresource)
+			.setImageOffset({ 0,0,0 })
+			.setImageExtent({ uWidth, uHeight, 1 });
+
+		xCmd.copyBufferToImage(pxSrc->m_xBuffer, pxDst->m_xImage, vk::ImageLayout::eTransferDstOptimal, 1, &region);
+
+		VulkanRenderer::GetInstance()->EndSingleUseCmdBuffer(xCmd);
 	}
 }

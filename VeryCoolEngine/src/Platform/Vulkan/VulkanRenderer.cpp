@@ -50,6 +50,7 @@ void VulkanRenderer::InitVulkan() {
 	app->_pMesh->PlatformInit();
 	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
 	app->_shaders.back()->PlatformInit();
+	app->_textures.back()->PlatformInit();
 	//CreateGraphicsPipeline();
 	dynamic_cast<VulkanPipeline*>(app->m_pxPipeline)->PlatformInit();
 
@@ -197,7 +198,8 @@ void VulkanRenderer::CreateLogicalDevice() {
 	}
 
 
-	vk::PhysicalDeviceFeatures deviceFeatures{};
+	vk::PhysicalDeviceFeatures deviceFeatures = vk::PhysicalDeviceFeatures()
+		.setSamplerAnisotropy(VK_TRUE);
 
 	vk::DeviceCreateInfo deviceCreateInfo = vk::DeviceCreateInfo()
 		.setPQueueCreateInfos(queueInfos.data())
@@ -419,10 +421,74 @@ void VulkanRenderer::CreateCommandBuffers() {
 	m_commandBuffers = m_device.allocateCommandBuffers(allocInfo);
 }
 
+vk::CommandBuffer VulkanRenderer::BeginSingleUseCmdBuffer() {
+	vk::CommandBufferAllocateInfo xAllocInfo = vk::CommandBufferAllocateInfo()
+		.setLevel(vk::CommandBufferLevel::ePrimary)
+		.setCommandPool(m_commandPool)
+		.setCommandBufferCount(1);
+
+	vk::CommandBuffer xCommandBuffer = m_device.allocateCommandBuffers(xAllocInfo)[0];
+
+	vk::CommandBufferBeginInfo xBeginInfo = vk::CommandBufferBeginInfo{}
+	.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+
+	xCommandBuffer.begin(xBeginInfo);
+
+	return xCommandBuffer;
+}
+
+void VulkanRenderer::EndSingleUseCmdBuffer(vk::CommandBuffer xBuffer) {
+	xBuffer.end();
+
+	vk::SubmitInfo xSubmitInfo = vk::SubmitInfo()
+		.setCommandBufferCount(1)
+		.setPCommandBuffers(&xBuffer);
+
+	m_graphicsQueue.submit(xSubmitInfo);
+	m_graphicsQueue.waitIdle();
+
+	m_device.freeCommandBuffers(m_commandPool, 1, &xBuffer);
+}
+
+void VulkanRenderer::ImageTransitionBarrier(vk::CommandBuffer xCmdBuffer, vk::Image xImage, vk::ImageLayout eOldLayout, vk::ImageLayout eNewLayout, vk::ImageAspectFlags eAspect, vk::PipelineStageFlags eSrcStage, vk::PipelineStageFlags eDstStage, int uMipLevel, int uLayer) {
+	
+	vk::ImageSubresourceRange xSubRange = vk::ImageSubresourceRange(eAspect, uMipLevel, 1, uLayer, 1);
+
+	vk::ImageMemoryBarrier xMemoryBarrier = vk::ImageMemoryBarrier()
+		.setSubresourceRange(xSubRange)
+		.setImage(xImage)
+		.setOldLayout(eOldLayout)
+		.setNewLayout(eNewLayout);
+
+	switch (eNewLayout) {
+	case (vk::ImageLayout::eTransferDstOptimal):
+		xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eTransferWrite);
+		break;
+	case (vk::ImageLayout::eTransferSrcOptimal):
+		xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eTransferRead);
+		break;
+	case (vk::ImageLayout::eColorAttachmentOptimal):
+		xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
+		break;
+	case (vk::ImageLayout::eDepthStencilAttachmentOptimal):
+		xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eDepthStencilAttachmentWrite);
+		break;
+	case (vk::ImageLayout::eShaderReadOnlyOptimal):
+		xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eInputAttachmentRead);
+		break;
+	default:
+		VCE_ASSERT(false, "unkown layout");
+		break;
+
+		xCmdBuffer.pipelineBarrier(eSrcStage, eDstStage, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &xMemoryBarrier);
+	}
+}
+
 void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene) {
 	Application* app = Application::GetInstance();
 	vk::CommandBufferBeginInfo beginInfo{};
 	beginInfo.pInheritanceInfo = nullptr;
+	beginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit; //todo use prerecorded command buffer
 
 	commandBuffer.begin(beginInfo);
 
@@ -447,11 +513,12 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 	commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, dynamic_cast<VulkanPipeline*>(app->m_pxPipeline)->m_xPipelineLayout, 0, sizeof(aSets) / sizeof(aSets[0]), aSets, 0, nullptr);
 
+	//flipping because porting from opengl
 	vk::Viewport viewport{};
 	viewport.x = 0;
-	viewport.y = 0;
+	viewport.y = m_swapChainExtent.height;
 	viewport.width = m_swapChainExtent.width;
-	viewport.height = m_swapChainExtent.height;
+	viewport.height = -1 * (float)m_swapChainExtent.height;
 	viewport.minDepth = 0;
 	viewport.minDepth = 1;
 

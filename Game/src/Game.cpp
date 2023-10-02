@@ -27,8 +27,9 @@ namespace VeryCoolEngine {
 
 		UploadChunks();
 
-		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 0, 3), 0, 0, 90, 1, 1000, 1280.f / 720.f);
+		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, 1280.f / 720.f);
 		_shaders.push_back(Shader::Create("../Assets/Shaders/vulkan/blockVert.spv", "../Assets/Shaders/vulkan/blockFrag.spv"));
+		_textures.push_back(Texture2D::Create("atlas.png", false));
 		std::vector<ManagedUniformBuffer**> ubos;
 		ubos.push_back(&_pCameraUBO);
 		m_pxPipeline = Pipeline::Create(_shaders.back(), _pMesh->m_xBufferLayout, MeshTopolgy::Triangles, ubos, &m_pxRenderPass);
@@ -48,7 +49,7 @@ namespace VeryCoolEngine {
 		//#todo these should probably be in string maps?
 		//or do i store them individually?
 		
-		_textures.push_back(Texture2D::Create("atlas.png", false));
+		
 
 
 		_pMesh = Mesh::GenerateCubeFace();
@@ -250,7 +251,7 @@ namespace VeryCoolEngine {
 			game->GenerateChunks();
 			
 			game->UploadChunks();
-			scene->_functionsToRun.push_back([]() {
+			scene->_functionsToRun.push_back([]() {//TODO call this from vulkan, currently leaves a load of glitchy block faces at the origin
 				
 				Game* game = (Game*)Application::GetInstance();
 					game->_pMesh->GetVertexArray()->DisableVertexBuffer(game->_pMesh->GetVertexArray()->_VertexBuffers.back());

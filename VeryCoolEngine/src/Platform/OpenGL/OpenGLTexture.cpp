@@ -1,6 +1,8 @@
 #include "vcepch.h"
 #include "OpenGLTexture.h"
+#ifdef VCE_OPENGL
 #define STB_IMAGE_IMPLEMENTATION
+#endif
 #include <stb_image.h>
 #include "VeryCoolEngine/AssetHandling/Assets.h"
 #include "Platform/OpenGL/OpenGLShader.h"

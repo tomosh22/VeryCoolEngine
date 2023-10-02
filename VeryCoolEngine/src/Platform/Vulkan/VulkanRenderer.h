@@ -80,6 +80,11 @@ namespace VeryCoolEngine {
 
 			vk::DescriptorSet CreateDescriptorSet(const vk::DescriptorSetLayout& xLayout, const vk::DescriptorPool& xPool);
 
+			vk::CommandBuffer BeginSingleUseCmdBuffer();
+			void EndSingleUseCmdBuffer(vk::CommandBuffer xBuffer);
+
+			void ImageTransitionBarrier(vk::CommandBuffer xCmdBuffer, vk::Image xImage, vk::ImageLayout eOldLayout, vk::ImageLayout eNewLayout, vk::ImageAspectFlags eAspect, vk::PipelineStageFlags eSrcStage, vk::PipelineStageFlags eDstStage, int uMipLevel = 0, int uLayer = 0);
+
 			static std::vector<char> ReadFile(const std::string& filename) {
 				std::ifstream file(filename, std::ios::ate | std::ios::binary);
 				if (!file.is_open())std::cerr << "couldnt open file";
@@ -174,13 +179,14 @@ namespace VeryCoolEngine {
 
 			
 
-			void CreateGraphicsPipeline();
 
 			void CreateFrameBuffers();
 
 			void CreateCommandPool();
 
 			void CreateCommandBuffers();
+
+			
 
 			void RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
 

@@ -40,11 +40,7 @@ namespace VeryCoolEngine {
 
 
 			double deltaPitch = (currentMousePos.second - prevMousePos.second) / 1000.;
-#ifdef VCE_OPENGL
 			pitch -= deltaPitch;
-#elif defined VCE_VULKAN
-			pitch += deltaPitch;
-#endif
 			double deltaYaw = (currentMousePos.first - prevMousePos.first) / 1000.;
 			yaw -= deltaYaw;
 
@@ -96,18 +92,10 @@ namespace VeryCoolEngine {
 		}
 
 		if (Input::IsKeyPressed(VCE_KEY_LEFT_SHIFT)) {
-#ifdef VCE_OPENGL
 			position.y -= frameSpeed;
-#elif defined VCE_VULKAN
-			position.y += frameSpeed;
-#endif
 		}
 		if (Input::IsKeyPressed(VCE_KEY_SPACE)) {
-#ifdef VCE_OPENGL
 			position.y += frameSpeed;
-#elif defined VCE_VULKAN
-			position.y -= frameSpeed;
-#endif
 		}
 	}
 
