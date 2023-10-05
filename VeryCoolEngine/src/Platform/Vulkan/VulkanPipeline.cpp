@@ -105,6 +105,13 @@ namespace VeryCoolEngine {
 		multisampling.sampleShadingEnable = VK_FALSE;
 		multisampling.rasterizationSamples = vk::SampleCountFlagBits::e1;
 
+		vk::PipelineDepthStencilStateCreateInfo depthStencil = vk::PipelineDepthStencilStateCreateInfo()
+			.setDepthTestEnable(VK_TRUE)
+			.setDepthWriteEnable(VK_TRUE)
+			.setDepthCompareOp(vk::CompareOp::eGreater)
+			.setDepthBoundsTestEnable(VK_FALSE)
+			.setStencilTestEnable(VK_FALSE);
+
 		//TODO depth testing
 
 		vk::PipelineColorBlendAttachmentState colorBlendAttachment{};
@@ -213,7 +220,7 @@ namespace VeryCoolEngine {
 		pipelineInfo.pViewportState = &viewportState;
 		pipelineInfo.pRasterizationState = &rasterizer;
 		pipelineInfo.pMultisampleState = &multisampling;
-		pipelineInfo.pDepthStencilState = nullptr;
+		pipelineInfo.pDepthStencilState = &depthStencil;
 		pipelineInfo.pColorBlendState = &colorBlending;
 		pipelineInfo.pDynamicState = &dynamicState;
 		pipelineInfo.layout = m_xPipelineLayout;

@@ -4,7 +4,8 @@ namespace VeryCoolEngine {
 	enum class TextureFormat
 	{
 		RGBA,
-		RGB
+		RGB,
+		D
 	};
 	enum class TextureWrapMode
 	{
@@ -38,6 +39,7 @@ namespace VeryCoolEngine {
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
 
+		bool m_bHasFilePath = false;
 		std::string _filePath;
 		bool _srgb;
 	};

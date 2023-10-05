@@ -9,6 +9,7 @@ namespace VeryCoolEngine {
 	public:
 		VulkanTexture2D() = default;
 		VulkanTexture2D(const std::string& path, bool srgb = false);
+		VulkanTexture2D(uint32_t width, uint32_t height, TextureFormat format, TextureWrapMode wrapMode);
 		~VulkanTexture2D();
 
 		void PlatformInit();
@@ -19,8 +20,11 @@ namespace VeryCoolEngine {
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
 
-		 uint32_t GetWidth() const override;
-		 uint32_t GetHeight() const override;
+		uint32_t GetWidth() const override;
+		uint32_t GetHeight() const override;
+
+		void InitWithData();
+		void InitWithoutData();
 
 		vk::Image m_xImage;
 		vk::ImageView m_xImageView;

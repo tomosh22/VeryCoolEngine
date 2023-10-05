@@ -44,8 +44,10 @@ void VulkanRenderer::InitVulkan() {
 	CreateLogicalDevice();
 	CreateSwapChain();
 	CreateImageViews();
-	app->m_pxRenderPass = new VulkanRenderPass();
+	
 	CreateCommandPool();
+	CreateDepthTexture();
+	app->m_pxRenderPass = new VulkanRenderPass();
 	CreateDescriptorPool();
 	app->_pMesh->PlatformInit();
 	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
@@ -393,9 +395,10 @@ void VulkanRenderer::CreateFrameBuffers() {
 	int swapchainIndex = 0;
 	for (vk::ImageView imageView : m_swapChainImageViews) {
 		vk::FramebufferCreateInfo framebufferInfo{};
+		vk::ImageView axAttachments[2]{ imageView,m_xDepthTexture->m_xImageView };
 		framebufferInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxRenderPass)->m_xRenderPass;
-		framebufferInfo.attachmentCount = 1;
-		framebufferInfo.pAttachments = &imageView;
+		framebufferInfo.attachmentCount = 2;
+		framebufferInfo.pAttachments = axAttachments;
 		framebufferInfo.width = m_swapChainExtent.width;
 		framebufferInfo.height = m_swapChainExtent.height;
 		framebufferInfo.layers = 1;
@@ -410,6 +413,18 @@ void VulkanRenderer::CreateCommandPool() {
 	poolInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
 	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
 	m_commandPool = m_device.createCommandPool(poolInfo);
+}
+
+void VulkanRenderer::CreateDepthTexture() {
+	vk::FormatProperties xProps = m_physicalDevice.getFormatProperties(vk::Format::eD32Sfloat);
+
+	
+
+	uint32_t uWidth = Application::GetInstance()->GetWindow().GetWidth();
+	uint32_t uHeight = Application::GetInstance()->GetWindow().GetHeight();
+
+	m_xDepthTexture = dynamic_cast<VulkanTexture2D*>(Texture2D::Create(uWidth, uHeight, TextureFormat::D));
+	m_xDepthTexture->PlatformInit();
 }
 
 void VulkanRenderer::CreateCommandBuffers() {
@@ -501,11 +516,12 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	renderPassInfo.renderArea.offset = vk::Offset2D(0, 0);
 	renderPassInfo.renderArea.extent = m_swapChainExtent;
 
-	vk::ClearValue clearColor;
-	std::array<float, 4> temp{ 0.f,0.f,0.f,1.f };
-	clearColor.color = { vk::ClearColorValue(temp) };
-	renderPassInfo.clearValueCount = 1;
-	renderPassInfo.pClearValues = &clearColor;
+	vk::ClearValue clearColor[2];
+	std::array<float, 4> tempColor{ 0.f,0.f,0.f,1.f };
+	clearColor[0].color = {vk::ClearColorValue(tempColor)};
+	clearColor[1].depthStencil = vk::ClearDepthStencilValue(0, 0);
+	renderPassInfo.clearValueCount = 2;
+	renderPassInfo.pClearValues = clearColor;
 
 	commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, dynamic_cast<VulkanPipeline*>(app->m_pxPipeline)->m_xPipeline);

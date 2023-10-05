@@ -21,6 +21,7 @@ namespace VeryCoolEngine {
 
 	class VulkanMesh;
 	class VulkanRenderPass;
+	class VulkanTexture2D;
 
 	static constexpr const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -177,7 +178,7 @@ namespace VeryCoolEngine {
 
 			void CreateDescriptorPool();
 
-			
+			void CreateDepthTexture();
 
 
 			void CreateFrameBuffers();
@@ -228,6 +229,8 @@ namespace VeryCoolEngine {
 			std::vector<vk::ImageView> m_swapChainImageViews;
 
 			vk::DescriptorPool m_descriptorPool;
+
+			VulkanTexture2D* m_xDepthTexture;
 
 
 			vk::DescriptorSetLayout m_descriptorLayout;
