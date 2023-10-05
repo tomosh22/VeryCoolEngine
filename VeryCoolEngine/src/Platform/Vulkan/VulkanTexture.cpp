@@ -78,9 +78,9 @@ namespace VeryCoolEngine {
 
 		vk::CommandBuffer xCmd = pxRenderer->BeginSingleUseCmdBuffer();
 
-		pxRenderer->ImageTransitionBarrier(xCmd, m_xImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer);
+		pxRenderer->ImageTransitionBarrier( m_xImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer);
 		VulkanBuffer::CopyBufferToImage(pxStagingBuffer, this, m_uWidth, m_uHeight);
-		pxRenderer->ImageTransitionBarrier(xCmd, m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader);//todo will probably need to change this to vertex shader in the future
+		pxRenderer->ImageTransitionBarrier( m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader);//todo will probably need to change this to vertex shader in the future
 
 		delete pxStagingBuffer;
 
@@ -111,8 +111,8 @@ namespace VeryCoolEngine {
 
 		//todo all these should be parameters
 		vk::SamplerCreateInfo xInfo = vk::SamplerCreateInfo()
-			.setMagFilter(vk::Filter::eLinear)
-			.setMinFilter(vk::Filter::eLinear)
+			.setMagFilter(vk::Filter::eNearest)
+			.setMinFilter(vk::Filter::eNearest)
 			.setAddressModeU(vk::SamplerAddressMode::eRepeat)
 			.setAddressModeV(vk::SamplerAddressMode::eRepeat)
 			.setAddressModeW(vk::SamplerAddressMode::eRepeat)

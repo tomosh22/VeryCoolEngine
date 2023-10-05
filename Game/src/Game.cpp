@@ -32,7 +32,10 @@ namespace VeryCoolEngine {
 		_textures.push_back(Texture2D::Create("atlas.png", false));
 		std::vector<ManagedUniformBuffer**> ubos;
 		ubos.push_back(&_pCameraUBO);
-		m_pxPipeline = Pipeline::Create(_shaders.back(), _pMesh->m_xBufferLayout, MeshTopolgy::Triangles, ubos, &m_pxRenderPass);
+		std::vector<Texture2D**> textures;
+		textures.push_back(&_textures.back());
+
+		m_pxPipeline = Pipeline::Create(_shaders.back(), _pMesh->m_xBufferLayout, MeshTopolgy::Triangles, ubos,textures, &m_pxRenderPass);
 		_renderThreadCanStart = true;
 		return;
 #endif

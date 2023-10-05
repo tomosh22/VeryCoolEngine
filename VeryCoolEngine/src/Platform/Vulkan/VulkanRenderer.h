@@ -83,7 +83,7 @@ namespace VeryCoolEngine {
 			vk::CommandBuffer BeginSingleUseCmdBuffer();
 			void EndSingleUseCmdBuffer(vk::CommandBuffer xBuffer);
 
-			void ImageTransitionBarrier(vk::CommandBuffer xCmdBuffer, vk::Image xImage, vk::ImageLayout eOldLayout, vk::ImageLayout eNewLayout, vk::ImageAspectFlags eAspect, vk::PipelineStageFlags eSrcStage, vk::PipelineStageFlags eDstStage, int uMipLevel = 0, int uLayer = 0);
+			void ImageTransitionBarrier(vk::Image xImage, vk::ImageLayout eOldLayout, vk::ImageLayout eNewLayout, vk::ImageAspectFlags eAspect, vk::PipelineStageFlags eSrcStage, vk::PipelineStageFlags eDstStage, int uMipLevel = 0, int uLayer = 0);
 
 			static std::vector<char> ReadFile(const std::string& filename) {
 				std::ifstream file(filename, std::ios::ate | std::ios::binary);

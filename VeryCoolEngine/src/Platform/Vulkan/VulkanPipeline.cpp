@@ -9,17 +9,19 @@
 #include <vulkan/vulkan.hpp>
 
 namespace VeryCoolEngine {
-	VulkanPipeline::VulkanPipeline(Shader* pxShader, BufferLayout* xLayout, MeshTopolgy xTopology, std::vector<ManagedUniformBuffer**> apxUBOs, RenderPass** xRenderPass)
+	VulkanPipeline::VulkanPipeline(Shader* pxShader, BufferLayout* xLayout, MeshTopolgy xTopology, std::vector<ManagedUniformBuffer**> apxUBOs, std::vector<Texture2D**> apxTextures, RenderPass** xRenderPass)
 	{
 		m_pxShader = pxShader;
 		m_xVertexBufferLayout = xLayout;
 		m_xTopology = xTopology;
 		m_apxUBOs = apxUBOs;
+		m_apxTextures = apxTextures;
 		m_pxRenderPass = xRenderPass;
 	}
 	void VulkanPipeline::PlatformInit() {
 
-		vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
+		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+		vk::Device xDevice = pxRenderer->GetDevice();
 		
 		VulkanShader* pxVulkanShader = dynamic_cast<VulkanShader*>(m_pxShader);
 
@@ -123,14 +125,84 @@ namespace VeryCoolEngine {
 
 		vk::DescriptorSetLayout* axLayouts = new vk::DescriptorSetLayout[m_apxUBOs.size()];
 		uint32_t uIndex = 0;
-		for (ManagedUniformBuffer** ubo : m_apxUBOs) {
-			VulkanManagedUniformBuffer* pxVulkanUBO = dynamic_cast< VulkanManagedUniformBuffer*>(*ubo);
-			axLayouts[uIndex] = pxVulkanUBO->m_xDescriptorLayout;
+		
+#if 0
+		VulkanManagedUniformBuffer* pxVulkanUBO = dynamic_cast< VulkanManagedUniformBuffer*>(*ubo);
+		axLayouts[uIndex] = pxVulkanUBO->m_xDescriptorLayout;
+#else
+		vk::DescriptorSetLayoutBinding xUboBinding = vk::DescriptorSetLayoutBinding()
+			.setBinding(0)
+			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+			.setDescriptorCount(1)
+			.setStageFlags(vk::ShaderStageFlagBits::eVertex);
+
+		vk::DescriptorSetLayoutBinding xSamplerBinding = vk::DescriptorSetLayoutBinding()
+			.setBinding(1)
+			.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+			.setDescriptorCount(1)
+			.setStageFlags(vk::ShaderStageFlagBits::eFragment);
+
+		vk::DescriptorSetLayoutBinding axBindings[2]{ xUboBinding, xSamplerBinding };
+
+		vk::DescriptorSetLayoutCreateInfo xCreateInfo = vk::DescriptorSetLayoutCreateInfo()
+			.setBindingCount(2)
+			.setPBindings(axBindings);
+		m_xDescriptorLayout = xDevice.createDescriptorSetLayout(xCreateInfo);
+
+
+		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			ManagedUniformBuffer** ppxUBO = m_apxUBOs.at(0);
+			VulkanManagedUniformBuffer* pxVkUBO = dynamic_cast<VulkanManagedUniformBuffer*>(*ppxUBO);
+			vk::Buffer& xBuffer = pxVkUBO->ppBuffers[i]->m_xBuffer;
+
+			Texture2D** ppxTexture = m_apxTextures.at(0);
+			VulkanTexture2D* pxVkTexture = dynamic_cast<VulkanTexture2D*>(*ppxTexture);
+			vk::Image& xImage = pxVkTexture->m_xImage;
+			vk::ImageView& xImageView = pxVkTexture->m_xImageView;
+			vk::Sampler& xImageSampler = pxVkTexture->m_xSampler;
+
+			m_axDescriptorSets[i] = pxRenderer->CreateDescriptorSet(m_xDescriptorLayout, pxRenderer->GetDescriptorPool());
+			uint32_t uSize = pxVkUBO->m_uSize;
+			uint32_t uBinding = pxVkUBO->m_uBaseBinding;
+			vk::DescriptorBufferInfo xBufferInfo = vk::DescriptorBufferInfo()
+				.setBuffer(xBuffer)
+				.setOffset(0)
+				.setRange(uSize);
+
+			vk::DescriptorImageInfo xImageInfo = vk::DescriptorImageInfo()
+				.setImageView(xImageView)
+				.setSampler(xImageSampler)
+				.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+
+			vk::WriteDescriptorSet xUboDescWrite = vk::WriteDescriptorSet()
+				.setDstSet(m_axDescriptorSets[i])
+				.setDstBinding(0)
+				.setDstArrayElement(0)
+				.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+				.setDescriptorCount(1)
+				.setPBufferInfo(&xBufferInfo);
+
+			vk::WriteDescriptorSet xSamplerDescWrite = vk::WriteDescriptorSet()
+				.setDstSet(m_axDescriptorSets[i])
+				.setDstBinding(1)
+				.setDstArrayElement(0)
+				.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+				.setDescriptorCount(1)
+				.setPImageInfo(&xImageInfo);
+
+			vk::WriteDescriptorSet writes[2]{ xUboDescWrite, xSamplerDescWrite };
+
+			xDevice.updateDescriptorSets(2, writes, 0, nullptr);
 		}
 
+
+#endif
+		
+
 		vk::PipelineLayoutCreateInfo xPipelineLayoutInfo = vk::PipelineLayoutCreateInfo()
-			.setSetLayoutCount(m_apxUBOs.size())
-			.setPSetLayouts(axLayouts);
+			.setSetLayoutCount(1)
+			.setPSetLayouts(&m_xDescriptorLayout);
 		m_xPipelineLayout = xDevice.createPipelineLayout(xPipelineLayoutInfo);
 
 		vk::GraphicsPipelineCreateInfo pipelineInfo{};

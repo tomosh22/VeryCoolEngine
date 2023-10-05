@@ -8,7 +8,7 @@ namespace VeryCoolEngine {
 	class VulkanPipeline : public Pipeline
 	{
 	public:
-		VulkanPipeline(Shader* pxShader, BufferLayout* xLayout, MeshTopolgy xTopology, std::vector<ManagedUniformBuffer**> apxUBOs, RenderPass** xRenderPass);
+		VulkanPipeline(Shader* pxShader, BufferLayout* xLayout, MeshTopolgy xTopology, std::vector<ManagedUniformBuffer**> apxUBOs, std::vector<Texture2D**> apxTextures, RenderPass** xRenderPass);
 		~VulkanPipeline() {
 
 			VulkanRenderer::GetInstance()->GetDevice().destroyPipeline(m_xPipeline, nullptr);
@@ -19,6 +19,9 @@ namespace VeryCoolEngine {
 
 		vk::Pipeline m_xPipeline;
 		vk::PipelineLayout m_xPipelineLayout;
+
+		vk::DescriptorSetLayout m_xDescriptorLayout;
+		vk::DescriptorSet m_axDescriptorSets[MAX_FRAMES_IN_FLIGHT];
 	};
 
 }

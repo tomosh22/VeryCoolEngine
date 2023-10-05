@@ -450,8 +450,9 @@ void VulkanRenderer::EndSingleUseCmdBuffer(vk::CommandBuffer xBuffer) {
 	m_device.freeCommandBuffers(m_commandPool, 1, &xBuffer);
 }
 
-void VulkanRenderer::ImageTransitionBarrier(vk::CommandBuffer xCmdBuffer, vk::Image xImage, vk::ImageLayout eOldLayout, vk::ImageLayout eNewLayout, vk::ImageAspectFlags eAspect, vk::PipelineStageFlags eSrcStage, vk::PipelineStageFlags eDstStage, int uMipLevel, int uLayer) {
-	
+void VulkanRenderer::ImageTransitionBarrier(vk::Image xImage, vk::ImageLayout eOldLayout, vk::ImageLayout eNewLayout, vk::ImageAspectFlags eAspect, vk::PipelineStageFlags eSrcStage, vk::PipelineStageFlags eDstStage, int uMipLevel, int uLayer) {
+	VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+	vk::CommandBuffer xCmd = pxRenderer->BeginSingleUseCmdBuffer();
 	vk::ImageSubresourceRange xSubRange = vk::ImageSubresourceRange(eAspect, uMipLevel, 1, uLayer, 1);
 
 	vk::ImageMemoryBarrier xMemoryBarrier = vk::ImageMemoryBarrier()
@@ -477,11 +478,13 @@ void VulkanRenderer::ImageTransitionBarrier(vk::CommandBuffer xCmdBuffer, vk::Im
 		xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eInputAttachmentRead);
 		break;
 	default:
-		VCE_ASSERT(false, "unkown layout");
+		VCE_ASSERT(false, "unknown layout");
 		break;
-
-		xCmdBuffer.pipelineBarrier(eSrcStage, eDstStage, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &xMemoryBarrier);
 	}
+
+		xCmd.pipelineBarrier(eSrcStage, eDstStage, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &xMemoryBarrier);
+
+		pxRenderer->EndSingleUseCmdBuffer(xCmd);
 }
 
 void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene) {
@@ -508,7 +511,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, dynamic_cast<VulkanPipeline*>(app->m_pxPipeline)->m_xPipeline);
 
 	vk::DescriptorSet aSets[] = {
-		dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO)->m_axDescriptorSets[m_currentFrame]
+		dynamic_cast<VulkanPipeline*>(app->m_pxPipeline)->m_axDescriptorSets[m_currentFrame]
 	};
 
 	commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, dynamic_cast<VulkanPipeline*>(app->m_pxPipeline)->m_xPipelineLayout, 0, sizeof(aSets) / sizeof(aSets[0]), aSets, 0, nullptr);
