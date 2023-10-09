@@ -32,7 +32,7 @@ Light lights[100];
 };
 
 
-layout(binding = 1) uniform sampler2D diffuseTex;
+layout(set = 1, binding = 0) uniform sampler2D diffuseTex;
 //uniform sampler2D bumpMap;
 //layout(rgba32f) uniform writeonly image2D debugTex;
 
@@ -87,4 +87,5 @@ void main(){
 	if(AtlasOffset == ivec2(0,0)) _oColor *= vec4(0.569,0.741,0.5,1);
 	_oColor *= 1 - (AO/4.f);
 	_oColor.a = 1;
+	//_oColor = vec4(UV,0,1);
 }

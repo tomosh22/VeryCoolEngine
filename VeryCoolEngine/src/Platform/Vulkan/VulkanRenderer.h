@@ -22,8 +22,9 @@ namespace VeryCoolEngine {
 	class VulkanMesh;
 	class VulkanRenderPass;
 	class VulkanTexture2D;
+	class VulkanBuffer;
 
-	static constexpr const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+	static constexpr const uint32_t MAX_FRAMES_IN_FLIGHT = 1;
 
 		struct QueueFamilyIndices {
 			uint32_t graphicsFamily = -1;
@@ -80,6 +81,8 @@ namespace VeryCoolEngine {
 			vk::Format& const GetSwapchainFormat() { return m_swapChainImageFormat; }
 
 			vk::DescriptorSet CreateDescriptorSet(const vk::DescriptorSetLayout& xLayout, const vk::DescriptorPool& xPool);
+			void UpdateBufferDescriptor(const vk::DescriptorSet& xSet, const VulkanBuffer* pxData, uint32_t uBinding, vk::DescriptorType eBufferType, size_t uOffset);
+			void UpdateImageDescriptor(const vk::DescriptorSet& xSet, uint32_t uBinding, uint32_t uSubIndex, const vk::ImageView& xView, vk::Sampler& xSampler, vk::ImageLayout eLayout);
 
 			vk::CommandBuffer BeginSingleUseCmdBuffer();
 			void EndSingleUseCmdBuffer(vk::CommandBuffer xBuffer);
@@ -229,6 +232,11 @@ namespace VeryCoolEngine {
 			std::vector<vk::ImageView> m_swapChainImageViews;
 
 			vk::DescriptorPool m_descriptorPool;
+
+			vk::DescriptorSetLayout m_xCameraLayout;
+			vk::DescriptorSetLayout m_xTextureLayout;
+			vk::DescriptorSet m_xCameraDescriptor;
+			vk::DescriptorSet m_xTextureDescriptor;
 
 			VulkanTexture2D* m_xDepthTexture;
 

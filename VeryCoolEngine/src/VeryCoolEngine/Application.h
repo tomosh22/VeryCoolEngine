@@ -89,7 +89,7 @@ namespace VeryCoolEngine {
 
 		//TODO delete these
 		Renderer* _pRenderer;
-		Pipeline* m_pxPipeline;
+		class VulkanPipeline* m_pxPipeline;
 		RenderPass* m_pxRenderPass;
 
 		ManagedUniformBuffer* _pLightUBO = nullptr;

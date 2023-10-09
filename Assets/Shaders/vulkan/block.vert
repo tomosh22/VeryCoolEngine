@@ -8,7 +8,7 @@ layout(location = 4) in ivec2 _aInstanceAtlasOffset;
 layout(location = 5) in ivec4 _ainstanceAOValues;//one value per face vertex, hence 4 components
 
 
-layout(std140, binding=0) uniform matrices{
+layout(std140, set = 0, binding=0) uniform matrices{
 	mat4 _uViewMat;
 	mat4 _uProjMat;
 	mat4 _uViewProjMat;

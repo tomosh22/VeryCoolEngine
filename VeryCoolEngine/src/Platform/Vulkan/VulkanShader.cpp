@@ -15,6 +15,18 @@ namespace VeryCoolEngine {
 	void VulkanShader::PlatformInit() {
 		xVertShaderModule = CreateShaderModule(m_vertShaderCode);
 		xFragShaderModule = CreateShaderModule(m_fragShaderCode);
+
+		m_xInfos = new vk::PipelineShaderStageCreateInfo[m_uStageCount];
+
+		//vert
+		m_xInfos[0].stage = vk::ShaderStageFlagBits::eVertex;
+		m_xInfos[0].module = xVertShaderModule;
+		m_xInfos[0].pName = "main";
+
+		//frag
+		m_xInfos[1].stage = vk::ShaderStageFlagBits::eFragment;
+		m_xInfos[1].module = xFragShaderModule;
+		m_xInfos[1].pName = "main";
 	}
 
 	void VulkanShader::ReloadShader()
@@ -43,5 +55,11 @@ namespace VeryCoolEngine {
 		vk::ShaderModule module;
 		module = VulkanRenderer::GetInstance()->GetDevice().createShaderModule(createInfo);
 		return module;
+	}
+
+	//credit Rich Davison
+	void VulkanShader::FillShaderStageCreateInfo(vk::GraphicsPipelineCreateInfo& info) const {
+		info.setStageCount(m_uStageCount);
+		info.setPStages(m_xInfos);
 	}
 }

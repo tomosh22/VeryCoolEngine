@@ -2,7 +2,7 @@
 #include "VulkanBuffer.h"
 
 namespace VeryCoolEngine {
-	VulkanBuffer::VulkanBuffer(vk::DeviceSize uSize, vk::BufferUsageFlags eUsageFlags, vk::MemoryPropertyFlags eMemProperties)
+	VulkanBuffer::VulkanBuffer(vk::DeviceSize uSize, vk::BufferUsageFlags eUsageFlags, vk::MemoryPropertyFlags eMemProperties) : m_uSize(uSize)
 	{
 		VulkanRenderer* pRenderer = VulkanRenderer::GetInstance();
 		vk::BufferCreateInfo xInfo = vk::BufferCreateInfo()

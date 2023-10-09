@@ -69,6 +69,13 @@ namespace VeryCoolEngine {
 				.setInputRate(vk::VertexInputRate::eInstance);
 			m_axBindDescs.push_back(xInstanceBindDesc);
 		}
+
+		m_xVertexInputState = vk::PipelineVertexInputStateCreateInfo()
+			.setVertexBindingDescriptionCount(m_axBindDescs.size())
+			.setPVertexBindingDescriptions(m_axBindDescs.data())
+			.setVertexAttributeDescriptionCount(m_axAttrDescs.size())
+			.setPVertexAttributeDescriptions(m_axAttrDescs.data());
+
     }
 
     void VulkanMesh::SetVertexArray(VertexArray* vertexArray)

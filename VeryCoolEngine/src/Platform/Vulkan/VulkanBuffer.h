@@ -23,6 +23,7 @@ namespace VeryCoolEngine {
 
 		vk::Buffer m_xBuffer;
 		vk::DeviceMemory m_xDeviceMem;
+		size_t m_uSize;
 	private:
 		
 	};

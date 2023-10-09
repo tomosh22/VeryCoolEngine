@@ -2,6 +2,7 @@
 #include <imgui.h>
 
 
+
 #include "VeryCoolEngine.h"
 
 namespace VeryCoolEngine {
@@ -35,7 +36,8 @@ namespace VeryCoolEngine {
 		std::vector<Texture2D**> textures;
 		textures.push_back(&_textures.back());
 
-		m_pxPipeline = Pipeline::Create(_shaders.back(), _pMesh->m_xBufferLayout, MeshTopolgy::Triangles, ubos,textures, &m_pxRenderPass);
+		//m_pxPipeline = Pipeline::Create(_shaders.back(), _pMesh->m_xBufferLayout, MeshTopolgy::Triangles, ubos,textures, &m_pxRenderPass);
+		
 		_renderThreadCanStart = true;
 		return;
 #endif

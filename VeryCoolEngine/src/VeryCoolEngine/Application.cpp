@@ -126,7 +126,8 @@ namespace VeryCoolEngine {
 
 	void Application::Run() {
 		while (true) { 
-			printf("Waiting on render thread init\n");
+			Sleep(1);
+			//printf("Waiting on render thread init\n");
 			if (renderInitialised)break;//#todo implement mutex here
 		}
 		while (_running) {

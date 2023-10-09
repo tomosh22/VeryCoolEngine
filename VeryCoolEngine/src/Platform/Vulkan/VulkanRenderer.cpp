@@ -6,7 +6,11 @@
 
 #include "Platform/Vulkan/VulkanManagedUniformBuffer.h"
 #include "Platform/Vulkan/VulkanRenderPass.h"
-#include "Platform/Vulkan/VulkanPipeline.h"
+#include "Platform/Vulkan/VulkanPipelineBuilder.h"
+#include "Platform/Vulkan/VulkanShader.h"
+
+#include "VulkanPipelineBuilder.h"
+#include "VulkanDescriptorSetLayoutBuilder.h"
 
 
 
@@ -54,8 +58,40 @@ void VulkanRenderer::InitVulkan() {
 	app->_shaders.back()->PlatformInit();
 	app->_textures.back()->PlatformInit();
 	//CreateGraphicsPipeline();
-	dynamic_cast<VulkanPipeline*>(app->m_pxPipeline)->PlatformInit();
 
+
+	m_xCameraLayout = VulkanDescriptorSetLayoutBuilder("Camera UBO")
+		.WithUniformBuffers(1, vk::ShaderStageFlagBits::eVertex)
+		.Build(m_device);
+	m_xCameraDescriptor = CreateDescriptorSet(m_xCameraLayout, m_descriptorPool);
+
+	m_xTextureLayout = VulkanDescriptorSetLayoutBuilder("Object Textures")
+		.WithSamplers(1, vk::ShaderStageFlagBits::eFragment)
+		.Build(m_device);
+	m_xTextureDescriptor = CreateDescriptorSet(m_xTextureLayout, m_descriptorPool);
+
+	UpdateImageDescriptor(m_xTextureDescriptor, 0, 0, dynamic_cast<VulkanTexture2D*>(app->_textures.back())->m_xImageView, dynamic_cast<VulkanTexture2D*>(app->_textures.back())->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
+
+	//#todo surely this should be done every frame???
+	UpdateBufferDescriptor(m_xCameraDescriptor, dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO)->ppBuffers[0], 0, vk::DescriptorType::eUniformBuffer,0);
+
+	//dynamic_cast<VulkanPipeline*>(app->m_pxPipeline)->PlatformInit();
+	//app->m_pxPipeline
+	
+	app->m_pxPipeline = VulkanPipelineBuilder("Geometry Pipeline")
+		.WithVertexInputState(dynamic_cast<VulkanMesh*>(app->_pMesh)->m_xVertexInputState)
+		.WithTopology(vk::PrimitiveTopology::eTriangleList)
+		.WithShader(*dynamic_cast<VulkanShader*>(app->_shaders.back()))
+		.WithBlendState(vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha, false)
+		.WithDepthState(vk::CompareOp::eGreaterOrEqual, true, true, false)
+		.WithColourFormats({ vk::Format::eB8G8R8A8Srgb })
+		.WithDepthFormat(vk::Format::eD32Sfloat)
+		.WithDescriptorSetLayout(0, m_xCameraLayout)
+		.WithDescriptorSetLayout(1, m_xTextureLayout)
+		.WithPass(dynamic_cast<VulkanRenderPass*>(app->m_pxRenderPass)->m_xRenderPass)
+		.Build();
+
+	
 	
 
 	CreateFrameBuffers();
@@ -387,6 +423,39 @@ vk::DescriptorSet VulkanRenderer::CreateDescriptorSet(const vk::DescriptorSetLay
 	return std::move(VulkanRenderer::GetInstance()->GetDevice().allocateDescriptorSets(xInfo)[0]);
 }
 
+void VulkanRenderer::UpdateBufferDescriptor(const vk::DescriptorSet& xSet, const VulkanBuffer* pxData, uint32_t uBinding, vk::DescriptorType eBufferType, size_t uOffset) {
+	vk::DescriptorBufferInfo xInfo = vk::DescriptorBufferInfo()
+		.setBuffer(pxData->m_xBuffer)
+		.setOffset(uOffset)
+		.setRange(pxData->m_uSize);
+
+	vk::WriteDescriptorSet xWrite = vk::WriteDescriptorSet()
+		.setDescriptorType(eBufferType)
+		.setDstSet(xSet)
+		.setDstBinding(uBinding)
+		.setDescriptorCount(1)
+		.setPBufferInfo(&xInfo);
+
+	m_device.updateDescriptorSets(1, &xWrite, 0, nullptr);
+}
+
+void VulkanRenderer::UpdateImageDescriptor(const vk::DescriptorSet& xSet, uint32_t uBinding, uint32_t uSubIndex, const vk::ImageView& xView, vk::Sampler& xSampler, vk::ImageLayout eLayout) {
+	vk::DescriptorImageInfo xInfo = vk::DescriptorImageInfo()
+		.setSampler(xSampler)
+		.setImageView(xView)
+		.setImageLayout(eLayout);
+
+	vk::WriteDescriptorSet xWrite = vk::WriteDescriptorSet()
+		.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+		.setDstSet(xSet)
+		.setDstBinding(uBinding)
+		.setDstArrayElement(uSubIndex)
+		.setDescriptorCount(1)
+		.setPImageInfo(&xInfo);
+
+	m_device.updateDescriptorSets(1, &xWrite, 0, nullptr);
+}
+
 
 
 void VulkanRenderer::CreateFrameBuffers() {
@@ -527,7 +596,9 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, dynamic_cast<VulkanPipeline*>(app->m_pxPipeline)->m_xPipeline);
 
 	vk::DescriptorSet aSets[] = {
-		dynamic_cast<VulkanPipeline*>(app->m_pxPipeline)->m_axDescriptorSets[m_currentFrame]
+		//dynamic_cast<VulkanPipeline*>(app->m_pxPipeline)->m_axDescriptorSets[m_currentFrame]
+		m_xCameraDescriptor,
+		m_xTextureDescriptor
 	};
 
 	commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, dynamic_cast<VulkanPipeline*>(app->m_pxPipeline)->m_xPipelineLayout, 0, sizeof(aSets) / sizeof(aSets[0]), aSets, 0, nullptr);

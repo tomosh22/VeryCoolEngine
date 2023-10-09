@@ -22,6 +22,8 @@ namespace VeryCoolEngine {
 		VulkanVertexBuffer* m_pxVertexBuffer;
 		VulkanIndexBuffer* m_pxIndexBuffer;
 		VulkanVertexBuffer* m_pxInstanceBuffer = nullptr;
+
+		vk::PipelineVertexInputStateCreateInfo m_xVertexInputState;
 	private:
 		
 	};
