@@ -78,6 +78,20 @@ namespace VeryCoolEngine {
 
     }
 
+
+	void VulkanMesh::BindToCmdBuffer(vk::CommandBuffer& xCmdBuffer) const {
+		vk::DeviceSize offsets[] = { 0 };
+		xCmdBuffer.bindVertexBuffers(0, 1, &m_pxVertexBuffer->m_pxVertexBuffer->m_xBuffer, offsets);
+
+		if (m_pxIndexBuffer != nullptr) {
+			xCmdBuffer.bindIndexBuffer(m_pxIndexBuffer->m_pxIndexBuffer->m_xBuffer, 0, vk::IndexType::eUint32);
+		}
+
+		if (m_pxInstanceBuffer != nullptr) {
+			xCmdBuffer.bindVertexBuffers(1, 1, &m_pxInstanceBuffer->m_pxVertexBuffer->m_xBuffer, offsets);
+		}
+	}
+
     void VulkanMesh::SetVertexArray(VertexArray* vertexArray)
     {
     }

@@ -190,6 +190,8 @@ namespace VeryCoolEngine {
 
 			void CreateCommandBuffers();
 
+			void BoilerplateInit();
+
 			
 
 			void RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
@@ -200,9 +202,13 @@ namespace VeryCoolEngine {
 
 			void RecreateSwapChain();
 
+			int8_t AcquireSwapchainImage();
 
+			void SubmitCmdBuffer(vk::CommandBuffer& xCmdBuffer, vk::Semaphore* pxWaitSems = nullptr, uint32_t uWaitSemCount = 0, vk::Semaphore* pxSignalSems = nullptr, uint32_t uSignalSemCount = 0, vk::PipelineStageFlags eWaitStages = vk::PipelineStageFlagBits::eNone);
 
-			
+			void Present(uint32_t uSwapchainIndex, vk::Semaphore* pxWaitSems = nullptr, uint32_t uWaitSemCount = 0);
+
+			void BeginRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex);
 
 #if DEBUG
 			bool CheckValidationLayerSupport();

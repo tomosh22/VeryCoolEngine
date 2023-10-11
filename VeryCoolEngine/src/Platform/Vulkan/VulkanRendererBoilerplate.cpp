@@ -5,6 +5,25 @@
 #include "VulkanBuffer.h"
 namespace VeryCoolEngine {
 
+	void VulkanRenderer::BoilerplateInit() {
+		Application* app = Application::GetInstance();
+		CreateInstance();
+		InitDebugMessenger();
+		GLFWwindow* pxWindow = (GLFWwindow*)Application::GetInstance()->GetWindow().GetNativeWindow();
+		glfwCreateWindowSurface(m_instance, pxWindow, nullptr, (VkSurfaceKHR*)(&m_surface));
+		SelectPhysicalDevice();
+		CreateLogicalDevice();
+		CreateSwapChain();
+		CreateImageViews();
+		CreateCommandPool();
+		CreateDepthTexture();
+		CreateDescriptorPool();
+		app->m_pxRenderPass = new VulkanRenderPass();
+		CreateFrameBuffers();
+		CreateCommandBuffers();
+		CreateSyncObjects();
+	}
+
 	void VulkanRenderer::Cleanup() {
 
 
@@ -561,5 +580,91 @@ namespace VeryCoolEngine {
 		CreateDepthTexture();
 		CreateImageViews();
 		CreateFrameBuffers();
+	}
+
+	int8_t VulkanRenderer::AcquireSwapchainImage() {
+		m_device.waitForFences(1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
+
+
+		uint32_t uImageIndex;
+		vk::Result result = m_device.acquireNextImageKHR(m_swapChain, UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], nullptr, &uImageIndex);
+
+		if (result == vk::Result::eErrorOutOfDateKHR) return -1;
+		VCE_ASSERT(result == vk::Result::eSuccess || result == vk::Result::eSuboptimalKHR, "Failed to acquire swapchain image");
+
+		m_device.resetFences(1, &m_inFlightFences[m_currentFrame]);
+
+		return static_cast<int8_t>(uImageIndex);
+	}
+
+	void VulkanRenderer::SubmitCmdBuffer(vk::CommandBuffer& xCmdBuffer, vk::Semaphore* pxWaitSems, uint32_t uWaitSemCount, vk::Semaphore* pxSignalSems, uint32_t uSignalSemCount, vk::PipelineStageFlags eWaitStages) {
+		vk::SubmitInfo submitInfo = vk::SubmitInfo()
+			.setCommandBufferCount(1)
+			.setPCommandBuffers(&xCmdBuffer);
+
+		if (uWaitSemCount > 0) {
+			submitInfo.setPWaitSemaphores(pxWaitSems);
+			submitInfo.setWaitSemaphoreCount(uWaitSemCount);
+		}
+		if (uSignalSemCount > 0) {
+			submitInfo.setPSignalSemaphores(pxSignalSems);
+			submitInfo.setSignalSemaphoreCount(uSignalSemCount);
+		}
+
+		submitInfo.setWaitDstStageMask(eWaitStages);
+
+		m_graphicsQueue.submit(submitInfo, m_inFlightFences[m_currentFrame]);
+	}
+
+	void VulkanRenderer::Present(uint32_t uSwapchainIndex, vk::Semaphore* pxWaitSems, uint32_t uWaitSemCount) {
+		vk::PresentInfoKHR presentInfo = vk::PresentInfoKHR()
+			.setSwapchainCount(1)
+			.setPSwapchains(&m_swapChain)
+			.setPImageIndices(&uSwapchainIndex);
+
+		if (uWaitSemCount > 0) {
+			presentInfo.setWaitSemaphoreCount(uWaitSemCount);
+			presentInfo.setPWaitSemaphores(pxWaitSems);
+		}
+#ifdef VCE_DEBUG
+		vk::Result xResult =
+#endif
+			m_presentQueue.presentKHR(&presentInfo);
+
+		VCE_ASSERT(xResult == vk::Result::eSuccess || xResult == vk::Result::eErrorOutOfDateKHR || xResult == vk::Result::eSuboptimalKHR, "Failed to present");
+	}
+
+	void VulkanRenderer::BeginRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex) {
+		Application* app = Application::GetInstance();
+		vk::RenderPassBeginInfo renderPassInfo{};
+		renderPassInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxRenderPass)->m_xRenderPass;
+		renderPassInfo.framebuffer = m_swapChainFramebuffers[uImageIndex];
+		renderPassInfo.renderArea.offset = vk::Offset2D(0, 0);
+		renderPassInfo.renderArea.extent = m_swapChainExtent;
+
+		vk::ClearValue clearColor[2];
+		std::array<float, 4> tempColor{ 0.f,0.f,0.f,1.f };
+		clearColor[0].color = { vk::ClearColorValue(tempColor) };
+		clearColor[1].depthStencil = vk::ClearDepthStencilValue(0, 0);
+		renderPassInfo.clearValueCount = 2;
+		renderPassInfo.pClearValues = clearColor;
+
+		xCmdBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+
+		//flipping because porting from opengl
+		vk::Viewport viewport{};
+		viewport.x = 0;
+		viewport.y = m_swapChainExtent.height;
+		viewport.width = m_swapChainExtent.width;
+		viewport.height = -1 * (float)m_swapChainExtent.height;
+		viewport.minDepth = 0;
+		viewport.minDepth = 1;
+
+		vk::Rect2D scissor{};
+		scissor.offset = vk::Offset2D(0, 0);
+		scissor.extent = m_swapChainExtent;
+
+		xCmdBuffer.setViewport(0, 1, &viewport);
+		xCmdBuffer.setScissor(0, 1, &scissor);
 	}
 }

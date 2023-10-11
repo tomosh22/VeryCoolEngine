@@ -14,6 +14,8 @@ namespace VeryCoolEngine {
 		virtual void SetVertexArray(VertexArray* vertexArray) override;
 		virtual VertexBuffer* CreateInstancedVertexBuffer() override;
 
+		void BindToCmdBuffer(vk::CommandBuffer& xCmdBuffer) const;
+
 		std::vector<vk::VertexInputBindingDescription> m_axBindDescs;
 		std::vector<vk::VertexInputAttributeDescription> m_axAttrDescs;
 
