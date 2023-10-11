@@ -24,7 +24,7 @@ namespace VeryCoolEngine {
 	class VulkanTexture2D;
 	class VulkanBuffer;
 
-	static constexpr const uint32_t MAX_FRAMES_IN_FLIGHT = 1;
+	static constexpr const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
 		struct QueueFamilyIndices {
 			uint32_t graphicsFamily = -1;
