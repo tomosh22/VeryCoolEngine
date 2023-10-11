@@ -12,9 +12,12 @@ License: MIT (see LICENSE file at the top of the source tree)
 namespace VeryCoolEngine {
 	class VulkanShader;
 
-	struct VulkanPipeline {
+	class VulkanPipeline {
+	public:
 		vk::Pipeline m_xPipeline;
 		vk::PipelineLayout	m_xPipelineLayout;
+
+		void BindDescriptorSets(vk::CommandBuffer& xCmd, const std::vector<vk::DescriptorSet>& axSets, vk::PipelineBindPoint eBindPoint, uint32_t ufirstSet) const;
 	};
 
 	class VulkanPipelineBuilder	{

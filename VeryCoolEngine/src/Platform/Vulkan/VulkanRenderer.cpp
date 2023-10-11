@@ -104,8 +104,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxGeometryPipeline->m_xPipeline);
 
-	vk::DescriptorSet aSets[] = {m_xCameraDescriptor, m_xTextureDescriptor};
-	commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pxGeometryPipeline->m_xPipelineLayout, 0, sizeof(aSets) / sizeof(aSets[0]), aSets, 0, nullptr);
+	pxGeometryPipeline->BindDescriptorSets(commandBuffer, { m_xCameraDescriptor, m_xTextureDescriptor }, vk::PipelineBindPoint::eGraphics, 0);
 
 
 	for (Mesh* mesh : scene->meshes) {
