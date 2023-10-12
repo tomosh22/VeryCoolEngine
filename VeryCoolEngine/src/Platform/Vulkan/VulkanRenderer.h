@@ -241,8 +241,10 @@ namespace VeryCoolEngine {
 
 			vk::DescriptorSetLayout m_xCameraLayout;
 			vk::DescriptorSetLayout m_xTextureLayout;
+			vk::DescriptorSetLayout m_xSkyboxTextureLayout;
 			vk::DescriptorSet m_xCameraDescriptor;
 			vk::DescriptorSet m_xTextureDescriptor;
+			vk::DescriptorSet m_xSkyboxTextureDescriptor;
 
 			VulkanTexture2D* m_xDepthTexture;
 

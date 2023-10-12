@@ -86,14 +86,14 @@ namespace VeryCoolEngine {
 		return mesh;
 	}
 	
-	Mesh* Mesh::GenerateCubeFace() {
+	Mesh* Mesh::GenerateQuad() {
 		Mesh* mesh = Mesh::Create();
 		mesh->m_xBufferLayout = new BufferLayout();
 		mesh->numVerts = 4;
 		mesh->numIndices = 6;
 		mesh->vertexPositions = new glm::vec3[mesh->numVerts];
 		mesh->uvs = new glm::vec2[mesh->numVerts];
-		
+
 		mesh->indices = new unsigned int[mesh->numIndices] {0, 2, 1, 2, 3, 1};
 
 		mesh->vertexPositions[0] = { 0.5,0.5,1 };
@@ -101,10 +101,10 @@ namespace VeryCoolEngine {
 		mesh->vertexPositions[2] = { -0.5,0.5,1 };
 		mesh->vertexPositions[3] = { -0.5,-0.5,1 };
 
-		mesh->uvs[0] = {1,0};
-		mesh->uvs[1] = {1,1};
-		mesh->uvs[2] = {0,0};
-		mesh->uvs[3] = {0,1};
+		mesh->uvs[0] = { 1,0 };
+		mesh->uvs[1] = { 1,1 };
+		mesh->uvs[2] = { 0,0 };
+		mesh->uvs[3] = { 0,1 };
 
 		int numFloats = 0;
 		if (mesh->vertexPositions != nullptr) {
@@ -156,6 +156,7 @@ namespace VeryCoolEngine {
 
 		return mesh;
 	}
+
 
 	Mesh* Mesh::GenerateVulkanTest()
 	{

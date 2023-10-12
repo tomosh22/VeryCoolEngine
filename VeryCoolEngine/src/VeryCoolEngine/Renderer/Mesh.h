@@ -42,7 +42,7 @@ namespace VeryCoolEngine {
 
 		static Mesh* Create();
 		static Mesh* GenerateGenericHeightmap(uint32_t width, uint32_t height);
-		static Mesh* GenerateCubeFace();
+		static Mesh* GenerateQuad();
 		static Mesh* GenerateVulkanTest();
 
 		Transform transform;

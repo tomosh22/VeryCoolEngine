@@ -21,7 +21,9 @@ namespace VeryCoolEngine {
 
 	Game::Game() {
 #ifdef VCE_VULKAN
-		_pMesh = Mesh::GenerateCubeFace();
+		//first one is block faces, second one is full screen pass, they are the exact same this is just for readability
+		_pMesh = Mesh::GenerateQuad(); 
+		m_pxQuadMesh = Mesh::GenerateQuad();
 
 		Chunk::seed = rand();
 		GenerateChunks();
@@ -30,7 +32,9 @@ namespace VeryCoolEngine {
 
 		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, 1280.f / 720.f);
 		_shaders.push_back(Shader::Create("../Assets/Shaders/vulkan/blockVert.spv", "../Assets/Shaders/vulkan/blockFrag.spv"));
+		_shaders.push_back(Shader::Create("../Assets/Shaders/vulkan/fullscreenVert.spv", "../Assets/Shaders/vulkan/fullscreenFrag.spv"));
 		_textures.push_back(Texture2D::Create("atlas.png", false));
+		//_textures.push_back(Texture2D::Create("atlas.png", false));
 		std::vector<ManagedUniformBuffer**> ubos;
 		ubos.push_back(&_pCameraUBO);
 		std::vector<Texture2D**> textures;
@@ -57,7 +61,7 @@ namespace VeryCoolEngine {
 		
 
 
-		_pMesh = Mesh::GenerateCubeFace();
+		_pMesh = Mesh::GenerateQuad();
 		_pMesh->SetShader(_shaders[0]);
 		_pMesh->SetTexture(_textures[0]);
 

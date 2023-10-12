@@ -34,13 +34,16 @@ void VulkanRenderer::InitVulkan() {
 	BoilerplateInit();
 	
 	app->_pMesh->PlatformInit();
+	app->m_pxQuadMesh->PlatformInit();
 	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
-	app->_shaders.back()->PlatformInit();
-	app->_textures.back()->PlatformInit();
+	app->_shaders.at(0)->PlatformInit();
+	app->_shaders.at(1)->PlatformInit();
+	app->_textures.at(0)->PlatformInit();
+	//app->_textures.at(1)->PlatformInit();
 
 
 	m_xCameraLayout = VulkanDescriptorSetLayoutBuilder("Camera UBO")
-		.WithUniformBuffers(1, vk::ShaderStageFlagBits::eVertex)
+		.WithUniformBuffers(1, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment)
 		.Build(m_device);
 	m_xCameraDescriptor = CreateDescriptorSet(m_xCameraLayout, m_descriptorPool);
 
@@ -49,7 +52,12 @@ void VulkanRenderer::InitVulkan() {
 		.Build(m_device);
 	m_xTextureDescriptor = CreateDescriptorSet(m_xTextureLayout, m_descriptorPool);
 
-	UpdateImageDescriptor(m_xTextureDescriptor, 0, 0, dynamic_cast<VulkanTexture2D*>(app->_textures.back())->m_xImageView, dynamic_cast<VulkanTexture2D*>(app->_textures.back())->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
+	/*m_xSkyboxTextureLayout = VulkanDescriptorSetLayoutBuilder("Skybox Texture")
+		.WithSamplers(1, vk::ShaderStageFlagBits::eFragment)
+		.Build(m_device);
+	m_xSkyboxTextureDescriptor = CreateDescriptorSet(m_xTextureLayout, m_descriptorPool);*/
+
+	UpdateImageDescriptor(m_xTextureDescriptor, 0, 0, dynamic_cast<VulkanTexture2D*>(app->_textures.at(0))->m_xImageView, dynamic_cast<VulkanTexture2D*>(app->_textures.at(0))->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
 
 	for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 	{
@@ -60,7 +68,7 @@ void VulkanRenderer::InitVulkan() {
 	app->m_pxGeometryPipeline = VulkanPipelineBuilder("Geometry Pipeline")
 		.WithVertexInputState(dynamic_cast<VulkanMesh*>(app->_pMesh)->m_xVertexInputState)
 		.WithTopology(vk::PrimitiveTopology::eTriangleList)
-		.WithShader(*dynamic_cast<VulkanShader*>(app->_shaders.back()))
+		.WithShader(*dynamic_cast<VulkanShader*>(app->_shaders.at(0)))
 		.WithBlendState(vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha, false)
 		.WithDepthState(vk::CompareOp::eGreaterOrEqual, true, true, false)
 		.WithColourFormats({ vk::Format::eB8G8R8A8Srgb })
@@ -70,7 +78,18 @@ void VulkanRenderer::InitVulkan() {
 		.WithPass(dynamic_cast<VulkanRenderPass*>(app->m_pxRenderPass)->m_xRenderPass)
 		.Build();
 
-
+	app->m_pxSkyboxPipeline = VulkanPipelineBuilder("Skybox Pipeline")
+		.WithVertexInputState(dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh)->m_xVertexInputState)
+		.WithTopology(vk::PrimitiveTopology::eTriangleList)
+		.WithShader(*dynamic_cast<VulkanShader*>(app->_shaders.at(1)))
+		.WithBlendState(vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha, false)
+		//.WithDepthState(vk::CompareOp::eGreaterOrEqual, true, true, false)
+		.WithColourFormats({ vk::Format::eB8G8R8A8Srgb })
+		//.WithDepthFormat(vk::Format::eD32Sfloat)
+		.WithDescriptorSetLayout(0, m_xCameraLayout)
+		//.WithDescriptorSetLayout(1, m_xTextureLayout)
+		.WithPass(dynamic_cast<VulkanRenderPass*>(app->m_pxRenderPass)->m_xRenderPass)
+		.Build();
 	
 
 	Application::GetInstance()->renderInitialised = true;
@@ -99,6 +118,17 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	commandBuffer.begin(vk::CommandBufferBeginInfo());
 
 	BeginRenderPass(commandBuffer, imageIndex);
+
+	VulkanPipeline* pxSkyboxPipeline = dynamic_cast<VulkanPipeline*>(app->m_pxSkyboxPipeline);
+
+	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxSkyboxPipeline->m_xPipeline);
+
+	pxSkyboxPipeline->BindDescriptorSets(commandBuffer, { m_xCameraDescriptor }, vk::PipelineBindPoint::eGraphics, 0);
+
+	VulkanMesh* pxSkyboxMesh = dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh);
+	pxSkyboxMesh->BindToCmdBuffer(commandBuffer);
+
+	commandBuffer.drawIndexed(pxSkyboxMesh->numIndices, 1, 0, 0, 0);
 
 	VulkanPipeline* pxGeometryPipeline = dynamic_cast<VulkanPipeline*>(app->m_pxGeometryPipeline);
 

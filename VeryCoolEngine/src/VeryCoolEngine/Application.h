@@ -90,6 +90,7 @@ namespace VeryCoolEngine {
 		//TODO delete these
 		Renderer* _pRenderer;
 		class VulkanPipeline* m_pxGeometryPipeline;
+		class VulkanPipeline* m_pxSkyboxPipeline;
 		RenderPass* m_pxRenderPass;
 
 		ManagedUniformBuffer* _pLightUBO = nullptr;
@@ -100,6 +101,7 @@ namespace VeryCoolEngine {
 		Shader* _pFullscreenShader;
 
 		Mesh* _pMesh;
+		Mesh* m_pxQuadMesh;
 		unsigned int _numInstances = 0;
 
 		std::vector<Mesh*> _meshes;
