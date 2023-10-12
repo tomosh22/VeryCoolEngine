@@ -20,7 +20,6 @@ namespace VeryCoolEngine {
 	};
 
 	Game::Game() {
-#ifdef VCE_VULKAN
 		//first one is block faces, second one is full screen pass, they are the exact same this is just for readability
 		_pMesh = Mesh::GenerateQuad(); 
 		m_pxQuadMesh = Mesh::GenerateQuad();
@@ -34,74 +33,17 @@ namespace VeryCoolEngine {
 		_shaders.push_back(Shader::Create("../Assets/Shaders/vulkan/blockVert.spv", "../Assets/Shaders/vulkan/blockFrag.spv"));
 		_shaders.push_back(Shader::Create("../Assets/Shaders/vulkan/fullscreenVert.spv", "../Assets/Shaders/vulkan/fullscreenFrag.spv"));
 		_textures.push_back(Texture2D::Create("atlas.png", false));
-		//_textures.push_back(Texture2D::Create("atlas.png", false));
 		std::vector<ManagedUniformBuffer**> ubos;
 		ubos.push_back(&_pCameraUBO);
 		std::vector<Texture2D**> textures;
 		textures.push_back(&_textures.back());
-
-		//m_pxPipeline = Pipeline::Create(_shaders.back(), _pMesh->m_xBufferLayout, MeshTopolgy::Triangles, ubos,textures, &m_pxRenderPass);
 		
 		_renderThreadCanStart = true;
 		return;
-#endif
-		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, 1280.f / 720.f);
-#pragma region old
-		//_pMesh = Mesh::GenerateGenericHeightmap(2,2);
-		//_pMesh = Mesh::GenerateCubeFace();
-		//_pMesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
-		//_pMesh->SetTexture(Texture2D::Create("atlas.png", false));
-		//_pMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
-
-		//_pMesh->SetShader(Shader::Create("basic.vert", "basic.frag"));
-#pragma endregion
-		//#todo these should probably be in string maps?
-		//or do i store them individually?
-		
-		
-
-
-		_pMesh = Mesh::GenerateQuad();
-		_pMesh->SetShader(_shaders[0]);
-		_pMesh->SetTexture(_textures[0]);
-
-		
-
-		Chunk::seed = rand();
-		GenerateChunks();
-		
-		UploadChunks();
-
-
-		_pFullscreenShader = Shader::Create("fullscreen.vert", "fullscreen.frag");
-
-		_pCubemap = TextureCube::Create("CubemapTest", false);
-
-		_lights.push_back({
-				500,75,100,100,
-				0,1,0,1
-			});
-		_lights.push_back({
-				100,75,100,100,
-				0,1,0,1
-			});
-		_lights.push_back({
-			250, 100, 250, 1000,
-				0.8, 0.8, 0.8, 1
-			});
-		_lights.push_back({
-			0, 5, 0, 1000,
-				0.8, 0.8, 0.8, 1
-			});
-
-		
-
-		
 	}
 
 	void Game::GenerateChunks() {
 		std::thread threads[s_xNumChunks.x * s_xNumChunks.z];
-
 
 
 		for (int x = 0; x < s_xNumChunks.x; x++) {
@@ -163,7 +105,7 @@ namespace VeryCoolEngine {
 
 		//std::cout << "unique quats " << Transform::uniqueQuats.size() << '\n';
 
-		_pMesh->_instanceData.push_back(BufferElement(
+		_pMesh->m_axInstanceData.push_back(BufferElement(
 			ShaderDataType::Float4,
 			"_aInstanceQuat",
 			false,
@@ -174,7 +116,7 @@ namespace VeryCoolEngine {
 		));
 
 
-		_pMesh->_instanceData.push_back(BufferElement(
+		_pMesh->m_axInstanceData.push_back(BufferElement(
 			ShaderDataType::Float3,
 			"_aInstancePosition",
 			false,
@@ -184,7 +126,7 @@ namespace VeryCoolEngine {
 			_instancePositions.size()
 		));
 
-		_pMesh->_instanceData.push_back(BufferElement(
+		_pMesh->m_axInstanceData.push_back(BufferElement(
 			ShaderDataType::Int2,
 			"_aInstanceAtlasOffset",
 			false,
@@ -194,7 +136,7 @@ namespace VeryCoolEngine {
 			_instanceOffsets.size()
 		));
 
-		_pMesh->_instanceData.push_back(BufferElement(
+		_pMesh->m_axInstanceData.push_back(BufferElement(
 			ShaderDataType::Int4,
 			"_ainstanceAOValues",
 			false,
@@ -251,7 +193,7 @@ namespace VeryCoolEngine {
 		if (Input::IsKeyPressed(VCE_KEY_R) && prevRState != rState) {
 			Chunk::seed = rand();
 			game->_chunks.clear();
-			game->_pMesh->_instanceData.clear();
+			game->_pMesh->m_axInstanceData.clear();
 			game->_instanceMats.clear();
 			game->_instanceQuats.clear();
 			game->_instancePositions.clear();

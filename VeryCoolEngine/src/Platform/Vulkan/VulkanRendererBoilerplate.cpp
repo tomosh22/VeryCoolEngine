@@ -128,14 +128,14 @@ namespace VeryCoolEngine {
 	}
 
 	void VulkanRenderer::CreateLogicalDevice() {
-		QueueFamilyIndices indices = FindQueueFamilies(m_physicalDevice);
+		QueueFamilyIndices m_puIndices = FindQueueFamilies(m_physicalDevice);
 
 		std::vector<vk::DeviceQueueCreateInfo> queueInfos;
-		std::set<uint32_t> uniqueFamilies = { indices.graphicsFamily, indices.presentFamily };
+		std::set<uint32_t> uniqueFamilies = { m_puIndices.graphicsFamily, m_puIndices.presentFamily };
 		float queuePriority = 1;
 		for (uint32_t family : uniqueFamilies) {
 			vk::DeviceQueueCreateInfo queueInfo = vk::DeviceQueueCreateInfo()
-				.setQueueFamilyIndex(indices.graphicsFamily)
+				.setQueueFamilyIndex(m_puIndices.graphicsFamily)
 				.setQueueCount(1)
 				.setPQueuePriorities(&queuePriority);
 			queueInfos.push_back(queueInfo);
@@ -160,12 +160,12 @@ namespace VeryCoolEngine {
 #endif
 
 		m_device = m_physicalDevice.createDevice(deviceCreateInfo);
-		m_device.getQueue(indices.graphicsFamily, 0, &m_graphicsQueue);
-		m_device.getQueue(indices.presentFamily, 0, &m_presentQueue);
+		m_device.getQueue(m_puIndices.graphicsFamily, 0, &m_graphicsQueue);
+		m_device.getQueue(m_puIndices.presentFamily, 0, &m_presentQueue);
 	}
 
 	QueueFamilyIndices VulkanRenderer::FindQueueFamilies(vk::PhysicalDevice physDevice) {
-		QueueFamilyIndices indices;
+		QueueFamilyIndices m_puIndices;
 		uint32_t numQueueFamilies = 0;
 		physDevice.getQueueFamilyProperties(&numQueueFamilies, nullptr);
 
@@ -174,17 +174,17 @@ namespace VeryCoolEngine {
 		physDevice.getQueueFamilyProperties(&numQueueFamilies, families.data());
 		int i = 0;
 		for (const vk::QueueFamilyProperties& family : families) {
-			if (family.queueFlags & vk::QueueFlagBits::eGraphics)indices.graphicsFamily = i;
+			if (family.queueFlags & vk::QueueFlagBits::eGraphics)m_puIndices.graphicsFamily = i;
 			vk::Bool32 presentSupport = false;
 			physDevice.getSurfaceSupportKHR(i, m_surface, &presentSupport);
 
-			if (presentSupport)indices.presentFamily = i;
+			if (presentSupport)m_puIndices.presentFamily = i;
 
-			if (indices.presentFamily != -1 && presentSupport)break;
+			if (m_puIndices.presentFamily != -1 && presentSupport)break;
 
 			i++;
 		}
-		return indices;
+		return m_puIndices;
 	}
 
 	SwapChainSupportDetails VulkanRenderer::QuerySwapChainSupport(vk::PhysicalDevice physDevice) {
@@ -232,9 +232,9 @@ namespace VeryCoolEngine {
 		createInfo.imageArrayLayers = 1;
 		createInfo.imageUsage = vk::ImageUsageFlagBits::eColorAttachment;
 
-		QueueFamilyIndices indices = FindQueueFamilies(m_physicalDevice);
-		uint32_t indicesPtr[] = { indices.graphicsFamily,indices.presentFamily };
-		if (indices.graphicsFamily != indices.presentFamily) {
+		QueueFamilyIndices m_puIndices = FindQueueFamilies(m_physicalDevice);
+		uint32_t indicesPtr[] = { m_puIndices.graphicsFamily,m_puIndices.presentFamily };
+		if (m_puIndices.graphicsFamily != m_puIndices.presentFamily) {
 			createInfo.imageSharingMode = vk::SharingMode::eConcurrent;
 			createInfo.queueFamilyIndexCount = 2;
 			createInfo.pQueueFamilyIndices = indicesPtr;

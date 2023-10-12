@@ -24,13 +24,14 @@ namespace VeryCoolEngine {
 		mesh->GetShader()->Bind();
 
 		//#todo move these 2 somewhere else
-		mesh->transform.UpdateMatrix();
-		mesh->transform.UpdateRotation();
+		mesh->m_xTransform.UpdateMatrix();
+		mesh->m_xTransform.UpdateRotation();
 
-		mesh->GetShader()->UploadMatrix4Uniform(mesh->transform._matrix,"_uModelMat");
+		mesh->GetShader()->UploadMatrix4Uniform(mesh->m_xTransform._matrix,"_uModelMat");
 		_spRenderer->BindViewProjMat(mesh->GetShader());
 
-		mesh->GetShader()->UploadIVec2Uniform(mesh->customUniform, "_uAtlasOffset");
+		//deleted after move to vulkan
+		//mesh->GetShader()->UploadIVec2Uniform(mesh->customUniform, "_uAtlasOffset");
 
 		
 

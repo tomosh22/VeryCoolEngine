@@ -7,7 +7,7 @@ namespace VeryCoolEngine {
 
 	class OpenGLVertexBuffer : public VertexBuffer{
 	public:
-		OpenGLVertexBuffer(void* verts, size_t size);
+		OpenGLVertexBuffer(void* m_pVerts, size_t size);
 		~OpenGLVertexBuffer() override { glDeleteBuffers(1, &_id); };
 
 		void UploadData() override;
@@ -23,7 +23,7 @@ namespace VeryCoolEngine {
 
 	class OpenGLIndexBuffer : public IndexBuffer {
 	public:
-		OpenGLIndexBuffer(uint32_t* indices, uint32_t count);
+		OpenGLIndexBuffer(uint32_t* m_puIndices, uint32_t count);
 		~OpenGLIndexBuffer() override { glDeleteBuffers(1, &_id); };
 
 		void UploadData() override;

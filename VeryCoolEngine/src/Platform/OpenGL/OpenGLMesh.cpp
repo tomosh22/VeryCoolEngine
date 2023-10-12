@@ -11,48 +11,48 @@ namespace VeryCoolEngine {
 
 		int numFloats = 0;
 		BufferLayout layout;
-		if (vertexPositions != nullptr) {
+		if (m_pxVertexPositions != nullptr) {
 			layout.GetElements().push_back({ ShaderDataType::Float3, "_aPosition" });
 			numFloats += 3;
 		}
-		if (uvs != nullptr) {
+		if (m_pxUVs != nullptr) {
 			layout.GetElements().push_back({ ShaderDataType::Float2, "_aUV" });
 			numFloats += 2;
 		}
-		if (normals != nullptr) {
+		if (m_pxNormals != nullptr) {
 			layout.GetElements().push_back({ ShaderDataType::Float3, "_aNormal" });
 			numFloats += 3;
 		}
-		if (tangents != nullptr) {
+		if (m_pxTangents != nullptr) {
 			layout.GetElements().push_back({ ShaderDataType::Float4, "_aTangent" });
 			numFloats += 4;
 		}
 
-		verts = new float[numVerts * numFloats];
+		m_pVerts = new float[m_uNumVerts * numFloats];
 
 		size_t index = 0;
-		for (int i = 0; i < numVerts; i++)
+		for (int i = 0; i < m_uNumVerts; i++)
 		{
-			if (vertexPositions != nullptr) {
-				((float*)verts)[index++] = vertexPositions[i].x;
-				((float*)verts)[index++] = vertexPositions[i].y;
-				((float*)verts)[index++] = vertexPositions[i].z;
+			if (m_pxVertexPositions != nullptr) {
+				((float*)m_pVerts)[index++] = m_pxVertexPositions[i].x;
+				((float*)m_pVerts)[index++] = m_pxVertexPositions[i].y;
+				((float*)m_pVerts)[index++] = m_pxVertexPositions[i].z;
 			}
 
-			if (uvs != nullptr) {
-				((float*)verts)[index++] = uvs[i].x;
-				((float*)verts)[index++] = uvs[i].y;
+			if (m_pxUVs != nullptr) {
+				((float*)m_pVerts)[index++] = m_pxUVs[i].x;
+				((float*)m_pVerts)[index++] = m_pxUVs[i].y;
 			}
-			if (normals != nullptr) {
-				((float*)verts)[index++] = normals[i].x;
-				((float*)verts)[index++] = normals[i].y;
-				((float*)verts)[index++] = normals[i].z;
+			if (m_pxNormals != nullptr) {
+				((float*)m_pVerts)[index++] = m_pxNormals[i].x;
+				((float*)m_pVerts)[index++] = m_pxNormals[i].y;
+				((float*)m_pVerts)[index++] = m_pxNormals[i].z;
 			}
-			if (tangents != nullptr) {
-				((float*)verts)[index++] = tangents[i].x;
-				((float*)verts)[index++] = tangents[i].y;
-				((float*)verts)[index++] = tangents[i].z;
-				((float*)verts)[index++] = tangents[i].w;
+			if (m_pxTangents != nullptr) {
+				((float*)m_pVerts)[index++] = m_pxTangents[i].x;
+				((float*)m_pVerts)[index++] = m_pxTangents[i].y;
+				((float*)m_pVerts)[index++] = m_pxTangents[i].z;
+				((float*)m_pVerts)[index++] = m_pxTangents[i].w;
 			}
 		}
 
@@ -67,17 +67,17 @@ namespace VeryCoolEngine {
 
 		layout.CalculateOffsetsAndStrides();
 #endif
-		VertexBuffer* vertexBuffer = VertexBuffer::Create(verts, numVerts * sizeof(float) * (numFloats));
+		VertexBuffer* vertexBuffer = VertexBuffer::Create(m_pVerts, m_uNumVerts * sizeof(float) * (numFloats));
 		vertexBuffer->SetLayout(layout);
 		VertexArray* vertexArray = VertexArray::Create();
 		vertexArray->AddVertexBuffer(vertexBuffer);
 
-		IndexBuffer* indexBuffer = IndexBuffer::Create(indices, numIndices);
+		IndexBuffer* indexBuffer = IndexBuffer::Create(m_puIndices, m_uNumIndices);
 		vertexArray->SetIndexBuffer(indexBuffer);
 
 
 
-		if (_instanceData.size() > 0) {
+		if (m_axInstanceData.size() > 0) {
 			VertexBuffer* instancedVertexBuffer = CreateInstancedVertexBuffer();
 			vertexArray->AddVertexBuffer(instancedVertexBuffer, true);
 		}
@@ -94,13 +94,13 @@ namespace VeryCoolEngine {
 		BufferLayout instancedLayout;
 		unsigned int instanceDataSize = 0;
 
-		for (BufferElement& instanceData : _instanceData) {
+		for (BufferElement& instanceData : m_axInstanceData) {
 			BufferElement element = BufferElement(instanceData._Type,
 				instanceData._Name,
 				false, //normalised
 				true,  //instanced
-				instanceData._divisor,
-				instanceData._data,
+				instanceData.m_uDivisor,
+				instanceData.m_pData,
 				instanceData._numEntries);
 			instancedLayout.GetElements().push_back(element);
 			instanceDataSize += instanceData._Size * instanceData._numEntries;
@@ -110,10 +110,10 @@ namespace VeryCoolEngine {
 #ifdef VCE_DEBUG
 		unsigned int iNumEntriesCheck = -1;
 		unsigned int iNumElements = 0;
-		for (BufferElement& instanceData : _instanceData) {
+		for (BufferElement& instanceData : m_axInstanceData) {
 			if (iNumEntriesCheck == -1)iNumEntriesCheck = instanceData._numEntries;
 			else VCE_ASSERT(instanceData._numEntries == iNumEntriesCheck, "don't support varying number of entries")
-				VCE_ASSERT(instanceData._divisor == 1, "need to implement support for different divisors");
+				VCE_ASSERT(instanceData.m_uDivisor == 1, "need to implement support for different divisors");
 			iNumElements++;
 		}
 #else
@@ -139,10 +139,10 @@ namespace VeryCoolEngine {
 
 		while (iDataOffset < instanceDataSize) {
 			unsigned int iCurrentElement = 0;
-			for (BufferElement& instanceData : _instanceData) {
+			for (BufferElement& instanceData : m_axInstanceData) {
 				int offset = elementOffsets[iCurrentElement];
 				memcpy(pData + iDataOffset,
-					(char*)instanceData._data + offset,
+					(char*)instanceData.m_pData + offset,
 					instanceData._Size
 				);
 				elementOffsets[iCurrentElement] += instanceData._Size;
@@ -156,7 +156,7 @@ namespace VeryCoolEngine {
 
 #ifdef VCE_DEBUG
 		int testIndex = 0;
-		for (BufferElement& instanceData : _instanceData) {
+		for (BufferElement& instanceData : m_axInstanceData) {
 			VCE_ASSERT(elementOffsets[testIndex] == instanceData._Size * instanceData._numEntries, "error");
 			testIndex++;
 		}

@@ -15,7 +15,7 @@ namespace VeryCoolEngine {
 
 		
 
-		void SetVertexArray(VertexArray* vertexArray) override { _pVertexArray = vertexArray; }
+		void SetVertexArray(VertexArray* vertexArray) override { m_pxVertexArray = vertexArray; }
 
 		std::vector<unsigned int> _instanceVBOs;//#todo make this part of vertex array
 	};

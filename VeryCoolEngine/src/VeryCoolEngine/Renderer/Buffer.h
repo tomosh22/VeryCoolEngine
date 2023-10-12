@@ -71,11 +71,11 @@ namespace VeryCoolEngine {
 		ShaderDataType _Type;
 		bool _Normalized;
 		bool _Instanced = false;
-		unsigned int _divisor = 0;
-		void* _data = nullptr;
+		unsigned int m_uDivisor = 0;
+		void* m_pData = nullptr;
 		unsigned int _numEntries = 0;
 
-		BufferElement(ShaderDataType type, const std::string& name, bool normalized = false, bool instanced = false, unsigned int divisor = 0, void* data = nullptr,unsigned int numEntries = 0) : _Name(name), _Type(type), _Size(ShaderDataTypeSize(type)), _Offset(0), _Normalized(normalized), _Instanced(instanced), _divisor(divisor), _data(data), _numEntries(numEntries) {
+		BufferElement(ShaderDataType type, const std::string& name, bool normalized = false, bool instanced = false, unsigned int divisor = 0, void* data = nullptr,unsigned int numEntries = 0) : _Name(name), _Type(type), _Size(ShaderDataTypeSize(type)), _Offset(0), _Normalized(normalized), _Instanced(instanced), m_uDivisor(divisor), m_pData(data), _numEntries(numEntries) {
 			
 		}
 
@@ -144,7 +144,7 @@ namespace VeryCoolEngine {
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 		virtual const BufferLayout& GetLayout() = 0;
 
-		static VertexBuffer* Create(void* verts, size_t size);
+		static VertexBuffer* Create(void* m_pVerts, size_t size);
 
 	protected:
 		BufferLayout _Layout;
@@ -160,7 +160,7 @@ namespace VeryCoolEngine {
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 
-		static IndexBuffer* Create(uint32_t* indices, uint32_t count);
+		static IndexBuffer* Create(uint32_t* m_puIndices, uint32_t count);
 
 		uint32_t GetCount() const { return _Count; }
 	protected:

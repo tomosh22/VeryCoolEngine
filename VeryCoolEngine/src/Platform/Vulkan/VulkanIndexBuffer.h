@@ -11,7 +11,7 @@ namespace VeryCoolEngine {
 		VulkanIndexBuffer() = default;
 		VulkanIndexBuffer(const VulkanIndexBuffer& other) = delete;
 
-		VulkanIndexBuffer(void* indices, size_t size);
+		VulkanIndexBuffer(void* m_puIndices, size_t size);
 
 		void UploadData() override;
 		void Bind() const override;

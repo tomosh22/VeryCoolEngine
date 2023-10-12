@@ -26,7 +26,7 @@ namespace VeryCoolEngine {
 		
 
 		uint32_t uBindPoint = 0;
-		for (BufferElement& element : m_xBufferLayout->GetElements()) {
+		for (BufferElement& element : m_pxBufferLayout->GetElements()) {
 			
 
 			vk::VertexInputAttributeDescription xAttrDesc = vk::VertexInputAttributeDescription()
@@ -40,15 +40,15 @@ namespace VeryCoolEngine {
 
 		vk::VertexInputBindingDescription xBindDesc = vk::VertexInputBindingDescription()
 			.setBinding(0)
-			.setStride(m_xBufferLayout->_Stride)
+			.setStride(m_pxBufferLayout->_Stride)
 			.setInputRate(vk::VertexInputRate::eVertex);
 		m_axBindDescs.push_back(xBindDesc);
 
-		m_pxVertexBuffer = new VulkanVertexBuffer(verts, numVerts * m_xBufferLayout->_Stride);
+		m_pxVertexBuffer = new VulkanVertexBuffer(m_pVerts, m_uNumVerts * m_pxBufferLayout->_Stride);
 
-		m_pxIndexBuffer = new VulkanIndexBuffer(indices, sizeof(unsigned int) * numIndices);
+		m_pxIndexBuffer = new VulkanIndexBuffer(m_puIndices, sizeof(unsigned int) * m_uNumIndices);
 
-		if (_instanceData.size() > 0) {
+		if (m_axInstanceData.size() > 0) {
 			m_pxInstanceBuffer = dynamic_cast<VulkanVertexBuffer*>(CreateInstancedVertexBuffer());
 			BufferLayout& xInstanceLayout = const_cast<BufferLayout&>(m_pxInstanceBuffer->GetLayout());
 			for (BufferElement& element : xInstanceLayout.GetElements()) {
@@ -101,13 +101,13 @@ namespace VeryCoolEngine {
 		BufferLayout instancedLayout;
 		unsigned int instanceDataSize = 0;
 
-		for (BufferElement& instanceData : _instanceData) {
+		for (BufferElement& instanceData : m_axInstanceData) {
 			BufferElement element = BufferElement(instanceData._Type,
 				instanceData._Name,
 				false, //normalised
 				true,  //instanced
-				instanceData._divisor,
-				instanceData._data,
+				instanceData.m_uDivisor,
+				instanceData.m_pData,
 				instanceData._numEntries);
 			instancedLayout.GetElements().push_back(element);
 			instanceDataSize += instanceData._Size * instanceData._numEntries;
@@ -117,10 +117,10 @@ namespace VeryCoolEngine {
 #ifdef VCE_DEBUG
 		unsigned int iNumEntriesCheck = -1;
 		unsigned int iNumElements = 0;
-		for (BufferElement& instanceData : _instanceData) {
+		for (BufferElement& instanceData : m_axInstanceData) {
 			if (iNumEntriesCheck == -1)iNumEntriesCheck = instanceData._numEntries;
 			else VCE_ASSERT(instanceData._numEntries == iNumEntriesCheck, "don't support varying number of entries")
-				VCE_ASSERT(instanceData._divisor == 1, "need to implement support for different divisors");
+				VCE_ASSERT(instanceData.m_uDivisor == 1, "need to implement support for different divisors");
 			iNumElements++;
 		}
 #else
@@ -146,10 +146,10 @@ namespace VeryCoolEngine {
 
 		while (iDataOffset < instanceDataSize) {
 			unsigned int iCurrentElement = 0;
-			for (BufferElement& instanceData : _instanceData) {
+			for (BufferElement& instanceData : m_axInstanceData) {
 				int offset = elementOffsets[iCurrentElement];
 				memcpy(pData + iDataOffset,
-					(char*)instanceData._data + offset,
+					(char*)instanceData.m_pData + offset,
 					instanceData._Size
 				);
 				elementOffsets[iCurrentElement] += instanceData._Size;
@@ -163,7 +163,7 @@ namespace VeryCoolEngine {
 
 #ifdef VCE_DEBUG
 		int testIndex = 0;
-		for (BufferElement& instanceData : _instanceData) {
+		for (BufferElement& instanceData : m_axInstanceData) {
 			VCE_ASSERT(elementOffsets[testIndex] == instanceData._Size * instanceData._numEntries, "error");
 			testIndex++;
 		}

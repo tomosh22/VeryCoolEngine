@@ -62,7 +62,7 @@ namespace VeryCoolEngine {
 					vertexBuffer->GetLayout().GetStride(),
 					(const void*)element._Offset);
 			}
-			glVertexAttribDivisor(_numVertAttribs++, element._divisor);
+			glVertexAttribDivisor(_numVertAttribs++, element.m_uDivisor);
 				
 			
 		}

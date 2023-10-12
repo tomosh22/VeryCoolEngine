@@ -63,8 +63,8 @@ namespace VeryCoolEngine {
 	void OpenGLRenderer::DrawFullScreenQuad()
 	{
 		glBindVertexArray(0);
-		unsigned int indices[4]{ 0,1,2,3 };
-		glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT,indices);
+		unsigned int m_puIndices[4]{ 0,1,2,3 };
+		glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT,m_puIndices);
 	}
 
 	void OpenGLRenderer::DrawIndexed(VertexArray* vertexArray, MeshTopolgy topology)

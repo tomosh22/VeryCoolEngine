@@ -25,14 +25,14 @@ namespace VeryCoolEngine {
 
 		void OnUpdate() override;
 
-		inline unsigned int GetWidth() const override { return _data._width; }
-		inline unsigned int GetHeight() const override { return _data._height; }
+		inline unsigned int GetWidth() const override { return m_pData._width; }
+		inline unsigned int GetHeight() const override { return m_pData._height; }
 
-		inline void SetWidth(unsigned int width)  override { _data._width = width; }
-		inline void SetHeight(unsigned int height)  override { _data._height = height; }
+		inline void SetWidth(unsigned int width)  override { m_pData._width = width; }
+		inline void SetHeight(unsigned int height)  override { m_pData._height = height; }
 
 		inline void SetEventCallback(const EventCallBackFunction& c) override {
-			_data._eventCallback = c;
+			m_pData._eventCallback = c;
 		}
 		void SetVSync(bool enabled) override;
 		bool GetVSyncEnabled() const override;
@@ -44,7 +44,7 @@ namespace VeryCoolEngine {
 			std::string _title;
 			bool _VSync;
 			EventCallBackFunction _eventCallback;
-		} _data;
+		} m_pData;
 		
 
 		

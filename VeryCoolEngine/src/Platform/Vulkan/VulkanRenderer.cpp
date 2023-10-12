@@ -36,10 +36,8 @@ void VulkanRenderer::InitVulkan() {
 	app->_pMesh->PlatformInit();
 	app->m_pxQuadMesh->PlatformInit();
 	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
-	app->_shaders.at(0)->PlatformInit();
-	app->_shaders.at(1)->PlatformInit();
-	app->_textures.at(0)->PlatformInit();
-	//app->_textures.at(1)->PlatformInit();
+	for (Shader* pxShader : app->_shaders) pxShader->PlatformInit();
+	for (Texture2D* pxTex : app->_textures) pxTex->PlatformInit();
 
 
 	m_xCameraLayout = VulkanDescriptorSetLayoutBuilder("Camera UBO")
@@ -128,7 +126,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	VulkanMesh* pxSkyboxMesh = dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh);
 	pxSkyboxMesh->BindToCmdBuffer(commandBuffer);
 
-	commandBuffer.drawIndexed(pxSkyboxMesh->numIndices, 1, 0, 0, 0);
+	commandBuffer.drawIndexed(pxSkyboxMesh->m_uNumIndices, 1, 0, 0, 0);
 
 	VulkanPipeline* pxGeometryPipeline = dynamic_cast<VulkanPipeline*>(app->m_pxGeometryPipeline);
 
@@ -141,7 +139,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
 		pxVulkanMesh->BindToCmdBuffer(commandBuffer);
 
-		commandBuffer.drawIndexed(pxVulkanMesh->numIndices, app->_numInstances, 0, 0, 0);
+		commandBuffer.drawIndexed(pxVulkanMesh->m_uNumIndices, app->_numInstances, 0, 0, 0);
 	}
 
 	commandBuffer.endRenderPass();
