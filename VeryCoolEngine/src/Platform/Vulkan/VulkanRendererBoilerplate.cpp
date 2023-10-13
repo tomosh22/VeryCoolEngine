@@ -411,9 +411,9 @@ namespace VeryCoolEngine {
 		m_commandBuffers = m_device.allocateCommandBuffers(allocInfo);
 	}
 
-	vk::CommandBuffer VulkanRenderer::BeginSingleUseCmdBuffer() {
+	vk::CommandBuffer VulkanRenderer::BeginSingleUseCmdBuffer(vk::CommandBufferLevel eLevel) {
 		vk::CommandBufferAllocateInfo xAllocInfo = vk::CommandBufferAllocateInfo()
-			.setLevel(vk::CommandBufferLevel::ePrimary)
+			.setLevel(eLevel)
 			.setCommandPool(m_commandPool)
 			.setCommandBufferCount(1);
 
@@ -421,6 +421,15 @@ namespace VeryCoolEngine {
 
 		vk::CommandBufferBeginInfo xBeginInfo = vk::CommandBufferBeginInfo{}
 		.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+
+		if (eLevel == vk::CommandBufferLevel::eSecondary) {
+			xBeginInfo.setFlags(xBeginInfo.flags | vk::CommandBufferUsageFlagBits::eRenderPassContinue);
+
+			vk::CommandBufferInheritanceInfo xInherit = vk::CommandBufferInheritanceInfo()
+				.setRenderPass(dynamic_cast<VulkanRenderPass*>(Application::GetInstance()->m_pxRenderPass)->m_xRenderPass)
+				.setFramebuffer(m_swapChainFramebuffers[m_currentFrame]);
+			xBeginInfo.setPInheritanceInfo(&xInherit);
+		}
 
 		xCommandBuffer.begin(xBeginInfo);
 

@@ -12,6 +12,9 @@
 #include "VulkanPipelineBuilder.h"
 #include "VulkanDescriptorSetLayoutBuilder.h"
 
+#include <imgui.h>
+#include "backends/imgui_impl_vulkan.h"
+
 
 using namespace VeryCoolEngine;
 
@@ -97,6 +100,7 @@ void VulkanRenderer::MainLoop() {
 	glfwPollEvents();
 
 	Application* app = Application::GetInstance();
+
 	Scene* scene = app->scene;
 	while (true) {
 		printf("Waiting on scene to be ready\n");
@@ -105,13 +109,23 @@ void VulkanRenderer::MainLoop() {
 	app->sceneMutex.lock();
 	BeginScene(scene);
 
+	
+
 	DrawFrame(app->scene);
+
+	
+
 
 	app->sceneMutex.unlock();
 }
 
 void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene) {
 	Application* app = Application::GetInstance();
+
+	app->_pImGuiLayer->Begin();
+	app->_pImGuiLayer->OnImGuiRender();
+	
+	
 
 	commandBuffer.begin(vk::CommandBufferBeginInfo());
 
@@ -141,9 +155,13 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 		commandBuffer.drawIndexed(pxVulkanMesh->m_uNumIndices, app->_numInstances, 0, 0, 0);
 	}
-
+	
+	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 	commandBuffer.endRenderPass();
 	commandBuffer.end();
+
+	app->_pImGuiLayer->End();
+	
 }
 
 void VulkanRenderer::DrawFrame(Scene* scene) {
@@ -152,6 +170,7 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 		RecreateSwapChain();
 		return;
 	}
+
 	RecordCommandBuffer(m_commandBuffers[m_currentFrame], iImageIndex, scene);
 
 	SubmitCmdBuffer(m_commandBuffers[m_currentFrame], &m_imageAvailableSemaphores[m_currentFrame], 1, &m_renderFinishedSemaphores[m_currentFrame], 1, vk::PipelineStageFlagBits::eColorAttachmentOutput);
@@ -182,6 +201,8 @@ void VeryCoolEngine::VulkanRenderer::BeginScene(Scene* scene)
 void VeryCoolEngine::VulkanRenderer::RenderThreadFunction()
 {
 	Application* app = Application::GetInstance();
+	app->_pImGuiLayer = new ImGuiLayer();
+	app->PushOverlay(app->_pImGuiLayer);
 	while (app->_running) {
 		MainLoop();
 	}

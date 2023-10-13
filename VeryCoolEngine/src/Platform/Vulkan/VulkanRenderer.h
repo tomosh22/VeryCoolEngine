@@ -38,6 +38,7 @@ namespace VeryCoolEngine {
 		class VulkanRenderer : public Renderer {
 		public:
 			
+			friend class ImGuiLayer;
 
 			VulkanRenderer();
 
@@ -84,7 +85,7 @@ namespace VeryCoolEngine {
 			void UpdateBufferDescriptor(const vk::DescriptorSet& xSet, const VulkanBuffer* pxData, uint32_t uBinding, vk::DescriptorType eBufferType, size_t uOffset);
 			void UpdateImageDescriptor(const vk::DescriptorSet& xSet, uint32_t uBinding, uint32_t uSubIndex, const vk::ImageView& xView, vk::Sampler& xSampler, vk::ImageLayout eLayout);
 
-			vk::CommandBuffer BeginSingleUseCmdBuffer();
+			vk::CommandBuffer BeginSingleUseCmdBuffer(vk::CommandBufferLevel eLevel = vk::CommandBufferLevel::ePrimary);
 			void EndSingleUseCmdBuffer(vk::CommandBuffer xBuffer);
 
 			void ImageTransitionBarrier(vk::Image xImage, vk::ImageLayout eOldLayout, vk::ImageLayout eNewLayout, vk::ImageAspectFlags eAspect, vk::PipelineStageFlags eSrcStage, vk::PipelineStageFlags eDstStage, int uMipLevel = 0, int uLayer = 0);
