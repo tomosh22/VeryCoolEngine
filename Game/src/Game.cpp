@@ -20,9 +20,12 @@ namespace VeryCoolEngine {
 	};
 
 	Game::Game() {
-		//first one is block faces, second one is full screen pass, they are the exact same this is just for readability
-		_pMesh = Mesh::GenerateQuad(); 
-		m_pxQuadMesh = Mesh::GenerateQuad();
+		m_pxBlockFaceMesh = Mesh::GenerateQuad(); 
+		m_pxBlockFaceMesh->SetShader(Shader::Create("../Assets/Shaders/vulkan/blockVert.spv", "../Assets/Shaders/vulkan/blockFrag.spv"));
+		_meshes.push_back(m_pxBlockFaceMesh);
+
+		//#TODO let client set skybox texture
+		Application::GetInstance()->_pFullscreenShader = Shader::Create("../Assets/Shaders/vulkan/fullscreenVert.spv", "../Assets/Shaders/vulkan/fullscreenFrag.spv");
 
 		Chunk::seed = rand();
 		GenerateChunks();
@@ -30,13 +33,7 @@ namespace VeryCoolEngine {
 		UploadChunks();
 
 		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, 1280.f / 720.f);
-		_shaders.push_back(Shader::Create("../Assets/Shaders/vulkan/blockVert.spv", "../Assets/Shaders/vulkan/blockFrag.spv"));
-		_shaders.push_back(Shader::Create("../Assets/Shaders/vulkan/fullscreenVert.spv", "../Assets/Shaders/vulkan/fullscreenFrag.spv"));
 		_textures.push_back(Texture2D::Create("atlas.png", false));
-		std::vector<ManagedUniformBuffer**> ubos;
-		ubos.push_back(&_pCameraUBO);
-		std::vector<Texture2D**> textures;
-		textures.push_back(&_textures.back());
 		
 		_renderThreadCanStart = true;
 		return;
@@ -105,7 +102,7 @@ namespace VeryCoolEngine {
 
 		//std::cout << "unique quats " << Transform::uniqueQuats.size() << '\n';
 
-		_pMesh->m_axInstanceData.push_back(BufferElement(
+		m_pxBlockFaceMesh->m_axInstanceData.push_back(BufferElement(
 			ShaderDataType::Float4,
 			"_aInstanceQuat",
 			false,
@@ -116,7 +113,7 @@ namespace VeryCoolEngine {
 		));
 
 
-		_pMesh->m_axInstanceData.push_back(BufferElement(
+		m_pxBlockFaceMesh->m_axInstanceData.push_back(BufferElement(
 			ShaderDataType::Float3,
 			"_aInstancePosition",
 			false,
@@ -126,7 +123,7 @@ namespace VeryCoolEngine {
 			_instancePositions.size()
 		));
 
-		_pMesh->m_axInstanceData.push_back(BufferElement(
+		m_pxBlockFaceMesh->m_axInstanceData.push_back(BufferElement(
 			ShaderDataType::Int2,
 			"_aInstanceAtlasOffset",
 			false,
@@ -136,7 +133,7 @@ namespace VeryCoolEngine {
 			_instanceOffsets.size()
 		));
 
-		_pMesh->m_axInstanceData.push_back(BufferElement(
+		m_pxBlockFaceMesh->m_axInstanceData.push_back(BufferElement(
 			ShaderDataType::Int4,
 			"_ainstanceAOValues",
 			false,
@@ -193,7 +190,8 @@ namespace VeryCoolEngine {
 		if (Input::IsKeyPressed(VCE_KEY_R) && prevRState != rState) {
 			Chunk::seed = rand();
 			game->_chunks.clear();
-			game->_pMesh->m_axInstanceData.clear();
+			game->m_pxBlockFaceMesh->m_axInstanceData.clear();
+			game->m_pxBlockFaceMesh->m_uNumInstances = 0;
 			game->_instanceMats.clear();
 			game->_instanceQuats.clear();
 			game->_instancePositions.clear();
@@ -205,12 +203,12 @@ namespace VeryCoolEngine {
 			scene->_functionsToRun.push_back([]() {//TODO call this from vulkan, currently leaves a load of glitchy block faces at the origin
 				
 				Game* game = (Game*)Application::GetInstance();
-					game->_pMesh->GetVertexArray()->DisableVertexBuffer(game->_pMesh->GetVertexArray()->_VertexBuffers.back());
+					game->m_pxBlockFaceMesh->GetVertexArray()->DisableVertexBuffer(game->m_pxBlockFaceMesh->GetVertexArray()->_VertexBuffers.back());
 				
 					
 
-					VertexBuffer* instancedVertexBuffer = game->_pMesh->CreateInstancedVertexBuffer();
-					game->_pMesh->GetVertexArray()->AddVertexBuffer(instancedVertexBuffer, true);
+					VertexBuffer* instancedVertexBuffer = game->m_pxBlockFaceMesh->CreateInstancedVertexBuffer();
+					game->m_pxBlockFaceMesh->GetVertexArray()->AddVertexBuffer(instancedVertexBuffer, true);
 				
 				});
 

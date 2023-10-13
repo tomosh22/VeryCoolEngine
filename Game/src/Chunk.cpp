@@ -172,7 +172,7 @@ namespace VeryCoolEngine {
 			break;
 		}
 
-		game->_numInstances++;
+		game->m_pxBlockFaceMesh->m_uNumInstances++;
 	}
 
 	glm::ivec4 Chunk::GetAOValuesTop(const Block& block, int x, int y, int z) {

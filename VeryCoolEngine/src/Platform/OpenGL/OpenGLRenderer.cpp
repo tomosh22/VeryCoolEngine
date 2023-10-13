@@ -201,7 +201,8 @@ namespace VeryCoolEngine {
 			SubmitSkybox(scene->skyboxShader, scene->camera, scene->skybox);
 			glEnable(GL_DEPTH_TEST);
 
-			SubmitMeshInstanced(scene->_pInstancedMesh, scene->_numInstances);
+			//deleted after move to vulkan
+			//SubmitMeshInstanced(scene->_pInstancedMesh, scene->_numInstances);
 
 			unsigned int meshIndex = 0;
 			for (size_t i = 0; i < scene->meshes.size(); i++) {

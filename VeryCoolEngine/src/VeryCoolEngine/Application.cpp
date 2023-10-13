@@ -31,7 +31,7 @@ namespace VeryCoolEngine {
 #endif
 		
 
-
+		m_pxQuadMesh = Mesh::GenerateQuad();
 		
 		_renderThread = std::thread([&]() {
 			while (true) {
@@ -148,26 +148,13 @@ namespace VeryCoolEngine {
 			scene->skyboxShader = _pFullscreenShader;
 			scene->skybox = _pCubemap;
 
-			scene->_pInstancedMesh = _pMesh;
-			scene->_numInstances = _numInstances;
-
-#ifdef VCE_VULKAN
-			scene->meshes.push_back(_pMesh);
-#endif
 			for (Mesh* mesh : _meshes) { 
-				scene->meshes.push_back(mesh);
-			}
-			for (Mesh* mesh : _meshes) {
 				scene->meshes.push_back(mesh);
 			}
 
 			for (Renderer::Light& light : _lights) {
 				scene->lights[scene->numLights++] = light;
 			}
-			//scene->lights[scene->numLights++] = {
-			//	1,2,3,4,
-			//	1,0,1,1
-			//};
 
 			
 

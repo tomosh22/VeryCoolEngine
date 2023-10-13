@@ -36,10 +36,14 @@ void VulkanRenderer::InitVulkan() {
 
 	BoilerplateInit();
 	
-	app->_pMesh->PlatformInit();
+	for (Mesh* pMesh : app->_meshes) {
+		pMesh->PlatformInit();
+		pMesh->GetShader()->PlatformInit();
+	}
 	app->m_pxQuadMesh->PlatformInit();
 	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
 	for (Shader* pxShader : app->_shaders) pxShader->PlatformInit();
+	app->_pFullscreenShader->PlatformInit();
 	for (Texture2D* pxTex : app->_textures) pxTex->PlatformInit();
 
 
@@ -67,9 +71,9 @@ void VulkanRenderer::InitVulkan() {
 	
 	
 	app->m_pxGeometryPipeline = VulkanPipelineBuilder("Geometry Pipeline")
-		.WithVertexInputState(dynamic_cast<VulkanMesh*>(app->_pMesh)->m_xVertexInputState)
+		.WithVertexInputState(dynamic_cast<VulkanMesh*>(app->_meshes.back())->m_xVertexInputState)
 		.WithTopology(vk::PrimitiveTopology::eTriangleList)
-		.WithShader(*dynamic_cast<VulkanShader*>(app->_shaders.at(0)))
+		.WithShader(*dynamic_cast<VulkanShader*>(app->_meshes.back()->GetShader()))
 		.WithBlendState(vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha, false)
 		.WithDepthState(vk::CompareOp::eGreaterOrEqual, true, true, false)
 		.WithColourFormats({ vk::Format::eB8G8R8A8Srgb })
@@ -82,11 +86,9 @@ void VulkanRenderer::InitVulkan() {
 	app->m_pxSkyboxPipeline = VulkanPipelineBuilder("Skybox Pipeline")
 		.WithVertexInputState(dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh)->m_xVertexInputState)
 		.WithTopology(vk::PrimitiveTopology::eTriangleList)
-		.WithShader(*dynamic_cast<VulkanShader*>(app->_shaders.at(1)))
+		.WithShader(*dynamic_cast<VulkanShader*>(app->_pFullscreenShader))
 		.WithBlendState(vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha, false)
-		//.WithDepthState(vk::CompareOp::eGreaterOrEqual, true, true, false)
 		.WithColourFormats({ vk::Format::eB8G8R8A8Srgb })
-		//.WithDepthFormat(vk::Format::eD32Sfloat)
 		.WithDescriptorSetLayout(0, m_xCameraLayout)
 		//.WithDescriptorSetLayout(1, m_xTextureLayout)
 		.WithPass(dynamic_cast<VulkanRenderPass*>(app->m_pxRenderPass)->m_xRenderPass)
@@ -153,7 +155,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
 		pxVulkanMesh->BindToCmdBuffer(commandBuffer);
 
-		commandBuffer.drawIndexed(pxVulkanMesh->m_uNumIndices, app->_numInstances, 0, 0, 0);
+		commandBuffer.drawIndexed(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
 	}
 	
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);

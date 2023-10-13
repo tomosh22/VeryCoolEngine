@@ -39,6 +39,8 @@ project "VeryCoolEngine"
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl"
 	}
+	files{ "%{prj.name}/vendor/imgui/backends/imgui_impl_vulkan.cpp", "%{prj.name}/vendor/imgui/backends/imgui_impl_vulkan.h"}
+		flags{"NoPCH"}
 
 	includedirs{
 		"%{prj.name}/vendor/spdlog/include",
