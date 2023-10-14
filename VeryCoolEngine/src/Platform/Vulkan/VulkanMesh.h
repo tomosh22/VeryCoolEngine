@@ -1,7 +1,5 @@
 #pragma once
 #include "VeryCoolEngine/Renderer/Mesh.h"
-#include <vulkan/vulkan.h>
-#include <vulkan/vulkan.hpp>
 #include "Platform/Vulkan/VulkanVertexBuffer.h"
 #include "Platform/Vulkan/VulkanIndexBuffer.h"
 

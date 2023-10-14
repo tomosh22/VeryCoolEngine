@@ -1,7 +1,5 @@
 #pragma once
 #include "VeryCoolEngine/Renderer/Texture.h"
-#include <vulkan/vulkan.h>
-#include <vulkan/vulkan.hpp>
 
 namespace VeryCoolEngine {
 	class VulkanTexture2D : public Texture2D

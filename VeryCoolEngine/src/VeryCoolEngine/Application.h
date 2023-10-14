@@ -19,8 +19,6 @@
 #include "VeryCoolEngine/Renderer/PipelineSpecification.h"
 
 //#TODO DELETE!!!!!!
-#include <vulkan/vulkan.h>
-#include <vulkan/vulkan.hpp>
 
 namespace VeryCoolEngine {
 

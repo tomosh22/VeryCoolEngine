@@ -1,7 +1,5 @@
 #include "vcepch.h"
 #include "VulkanVertexBuffer.h"
-#include <vulkan/vulkan.h>
-#include <vulkan/vulkan.hpp>
 #include "VeryCoolEngine/Application.h"
 #include "Platform/Vulkan/VulkanRenderer.h"
 #include "Platform/Vulkan/VulkanBuffer.h"

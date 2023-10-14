@@ -6,8 +6,6 @@ Contact:richgdavison@gmail.com
 License: MIT (see LICENSE file at the top of the source tree)
 *//////////////////////////////////////////////////////////////////////////////
 #pragma once
-#include <vulkan/vulkan.h>
-#include <vulkan/vulkan.hpp>
 #include "VeryCoolEngine/Renderer/PipelineSpecification.h"
 
 namespace VeryCoolEngine {

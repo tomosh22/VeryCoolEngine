@@ -16,3 +16,6 @@
 #include <thread>
 
 #include "VeryCoolEngine/Log.h"
+
+#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>

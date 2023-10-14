@@ -1,7 +1,5 @@
 #pragma once
 #include "VeryCoolEngine/Renderer/RenderPass.h"
-#include <vulkan/vulkan.h>
-#include <vulkan/vulkan.hpp>
 #include "VulkanRenderer.h"
 
 namespace VeryCoolEngine {

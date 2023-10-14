@@ -11,8 +11,6 @@ License: MIT (see LICENSE file at the top of the source tree)
 #include "VulkanShader.h"
 #include "VulkanRenderPass.h"
 
-#include <vulkan/vulkan.h>
-#include <vulkan/vulkan.hpp>
 
 
 

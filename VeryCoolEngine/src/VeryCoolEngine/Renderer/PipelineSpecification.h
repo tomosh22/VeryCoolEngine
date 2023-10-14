@@ -4,8 +4,6 @@
 #include <string>
 
 //#TODO DELETE!!!!!!
-#include <vulkan/vulkan.h>
-#include <vulkan/vulkan.hpp>
 
 namespace VeryCoolEngine {
 
