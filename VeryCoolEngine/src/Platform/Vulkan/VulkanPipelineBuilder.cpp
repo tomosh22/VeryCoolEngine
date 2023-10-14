@@ -9,6 +9,7 @@ License: MIT (see LICENSE file at the top of the source tree)
 #include "VulkanPipelineBuilder.h"
 #include "VulkanMesh.h"
 #include "VulkanShader.h"
+#include "VulkanRenderPass.h"
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan.hpp>
@@ -206,5 +207,34 @@ namespace VeryCoolEngine {
 
 		return output;
 		
+	}
+	VulkanPipeline* VulkanPipelineBuilder::FromSpecification(const PipelineSpecification& spec)
+	{
+		//#TODO utility function
+		vk::PrimitiveTopology eTopology;
+		switch (spec.m_pxExampleMesh->m_eTopolgy) {
+		case(MeshTopolgy::Triangles):
+			eTopology = vk::PrimitiveTopology::eTriangleList;
+			break;
+		default:
+			VCE_ASSERT(false, "Invalid topolgy");
+			break;
+		
+		}
+		VulkanPipelineBuilder xBuilder = VulkanPipelineBuilder("Geometry Pipeline");
+		xBuilder = xBuilder.WithVertexInputState(dynamic_cast<VulkanMesh*>(spec.m_pxExampleMesh)->m_xVertexInputState);
+		xBuilder = xBuilder.WithTopology(eTopology);
+		xBuilder = xBuilder.WithShader(*dynamic_cast<VulkanShader*>(dynamic_cast<VulkanMesh*>(spec.m_pxExampleMesh)->GetShader()));
+		xBuilder = xBuilder.WithBlendState(vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha, false);
+		xBuilder = xBuilder.WithDepthState(vk::CompareOp::eGreaterOrEqual, true, true, false);
+		xBuilder = xBuilder.WithColourFormats({ vk::Format::eB8G8R8A8Srgb });
+		xBuilder = xBuilder.WithDepthFormat(vk::Format::eD32Sfloat);
+			xBuilder = xBuilder.WithPass(dynamic_cast<VulkanRenderPass*>(*spec.m_pxRenderPass)->m_xRenderPass);
+
+		for (uint32_t i = 0; i < spec.m_aDescSetLayouts.size(); i++) {
+			xBuilder = xBuilder.WithDescriptorSetLayout(i, *spec.m_aDescSetLayouts.at(i));
+		}
+
+		return xBuilder.Build();
 	}
 }

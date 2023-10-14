@@ -6,7 +6,7 @@
 namespace VeryCoolEngine {
 	enum class MeshTopolgy {
 		Triangles,
-		TriangleStrips
+		TriangleStrips,
 	};
 	struct InstanceData {
 	public:
@@ -55,6 +55,8 @@ namespace VeryCoolEngine {
 		uint32_t m_uNumIndices;
 
 		BufferLayout* m_pxBufferLayout;
+
+		MeshTopolgy m_eTopolgy = MeshTopolgy::Triangles;
 
 	protected:
 		VertexArray* m_pxVertexArray;

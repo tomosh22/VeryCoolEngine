@@ -46,16 +46,15 @@ void VulkanRenderer::InitVulkan() {
 	app->_pFullscreenShader->PlatformInit();
 	for (Texture2D* pxTex : app->_textures) pxTex->PlatformInit();
 
-
-	m_xCameraLayout = VulkanDescriptorSetLayoutBuilder("Camera UBO")
+	app->m_xCameraLayout = VulkanDescriptorSetLayoutBuilder("Camera UBO")
 		.WithUniformBuffers(1, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment)
 		.Build(m_device);
-	m_xCameraDescriptor = CreateDescriptorSet(m_xCameraLayout, m_descriptorPool);
+	m_xCameraDescriptor = CreateDescriptorSet(app->m_xCameraLayout, m_descriptorPool);
 
-	m_xTextureLayout = VulkanDescriptorSetLayoutBuilder("Object Textures")
+	app->m_xTextureLayout = VulkanDescriptorSetLayoutBuilder("Object Textures")
 		.WithSamplers(1, vk::ShaderStageFlagBits::eFragment)
 		.Build(m_device);
-	m_xTextureDescriptor = CreateDescriptorSet(m_xTextureLayout, m_descriptorPool);
+	m_xTextureDescriptor = CreateDescriptorSet(app->m_xTextureLayout, m_descriptorPool);
 
 	/*m_xSkyboxTextureLayout = VulkanDescriptorSetLayoutBuilder("Skybox Texture")
 		.WithSamplers(1, vk::ShaderStageFlagBits::eFragment)
@@ -70,7 +69,7 @@ void VulkanRenderer::InitVulkan() {
 	}
 	
 	
-	app->m_pxGeometryPipeline = VulkanPipelineBuilder("Geometry Pipeline")
+	/*app->m_pxGeometryPipeline = VulkanPipelineBuilder("Geometry Pipeline")
 		.WithVertexInputState(dynamic_cast<VulkanMesh*>(app->_meshes.back())->m_xVertexInputState)
 		.WithTopology(vk::PrimitiveTopology::eTriangleList)
 		.WithShader(*dynamic_cast<VulkanShader*>(app->_meshes.back()->GetShader()))
@@ -78,10 +77,12 @@ void VulkanRenderer::InitVulkan() {
 		.WithDepthState(vk::CompareOp::eGreaterOrEqual, true, true, false)
 		.WithColourFormats({ vk::Format::eB8G8R8A8Srgb })
 		.WithDepthFormat(vk::Format::eD32Sfloat)
-		.WithDescriptorSetLayout(0, m_xCameraLayout)
-		.WithDescriptorSetLayout(1, m_xTextureLayout)
+		.WithDescriptorSetLayout(0, app->m_xCameraLayout)
+		.WithDescriptorSetLayout(1, app->m_xTextureLayout)
 		.WithPass(dynamic_cast<VulkanRenderPass*>(app->m_pxRenderPass)->m_xRenderPass)
-		.Build();
+		.Build();*/
+
+	app->m_pxGeometryPipeline = VulkanPipelineBuilder::FromSpecification(app->m_axPipelineSpecs.at(0));
 
 	app->m_pxSkyboxPipeline = VulkanPipelineBuilder("Skybox Pipeline")
 		.WithVertexInputState(dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh)->m_xVertexInputState)
@@ -89,7 +90,7 @@ void VulkanRenderer::InitVulkan() {
 		.WithShader(*dynamic_cast<VulkanShader*>(app->_pFullscreenShader))
 		.WithBlendState(vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha, false)
 		.WithColourFormats({ vk::Format::eB8G8R8A8Srgb })
-		.WithDescriptorSetLayout(0, m_xCameraLayout)
+		.WithDescriptorSetLayout(0, app->m_xCameraLayout)
 		//.WithDescriptorSetLayout(1, m_xTextureLayout)
 		.WithPass(dynamic_cast<VulkanRenderPass*>(app->m_pxRenderPass)->m_xRenderPass)
 		.Build();

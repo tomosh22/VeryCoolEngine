@@ -8,6 +8,7 @@ License: MIT (see LICENSE file at the top of the source tree)
 #pragma once
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan.hpp>
+#include "VeryCoolEngine/Renderer/PipelineSpecification.h"
 
 namespace VeryCoolEngine {
 	class VulkanShader;
@@ -52,6 +53,8 @@ namespace VeryCoolEngine {
 		//VulkanPipelineBuilder& WithDescriptorBuffers();
 
 		VulkanPipeline*	Build(vk::PipelineCache cache = {});
+
+		static VulkanPipeline* FromSpecification(const PipelineSpecification& spec);
 
 	protected:
 		vk::GraphicsPipelineCreateInfo				pipelineCreate;

@@ -240,9 +240,9 @@ namespace VeryCoolEngine {
 
 			vk::DescriptorPool m_descriptorPool;
 
-			vk::DescriptorSetLayout m_xCameraLayout;
+			/*vk::DescriptorSetLayout m_xCameraLayout;
 			vk::DescriptorSetLayout m_xTextureLayout;
-			vk::DescriptorSetLayout m_xSkyboxTextureLayout;
+			vk::DescriptorSetLayout m_xSkyboxTextureLayout;*/
 			vk::DescriptorSet m_xCameraDescriptor;
 			vk::DescriptorSet m_xTextureDescriptor;
 			vk::DescriptorSet m_xSkyboxTextureDescriptor;

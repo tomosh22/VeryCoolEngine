@@ -16,8 +16,11 @@
 #include "VeryCoolEngine/Renderer/Camera.h"
 #include "VeryCoolEngine/Renderer/Mesh.h"
 #include "VeryCoolEngine/Renderer/Pipeline.h"
+#include "VeryCoolEngine/Renderer/PipelineSpecification.h"
 
-
+//#TODO DELETE!!!!!!
+#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 
 namespace VeryCoolEngine {
 
@@ -83,6 +86,12 @@ namespace VeryCoolEngine {
 		class VulkanPipeline* m_pxGeometryPipeline;
 		class VulkanPipeline* m_pxSkyboxPipeline;
 		RenderPass* m_pxRenderPass;
+
+		vk::DescriptorSetLayout m_xCameraLayout;
+		vk::DescriptorSetLayout m_xTextureLayout;
+		vk::DescriptorSetLayout m_xSkyboxTextureLayout;
+
+		std::vector<PipelineSpecification> m_axPipelineSpecs;
 
 		ManagedUniformBuffer* _pLightUBO = nullptr;
 		ManagedUniformBuffer* _pCameraUBO = nullptr;
