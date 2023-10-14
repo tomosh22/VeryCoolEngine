@@ -147,19 +147,26 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 	commandBuffer.drawIndexed(pxSkyboxMesh->m_uNumIndices, 1, 0, 0, 0);
 
-	VulkanPipeline* pxGeometryPipeline = dynamic_cast<VulkanPipeline*>(app->m_xPipelines.at("Blocks"));
+	for (auto& [name, pipeline] : app->m_xPipelines) {
 
-	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxGeometryPipeline->m_xPipeline);
+		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline->m_xPipeline);
 
-	pxGeometryPipeline->BindDescriptorSets(commandBuffer, { m_xCameraDescriptor, m_xTextureDescriptor }, vk::PipelineBindPoint::eGraphics, 0);
+		pipeline->BindDescriptorSets(commandBuffer, { m_xCameraDescriptor, m_xTextureDescriptor }, vk::PipelineBindPoint::eGraphics, 0);
 
+		for (Mesh* mesh : app->m_axPipelineMeshes.at(name)) {
+			VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
+			pxVulkanMesh->BindToCmdBuffer(commandBuffer);
 
-	for (Mesh* mesh : scene->meshes) {
-		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
-		pxVulkanMesh->BindToCmdBuffer(commandBuffer);
-
-		commandBuffer.drawIndexed(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
+			commandBuffer.drawIndexed(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
+		}
 	}
+
+
+
+	
+
+
+	
 	
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 	commandBuffer.endRenderPass();
