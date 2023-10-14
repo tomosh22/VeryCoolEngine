@@ -82,7 +82,9 @@ void VulkanRenderer::InitVulkan() {
 		.WithPass(dynamic_cast<VulkanRenderPass*>(app->m_pxRenderPass)->m_xRenderPass)
 		.Build();*/
 
-	app->m_pxGeometryPipeline = VulkanPipelineBuilder::FromSpecification(app->m_axPipelineSpecs.at(0));
+	//app->m_pxGeometryPipeline = VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Blocks"));
+
+	app->m_xPipelines.insert({ "Blocks", VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Blocks")) });
 
 	app->m_pxSkyboxPipeline = VulkanPipelineBuilder("Skybox Pipeline")
 		.WithVertexInputState(dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh)->m_xVertexInputState)
@@ -145,7 +147,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 	commandBuffer.drawIndexed(pxSkyboxMesh->m_uNumIndices, 1, 0, 0, 0);
 
-	VulkanPipeline* pxGeometryPipeline = dynamic_cast<VulkanPipeline*>(app->m_pxGeometryPipeline);
+	VulkanPipeline* pxGeometryPipeline = dynamic_cast<VulkanPipeline*>(app->m_xPipelines.at("Blocks"));
 
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxGeometryPipeline->m_xPipeline);
 

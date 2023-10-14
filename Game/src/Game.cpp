@@ -24,17 +24,26 @@ namespace VeryCoolEngine {
 		m_pxBlockFaceMesh->SetShader(Shader::Create("../Assets/Shaders/vulkan/blockVert.spv", "../Assets/Shaders/vulkan/blockFrag.spv"));
 		_meshes.push_back(m_pxBlockFaceMesh);
 
-		m_axPipelineSpecs.emplace_back(PipelineSpecification(
-			"Blocks",
-			m_pxBlockFaceMesh,
-			BlendFactor::SrcAlpha,
-			BlendFactor::OneMinusSrcAlpha,
-			DepthCompareFunc::GreaterOrEqual,
-			ColourFormat::BGRA8_sRGB,
-			DepthFormat::D32_SFloat,
-			{ &m_xCameraLayout, &m_xTextureLayout },
-			&m_pxRenderPass
-		));
+
+		m_xPipelineSpecs.insert(
+			{ "Blocks",
+					PipelineSpecification(
+					"Blocks",
+					m_pxBlockFaceMesh,
+					BlendFactor::SrcAlpha,
+					BlendFactor::OneMinusSrcAlpha,
+					DepthCompareFunc::GreaterOrEqual,
+					ColourFormat::BGRA8_sRGB,
+					DepthFormat::D32_SFloat,
+					{ &m_xCameraLayout, &m_xTextureLayout },
+					&m_pxRenderPass
+					)
+			});
+
+		m_axPipelineMeshes.insert({ "Blocks", std::vector<Mesh*>()});
+
+		m_axPipelineMeshes.at("Blocks").push_back(m_pxBlockFaceMesh);
+
 
 		//#TODO let client set skybox texture
 		Application::GetInstance()->_pFullscreenShader = Shader::Create("../Assets/Shaders/vulkan/fullscreenVert.spv", "../Assets/Shaders/vulkan/fullscreenFrag.spv");
