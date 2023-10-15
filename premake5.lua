@@ -56,7 +56,6 @@ project "VeryCoolEngine"
 	}
 	links{
 		"GLFW",
-		"Glad",
 		"opengl32.lib",
 		"ImGui",
 		"vulkan-1.lib"
