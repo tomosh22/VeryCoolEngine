@@ -15,7 +15,8 @@
 #include "VeryCoolEngine/Renderer/RenderCommand.h"
 #include "VeryCoolEngine/Renderer/Camera.h"
 #include "VeryCoolEngine/Renderer/Mesh.h"
-
+#include "VeryCoolEngine/Renderer/Pipeline.h"
+#include "VeryCoolEngine/Renderer/PipelineSpecification.h"
 
 
 namespace VeryCoolEngine {
@@ -32,11 +33,6 @@ namespace VeryCoolEngine {
 
 		std::vector<Mesh*> meshes{};
 
-		Mesh* _pInstancedMesh;
-		unsigned int _numInstances = 0;
-
-		std::vector<Mesh*> instanceMeshes{};
-		std::vector<glm::vec2> instanceData{};
 
 		std::vector<Renderer::Light> lights{};
 		unsigned int numLights = 0;
@@ -47,13 +43,9 @@ namespace VeryCoolEngine {
 			ready = false;
 			meshes.clear();
 			meshes = std::vector<Mesh*>();
-			instanceMeshes.clear();
-			instanceMeshes = std::vector<Mesh*>();
 			lights.clear();
 			lights.resize(Renderer::_sMAXLIGHTS);
 			numLights = 0;
-			_numInstances = 0;
-			_pInstancedMesh = nullptr;
 
 		};
 
@@ -86,18 +78,31 @@ namespace VeryCoolEngine {
 		std::mutex sceneMutex;
 		Scene* scene;
 
+		//TODO delete these
 		Renderer* _pRenderer;
+		class VulkanPipeline* m_pxSkyboxPipeline;
+		RenderPass* m_pxRenderPass;
+
+		vk::DescriptorSetLayout m_xCameraLayout;
+		vk::DescriptorSetLayout m_xTextureLayout;
+		vk::DescriptorSetLayout m_xSkyboxTextureLayout;
+
+
+		std::vector<class VulkanPipeline*> m_xPipelines;
+		std::unordered_map<std::string, PipelineSpecification> m_xPipelineSpecs;
+		std::unordered_map<std::string, std::vector<Mesh*>> m_axPipelineMeshes;
+
+		ManagedUniformBuffer* _pLightUBO = nullptr;
+		ManagedUniformBuffer* _pCameraUBO = nullptr;
+
 		Camera _Camera;
 
-		Shader* _pFullscreenShader;
 
-		Mesh* _pMesh;
-		unsigned int _numInstances = 0;
 
 		std::vector<Mesh*> _meshes;
 		std::vector<Mesh*> _instanceMeshes;
 		std::vector<Shader*> _shaders;
-		std::vector<Texture2D*> _textures;
+		std::vector<Texture*> _textures;
 
 		Mesh* _pHeightmap;
 		std::vector<Renderer::Light> _lights{};

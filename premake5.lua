@@ -11,7 +11,6 @@ workspace "VeryCoolEngine"
 outputDir = "%{cfg.buildcfg}-%{cfg.cystem}-%{cfg.architecture}"
 
 include "VeryCoolEngine/vendor/GLFW"
-include "VeryCoolEngine/vendor/Glad"
 include "VeryCoolEngine/vendor/imgui"
 
 project "VeryCoolEngine"
@@ -30,7 +29,7 @@ project "VeryCoolEngine"
 	assetPath = "/Assets/"
 	defines{
 		"ASSETROOTLOCATION=" .. '\"' .. _WORKING_DIR .. assetPath .. '\"',
-		"VCE_OPENGL"
+		"VCE_VULKAN"
 	}
 
 	files{
@@ -39,6 +38,8 @@ project "VeryCoolEngine"
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl"
 	}
+	files{ "%{prj.name}/vendor/imgui/backends/imgui_impl_vulkan.cpp", "%{prj.name}/vendor/imgui/backends/imgui_impl_vulkan.h"}
+		flags{"NoPCH"}
 
 	includedirs{
 		"%{prj.name}/vendor/spdlog/include",
@@ -47,14 +48,17 @@ project "VeryCoolEngine"
 		"%{prj.name}/vendor/imgui",
 		"%{prj.name}/vendor/glm",
 		"%{prj.name}/vendor/stb",
-		"%{prj.name}/src"
+		"%{prj.name}/src",
+		"$(VULKAN_SDK)/include",
 	}
-
+	libdirs {
+		"$(VULKAN_SDK)/lib"
+	}
 	links{
 		"GLFW",
-		"Glad",
 		"opengl32.lib",
-		"ImGui"
+		"ImGui",
+		"vulkan-1.lib"
 	}
 
 	filter "system:windows"
@@ -108,6 +112,7 @@ project "Game"
 		"VeryCoolEngine/vendor/Glad/include",
 		"%{prj.name}/vendor/stb",
 		"Game/vendor/PerlinNoise",
+		"$(VULKAN_SDK)/include",
 
 	}
 

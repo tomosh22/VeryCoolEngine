@@ -1,6 +1,5 @@
 #include "vcepch.h"
 #include "VertexArray.h"
-#include "Platform/OpenGL/OpenGLVertexArray.h"
 
 namespace VeryCoolEngine {
 	
@@ -8,5 +7,7 @@ namespace VeryCoolEngine {
 #ifdef VCE_OPENGL
 		return new OpenGLVertexArray();
 #endif
+		VCE_INFO("implement me");
+		return nullptr;
 	}
 }

@@ -1,6 +1,6 @@
 #include "vcepch.h"
 #include "Renderer.h"
-#include "Platform/OpenGL/OpenGLRenderer.h"
+#include "Platform/Vulkan/VulkanRenderer.h"
 #include "RenderCommand.h"
 #include "VeryCoolEngine/Application.h"
 #include "VeryCoolEngine/ImGui/ImGuiLayer.h"
@@ -23,13 +23,14 @@ namespace VeryCoolEngine {
 		mesh->GetShader()->Bind();
 
 		//#todo move these 2 somewhere else
-		mesh->transform.UpdateMatrix();
-		mesh->transform.UpdateRotation();
+		mesh->m_xTransform.UpdateMatrix();
+		mesh->m_xTransform.UpdateRotation();
 
-		mesh->GetShader()->UploadMatrix4Uniform(mesh->transform._matrix,"_uModelMat");
+		mesh->GetShader()->UploadMatrix4Uniform(mesh->m_xTransform._matrix,"_uModelMat");
 		_spRenderer->BindViewProjMat(mesh->GetShader());
 
-		mesh->GetShader()->UploadIVec2Uniform(mesh->customUniform, "_uAtlasOffset");
+		//deleted after move to vulkan
+		//mesh->GetShader()->UploadIVec2Uniform(mesh->customUniform, "_uAtlasOffset");
 
 		
 
@@ -81,13 +82,15 @@ namespace VeryCoolEngine {
 	Renderer* Renderer::Create() {
 #ifdef VCE_OPENGL
 		return new OpenGLRenderer();
+#elif defined VCE_VULKAN
+	return new VulkanRenderer();
 #endif
 
 	}
 	void Renderer::GenericInit()
 	{
 		Application* app = Application::GetInstance();
-
+#ifndef VCE_VULKAN
 		app->_pImGuiLayer = new ImGuiLayer();
 		app->PushOverlay(app->_pImGuiLayer);
 
@@ -108,8 +111,8 @@ namespace VeryCoolEngine {
 		app->_pDebugTexture = Texture2D::Create(app->_window->GetWidth(), app->_window->GetHeight());
 
 		app->_pCubemap->PlatformInit();
-
-		_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), 1,0);//#todo frames in flight
-		_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS,1,1);//#todo frames in flight
+#endif
+		app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT,0);//#todo frames in flight
+		app->_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS,MAX_FRAMES_IN_FLIGHT,1);//#todo frames in flight
 	}
 }

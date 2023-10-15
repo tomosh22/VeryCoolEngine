@@ -5,13 +5,12 @@
 #include "Input.h"
 #include <glm/glm.hpp>
 #include <glm/mat4x4.hpp>
-#include "Platform/OpenGL/OpenGLShader.h"
 
 
 
 namespace VeryCoolEngine {
 
-	Renderer* Renderer::_spRenderer = Renderer::Create();
+	Renderer* Renderer::_spRenderer = nullptr;
 	Renderer* RenderCommand::_spRenderer = Renderer::_spRenderer;
 
 	Application* Application::_spInstance = nullptr;
@@ -21,20 +20,34 @@ namespace VeryCoolEngine {
 	Application::Application() {
 		srand(time(0));
 		_spInstance = this;
+#ifdef VCE_OPENGL
 		_window = Window::Create();
 		std::function callback = [this](Event&& e) {OnEvent(e); };
 		_window->SetEventCallback(callback);
 		_window->SetVSync(true);
-		
+
 		//_window->SetVSync(true);
-		_pRenderer = Renderer::Create();
+#endif
+		
+
+		
 		
 		_renderThread = std::thread([&]() {
 			while (true) {
 				printf("implement mutex\n");
 				if (_renderThreadCanStart)break;//#todo implement mutex here
 			}
+#ifdef VCE_OPENGL
 			_pRenderer->InitWindow();
+#endif
+#ifdef VCE_VULKAN
+			_window = Window::Create();
+			std::function callback = [this](Event&& e) {OnEvent(e); };
+			_window->SetEventCallback(callback);
+			_window->SetVSync(true);
+			_pRenderer = Renderer::Create();
+			Renderer::_spRenderer = _pRenderer;
+#endif
 			_pRenderer->RenderThreadFunction();
 		});
 
@@ -63,6 +76,12 @@ namespace VeryCoolEngine {
 		if (e.GetType() == EventType::KeyPressed && dynamic_cast<KeyPressedEvent&>(e).GetKeyCode() == VCE_KEY_ESCAPE) _running = false;
 		if (e.GetType() == EventType::KeyPressed && dynamic_cast<KeyPressedEvent&>(e).GetKeyCode() == VCE_KEY_Q) _mouseEnabled = !_mouseEnabled;
 
+		if (e.GetType() == EventType::WindowResize) {
+			WindowResizeEvent& xWindowResizeEvent = (WindowResizeEvent&)e;
+			_window->SetWidth(xWindowResizeEvent.GetWidth());
+			_window->SetHeight(xWindowResizeEvent.GetHeight());
+			_pRenderer->m_bShouldResize = true;
+		}
 		
 		EventDispatcher dispatcher(e);
 		if (e.GetType() == EventType::WindowClose) {
@@ -106,13 +125,11 @@ namespace VeryCoolEngine {
 
 	void Application::Run() {
 		while (true) { 
-			printf("Waiting on render thread init\n");
+			Sleep(1);
+			//printf("Waiting on render thread init\n");
 			if (renderInitialised)break;//#todo implement mutex here
 		}
 		while (_running) {
-
-			
-
 			std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 			mainThreadReady = true;
 			std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
@@ -127,28 +144,15 @@ namespace VeryCoolEngine {
 			scene->Reset();
 			
 			scene->camera = &_Camera;
-			scene->skyboxShader = _pFullscreenShader;
 			scene->skybox = _pCubemap;
 
-			scene->_pInstancedMesh = _pMesh;
-			scene->_numInstances = _numInstances;
-
-
-			//scene->meshes.push_back(_pMesh);
 			for (Mesh* mesh : _meshes) { 
-				scene->meshes.push_back(mesh);
-			}
-			for (Mesh* mesh : _meshes) {
 				scene->meshes.push_back(mesh);
 			}
 
 			for (Renderer::Light& light : _lights) {
 				scene->lights[scene->numLights++] = light;
 			}
-			//scene->lights[scene->numLights++] = {
-			//	1,2,3,4,
-			//	1,0,1,1
-			//};
 
 			
 

@@ -2,6 +2,7 @@
 #include <imgui.h>
 
 
+
 #include "VeryCoolEngine.h"
 
 namespace VeryCoolEngine {
@@ -19,60 +20,87 @@ namespace VeryCoolEngine {
 	};
 
 	Game::Game() {
-		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, 1280.f / 720.f);
-#pragma region old
-		//_pMesh = Mesh::GenerateGenericHeightmap(2,2);
-		//_pMesh = Mesh::GenerateCubeFace();
-		//_pMesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
-		//_pMesh->SetTexture(Texture2D::Create("atlas.png", false));
-		//_pMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
 
-		//_pMesh->SetShader(Shader::Create("basic.vert", "basic.frag"));
-#pragma endregion
-		//#todo these should probably be in string maps?
-		//or do i store them individually?
-		_shaders.push_back(Shader::Create("block.vert", "block.frag"));
+
+
 		_textures.push_back(Texture2D::Create("atlas.png", false));
 
-		_pMesh = Mesh::GenerateCubeFace();
-		_pMesh->SetShader(_shaders[0]);
-		_pMesh->SetTexture(_textures[0]);
+		m_pxBlockFaceMesh = Mesh::GenerateQuad(); 
+		m_pxBlockFaceMesh->SetShader(Shader::Create("../Assets/Shaders/vulkan/blockVert.spv", "../Assets/Shaders/vulkan/blockFrag.spv"));
+		_meshes.push_back(m_pxBlockFaceMesh);
+
+		DescriptorSpecification xCamSpec;
+		xCamSpec.m_aeUniformBufferStages.push_back({&_pCameraUBO, ShaderStageVertexAndFragment });
+
+		DescriptorSpecification xTexSpec;
+		xTexSpec.m_aeSamplerStages.push_back({&_textures.back(), ShaderStageFragment});
+
+		m_pxQuadMesh = Mesh::GenerateQuad();
+		m_pxQuadMesh->SetShader(Shader::Create("../Assets/Shaders/vulkan/fullscreenVert.spv", "../Assets/Shaders/vulkan/fullscreenFrag.spv"));
+		_meshes.push_back(m_pxQuadMesh);
+
+		m_xPipelineSpecs.insert(
+			{ "Skybox",
+					PipelineSpecification(
+					"Skybox",
+					m_pxQuadMesh,
+					BlendFactor::SrcAlpha,
+					BlendFactor::OneMinusSrcAlpha,
+					false,
+					false,
+					DepthCompareFunc::GreaterOrEqual,
+					ColourFormat::BGRA8_sRGB,
+					DepthFormat::D32_SFloat,
+					{xCamSpec},
+					&m_pxRenderPass
+					)
+			});
+
+		m_axPipelineMeshes.insert({ "Skybox", std::vector<Mesh*>() });
+
+		m_axPipelineMeshes.at("Skybox").push_back(m_pxQuadMesh);
+
+		m_xPipelineSpecs.insert(
+			{ "Blocks",
+					PipelineSpecification(
+					"Blocks",
+					m_pxBlockFaceMesh,
+					BlendFactor::SrcAlpha,
+					BlendFactor::OneMinusSrcAlpha,
+					true,
+					true,
+					DepthCompareFunc::GreaterOrEqual,
+					ColourFormat::BGRA8_sRGB,
+					DepthFormat::D32_SFloat,
+					{ xCamSpec, xTexSpec },
+					&m_pxRenderPass
+					)
+			});
+
+		m_axPipelineMeshes.insert({ "Blocks", std::vector<Mesh*>()});
+
+		m_axPipelineMeshes.at("Blocks").push_back(m_pxBlockFaceMesh);
+
+
+		
+
+
+		//#TODO let client set skybox texture
 
 		Chunk::seed = rand();
 		GenerateChunks();
-		
+
 		UploadChunks();
 
-
-		_pFullscreenShader = Shader::Create("fullscreen.vert", "fullscreen.frag");
-
-		_pCubemap = TextureCube::Create("CubemapTest", false);
-
-		_lights.push_back({
-				500,75,100,100,
-				0,1,0,1
-			});
-		_lights.push_back({
-				100,75,100,100,
-				0,1,0,1
-			});
-		_lights.push_back({
-			250, 100, 250, 1000,
-				0.8, 0.8, 0.8, 1
-			});
-		_lights.push_back({
-			0, 5, 0, 1000,
-				0.8, 0.8, 0.8, 1
-			});
-
+		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, 1280.f / 720.f);
 		
-
+		
 		_renderThreadCanStart = true;
+		return;
 	}
 
 	void Game::GenerateChunks() {
 		std::thread threads[s_xNumChunks.x * s_xNumChunks.z];
-
 
 
 		for (int x = 0; x < s_xNumChunks.x; x++) {
@@ -134,7 +162,7 @@ namespace VeryCoolEngine {
 
 		//std::cout << "unique quats " << Transform::uniqueQuats.size() << '\n';
 
-		_pMesh->_instanceData.push_back(BufferElement(
+		m_pxBlockFaceMesh->m_axInstanceData.push_back(BufferElement(
 			ShaderDataType::Float4,
 			"_aInstanceQuat",
 			false,
@@ -145,7 +173,7 @@ namespace VeryCoolEngine {
 		));
 
 
-		_pMesh->_instanceData.push_back(BufferElement(
+		m_pxBlockFaceMesh->m_axInstanceData.push_back(BufferElement(
 			ShaderDataType::Float3,
 			"_aInstancePosition",
 			false,
@@ -155,7 +183,7 @@ namespace VeryCoolEngine {
 			_instancePositions.size()
 		));
 
-		_pMesh->_instanceData.push_back(BufferElement(
+		m_pxBlockFaceMesh->m_axInstanceData.push_back(BufferElement(
 			ShaderDataType::Int2,
 			"_aInstanceAtlasOffset",
 			false,
@@ -165,7 +193,7 @@ namespace VeryCoolEngine {
 			_instanceOffsets.size()
 		));
 
-		_pMesh->_instanceData.push_back(BufferElement(
+		m_pxBlockFaceMesh->m_axInstanceData.push_back(BufferElement(
 			ShaderDataType::Int4,
 			"_ainstanceAOValues",
 			false,
@@ -222,7 +250,8 @@ namespace VeryCoolEngine {
 		if (Input::IsKeyPressed(VCE_KEY_R) && prevRState != rState) {
 			Chunk::seed = rand();
 			game->_chunks.clear();
-			game->_pMesh->_instanceData.clear();
+			game->m_pxBlockFaceMesh->m_axInstanceData.clear();
+			game->m_pxBlockFaceMesh->m_uNumInstances = 0;
 			game->_instanceMats.clear();
 			game->_instanceQuats.clear();
 			game->_instancePositions.clear();
@@ -231,15 +260,15 @@ namespace VeryCoolEngine {
 			game->GenerateChunks();
 			
 			game->UploadChunks();
-			scene->_functionsToRun.push_back([]() {
+			scene->_functionsToRun.push_back([]() {//TODO call this from vulkan, currently leaves a load of glitchy block faces at the origin
 				
 				Game* game = (Game*)Application::GetInstance();
-					game->_pMesh->GetVertexArray()->DisableVertexBuffer(game->_pMesh->GetVertexArray()->_VertexBuffers.back());
+					game->m_pxBlockFaceMesh->GetVertexArray()->DisableVertexBuffer(game->m_pxBlockFaceMesh->GetVertexArray()->_VertexBuffers.back());
 				
 					
 
-					VertexBuffer* instancedVertexBuffer = game->_pMesh->CreateInstancedVertexBuffer();
-					game->_pMesh->GetVertexArray()->AddVertexBuffer(instancedVertexBuffer, true);
+					VertexBuffer* instancedVertexBuffer = game->m_pxBlockFaceMesh->CreateInstancedVertexBuffer();
+					game->m_pxBlockFaceMesh->GetVertexArray()->AddVertexBuffer(instancedVertexBuffer, true);
 				
 				});
 

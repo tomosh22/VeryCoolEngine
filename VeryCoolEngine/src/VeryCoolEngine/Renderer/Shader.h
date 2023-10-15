@@ -33,6 +33,8 @@ namespace VeryCoolEngine {
 		Shader(const std::string& vertex, const std::string& fragment, const std::string& geometry = "", const std::string& domain = "", const std::string& hull = "");
 		virtual ~Shader();
 
+		virtual void PlatformInit() = 0;
+
 		virtual void ReloadShader() = 0;
 
 		virtual void Bind() = 0;

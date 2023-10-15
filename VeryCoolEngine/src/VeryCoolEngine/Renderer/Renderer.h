@@ -28,9 +28,13 @@ namespace VeryCoolEngine {
 			float a;
 		};
 
+		virtual void MainLoop() = 0;
+
 		virtual void InitWindow() = 0;
 		virtual void PlatformInit()=0;
 		void GenericInit();
+
+		virtual void OnResize(uint32_t uWidth, uint32_t uHeight) = 0;
 
 
 		virtual void SetClearColor(const glm::vec4 color) = 0;
@@ -57,8 +61,9 @@ namespace VeryCoolEngine {
 
 		static Renderer* _spRenderer;
 		static GraphicsContext* _spContext;
-		ManagedUniformBuffer* _pLightUBO = nullptr;
-		ManagedUniformBuffer* _pCameraUBO = nullptr;
+		
+
+		bool m_bShouldResize = false;
 	private:
 	};
 

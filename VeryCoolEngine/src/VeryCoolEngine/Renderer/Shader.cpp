@@ -10,7 +10,7 @@ Credit Rich Davison
 */
 #include "vcepch.h"
 #include "Shader.h"
-#include "Platform/OpenGL/OpenGLShader.h"
+#include "Platform/Vulkan/VulkanShader.h"
 
 namespace VeryCoolEngine {
 	Shader::Shader(const std::string& vertex, const std::string& fragment, const std::string& geometry, const std::string& domain, const std::string& hull)
@@ -29,6 +29,9 @@ namespace VeryCoolEngine {
 	Shader* Shader::Create(const std::string& vertex, const std::string& fragment, const std::string& geometry, const std::string& domain, const std::string& hull) {
 #ifdef VCE_OPENGL
 		return new OpenGLShader(vertex, fragment, geometry, domain,  hull);
+#endif
+#ifdef VCE_VULKAN
+		return new VulkanShader(vertex, fragment, geometry, domain, hull);
 #endif
 	}
 }

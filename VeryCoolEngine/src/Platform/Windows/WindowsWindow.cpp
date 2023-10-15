@@ -4,7 +4,6 @@
 #include "VeryCoolEngine/Events/MouseEvent.h"
 #include "VeryCoolEngine/Events/KeyEvent.h"
 
-#include "Platform/OpenGL/OpenGLContext.h"
 
 
 namespace VeryCoolEngine {
@@ -19,9 +18,9 @@ namespace VeryCoolEngine {
 		
 		std::cout << "hello\n";
 
-		_data._title = p._title;
-		_data._width = p._width;
-		_data._height = p._height;
+		m_pData._title = p._title;
+		m_pData._width = p._width;
+		m_pData._height = p._height;
 
 		VCE_CORE_INFO("Creating window {0} ({1},{2})", p._title, p._width, p._height);
 		if (!glfwInititliazed) {
@@ -30,14 +29,18 @@ namespace VeryCoolEngine {
 #ifdef VCE_SAMPLES
 			glfwWindowHint(GLFW_SAMPLES, VCE_SAMPLES);
 #endif
+#ifdef VCE_VULKAN
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+#endif
 			glfwSetErrorCallback([](int error, const char* desc) {VCE_CORE_ERROR("glfw error {0} {1}",error,desc); });
 			glfwInititliazed = true;
 		}
+
 		_pWindow = glfwCreateWindow((int)p._width, (int)p._height, p._title.c_str(), nullptr, nullptr);
 		
 
 		
-		glfwSetWindowUserPointer(_pWindow, &_data);
+		glfwSetWindowUserPointer(_pWindow, &m_pData);
 		//SetVSync(true);
 
 		glfwSetWindowSizeCallback(_pWindow, [](GLFWwindow* window, int width, int height) {
@@ -95,10 +98,10 @@ namespace VeryCoolEngine {
 
 	void WindowsWindow::SetVSync(bool enabled) {
 		glfwSwapInterval(int(enabled));
-		_data._VSync = enabled;
+		m_pData._VSync = enabled;
 	}
 
-	bool WindowsWindow::GetVSyncEnabled() const { return _data._VSync; }
+	bool WindowsWindow::GetVSyncEnabled() const { return m_pData._VSync; }
 
 	void WindowsWindow::Shutdown() { glfwDestroyWindow(_pWindow);}
 
