@@ -4,7 +4,9 @@
 #define GLFW_INCLUDE_VULKAN
 #endif
 #include <GLFW/glfw3.h>
+#ifdef VCE_OPENGL
 #include <glad/glad.h>
+#endif
 
 #ifndef IMGUI_IMPL_API
 #define IMGUI_IMPL_API

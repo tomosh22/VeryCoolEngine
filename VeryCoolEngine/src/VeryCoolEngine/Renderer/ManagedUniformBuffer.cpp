@@ -1,6 +1,5 @@
 #include "vcepch.h"
 #include "ManagedUniformBuffer.h"
-#include "Platform/OpenGL/OpenGLManagedUniformBuffer.h"
 #include "Platform/Vulkan/VulkanManagedUniformBuffer.h"
 
 

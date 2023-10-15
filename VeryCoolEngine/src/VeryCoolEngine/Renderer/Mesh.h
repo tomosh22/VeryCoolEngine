@@ -49,7 +49,7 @@ namespace VeryCoolEngine {
 
 
 		std::vector<BufferElement> m_axInstanceData;
-		uint32_t m_uNumInstances;
+		uint32_t m_uNumInstances = 1;
 
 		uint32_t m_uNumVerts;
 		uint32_t m_uNumIndices;

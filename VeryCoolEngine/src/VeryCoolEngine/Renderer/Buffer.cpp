@@ -1,6 +1,5 @@
 #include "vcepch.h"
 #include "Buffer.h"
-#include "Platform/OpenGL/OpenGLBuffer.h"
 #include "Platform/Vulkan/VulkanVertexBuffer.h"
 
 namespace VeryCoolEngine {

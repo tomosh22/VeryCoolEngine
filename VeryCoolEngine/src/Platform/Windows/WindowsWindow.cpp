@@ -4,7 +4,6 @@
 #include "VeryCoolEngine/Events/MouseEvent.h"
 #include "VeryCoolEngine/Events/KeyEvent.h"
 
-#include "Platform/OpenGL/OpenGLContext.h"
 
 
 namespace VeryCoolEngine {

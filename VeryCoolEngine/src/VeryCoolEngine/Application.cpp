@@ -5,7 +5,6 @@
 #include "Input.h"
 #include <glm/glm.hpp>
 #include <glm/mat4x4.hpp>
-#include "Platform/OpenGL/OpenGLShader.h"
 
 
 
@@ -31,7 +30,7 @@ namespace VeryCoolEngine {
 #endif
 		
 
-		m_pxQuadMesh = Mesh::GenerateQuad();
+		
 		
 		_renderThread = std::thread([&]() {
 			while (true) {
@@ -145,7 +144,6 @@ namespace VeryCoolEngine {
 			scene->Reset();
 			
 			scene->camera = &_Camera;
-			scene->skyboxShader = _pFullscreenShader;
 			scene->skybox = _pCubemap;
 
 			for (Mesh* mesh : _meshes) { 

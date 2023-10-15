@@ -1,6 +1,5 @@
 #include "vcepch.h"
 #include "Renderer.h"
-#include "Platform/OpenGL/OpenGLRenderer.h"
 #include "Platform/Vulkan/VulkanRenderer.h"
 #include "RenderCommand.h"
 #include "VeryCoolEngine/Application.h"

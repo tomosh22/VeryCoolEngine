@@ -21,6 +21,8 @@ namespace VeryCoolEngine {
 
 	Game::Game() {
 
+
+
 		_textures.push_back(Texture2D::Create("atlas.png", false));
 
 		m_pxBlockFaceMesh = Mesh::GenerateQuad(); 
@@ -33,6 +35,31 @@ namespace VeryCoolEngine {
 		DescriptorSpecification xTexSpec;
 		xTexSpec.m_aeSamplerStages.push_back({&_textures.back(), ShaderStageFragment});
 
+		m_pxQuadMesh = Mesh::GenerateQuad();
+		m_pxQuadMesh->SetShader(Shader::Create("../Assets/Shaders/vulkan/fullscreenVert.spv", "../Assets/Shaders/vulkan/fullscreenFrag.spv"));
+		_meshes.push_back(m_pxQuadMesh);
+
+		m_xPipelineSpecs.insert(
+			{ "Skybox",
+					PipelineSpecification(
+					"Skybox",
+					m_pxQuadMesh,
+					BlendFactor::SrcAlpha,
+					BlendFactor::OneMinusSrcAlpha,
+					false,
+					false,
+					DepthCompareFunc::GreaterOrEqual,
+					ColourFormat::BGRA8_sRGB,
+					DepthFormat::D32_SFloat,
+					{xCamSpec},
+					&m_pxRenderPass
+					)
+			});
+
+		m_axPipelineMeshes.insert({ "Skybox", std::vector<Mesh*>() });
+
+		m_axPipelineMeshes.at("Skybox").push_back(m_pxQuadMesh);
+
 		m_xPipelineSpecs.insert(
 			{ "Blocks",
 					PipelineSpecification(
@@ -40,6 +67,8 @@ namespace VeryCoolEngine {
 					m_pxBlockFaceMesh,
 					BlendFactor::SrcAlpha,
 					BlendFactor::OneMinusSrcAlpha,
+					true,
+					true,
 					DepthCompareFunc::GreaterOrEqual,
 					ColourFormat::BGRA8_sRGB,
 					DepthFormat::D32_SFloat,
@@ -53,8 +82,10 @@ namespace VeryCoolEngine {
 		m_axPipelineMeshes.at("Blocks").push_back(m_pxBlockFaceMesh);
 
 
+		
+
+
 		//#TODO let client set skybox texture
-		Application::GetInstance()->_pFullscreenShader = Shader::Create("../Assets/Shaders/vulkan/fullscreenVert.spv", "../Assets/Shaders/vulkan/fullscreenFrag.spv");
 
 		Chunk::seed = rand();
 		GenerateChunks();

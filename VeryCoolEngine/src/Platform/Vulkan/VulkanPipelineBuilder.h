@@ -19,6 +19,8 @@ namespace VeryCoolEngine {
 		std::vector<vk::DescriptorSetLayout> m_axDescLayouts;
 		std::vector<vk::DescriptorSet> m_axDescSets;
 
+		std::string m_strName;
+
 		void BindDescriptorSets(vk::CommandBuffer& xCmd, const std::vector<vk::DescriptorSet>& axSets, vk::PipelineBindPoint eBindPoint, uint32_t ufirstSet) const;
 	};
 

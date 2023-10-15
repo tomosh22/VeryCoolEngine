@@ -10,7 +10,6 @@ Credit Rich Davison
 */
 #include "vcepch.h"
 #include "Shader.h"
-#include "Platform/OpenGL/OpenGLShader.h"
 #include "Platform/Vulkan/VulkanShader.h"
 
 namespace VeryCoolEngine {

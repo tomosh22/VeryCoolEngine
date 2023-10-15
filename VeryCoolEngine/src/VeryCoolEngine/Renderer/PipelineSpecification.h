@@ -40,6 +40,8 @@ namespace VeryCoolEngine {
 		Mesh* m_pxExampleMesh;
 		BlendFactor m_eSrcBlendFactor;
 		BlendFactor m_eDstBlendFactor;
+		bool m_bDepthTestEnabled;
+		bool m_bDepthWriteEnabled;
 		DepthCompareFunc m_eDepthCompareFunc;
 		ColourFormat m_eColourFormat;
 		DepthFormat m_eDepthFormat;

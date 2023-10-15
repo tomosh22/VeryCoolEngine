@@ -88,7 +88,7 @@ namespace VeryCoolEngine {
 		vk::DescriptorSetLayout m_xSkyboxTextureLayout;
 
 
-		std::unordered_map<std::string, class VulkanPipeline*> m_xPipelines;
+		std::vector<class VulkanPipeline*> m_xPipelines;
 		std::unordered_map<std::string, PipelineSpecification> m_xPipelineSpecs;
 		std::unordered_map<std::string, std::vector<Mesh*>> m_axPipelineMeshes;
 
@@ -97,9 +97,7 @@ namespace VeryCoolEngine {
 
 		Camera _Camera;
 
-		Shader* _pFullscreenShader;
 
-		Mesh* m_pxQuadMesh;
 
 		std::vector<Mesh*> _meshes;
 		std::vector<Mesh*> _instanceMeshes;

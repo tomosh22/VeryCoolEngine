@@ -1,6 +1,5 @@
 #include "vcepch.h"
 #include "Texture.h"
-#include "Platform/OpenGL/OpenGLTexture.h"
 #include "Platform/Vulkan/VulkanTexture.h"
 
 namespace VeryCoolEngine {

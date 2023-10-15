@@ -40,10 +40,8 @@ void VulkanRenderer::InitVulkan() {
 		pMesh->PlatformInit();
 		pMesh->GetShader()->PlatformInit();
 	}
-	app->m_pxQuadMesh->PlatformInit();
 	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
 	for (Shader* pxShader : app->_shaders) pxShader->PlatformInit();
-	app->_pFullscreenShader->PlatformInit();
 	for (Texture* pxTex : app->_textures) pxTex->PlatformInit();
 
 	app->m_xCameraLayout = VulkanDescriptorSetLayoutBuilder("Camera UBO")
@@ -54,29 +52,11 @@ void VulkanRenderer::InitVulkan() {
 	app->m_xTextureLayout = VulkanDescriptorSetLayoutBuilder("Object Textures")
 		.WithSamplers(1, vk::ShaderStageFlagBits::eFragment)
 		.Build(m_device);
-	//m_xTextureDescriptor = CreateDescriptorSet(app->m_xTextureLayout, m_descriptorPool);
 
 
-	//UpdateImageDescriptor(m_xTextureDescriptor, 0, 0, dynamic_cast<VulkanTexture2D*>(app->_textures.at(0))->m_xImageView, dynamic_cast<VulkanTexture2D*>(app->_textures.at(0))->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
-
-	for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-	{
-		//UpdateBufferDescriptor(m_xCameraDescriptor, dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO)->ppBuffers[i], 0, vk::DescriptorType::eUniformBuffer, 0);
-	}
-
-	app->m_xPipelines.insert({ "Blocks", VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Blocks")) });
-
-
-	app->m_pxSkyboxPipeline = VulkanPipelineBuilder("Skybox Pipeline")
-		.WithVertexInputState(dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh)->m_xVertexInputState)
-		.WithTopology(vk::PrimitiveTopology::eTriangleList)
-		.WithShader(*dynamic_cast<VulkanShader*>(app->_pFullscreenShader))
-		.WithBlendState(vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha, false)
-		.WithColourFormats({ vk::Format::eB8G8R8A8Srgb })
-		.WithDescriptorSetLayout(0, app->m_xCameraLayout)
-		//.WithDescriptorSetLayout(1, m_xTextureLayout)
-		.WithPass(dynamic_cast<VulkanRenderPass*>(app->m_pxRenderPass)->m_xRenderPass)
-		.Build();
+	app->m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Skybox")) );
+	app->m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Blocks")));
+	
 	
 
 	Application::GetInstance()->renderInitialised = true;
@@ -128,13 +108,13 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	//
 	//commandBuffer.drawIndexed(pxSkyboxMesh->m_uNumIndices, 1, 0, 0, 0);
 
-	for (auto& [name, pipeline] : app->m_xPipelines) {
+	for (VulkanPipeline*  pipeline : app->m_xPipelines) {
 
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline->m_xPipeline);
 
 		pipeline->BindDescriptorSets(commandBuffer, pipeline->m_axDescSets, vk::PipelineBindPoint::eGraphics, 0);
 
-		for (Mesh* mesh : app->m_axPipelineMeshes.at(name)) {
+		for (Mesh* mesh : app->m_axPipelineMeshes.at(pipeline->m_strName)) {
 			VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
 			pxVulkanMesh->BindToCmdBuffer(commandBuffer);
 

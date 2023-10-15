@@ -228,7 +228,7 @@ namespace VeryCoolEngine {
 		xBuilder = xBuilder.WithTopology(eTopology);
 		xBuilder = xBuilder.WithShader(*dynamic_cast<VulkanShader*>(dynamic_cast<VulkanMesh*>(spec.m_pxExampleMesh)->GetShader()));
 		xBuilder = xBuilder.WithBlendState(vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha, false);
-		xBuilder = xBuilder.WithDepthState(vk::CompareOp::eGreaterOrEqual, true, true, false);
+		xBuilder = xBuilder.WithDepthState(vk::CompareOp::eGreaterOrEqual, spec.m_bDepthTestEnabled, spec.m_bDepthWriteEnabled, false);
 		xBuilder = xBuilder.WithColourFormats({ vk::Format::eB8G8R8A8Srgb });
 		xBuilder = xBuilder.WithDepthFormat(vk::Format::eD32Sfloat);
 			xBuilder = xBuilder.WithPass(dynamic_cast<VulkanRenderPass*>(*spec.m_pxRenderPass)->m_xRenderPass);
@@ -258,6 +258,7 @@ namespace VeryCoolEngine {
 		VulkanPipeline* xPipeline = xBuilder.Build();
 		xPipeline->m_axDescLayouts = axLayouts;
 		xPipeline->m_axDescSets = axSets;
+		xPipeline->m_strName = spec.m_strName;
 
 		return xPipeline;
 	}

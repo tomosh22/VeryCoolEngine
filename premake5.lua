@@ -11,7 +11,6 @@ workspace "VeryCoolEngine"
 outputDir = "%{cfg.buildcfg}-%{cfg.cystem}-%{cfg.architecture}"
 
 include "VeryCoolEngine/vendor/GLFW"
-include "VeryCoolEngine/vendor/Glad"
 include "VeryCoolEngine/vendor/imgui"
 
 project "VeryCoolEngine"
@@ -114,6 +113,7 @@ project "Game"
 		"VeryCoolEngine/vendor/Glad/include",
 		"%{prj.name}/vendor/stb",
 		"Game/vendor/PerlinNoise",
+		"$(VULKAN_SDK)/include",
 
 	}
 
