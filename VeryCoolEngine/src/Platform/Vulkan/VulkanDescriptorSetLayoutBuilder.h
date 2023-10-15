@@ -28,6 +28,8 @@ namespace VeryCoolEngine {
 
 		vk::DescriptorSetLayout Build(vk::Device device);
 
+		static vk::DescriptorSetLayout FromSpecification(const DescriptorSpecification spec);
+
 	protected:
 		std::string	debugName;
 		bool usingBindless;

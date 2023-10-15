@@ -24,6 +24,11 @@ namespace VeryCoolEngine {
 		m_pxBlockFaceMesh->SetShader(Shader::Create("../Assets/Shaders/vulkan/blockVert.spv", "../Assets/Shaders/vulkan/blockFrag.spv"));
 		_meshes.push_back(m_pxBlockFaceMesh);
 
+		DescriptorSpecification xCamSpec;
+		xCamSpec.m_aeUniformBufferStages.push_back(ShaderStageVertexAndFragment);
+
+		DescriptorSpecification xTexSpec;
+		xTexSpec.m_aeSamplerStages.push_back(ShaderStageFragment);
 
 		m_xPipelineSpecs.insert(
 			{ "Blocks",
@@ -35,7 +40,7 @@ namespace VeryCoolEngine {
 					DepthCompareFunc::GreaterOrEqual,
 					ColourFormat::BGRA8_sRGB,
 					DepthFormat::D32_SFloat,
-					{ &m_xCameraLayout, &m_xTextureLayout },
+					{ xCamSpec, xTexSpec },
 					&m_pxRenderPass
 					)
 			});

@@ -80,4 +80,31 @@ namespace VeryCoolEngine {
 		vk::DescriptorSetLayout layout = device.createDescriptorSetLayout(createInfo);
 		return layout;
 	}
+
+	static vk::ShaderStageFlags VulkanShaderStage(ShaderStage eStage) {
+		switch (eStage) {
+		case ShaderStageVertex:
+			return vk::ShaderStageFlagBits::eVertex;
+		case ShaderStageFragment:
+			return vk::ShaderStageFlagBits::eFragment;
+		case ShaderStageVertexAndFragment:
+			return vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment;
+		}
+	}
+
+	vk::DescriptorSetLayout VulkanDescriptorSetLayoutBuilder::FromSpecification(const DescriptorSpecification spec)
+	{
+		VulkanDescriptorSetLayoutBuilder xBuilder = VulkanDescriptorSetLayoutBuilder();
+		if (spec.m_aeSamplerStages.size()) {
+			for (ShaderStage eStage : spec.m_aeSamplerStages) {
+				xBuilder = xBuilder.WithSamplers(1, VulkanShaderStage(eStage));
+			}
+		}
+		if (spec.m_aeUniformBufferStages.size()) {
+			for (ShaderStage eStage : spec.m_aeUniformBufferStages) {
+				xBuilder = xBuilder.WithUniformBuffers(1, VulkanShaderStage(eStage));
+			}
+		}
+		return std::move(xBuilder.Build(VulkanRenderer::GetInstance()->GetDevice()));
+	}
 }

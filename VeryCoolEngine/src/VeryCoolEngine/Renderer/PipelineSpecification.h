@@ -25,6 +25,16 @@ namespace VeryCoolEngine {
 	class DescriptorSetLayoutBase;
 	class RenderPass;
 
+	enum ShaderStage : uint8_t {
+		ShaderStageNone = 0, ShaderStageVertex = 1, ShaderStageFragment = 2, ShaderStageVertexAndFragment = 3 //#TODO how do you do bitwise operations on an enum?????
+	};
+	
+
+	struct DescriptorSpecification {
+		std::vector<ShaderStage> m_aeUniformBufferStages;
+		std::vector<ShaderStage> m_aeSamplerStages;
+	};
+
 	struct PipelineSpecification {
 		std::string m_strName;
 		Mesh* m_pxExampleMesh;
@@ -33,7 +43,9 @@ namespace VeryCoolEngine {
 		DepthCompareFunc m_eDepthCompareFunc;
 		ColourFormat m_eColourFormat;
 		DepthFormat m_eDepthFormat;
-		std::vector<vk::DescriptorSetLayout*> m_aDescSetLayouts;
+		std::vector<DescriptorSpecification> m_axDescriptors;
 		RenderPass** m_pxRenderPass;
 	};
+	
+	
 }

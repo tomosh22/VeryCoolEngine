@@ -10,6 +10,8 @@ License: MIT (see LICENSE file at the top of the source tree)
 #include "VulkanMesh.h"
 #include "VulkanShader.h"
 #include "VulkanRenderPass.h"
+#include "VulkanDescriptorSetLayoutBuilder.h"
+#include "VulkanManagedUniformBuffer.h"
 
 
 
@@ -208,6 +210,8 @@ namespace VeryCoolEngine {
 	}
 	VulkanPipeline* VulkanPipelineBuilder::FromSpecification(const PipelineSpecification& spec)
 	{
+		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+		Application* app = Application::GetInstance();
 		//#TODO utility function
 		vk::PrimitiveTopology eTopology;
 		switch (spec.m_pxExampleMesh->m_eTopolgy) {
@@ -229,10 +233,32 @@ namespace VeryCoolEngine {
 		xBuilder = xBuilder.WithDepthFormat(vk::Format::eD32Sfloat);
 			xBuilder = xBuilder.WithPass(dynamic_cast<VulkanRenderPass*>(*spec.m_pxRenderPass)->m_xRenderPass);
 
-		for (uint32_t i = 0; i < spec.m_aDescSetLayouts.size(); i++) {
-			xBuilder = xBuilder.WithDescriptorSetLayout(i, *spec.m_aDescSetLayouts.at(i));
+		
+		std::vector<vk::DescriptorSetLayout> axLayouts;
+		std::vector<vk::DescriptorSet> axSets;
+		for (DescriptorSpecification spec : spec.m_axDescriptors) {
+			VCE_ASSERT(spec.m_aeSamplerStages.size() == 0 || spec.m_aeUniformBufferStages.size() == 0, "Need to rework this sytem")
+			axLayouts.emplace_back(VulkanDescriptorSetLayoutBuilder::FromSpecification(spec));
+			axSets.emplace_back(pxRenderer->CreateDescriptorSet(axLayouts.back(), pxRenderer->GetDescriptorPool()));
+
+			if (spec.m_aeSamplerStages.size()) pxRenderer->UpdateImageDescriptor(axSets.back(), 0, 0, dynamic_cast<VulkanTexture2D*>(app->_textures.at(0))->m_xImageView, dynamic_cast<VulkanTexture2D*>(app->_textures.at(0))->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
+
+			if (spec.m_aeUniformBufferStages.size()) {
+				for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+				{
+					pxRenderer->UpdateBufferDescriptor(axSets.back(), dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO)->ppBuffers[i], 0, vk::DescriptorType::eUniformBuffer, 0);
+				}
+			}
 		}
 
-		return xBuilder.Build();
+		for (uint32_t i = 0; i < axLayouts.size(); i++) {
+			xBuilder = xBuilder.WithDescriptorSetLayout(i, axLayouts.at(i));
+		}
+
+		VulkanPipeline* xPipeline = xBuilder.Build();
+		xPipeline->m_axDescLayouts = axLayouts;
+		xPipeline->m_axDescSets = axSets;
+
+		return xPipeline;
 	}
 }

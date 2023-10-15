@@ -16,6 +16,9 @@ namespace VeryCoolEngine {
 		vk::Pipeline m_xPipeline;
 		vk::PipelineLayout	m_xPipelineLayout;
 
+		std::vector<vk::DescriptorSetLayout> m_axDescLayouts;
+		std::vector<vk::DescriptorSet> m_axDescSets;
+
 		void BindDescriptorSets(vk::CommandBuffer& xCmd, const std::vector<vk::DescriptorSet>& axSets, vk::PipelineBindPoint eBindPoint, uint32_t ufirstSet) const;
 	};
 
