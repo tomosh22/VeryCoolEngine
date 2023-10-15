@@ -96,12 +96,12 @@ namespace VeryCoolEngine {
 	{
 		VulkanDescriptorSetLayoutBuilder xBuilder = VulkanDescriptorSetLayoutBuilder();
 		if (spec.m_aeSamplerStages.size()) {
-			for (ShaderStage eStage : spec.m_aeSamplerStages) {
+			for (auto& [ppxTexture, eStage] : spec.m_aeSamplerStages) {
 				xBuilder = xBuilder.WithSamplers(1, VulkanShaderStage(eStage));
 			}
 		}
 		if (spec.m_aeUniformBufferStages.size()) {
-			for (ShaderStage eStage : spec.m_aeUniformBufferStages) {
+			for (auto& [ppxUBO, eStage] : spec.m_aeUniformBufferStages) {
 				xBuilder = xBuilder.WithUniformBuffers(1, VulkanShaderStage(eStage));
 			}
 		}

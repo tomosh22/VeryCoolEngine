@@ -2,7 +2,8 @@
 #include "VeryCoolEngine/Renderer/Texture.h"
 
 namespace VeryCoolEngine {
-	class VulkanTexture2D : public Texture2D
+	class VulkanTexture {};
+	class VulkanTexture2D : public Texture2D, public VulkanTexture
 	{
 	public:
 		VulkanTexture2D() = default;

@@ -241,12 +241,12 @@ namespace VeryCoolEngine {
 			axLayouts.emplace_back(VulkanDescriptorSetLayoutBuilder::FromSpecification(spec));
 			axSets.emplace_back(pxRenderer->CreateDescriptorSet(axLayouts.back(), pxRenderer->GetDescriptorPool()));
 
-			if (spec.m_aeSamplerStages.size()) pxRenderer->UpdateImageDescriptor(axSets.back(), 0, 0, dynamic_cast<VulkanTexture2D*>(app->_textures.at(0))->m_xImageView, dynamic_cast<VulkanTexture2D*>(app->_textures.at(0))->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
+			for(auto& [ppxTexture, eStage] : spec.m_aeSamplerStages) pxRenderer->UpdateImageDescriptor(axSets.back(), 0, 0, dynamic_cast<VulkanTexture2D*>(*ppxTexture)->m_xImageView, dynamic_cast<VulkanTexture2D*>(*ppxTexture)->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
 
-			if (spec.m_aeUniformBufferStages.size()) {
+			for(auto& [ppxUBO, eStage] : spec.m_aeUniformBufferStages) {
 				for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 				{
-					pxRenderer->UpdateBufferDescriptor(axSets.back(), dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO)->ppBuffers[i], 0, vk::DescriptorType::eUniformBuffer, 0);
+					pxRenderer->UpdateBufferDescriptor(axSets.back(), dynamic_cast<VulkanManagedUniformBuffer*>(*ppxUBO)->ppBuffers[i], 0, vk::DescriptorType::eUniformBuffer, 0);
 				}
 			}
 		}

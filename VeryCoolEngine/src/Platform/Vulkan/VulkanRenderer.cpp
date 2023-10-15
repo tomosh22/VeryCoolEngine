@@ -44,7 +44,7 @@ void VulkanRenderer::InitVulkan() {
 	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
 	for (Shader* pxShader : app->_shaders) pxShader->PlatformInit();
 	app->_pFullscreenShader->PlatformInit();
-	for (Texture2D* pxTex : app->_textures) pxTex->PlatformInit();
+	for (Texture* pxTex : app->_textures) pxTex->PlatformInit();
 
 	app->m_xCameraLayout = VulkanDescriptorSetLayoutBuilder("Camera UBO")
 		.WithUniformBuffers(1, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment)

@@ -31,8 +31,8 @@ namespace VeryCoolEngine {
 	
 
 	struct DescriptorSpecification {
-		std::vector<ShaderStage> m_aeUniformBufferStages;
-		std::vector<ShaderStage> m_aeSamplerStages;
+		std::vector<std::pair<class ManagedUniformBuffer**, ShaderStage>> m_aeUniformBufferStages;
+		std::vector<std::pair<Texture**, ShaderStage>> m_aeSamplerStages;
 	};
 
 	struct PipelineSpecification {

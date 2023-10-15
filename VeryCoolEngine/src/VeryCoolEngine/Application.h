@@ -104,7 +104,7 @@ namespace VeryCoolEngine {
 		std::vector<Mesh*> _meshes;
 		std::vector<Mesh*> _instanceMeshes;
 		std::vector<Shader*> _shaders;
-		std::vector<Texture2D*> _textures;
+		std::vector<Texture*> _textures;
 
 		Mesh* _pHeightmap;
 		std::vector<Renderer::Light> _lights{};

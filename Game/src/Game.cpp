@@ -20,15 +20,18 @@ namespace VeryCoolEngine {
 	};
 
 	Game::Game() {
+
+		_textures.push_back(Texture2D::Create("atlas.png", false));
+
 		m_pxBlockFaceMesh = Mesh::GenerateQuad(); 
 		m_pxBlockFaceMesh->SetShader(Shader::Create("../Assets/Shaders/vulkan/blockVert.spv", "../Assets/Shaders/vulkan/blockFrag.spv"));
 		_meshes.push_back(m_pxBlockFaceMesh);
 
 		DescriptorSpecification xCamSpec;
-		xCamSpec.m_aeUniformBufferStages.push_back(ShaderStageVertexAndFragment);
+		xCamSpec.m_aeUniformBufferStages.push_back({&_pCameraUBO, ShaderStageVertexAndFragment });
 
 		DescriptorSpecification xTexSpec;
-		xTexSpec.m_aeSamplerStages.push_back(ShaderStageFragment);
+		xTexSpec.m_aeSamplerStages.push_back({&_textures.back(), ShaderStageFragment});
 
 		m_xPipelineSpecs.insert(
 			{ "Blocks",
@@ -59,7 +62,7 @@ namespace VeryCoolEngine {
 		UploadChunks();
 
 		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, 1280.f / 720.f);
-		_textures.push_back(Texture2D::Create("atlas.png", false));
+		
 		
 		_renderThreadCanStart = true;
 		return;
