@@ -75,7 +75,28 @@ namespace VeryCoolEngine {
 
 	void ImGuiLayer::OnImGuiRender() {
 		Application* app = Application::GetInstance();
-		ImGui::ShowDemoWindow();
+		std::string cameraText = std::string("Camera ") + (app->_mouseEnabled ? "enabled" : "disabled") + ". Q to toggle.";
+		ImGui::Text(cameraText.c_str());
+
+		const glm::ivec3& camPos = app->_Camera.GetPosition();
+		std::string camPosText = "Camera Position: " + std::to_string(camPos.x) + " " + std::to_string(camPos.y) + " " + std::to_string(camPos.z);
+		ImGui::Text(camPosText.c_str());
+
+		const glm::vec3& camDir = app->_Camera.ViewDirection();
+		std::string camDirText = "Camera View Direction: " + std::to_string(camDir.x) + " " + std::to_string(camDir.y) + " " + std::to_string(camDir.z);
+		ImGui::Text(camDirText.c_str());
+
+		if (ImGui::TreeNode("Point Lights")) {
+			int lightIndex = 0;
+			for (Renderer::Light& light : app->_lights)
+			{
+				std::string labelPos = "Light" + std::to_string(lightIndex) + " Position";
+				ImGui::DragFloat3(labelPos.c_str(), &light.x);
+				std::string labelCol = "Light" + std::to_string(lightIndex++) + " Colour";
+				ImGui::ColorEdit4(labelCol.c_str(), &light.r);
+			}
+			ImGui::TreePop();
+		}
 
 		//do things
 

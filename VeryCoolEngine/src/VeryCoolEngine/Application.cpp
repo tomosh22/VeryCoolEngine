@@ -140,24 +140,7 @@ namespace VeryCoolEngine {
 
 			_Camera.UpdateCamera(_DeltaTime);
 			GameLoop();
-			sceneMutex.lock();
-			scene->Reset();
 			
-			scene->camera = &_Camera;
-			scene->skybox = _pCubemap;
-
-			for (Mesh* mesh : _meshes) { 
-				scene->meshes.push_back(mesh);
-			}
-
-			for (Renderer::Light& light : _lights) {
-				scene->lights[scene->numLights++] = light;
-			}
-
-			
-
-			scene->ready = true;
-			sceneMutex.unlock();
 
 			
 			

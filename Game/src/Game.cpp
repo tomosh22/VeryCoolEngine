@@ -56,9 +56,7 @@ namespace VeryCoolEngine {
 					)
 			});
 
-		m_axPipelineMeshes.insert({ "Skybox", std::vector<Mesh*>() });
-
-		m_axPipelineMeshes.at("Skybox").push_back(m_pxQuadMesh);
+		
 
 		m_xPipelineSpecs.insert(
 			{ "Blocks",
@@ -77,20 +75,23 @@ namespace VeryCoolEngine {
 					)
 			});
 
-		m_axPipelineMeshes.insert({ "Blocks", std::vector<Mesh*>()});
-
-		m_axPipelineMeshes.at("Blocks").push_back(m_pxBlockFaceMesh);
-
-
-		m_pxTerrainMesh = Mesh::GenerateGenericHeightmap(10, 10);
 		
-		_textures.push_back(Texture2D::Create("crystal1k/violet_crystal_43_04_diffuse.jpg", false));
+
+
+		m_pxTerrainMesh = Mesh::GenerateGenericHeightmap(100, 100);
+		
+		_textures.push_back(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
+		_textures.push_back(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
 		
 		m_pxTerrainMesh->SetShader(Shader::Create("../Assets/Shaders/vulkan/terrainVert.spv", "../Assets/Shaders/vulkan/terrainFrag.spv"));
 		_meshes.push_back(m_pxTerrainMesh);
 		
 		DescriptorSpecification xTerrainTexSpec;
-		xTerrainTexSpec.m_aeSamplerStages.push_back({ &_textures.back(), ShaderStageFragment });
+		xTerrainTexSpec.m_aeSamplerStages.push_back({ &_textures.at(1), ShaderStageFragment });
+		xTerrainTexSpec.m_aeSamplerStages.push_back({ &_textures.at(2), ShaderStageFragment });
+
+		DescriptorSpecification xLightSpec;
+		xLightSpec.m_aeUniformBufferStages.push_back({ &_pLightUBO, ShaderStageVertexAndFragment });
 		
 		m_xPipelineSpecs.insert(
 			{ "Terrain",
@@ -104,14 +105,16 @@ namespace VeryCoolEngine {
 					DepthCompareFunc::GreaterOrEqual,
 					ColourFormat::BGRA8_sRGB,
 					DepthFormat::D32_SFloat,
-					{xCamSpec, xTerrainTexSpec},
+					{xCamSpec, xTerrainTexSpec, xLightSpec},
 					&m_pxRenderPass
 					)
 			});
 		
-		m_axPipelineMeshes.insert({ "Terrain", std::vector<Mesh*>() });
 		
-		m_axPipelineMeshes.at("Terrain").push_back(m_pxTerrainMesh);
+		_lights.push_back({
+				50,200,50,100,
+				0,1,0,1
+			});
 
 		//#TODO let client set skybox texture
 
@@ -274,6 +277,39 @@ namespace VeryCoolEngine {
 	void Application::GameLoop() {
 		Game* game = (Game*)Application::GetInstance();
 		printf("game loop\n");
+
+
+		sceneMutex.lock();
+		scene->Reset();
+
+		scene->camera = &_Camera;
+		scene->skybox = _pCubemap;
+
+		for (Mesh* mesh : _meshes) {
+			scene->meshes.push_back(mesh);
+		}
+
+		for (Renderer::Light& light : _lights) {
+			scene->lights[scene->numLights++] = light;
+		}
+
+		scene->m_axPipelineMeshes.insert({ "Skybox", std::vector<Mesh*>() });
+		scene->m_axPipelineMeshes.at("Skybox").push_back(game->m_pxQuadMesh);
+
+		scene->m_axPipelineMeshes.insert({ "Blocks", std::vector<Mesh*>() });
+		scene->m_axPipelineMeshes.at("Blocks").push_back(game->m_pxBlockFaceMesh);
+
+		scene->m_axPipelineMeshes.insert({ "Terrain", std::vector<Mesh*>() });
+		scene->m_axPipelineMeshes.at("Terrain").push_back(game->m_pxTerrainMesh);
+
+		for (Renderer::Light& light : _lights) {
+			scene->lights[scene->numLights++] = light;
+		}
+
+		scene->ready = true;
+		sceneMutex.unlock();
+
+
 		bool rState = Input::IsKeyPressed(VCE_KEY_R);
 		if (Input::IsKeyPressed(VCE_KEY_R) && prevRState != rState) {
 			Chunk::seed = rand();

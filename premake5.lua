@@ -24,7 +24,7 @@ project "VeryCoolEngine"
 	objdir ("bin-int/" .. outputDir .. "/%{prj.name}")
 
 	pchheader "vcepch.h"
-	pchsource "VeryCoolEngine/src/vcepch.cpp"
+	pchsource "vcepch.cpp"
 
 	assetPath = "/Assets/"
 	defines{
@@ -39,7 +39,7 @@ project "VeryCoolEngine"
 		"%{prj.name}/vendor/glm/glm/**.inl"
 	}
 	files{ "%{prj.name}/vendor/imgui/backends/imgui_impl_vulkan.cpp", "%{prj.name}/vendor/imgui/backends/imgui_impl_vulkan.h"}
-		flags{"NoPCH"}
+		
 
 	includedirs{
 		"%{prj.name}/vendor/spdlog/include",

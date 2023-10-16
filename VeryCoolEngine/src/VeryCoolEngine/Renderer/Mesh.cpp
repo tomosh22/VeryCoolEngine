@@ -18,8 +18,8 @@ namespace VeryCoolEngine {
 	{
 		Mesh* mesh = Mesh::Create();
 		mesh->m_pxBufferLayout = new BufferLayout();
-		glm::vec3 vertexScale = glm::vec3(16.0f, 1.0f, 16.0f);
-		glm::vec2 textureScale = glm::vec2(0.1,0.1);
+		glm::vec3 vertexScale = glm::vec3(1.0f, 1.0f, 1.0f);
+		glm::vec2 textureScale = glm::vec2(100,100);
 		mesh->m_uNumVerts = width * height;
 		mesh->m_uNumIndices = (width - 1) * (height - 1) * 6;
 		mesh->m_pxVertexPositions = new glm::vec3[mesh->m_uNumVerts];
@@ -38,8 +38,8 @@ namespace VeryCoolEngine {
 		for (int z = 0; z < height; ++z) {
 			for (int x = 0; x < width; ++x) {
 				int offset = (z * width) + x;
-				mesh->m_pxVertexPositions[offset] = glm::vec3(x, 100 + rand() % 10/*#todo read height tex*/, z) * vertexScale;
-				glm::vec2 fUV = glm::vec2(x, z) * textureScale;
+				mesh->m_pxVertexPositions[offset] = glm::vec3(x, 100 + rand() % 1/*#todo read height tex*/, z) * vertexScale;
+				glm::vec2 fUV = glm::vec2(x, z) / textureScale;
 				mesh->m_pxUVs[offset] = fUV;
 			}
 		}

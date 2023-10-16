@@ -28,6 +28,8 @@ namespace VeryCoolEngine {
 		std::vector<std::function<void(void)>> _functionsToRun;
 		Camera* camera = nullptr;
 
+		std::unordered_map<std::string, std::vector<Mesh*>> m_axPipelineMeshes;
+
 		Shader* skyboxShader = nullptr;
 		TextureCube* skybox = nullptr;
 
@@ -45,6 +47,8 @@ namespace VeryCoolEngine {
 			meshes = std::vector<Mesh*>();
 			lights.clear();
 			lights.resize(Renderer::_sMAXLIGHTS);
+			m_axPipelineMeshes.clear();
+			m_axPipelineMeshes = std::unordered_map<std::string, std::vector<Mesh*>>();
 			numLights = 0;
 
 		};
@@ -90,7 +94,7 @@ namespace VeryCoolEngine {
 
 		std::vector<class VulkanPipeline*> m_xPipelines;
 		std::unordered_map<std::string, PipelineSpecification> m_xPipelineSpecs;
-		std::unordered_map<std::string, std::vector<Mesh*>> m_axPipelineMeshes;
+		
 
 		ManagedUniformBuffer* _pLightUBO = nullptr;
 		ManagedUniformBuffer* _pCameraUBO = nullptr;
