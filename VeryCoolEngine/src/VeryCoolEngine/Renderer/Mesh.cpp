@@ -17,8 +17,9 @@ namespace VeryCoolEngine {
 	Mesh* Mesh::GenerateGenericHeightmap(uint32_t width, uint32_t height)
 	{
 		Mesh* mesh = Mesh::Create();
+		mesh->m_pxBufferLayout = new BufferLayout();
 		glm::vec3 vertexScale = glm::vec3(16.0f, 1.0f, 16.0f);
-		glm::vec2 textureScale = glm::vec2(1,1);
+		glm::vec2 textureScale = glm::vec2(0.1,0.1);
 		mesh->m_uNumVerts = width * height;
 		mesh->m_uNumIndices = (width - 1) * (height - 1) * 6;
 		mesh->m_pxVertexPositions = new glm::vec3[mesh->m_uNumVerts];
@@ -37,8 +38,9 @@ namespace VeryCoolEngine {
 		for (int z = 0; z < height; ++z) {
 			for (int x = 0; x < width; ++x) {
 				int offset = (z * width) + x;
-				mesh->m_pxVertexPositions[offset] = glm::vec3(x, 1 /*rand() % 10*/ /*#todo read height tex*/, z) * vertexScale;
-				mesh->m_pxUVs[offset] = glm::vec2(x, z) * textureScale;
+				mesh->m_pxVertexPositions[offset] = glm::vec3(x, 100 + rand() % 10/*#todo read height tex*/, z) * vertexScale;
+				glm::vec2 fUV = glm::vec2(x, z) * textureScale;
+				mesh->m_pxUVs[offset] = fUV;
 			}
 		}
 
@@ -61,27 +63,54 @@ namespace VeryCoolEngine {
 		mesh->GenerateNormals();
 		mesh->GenerateTangents();
 
-		mesh->m_pVerts = new float[mesh->m_uNumVerts * (3 + 2 + 3 + 4)];
+		int numFloats = 0;
+		if (mesh->m_pxVertexPositions != nullptr) {
+			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float3, "_aPosition" });
+			numFloats += 3;
+		}
+		if (mesh->m_pxUVs != nullptr) {
+			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float2, "_aUV" });
+			numFloats += 2;
+		}
+		if (mesh->m_pxNormals != nullptr) {
+			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float3, "_aNormal" });
+			numFloats += 3;
+		}
+		if (mesh->m_pxTangents != nullptr) {
+			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float4, "_aTangent" });
+			numFloats += 4;
+		}
+
+		mesh->m_pVerts = new float[mesh->m_uNumVerts * numFloats];
+
 		size_t index = 0;
-		//for (i = 0; i < mesh->numVerts; i++)
-		//{
-		//	mesh->verts[index++] = mesh->vertexPositions[i].x;
-		//	mesh->verts[index++] = mesh->vertexPositions[i].y;
-		//	mesh->verts[index++] = mesh->vertexPositions[i].z;
-		//
-		//	mesh->verts[index++] = mesh->uvs[i].x;
-		//	mesh->verts[index++] = mesh->uvs[i].y;
-		//
-		//	mesh->verts[index++] = mesh->normals[i].x;
-		//	mesh->verts[index++] = mesh->normals[i].y;
-		//	mesh->verts[index++] = mesh->normals[i].z;
-		//
-		//	mesh->verts[index++] = mesh->tangents[i].x;
-		//	mesh->verts[index++] = mesh->tangents[i].y;
-		//	mesh->verts[index++] = mesh->tangents[i].z;
-		//	mesh->verts[index++] = mesh->tangents[i].w;
-		//}
-		
+		for (int i = 0; i < mesh->m_uNumVerts; i++)
+		{
+			if (mesh->m_pxVertexPositions != nullptr) {
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxVertexPositions[i].x;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxVertexPositions[i].y;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxVertexPositions[i].z;
+			}
+
+			if (mesh->m_pxUVs != nullptr) {
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxUVs[i].x;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxUVs[i].y;
+			}
+			if (mesh->m_pxNormals != nullptr) {
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxNormals[i].x;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxNormals[i].y;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxNormals[i].z;
+			}
+			if (mesh->m_pxTangents != nullptr) {
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].x;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].y;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].z;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].w;
+			}
+		}
+
+		mesh->m_pxBufferLayout->CalculateOffsetsAndStrides();
+
 		return mesh;
 	}
 	

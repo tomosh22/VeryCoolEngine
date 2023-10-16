@@ -109,6 +109,10 @@ namespace VeryCoolEngine {
 		m_xImageView = xDevice.createImageView(xViewCreate);
 
 		m_xSampler = CreateSampler();
+
+#ifdef VCE_DEBUG
+		m_bInitialised = true;
+#endif
 	}
 
 	//just used for depth texture for now
@@ -165,6 +169,10 @@ namespace VeryCoolEngine {
 			.setSubresourceRange(xSubresourceRange);
 
 		m_xImageView = xDevice.createImageView(xViewCreate);
+
+#ifdef VCE_DEBUG
+		m_bInitialised = true;
+#endif
 	}
 
 	void VulkanTexture2D::PlatformInit() {

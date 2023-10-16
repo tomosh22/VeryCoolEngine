@@ -241,7 +241,10 @@ namespace VeryCoolEngine {
 			axLayouts.emplace_back(VulkanDescriptorSetLayoutBuilder::FromSpecification(spec));
 			axSets.emplace_back(pxRenderer->CreateDescriptorSet(axLayouts.back(), pxRenderer->GetDescriptorPool()));
 
-			for(auto& [ppxTexture, eStage] : spec.m_aeSamplerStages) pxRenderer->UpdateImageDescriptor(axSets.back(), 0, 0, dynamic_cast<VulkanTexture2D*>(*ppxTexture)->m_xImageView, dynamic_cast<VulkanTexture2D*>(*ppxTexture)->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
+			for (auto& [ppxTexture, eStage] : spec.m_aeSamplerStages) {
+				//VCE_ASSERT((*ppxTexture)->m_bInitialised, "Texture not initialised");
+				pxRenderer->UpdateImageDescriptor(axSets.back(), 0, 0, dynamic_cast<VulkanTexture2D*>(*ppxTexture)->m_xImageView, dynamic_cast<VulkanTexture2D*>(*ppxTexture)->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
+			}
 
 			for(auto& [ppxUBO, eStage] : spec.m_aeUniformBufferStages) {
 				for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)

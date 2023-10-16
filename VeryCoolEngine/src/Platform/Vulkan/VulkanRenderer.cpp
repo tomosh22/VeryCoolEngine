@@ -56,6 +56,7 @@ void VulkanRenderer::InitVulkan() {
 
 	app->m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Skybox")) );
 	app->m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Blocks")));
+	app->m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Terrain")));
 	
 	
 
@@ -97,16 +98,6 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 	BeginRenderPass(commandBuffer, imageIndex);
 
-	//VulkanPipeline* pxSkyboxPipeline = dynamic_cast<VulkanPipeline*>(app->m_pxSkyboxPipeline);
-	//
-	//commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxSkyboxPipeline->m_xPipeline);
-	//
-	//pxSkyboxPipeline->BindDescriptorSets(commandBuffer, { m_xCameraDescriptor }, //vk::PipelineBindPoint::eGraphics, 0);
-	//
-	//VulkanMesh* pxSkyboxMesh = dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh);
-	//pxSkyboxMesh->BindToCmdBuffer(commandBuffer);
-	//
-	//commandBuffer.drawIndexed(pxSkyboxMesh->m_uNumIndices, 1, 0, 0, 0);
 
 	for (VulkanPipeline*  pipeline : app->m_xPipelines) {
 

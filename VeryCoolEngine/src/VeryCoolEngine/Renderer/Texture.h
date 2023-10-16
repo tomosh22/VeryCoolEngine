@@ -21,6 +21,9 @@ namespace VeryCoolEngine {
 		virtual void Unbind() const = 0;
 		virtual void PlatformInit() = 0;
 		
+#ifdef VCE_DEBUG
+		bool m_bInitialised = false;
+#endif
 		
 	private:
 	};

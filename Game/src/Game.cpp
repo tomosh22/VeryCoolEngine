@@ -22,7 +22,7 @@ namespace VeryCoolEngine {
 	Game::Game() {
 
 
-
+		_textures.reserve(100);//#TODO this is just so the textures don't get jigged around in memory when adding new ones
 		_textures.push_back(Texture2D::Create("atlas.png", false));
 
 		m_pxBlockFaceMesh = Mesh::GenerateQuad(); 
@@ -32,8 +32,8 @@ namespace VeryCoolEngine {
 		DescriptorSpecification xCamSpec;
 		xCamSpec.m_aeUniformBufferStages.push_back({&_pCameraUBO, ShaderStageVertexAndFragment });
 
-		DescriptorSpecification xTexSpec;
-		xTexSpec.m_aeSamplerStages.push_back({&_textures.back(), ShaderStageFragment});
+		DescriptorSpecification xBlockTexSpec;
+		xBlockTexSpec.m_aeSamplerStages.push_back({&_textures.back(), ShaderStageFragment});
 
 		m_pxQuadMesh = Mesh::GenerateQuad();
 		m_pxQuadMesh->SetShader(Shader::Create("../Assets/Shaders/vulkan/fullscreenVert.spv", "../Assets/Shaders/vulkan/fullscreenFrag.spv"));
@@ -72,7 +72,7 @@ namespace VeryCoolEngine {
 					DepthCompareFunc::GreaterOrEqual,
 					ColourFormat::BGRA8_sRGB,
 					DepthFormat::D32_SFloat,
-					{ xCamSpec, xTexSpec },
+					{ xCamSpec, xBlockTexSpec },
 					&m_pxRenderPass
 					)
 			});
@@ -82,8 +82,36 @@ namespace VeryCoolEngine {
 		m_axPipelineMeshes.at("Blocks").push_back(m_pxBlockFaceMesh);
 
 
+		m_pxTerrainMesh = Mesh::GenerateGenericHeightmap(10, 10);
 		
-
+		_textures.push_back(Texture2D::Create("crystal1k/violet_crystal_43_04_diffuse.jpg", false));
+		
+		m_pxTerrainMesh->SetShader(Shader::Create("../Assets/Shaders/vulkan/terrainVert.spv", "../Assets/Shaders/vulkan/terrainFrag.spv"));
+		_meshes.push_back(m_pxTerrainMesh);
+		
+		DescriptorSpecification xTerrainTexSpec;
+		xTerrainTexSpec.m_aeSamplerStages.push_back({ &_textures.back(), ShaderStageFragment });
+		
+		m_xPipelineSpecs.insert(
+			{ "Terrain",
+					PipelineSpecification(
+					"Terrain",
+					m_pxTerrainMesh,
+					BlendFactor::SrcAlpha,
+					BlendFactor::OneMinusSrcAlpha,
+					true,
+					true,
+					DepthCompareFunc::GreaterOrEqual,
+					ColourFormat::BGRA8_sRGB,
+					DepthFormat::D32_SFloat,
+					{xCamSpec, xTerrainTexSpec},
+					&m_pxRenderPass
+					)
+			});
+		
+		m_axPipelineMeshes.insert({ "Terrain", std::vector<Mesh*>() });
+		
+		m_axPipelineMeshes.at("Terrain").push_back(m_pxTerrainMesh);
 
 		//#TODO let client set skybox texture
 
