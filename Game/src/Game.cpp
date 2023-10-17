@@ -26,7 +26,7 @@ namespace VeryCoolEngine {
 		_textures.push_back(Texture2D::Create("atlas.png", false));
 
 		m_pxBlockFaceMesh = Mesh::GenerateQuad(); 
-		m_pxBlockFaceMesh->SetShader(Shader::Create("../Assets/Shaders/vulkan/blockVert.spv", "../Assets/Shaders/vulkan/blockFrag.spv"));
+		m_pxBlockFaceMesh->SetShader(Shader::Create("vulkan/blockVert.spv", "vulkan/blockFrag.spv"));
 		_meshes.push_back(m_pxBlockFaceMesh);
 
 		DescriptorSpecification xCamSpec;
@@ -36,7 +36,7 @@ namespace VeryCoolEngine {
 		xBlockTexSpec.m_aeSamplerStages.push_back({&_textures.back(), ShaderStageFragment});
 
 		m_pxQuadMesh = Mesh::GenerateQuad();
-		m_pxQuadMesh->SetShader(Shader::Create("../Assets/Shaders/vulkan/fullscreenVert.spv", "../Assets/Shaders/vulkan/fullscreenFrag.spv"));
+		m_pxQuadMesh->SetShader(Shader::Create("vulkan/fullscreenVert.spv", "vulkan/fullscreenFrag.spv"));
 		_meshes.push_back(m_pxQuadMesh);
 
 		m_xPipelineSpecs.insert(
@@ -78,12 +78,13 @@ namespace VeryCoolEngine {
 		
 
 
-		m_pxTerrainMesh = Mesh::GenerateGenericHeightmap(100, 100);
+		//m_pxTerrainMesh = Mesh::GenerateGenericHeightmap(100, 100);
+		m_pxTerrainMesh = Mesh::FromFile("vkTest.obj");
 		
 		_textures.push_back(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
 		_textures.push_back(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
 		
-		m_pxTerrainMesh->SetShader(Shader::Create("../Assets/Shaders/vulkan/terrainVert.spv", "../Assets/Shaders/vulkan/terrainFrag.spv"));
+		m_pxTerrainMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));
 		_meshes.push_back(m_pxTerrainMesh);
 		
 		DescriptorSpecification xTerrainTexSpec;

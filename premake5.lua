@@ -48,6 +48,7 @@ project "VeryCoolEngine"
 		"%{prj.name}/vendor/imgui",
 		"%{prj.name}/vendor/glm",
 		"%{prj.name}/vendor/stb",
+		"%{prj.name}/vendor/tinyobj",
 		"%{prj.name}/src",
 		"$(VULKAN_SDK)/include",
 	}

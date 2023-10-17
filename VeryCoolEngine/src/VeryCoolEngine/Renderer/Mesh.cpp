@@ -2,6 +2,13 @@
 #include "Mesh.h"
 #include "Platform/Vulkan/VulkanMesh.h"
 
+#include <unordered_set>
+
+#define TINYOBJLOADER_IMPLEMENTATION
+#include <tiny_obj_loader.h>
+
+#include "VeryCoolEngine/AssetHandling/Assets.h"
+
 namespace VeryCoolEngine {
 
 	Mesh* Mesh::Create() {
@@ -261,6 +268,114 @@ namespace VeryCoolEngine {
 
 		mesh->m_pxBufferLayout->CalculateOffsetsAndStrides();
 #pragma endregion
+		return mesh;
+	}
+	
+
+	struct CompareVec3 final
+	{
+		size_t operator()(const glm::vec3& k)const
+		{
+			return std::hash<int>()(k.x) ^ std::hash<int>()(k.y) ^ std::hash<int>()(k.z);
+		}
+
+		bool operator()(const glm::vec3& a, const glm::vec3& b)const
+		{
+			return a.x == b.x && a.y == b.y && a.z == b.z;
+		}
+	};
+
+
+	Mesh* Mesh::FromFile(const std::string& path)
+	{
+		std::string strPath(MESHDIR);
+		strPath += path;
+
+		Mesh* mesh = Mesh::Create();
+		mesh->m_pxBufferLayout = new BufferLayout();
+
+		tinyobj::attrib_t attrib;
+		std::vector<tinyobj::shape_t> shapes;
+		std::vector<tinyobj::material_t> materials;
+
+		std::string err;
+		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &err, strPath.c_str())) {
+			VCE_ASSERT(false, "Failed to load obj");
+		}
+
+		// Process the loaded data
+		// Here, you may need to iterate through 'attrib.vertices', 'attrib.texcoords', and 'shapes' to fill your mesh structure.
+		// You can adjust the following code accordingly to your mesh structure.
+
+		mesh->m_uNumVerts = attrib.vertices.size() / 3;
+		mesh->m_uNumIndices = shapes[0].mesh.indices.size();
+		mesh->m_pxVertexPositions = new glm::vec3[mesh->m_uNumVerts];
+		mesh->m_pxUVs = new glm::vec2[mesh->m_uNumVerts];
+		mesh->m_puIndices = new unsigned int[mesh->m_uNumIndices];
+
+		// Copy vertex positions and UVs from 'attrib'
+		for (size_t i = 0; i < attrib.vertices.size(); i += 3) {
+			mesh->m_pxVertexPositions[i / 3] = glm::vec3(attrib.vertices[i], attrib.vertices[i + 1], attrib.vertices[i + 2]);
+		}
+
+		for (size_t i = 0; i < attrib.texcoords.size(); i += 2) {
+			mesh->m_pxUVs[i / 2] = glm::vec2(attrib.texcoords[i], attrib.texcoords[i + 1]);
+		}
+
+		// Copy indices from 'shapes'
+		for (size_t i = 0; i < shapes[0].mesh.indices.size(); i++) {
+			mesh->m_puIndices[i] = shapes[0].mesh.indices[i].vertex_index;
+		}
+
+
+		int numFloats = 0;
+		if (mesh->m_pxVertexPositions != nullptr) {
+			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float3, "_aPosition" });
+			numFloats += 3;
+		}
+		if (mesh->m_pxUVs != nullptr) {
+			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float2, "_aUV" });
+			numFloats += 2;
+		}
+		if (mesh->m_pxNormals != nullptr) {
+			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float3, "_aNormal" });
+			numFloats += 3;
+		}
+		if (mesh->m_pxTangents != nullptr) {
+			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float4, "_aTangent" });
+			numFloats += 4;
+		}
+
+		mesh->m_pVerts = new float[mesh->m_uNumVerts * numFloats];
+
+		size_t index = 0;
+		for (int i = 0; i < mesh->m_uNumVerts; i++)
+		{
+			if (mesh->m_pxVertexPositions != nullptr) {
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxVertexPositions[i].x;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxVertexPositions[i].y;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxVertexPositions[i].z;
+			}
+
+			if (mesh->m_pxUVs != nullptr) {
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxUVs[i].x;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxUVs[i].y;
+			}
+			if (mesh->m_pxNormals != nullptr) {
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxNormals[i].x;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxNormals[i].y;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxNormals[i].z;
+			}
+			if (mesh->m_pxTangents != nullptr) {
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].x;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].y;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].z;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].w;
+			}
+		}
+
+		mesh->m_pxBufferLayout->CalculateOffsetsAndStrides();
+
 		return mesh;
 	}
 

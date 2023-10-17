@@ -45,6 +45,8 @@ namespace VeryCoolEngine {
 		static Mesh* GenerateQuad();
 		static Mesh* GenerateVulkanTest();
 
+		static Mesh* FromFile(const std::string& path);
+
 		Transform m_xTransform;
 
 

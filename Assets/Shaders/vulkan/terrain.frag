@@ -67,5 +67,6 @@ void main(){
 	bumpNormal.y = 0;
 	bumpNormal.z *= 10.f;
 	//_oColor = vec4(bumpNormal,1);
+	_oColor = vec4(UV,0,1);
 	
 }
