@@ -29,7 +29,8 @@ void main(){
 	Tangent = wTangent;
 	Binormal = cross(wTangent,wNormal) * _aTangent.w;
 
-
+	//#TODO delete
+	Normal = _aNormal;
 
 	gl_Position = _uViewProjMat * vec4(_aPosition,1);//#todo model mat
 }

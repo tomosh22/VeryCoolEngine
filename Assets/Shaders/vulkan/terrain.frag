@@ -1,6 +1,5 @@
 #version 450 core
 
-
 layout(location = 0) out vec4 _oColor;
 
 layout(location = 0) in vec2 UV;
@@ -30,7 +29,7 @@ Light lights[100];
 };
 
 layout(set = 1, binding = 0) uniform sampler2D diffuseTex;
-layout(set = 1, binding = 1) uniform sampler2D bumpMap;
+//layout(set = 1, binding = 1) uniform sampler2D bumpMap;
 
 void point(inout vec4 finalColor, vec4 diffuse, Light light, vec3 bumpNormal) {
 	
@@ -54,19 +53,16 @@ void point(inout vec4 finalColor, vec4 diffuse, Light light, vec3 bumpNormal) {
 
 void main(){
 	mat3 TBN = mat3 (normalize(Tangent),normalize(Binormal),normalize(Normal));
-	vec3 bumpNormal = normalize(normalize(TBN * texture(bumpMap,UV).rgb)*2-1);
+	//vec3 bumpNormal = normalize(normalize(TBN * texture(bumpMap,UV).rgb)*2-1);
 	_oColor = vec4(0);
 	vec4 diffuse = texture(diffuseTex,UV);
 	for(int i = 0; i < numLights; i++){
-		point(_oColor,diffuse,lights[i], bumpNormal);
+		point(_oColor,diffuse,lights[i], Normal);
 	}
 	_oColor.rgb += diffuse.rgb * 0.1f;
 	//_oColor.rgb = Normal;
 	_oColor.a = 1.f;
-	bumpNormal.x *= 10.f;
-	bumpNormal.y = 0;
-	bumpNormal.z *= 10.f;
 	//_oColor = vec4(bumpNormal,1);
-	_oColor = vec4(UV,0,1);
+	_oColor.rgb = texture(diffuseTex,UV).rgb;
 	
 }

@@ -44,7 +44,7 @@ void VulkanRenderer::InitVulkan() {
 	app->_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS, MAX_FRAMES_IN_FLIGHT, 1);
 
 	for (Shader* pxShader : app->_shaders) pxShader->PlatformInit();
-	for (Texture* pxTex : app->_textures) pxTex->PlatformInit();
+	//for (Texture* pxTex : app->_textures) pxTex->PlatformInit();
 
 
 

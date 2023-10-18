@@ -24,6 +24,8 @@ namespace VeryCoolEngine {
     void VulkanMesh::PlatformInit()
     {
 		
+		if(m_pxTexture != nullptr)m_pxTexture->PlatformInit();
+		if(m_pxBumpMap != nullptr)m_pxBumpMap->PlatformInit();
 
 		uint32_t uBindPoint = 0;
 		for (BufferElement& element : m_pxBufferLayout->GetElements()) {

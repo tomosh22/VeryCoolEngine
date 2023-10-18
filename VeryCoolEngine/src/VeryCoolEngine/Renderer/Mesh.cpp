@@ -272,27 +272,46 @@ namespace VeryCoolEngine {
 	}
 	
 
-	struct CompareVec3 final
-	{
-		size_t operator()(const glm::vec3& k)const
-		{
-			return std::hash<int>()(k.x) ^ std::hash<int>()(k.y) ^ std::hash<int>()(k.z);
-		}
+	//struct CompareVec3 final
+	//{
+	//	size_t operator()(const glm::vec3& k)const
+	//	{
+	//		return std::hash<int>()(k.x) ^ std::hash<int>()(k.y) ^ std::hash<int>()(k.z);
+	//	}
+	//
+	//	bool operator()(const glm::vec3& a, const glm::vec3& b)const
+	//	{
+	//		return a.x == b.x && a.y == b.y && a.z == b.z;
+	//	}
+	//};
 
-		bool operator()(const glm::vec3& a, const glm::vec3& b)const
-		{
-			return a.x == b.x && a.y == b.y && a.z == b.z;
+	
+
+	struct Vertex {
+		glm::vec3 pos;
+		glm::vec2 uv;
+		glm::vec3 normal;
+
+		bool operator==(const Vertex& other) const {
+			return pos == other.pos && uv == other.uv && normal == other.normal;
 		}
 	};
 
+	struct VertexHash
+	{
+		size_t operator()(Vertex const& vertex) const {
+			size_t posHash = std::hash<int>()(vertex.pos.x) ^ std::hash<int>()(vertex.pos.y) ^ std::hash<int>()(vertex.pos.z);
+			size_t uvHash = std::hash<int>()(vertex.uv.x) ^ std::hash<int>()(vertex.uv.y);
+			size_t normalHash = std::hash<int>()(vertex.normal.x) ^ std::hash<int>()(vertex.normal.y) ^ std::hash<int>()(vertex.normal.z);
+			return posHash ^ uvHash ^ normalHash;
+		}
+	};
+	
 
 	Mesh* Mesh::FromFile(const std::string& path)
 	{
 		std::string strPath(MESHDIR);
 		strPath += path;
-
-		Mesh* mesh = Mesh::Create();
-		mesh->m_pxBufferLayout = new BufferLayout();
 
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
@@ -302,31 +321,77 @@ namespace VeryCoolEngine {
 		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &err, strPath.c_str())) {
 			VCE_ASSERT(false, "Failed to load obj");
 		}
+		
+		std::vector<glm::vec3> xPositions;
+		std::vector<glm::vec2> xUVs;
+		std::vector<glm::vec3> xNormals;
+		std::vector<unsigned int> xIndices;
 
-		// Process the loaded data
-		// Here, you may need to iterate through 'attrib.vertices', 'attrib.texcoords', and 'shapes' to fill your mesh structure.
-		// You can adjust the following code accordingly to your mesh structure.
+		std::unordered_map<Vertex, uint32_t, VertexHash> xUniqueVertices{};
 
-		mesh->m_uNumVerts = attrib.vertices.size() / 3;
-		mesh->m_uNumIndices = shapes[0].mesh.indices.size();
-		mesh->m_pxVertexPositions = new glm::vec3[mesh->m_uNumVerts];
-		mesh->m_pxUVs = new glm::vec2[mesh->m_uNumVerts];
+		for (const auto& shape : shapes) {
+			for (const auto& index : shape.mesh.indices) {
+
+				glm::vec3 pos = {
+					attrib.vertices[3 * index.vertex_index + 0],
+					attrib.vertices[3 * index.vertex_index + 1],
+					attrib.vertices[3 * index.vertex_index + 2]
+				};
+
+				glm::vec2 texCoord = {
+					attrib.texcoords[2 * index.texcoord_index + 0],
+					1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+				};
+
+				//not sure if x axis needs to be flipped
+				glm::vec3 normal = {
+					attrib.normals[3 * index.normal_index + 0],
+					attrib.normals[3 * index.normal_index + 2],//had to swap y and z
+					attrib.normals[3 * index.normal_index + 1]
+				};
+
+				Vertex v;
+				v.pos = pos;
+				v.uv = texCoord;
+				v.normal = normal;
+
+				if (xUniqueVertices.count(v) == 0) {
+					xUniqueVertices[v] = static_cast<uint32_t>(xPositions.size());
+					xPositions.push_back(pos);
+					xUVs.push_back(texCoord);
+					xNormals.push_back(normal);
+				}
+
+				xIndices.push_back(xUniqueVertices[v]);
+			}
+		}
+
+		Mesh* mesh = Mesh::Create();
+		mesh->m_pxBufferLayout = new BufferLayout();
+
+		mesh->m_uNumVerts = xPositions.size();
+		mesh->m_uNumIndices = xIndices.size();
+
 		mesh->m_puIndices = new unsigned int[mesh->m_uNumIndices];
+		mesh->m_pxVertexPositions = new glm::vec3[mesh->m_uNumVerts];
+		mesh->m_pxNormals = new glm::vec3[mesh->m_uNumVerts]{ glm::vec3(0,0,0) };
+		mesh->m_pxTangents = new glm::vec4[mesh->m_uNumVerts]{ glm::vec4(0,0,0,0) };
+		mesh->m_pxUVs = new glm::vec2[mesh->m_uNumVerts];
 
-		// Copy vertex positions and UVs from 'attrib'
-		for (size_t i = 0; i < attrib.vertices.size(); i += 3) {
-			mesh->m_pxVertexPositions[i / 3] = glm::vec3(attrib.vertices[i], attrib.vertices[i + 1], attrib.vertices[i + 2]);
+
+		for (size_t i = 0; i < xIndices.size(); i++)mesh->m_puIndices[i] = xIndices[i];
+		for (size_t i = 0; i < xPositions.size(); i++) {
+			glm::vec3 pos = xPositions[i];
+			pos *= glm::vec3(10, 10, 10);
+			glm::quat rot = Transform::EulerAnglesToQuat(270, 180, 0);
+			pos = glm::rotate(rot, pos);
+			pos += glm::vec3(20, 75, 20);
+			mesh->m_pxVertexPositions[i] = pos;
 		}
+		for (size_t i = 0; i < xUVs.size(); i++)mesh->m_pxUVs[i] = xUVs[i];
+		for (size_t i = 0; i < xNormals.size(); i++)mesh->m_pxNormals[i] = xNormals[i];
 
-		for (size_t i = 0; i < attrib.texcoords.size(); i += 2) {
-			mesh->m_pxUVs[i / 2] = glm::vec2(attrib.texcoords[i], attrib.texcoords[i + 1]);
-		}
-
-		// Copy indices from 'shapes'
-		for (size_t i = 0; i < shapes[0].mesh.indices.size(); i++) {
-			mesh->m_puIndices[i] = shapes[0].mesh.indices[i].vertex_index;
-		}
-
+		mesh->GenerateTangents();
 
 		int numFloats = 0;
 		if (mesh->m_pxVertexPositions != nullptr) {
@@ -387,7 +452,11 @@ namespace VeryCoolEngine {
 			int b = m_puIndices[i * 3 + 1];
 			int c = m_puIndices[i * 3 + 2];
 
-			glm::vec3 normal = glm::cross(m_pxVertexPositions[b] - m_pxVertexPositions[a], m_pxVertexPositions[c] - m_pxVertexPositions[a]);
+			glm::vec3 posA = m_pxVertexPositions[a];// * glm::vec3(10,10,10);
+			glm::vec3 posB = m_pxVertexPositions[b];// * glm::vec3(10, 10, 10);
+			glm::vec3 posC = m_pxVertexPositions[c];// * glm::vec3(10, 10, 10);
+
+			glm::vec3 normal = glm::cross(posB - posA, posC - posA);
 			m_pxNormals[a] += normal;
 			m_pxNormals[b] += normal;
 			m_pxNormals[c] += normal;

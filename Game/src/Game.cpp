@@ -22,10 +22,10 @@ namespace VeryCoolEngine {
 	Game::Game() {
 
 
-		_textures.reserve(100);//#TODO this is just so the textures don't get jigged around in memory when adding new ones
-		_textures.push_back(Texture2D::Create("atlas.png", false));
+		//_textures.reserve(100);//#TODO this is just so the textures don't get jigged around in memory when adding new ones
 
 		m_pxBlockFaceMesh = Mesh::GenerateQuad(); 
+		m_pxBlockFaceMesh->SetTexture(Texture2D::Create("atlas.png", false));
 		m_pxBlockFaceMesh->SetShader(Shader::Create("vulkan/blockVert.spv", "vulkan/blockFrag.spv"));
 		_meshes.push_back(m_pxBlockFaceMesh);
 
@@ -33,7 +33,7 @@ namespace VeryCoolEngine {
 		xCamSpec.m_aeUniformBufferStages.push_back({&_pCameraUBO, ShaderStageVertexAndFragment });
 
 		DescriptorSpecification xBlockTexSpec;
-		xBlockTexSpec.m_aeSamplerStages.push_back({&_textures.back(), ShaderStageFragment});
+		xBlockTexSpec.m_aeSamplerStages.push_back({m_pxBlockFaceMesh->GetTexturePtr(), ShaderStageFragment});
 
 		m_pxQuadMesh = Mesh::GenerateQuad();
 		m_pxQuadMesh->SetShader(Shader::Create("vulkan/fullscreenVert.spv", "vulkan/fullscreenFrag.spv"));
@@ -81,15 +81,13 @@ namespace VeryCoolEngine {
 		//m_pxTerrainMesh = Mesh::GenerateGenericHeightmap(100, 100);
 		m_pxTerrainMesh = Mesh::FromFile("vkTest.obj");
 		
-		_textures.push_back(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
-		_textures.push_back(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
+		m_pxTerrainMesh->SetTexture(Texture2D::Create("modelTest.png", false));
 		
 		m_pxTerrainMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));
 		_meshes.push_back(m_pxTerrainMesh);
 		
 		DescriptorSpecification xTerrainTexSpec;
-		xTerrainTexSpec.m_aeSamplerStages.push_back({ &_textures.at(1), ShaderStageFragment });
-		xTerrainTexSpec.m_aeSamplerStages.push_back({ &_textures.at(2), ShaderStageFragment });
+		xTerrainTexSpec.m_aeSamplerStages.push_back({ (m_pxTerrainMesh->GetTexturePtr()), ShaderStageFragment });
 
 		DescriptorSpecification xLightSpec;
 		xLightSpec.m_aeUniformBufferStages.push_back({ &_pLightUBO, ShaderStageVertexAndFragment });
