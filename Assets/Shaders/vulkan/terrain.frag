@@ -13,14 +13,14 @@ struct Light{
 	vec4 color;
 };
 
-layout(std140, binding=0) uniform matrices{
+layout(std140, set = 0, binding=0) uniform matrices{
 	mat4 _uViewMat;
 	mat4 _uProjMat;
 	mat4 _uViewProjMat;
 	vec4 _uCamPos;//4 bytes of padding
 };
 
-layout(std140, set = 2, binding = 0) uniform LightsUBO{
+layout(std140, set = 1, binding = 0) uniform LightsUBO{
 uint numLights;
 uint pad0;
 uint pad1;
@@ -28,7 +28,7 @@ uint pad2;
 Light lights[100];
 };
 
-layout(set = 1, binding = 0) uniform sampler2D diffuseTex;
+layout(set = 2, binding = 0) uniform sampler2D diffuseTex;
 //layout(set = 1, binding = 1) uniform sampler2D bumpMap;
 
 void point(inout vec4 finalColor, vec4 diffuse, Light light, vec3 bumpNormal) {

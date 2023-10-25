@@ -2,6 +2,8 @@
 #include "VulkanMesh.h"
 #include "VeryCoolEngine/Application.h"
 
+#include "VulkanDescriptorSetLayoutBuilder.h"
+
 namespace VeryCoolEngine {
 
 	vk::Format VulkanMesh::ShaderDataTypeToVulkanFormat(ShaderDataType t) {
@@ -23,7 +25,8 @@ namespace VeryCoolEngine {
 
     void VulkanMesh::PlatformInit()
     {
-		
+		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+
 		if(m_pxTexture != nullptr)m_pxTexture->PlatformInit();
 		if(m_pxBumpMap != nullptr)m_pxBumpMap->PlatformInit();
 
@@ -78,6 +81,12 @@ namespace VeryCoolEngine {
 			.setVertexAttributeDescriptionCount(m_axAttrDescs.size())
 			.setPVertexAttributeDescriptions(m_axAttrDescs.data());
 
+		if (m_xTexDescSpec.m_aeSamplerStages.size()) {
+			m_xTexDescSetLayout = VulkanDescriptorSetLayoutBuilder::FromSpecification(m_xTexDescSpec);
+			m_xTexDescSet = pxRenderer->CreateDescriptorSet(m_xTexDescSetLayout, pxRenderer->GetDescriptorPool());
+
+			pxRenderer->UpdateImageDescriptor(m_xTexDescSet, 0, 0, dynamic_cast<VulkanTexture2D*>(m_pxTexture)->m_xImageView, dynamic_cast<VulkanTexture2D*>(m_pxTexture)->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
+		}
     }
 
 

@@ -6,7 +6,7 @@ layout(location = 2) in vec3 _aNormal;
 layout(location = 3) in vec4 _aTangent;
 
 
-layout(std140, binding=0) uniform matrices{
+layout(std140, set = 0, binding=0) uniform matrices{
 	mat4 _uViewMat;
 	mat4 _uProjMat;
 	mat4 _uViewProjMat;

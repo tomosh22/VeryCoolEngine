@@ -82,6 +82,8 @@ namespace VeryCoolEngine {
 	}
 
 	static vk::ShaderStageFlags VulkanShaderStage(ShaderStage eStage) {
+		//#TODO stop just returning both
+		return vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment;
 		switch (eStage) {
 		case ShaderStageVertex:
 			return vk::ShaderStageFlagBits::eVertex;
@@ -92,17 +94,23 @@ namespace VeryCoolEngine {
 		}
 	}
 
-	vk::DescriptorSetLayout VulkanDescriptorSetLayoutBuilder::FromSpecification(const DescriptorSpecification spec)
+	vk::DescriptorSetLayout VulkanDescriptorSetLayoutBuilder::FromSpecification(const BufferDescriptorSpecification spec)
+	{
+		VulkanDescriptorSetLayoutBuilder xBuilder = VulkanDescriptorSetLayoutBuilder();
+		if (spec.m_aeUniformBufferStages.size()) {
+			for (auto& [ppxUBO, eStage] : spec.m_aeUniformBufferStages) {
+				xBuilder = xBuilder.WithUniformBuffers(1, VulkanShaderStage(eStage));
+			}
+		}
+		return std::move(xBuilder.Build(VulkanRenderer::GetInstance()->GetDevice()));
+	}
+
+	vk::DescriptorSetLayout VulkanDescriptorSetLayoutBuilder::FromSpecification(const TextureDescriptorSpecification spec)
 	{
 		VulkanDescriptorSetLayoutBuilder xBuilder = VulkanDescriptorSetLayoutBuilder();
 		if (spec.m_aeSamplerStages.size()) {
 			for (auto& [ppxTexture, eStage] : spec.m_aeSamplerStages) {
 				xBuilder = xBuilder.WithSamplers(1, VulkanShaderStage(eStage));
-			}
-		}
-		if (spec.m_aeUniformBufferStages.size()) {
-			for (auto& [ppxUBO, eStage] : spec.m_aeUniformBufferStages) {
-				xBuilder = xBuilder.WithUniformBuffers(1, VulkanShaderStage(eStage));
 			}
 		}
 		return std::move(xBuilder.Build(VulkanRenderer::GetInstance()->GetDevice()));

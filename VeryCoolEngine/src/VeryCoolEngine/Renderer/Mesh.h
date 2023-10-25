@@ -3,6 +3,7 @@
 #include "VeryCoolEngine/Renderer/Shader.h"
 #include "VeryCoolEngine/Renderer/Texture.h"
 #include "VeryCoolEngine/Transform.h"
+#include "VeryCoolEngine/Renderer/PipelineSpecification.h"
 namespace VeryCoolEngine {
 	enum class MeshTopolgy {
 		Triangles,
@@ -61,6 +62,8 @@ namespace VeryCoolEngine {
 		BufferLayout* m_pxBufferLayout;
 
 		MeshTopolgy m_eTopolgy = MeshTopolgy::Triangles;
+
+		TextureDescriptorSpecification m_xTexDescSpec;
 
 	protected:
 		VertexArray* m_pxVertexArray;

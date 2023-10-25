@@ -50,7 +50,7 @@ void VulkanRenderer::InitVulkan() {
 
 	app->m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Skybox")) );
 	app->m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Blocks")));
-	app->m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Terrain")));
+	app->m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Meshes")));
 	
 	
 
@@ -97,11 +97,19 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline->m_xPipeline);
 
-		pipeline->BindDescriptorSets(commandBuffer, pipeline->m_axDescSets, vk::PipelineBindPoint::eGraphics, 0);
+		
 
 		for (Mesh* mesh : scene->m_axPipelineMeshes.at(pipeline->m_strName)) {
 			VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
 			pxVulkanMesh->BindToCmdBuffer(commandBuffer);
+
+			std::vector<vk::DescriptorSet> axSets;
+			for (const vk::DescriptorSet set : pipeline->m_axBufferDescSets)
+				axSets.push_back(set);
+			if (pxVulkanMesh->GetTexture() != nullptr)
+				axSets.push_back(pxVulkanMesh->m_xTexDescSet);
+
+			pipeline->BindDescriptorSets(commandBuffer, axSets, vk::PipelineBindPoint::eGraphics, 0);
 
 			commandBuffer.drawIndexed(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
 		}

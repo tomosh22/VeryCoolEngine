@@ -29,14 +29,19 @@ namespace VeryCoolEngine {
 		m_pxBlockFaceMesh->SetShader(Shader::Create("vulkan/blockVert.spv", "vulkan/blockFrag.spv"));
 		_meshes.push_back(m_pxBlockFaceMesh);
 
-		DescriptorSpecification xCamSpec;
+		BufferDescriptorSpecification xCamSpec;
 		xCamSpec.m_aeUniformBufferStages.push_back({&_pCameraUBO, ShaderStageVertexAndFragment });
 
-		DescriptorSpecification xBlockTexSpec;
+		TextureDescriptorSpecification xBlockTexSpec;
 		xBlockTexSpec.m_aeSamplerStages.push_back({m_pxBlockFaceMesh->GetTexturePtr(), ShaderStageFragment});
+
+		m_pxBlockFaceMesh->m_xTexDescSpec = xBlockTexSpec;
 
 		m_pxQuadMesh = Mesh::GenerateQuad();
 		m_pxQuadMesh->SetShader(Shader::Create("vulkan/fullscreenVert.spv", "vulkan/fullscreenFrag.spv"));
+
+		
+
 		_meshes.push_back(m_pxQuadMesh);
 
 		m_xPipelineSpecs.insert(
@@ -52,6 +57,7 @@ namespace VeryCoolEngine {
 					ColourFormat::BGRA8_sRGB,
 					DepthFormat::D32_SFloat,
 					{xCamSpec},
+					{},
 					&m_pxRenderPass
 					)
 			});
@@ -70,7 +76,8 @@ namespace VeryCoolEngine {
 					DepthCompareFunc::GreaterOrEqual,
 					ColourFormat::BGRA8_sRGB,
 					DepthFormat::D32_SFloat,
-					{ xCamSpec, xBlockTexSpec },
+					{ xCamSpec},
+					{xBlockTexSpec},
 					&m_pxRenderPass
 					)
 			});
@@ -78,24 +85,27 @@ namespace VeryCoolEngine {
 		
 
 
-		//m_pxTerrainMesh = Mesh::GenerateGenericHeightmap(100, 100);
-		m_pxTerrainMesh = Mesh::FromFile("vkTest.obj");
+		m_pxTerrainMesh = Mesh::GenerateGenericHeightmap(100, 100);
+		//m_pxTerrainMesh = Mesh::FromFile("vkTest.obj");
 		
-		m_pxTerrainMesh->SetTexture(Texture2D::Create("modelTest.png", false));
+		m_pxTerrainMesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
+		//m_pxTerrainMesh->SetTexture(Texture2D::Create("modelTest.png", false));
 		
 		m_pxTerrainMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));
 		_meshes.push_back(m_pxTerrainMesh);
 		
-		DescriptorSpecification xTerrainTexSpec;
+		TextureDescriptorSpecification xTerrainTexSpec;
 		xTerrainTexSpec.m_aeSamplerStages.push_back({ (m_pxTerrainMesh->GetTexturePtr()), ShaderStageFragment });
 
-		DescriptorSpecification xLightSpec;
+		m_pxTerrainMesh->m_xTexDescSpec = xTerrainTexSpec;
+
+		BufferDescriptorSpecification xLightSpec;
 		xLightSpec.m_aeUniformBufferStages.push_back({ &_pLightUBO, ShaderStageVertexAndFragment });
 		
 		m_xPipelineSpecs.insert(
-			{ "Terrain",
+			{ "Meshes",
 					PipelineSpecification(
-					"Terrain",
+					"Meshes",
 					m_pxTerrainMesh,
 					BlendFactor::SrcAlpha,
 					BlendFactor::OneMinusSrcAlpha,
@@ -104,10 +114,20 @@ namespace VeryCoolEngine {
 					DepthCompareFunc::GreaterOrEqual,
 					ColourFormat::BGRA8_sRGB,
 					DepthFormat::D32_SFloat,
-					{xCamSpec, xTerrainTexSpec, xLightSpec},
+					{xCamSpec, xLightSpec},
+					{xTerrainTexSpec},
 					&m_pxRenderPass
 					)
 			});
+
+
+		m_pxTestMesh = Mesh::FromFile("vkTest.obj");
+		m_pxTestMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));//#TODO dont duplicate
+		m_pxTestMesh->SetTexture(Texture2D::Create("modelTest.png", false));
+
+		m_pxTestMesh->m_xTexDescSpec = xTerrainTexSpec;
+
+		_meshes.push_back(m_pxTestMesh);
 		
 		
 		_lights.push_back({
@@ -298,8 +318,9 @@ namespace VeryCoolEngine {
 		scene->m_axPipelineMeshes.insert({ "Blocks", std::vector<Mesh*>() });
 		scene->m_axPipelineMeshes.at("Blocks").push_back(game->m_pxBlockFaceMesh);
 
-		scene->m_axPipelineMeshes.insert({ "Terrain", std::vector<Mesh*>() });
-		scene->m_axPipelineMeshes.at("Terrain").push_back(game->m_pxTerrainMesh);
+		scene->m_axPipelineMeshes.insert({ "Meshes", std::vector<Mesh*>() });
+		scene->m_axPipelineMeshes.at("Meshes").push_back(game->m_pxTerrainMesh);
+		scene->m_axPipelineMeshes.at("Meshes").push_back(game->m_pxTestMesh);
 
 		for (Renderer::Light& light : _lights) {
 			scene->lights[scene->numLights++] = light;

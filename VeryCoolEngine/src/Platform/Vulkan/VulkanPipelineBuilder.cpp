@@ -234,34 +234,42 @@ namespace VeryCoolEngine {
 			xBuilder = xBuilder.WithPass(dynamic_cast<VulkanRenderPass*>(*spec.m_pxRenderPass)->m_xRenderPass);
 
 		
-		std::vector<vk::DescriptorSetLayout> axLayouts;
-		std::vector<vk::DescriptorSet> axSets;
-		for (DescriptorSpecification spec : spec.m_axDescriptors) {
-			VCE_ASSERT(spec.m_aeSamplerStages.size() == 0 || spec.m_aeUniformBufferStages.size() == 0, "Need to rework this sytem")
-			axLayouts.emplace_back(VulkanDescriptorSetLayoutBuilder::FromSpecification(spec));
-			axSets.emplace_back(pxRenderer->CreateDescriptorSet(axLayouts.back(), pxRenderer->GetDescriptorPool()));
+		std::vector<vk::DescriptorSetLayout> axBufferLayouts;
+		std::vector<vk::DescriptorSet> axBufferSets;
+		for (BufferDescriptorSpecification spec : spec.m_axBufferDescriptors) {
+			axBufferLayouts.emplace_back(VulkanDescriptorSetLayoutBuilder::FromSpecification(spec));
+			axBufferSets.emplace_back(pxRenderer->CreateDescriptorSet(axBufferLayouts.back(), pxRenderer->GetDescriptorPool()));
 
-			uint32_t uTexBinding = 0;
-			for (auto& [ppxTexture, eStage] : spec.m_aeSamplerStages) {
-				//VCE_ASSERT((*ppxTexture)->m_bInitialised, "Texture not initialised");
-				pxRenderer->UpdateImageDescriptor(axSets.back(), uTexBinding++, 0, dynamic_cast<VulkanTexture2D*>(*ppxTexture)->m_xImageView, dynamic_cast<VulkanTexture2D*>(*ppxTexture)->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
-			}
 
 			for(auto& [ppxUBO, eStage] : spec.m_aeUniformBufferStages) {
 				for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 				{
-					pxRenderer->UpdateBufferDescriptor(axSets.back(), dynamic_cast<VulkanManagedUniformBuffer*>(*ppxUBO)->ppBuffers[i], 0, vk::DescriptorType::eUniformBuffer, 0);
+					pxRenderer->UpdateBufferDescriptor(axBufferSets.back(), dynamic_cast<VulkanManagedUniformBuffer*>(*ppxUBO)->ppBuffers[i], 0, vk::DescriptorType::eUniformBuffer, 0);
 				}
 			}
 		}
 
-		for (uint32_t i = 0; i < axLayouts.size(); i++) {
-			xBuilder = xBuilder.WithDescriptorSetLayout(i, axLayouts.at(i));
+		std::vector<vk::DescriptorSetLayout> axTexLayouts;
+		std::vector<vk::DescriptorSet> axTexSets;
+		for (TextureDescriptorSpecification spec : spec.m_axTextureDescriptors) {
+			axTexLayouts.emplace_back(VulkanDescriptorSetLayoutBuilder::FromSpecification(spec));
+			axTexSets.emplace_back(pxRenderer->CreateDescriptorSet(axTexLayouts.back(), pxRenderer->GetDescriptorPool()));
+
+		}
+
+		uint32_t uLayoutIndex = 0;
+		for (uint32_t i = 0; i < axBufferLayouts.size(); i++) {
+			xBuilder = xBuilder.WithDescriptorSetLayout(uLayoutIndex++, axBufferLayouts.at(i));
+		}
+		for (uint32_t i = 0; i < axTexLayouts.size(); i++) {
+			xBuilder = xBuilder.WithDescriptorSetLayout(uLayoutIndex++, axTexLayouts.at(i));
 		}
 
 		VulkanPipeline* xPipeline = xBuilder.Build();
-		xPipeline->m_axDescLayouts = axLayouts;
-		xPipeline->m_axDescSets = axSets;
+		xPipeline->m_axBufferDescLayouts = axBufferLayouts;
+		xPipeline->m_axBufferDescSets = axBufferSets;
+		xPipeline->m_axTexDescLayouts = axTexLayouts;
+		xPipeline->m_axTexDescSets = axTexSets;
 		xPipeline->m_strName = spec.m_strName;
 
 		return xPipeline;

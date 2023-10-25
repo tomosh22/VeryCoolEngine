@@ -16,8 +16,11 @@ namespace VeryCoolEngine {
 		vk::Pipeline m_xPipeline;
 		vk::PipelineLayout	m_xPipelineLayout;
 
-		std::vector<vk::DescriptorSetLayout> m_axDescLayouts;
-		std::vector<vk::DescriptorSet> m_axDescSets;
+		std::vector<vk::DescriptorSetLayout> m_axBufferDescLayouts;
+		std::vector<vk::DescriptorSet> m_axBufferDescSets;
+
+		std::vector<vk::DescriptorSetLayout> m_axTexDescLayouts;
+		std::vector<vk::DescriptorSet> m_axTexDescSets;
 
 		std::string m_strName;
 

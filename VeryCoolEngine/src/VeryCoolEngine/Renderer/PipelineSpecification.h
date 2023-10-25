@@ -1,10 +1,12 @@
 #pragma once
-#include "Mesh.h"
 #include <vector>
 #include <string>
 
 
 namespace VeryCoolEngine {
+
+	class Mesh;
+	class Texture;
 
 	enum class BlendFactor {
 		Disabled, SrcAlpha, OneMinusSrcAlpha
@@ -30,8 +32,11 @@ namespace VeryCoolEngine {
 	};
 	
 
-	struct DescriptorSpecification {
+	struct BufferDescriptorSpecification {
 		std::vector<std::pair<class ManagedUniformBuffer**, ShaderStage>> m_aeUniformBufferStages;
+	};
+
+	struct TextureDescriptorSpecification {
 		std::vector<std::pair<Texture**, ShaderStage>> m_aeSamplerStages;
 	};
 
@@ -45,7 +50,8 @@ namespace VeryCoolEngine {
 		DepthCompareFunc m_eDepthCompareFunc;
 		ColourFormat m_eColourFormat;
 		DepthFormat m_eDepthFormat;
-		std::vector<DescriptorSpecification> m_axDescriptors;
+		std::vector<BufferDescriptorSpecification> m_axBufferDescriptors;
+		std::vector<TextureDescriptorSpecification> m_axTextureDescriptors;
 		RenderPass** m_pxRenderPass;
 	};
 	
