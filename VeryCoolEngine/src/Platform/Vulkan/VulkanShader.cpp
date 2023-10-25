@@ -1,12 +1,14 @@
 #include "vcepch.h"
 #include "VulkanShader.h"
 
+#include "VeryCoolEngine/AssetHandling/Assets.h"
+
 namespace VeryCoolEngine {
 	VulkanShader::VulkanShader(const std::string& vertex, const std::string& fragment, const std::string& geometry, const std::string& domain, const std::string& hull)
 	{
 
-		m_vertShaderCode = VulkanRenderer::ReadFile(vertex.c_str());
-		m_fragShaderCode = VulkanRenderer::ReadFile(fragment.c_str());
+		m_vertShaderCode = VulkanRenderer::ReadFile(SHADERDIR + vertex.c_str());
+		m_fragShaderCode = VulkanRenderer::ReadFile(SHADERDIR + fragment.c_str());
 
 		
 

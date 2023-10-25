@@ -3,6 +3,7 @@
 #include "VeryCoolEngine/Renderer/Shader.h"
 #include "VeryCoolEngine/Renderer/Texture.h"
 #include "VeryCoolEngine/Transform.h"
+#include "VeryCoolEngine/Renderer/PipelineSpecification.h"
 namespace VeryCoolEngine {
 	enum class MeshTopolgy {
 		Triangles,
@@ -37,6 +38,8 @@ namespace VeryCoolEngine {
 		void SetBumpMap(Texture2D* bumpMap) { m_pxBumpMap = bumpMap; }
 		Texture2D* GetTexture() const { return m_pxTexture; }
 		Texture2D* GetBumpMap() const { return m_pxBumpMap; }
+		Texture** GetTexturePtr() const { return (Texture**)& m_pxTexture; }
+		Texture** GetBumpMapPtr() const { return(Texture**)&m_pxBumpMap; }
 
 		virtual void PlatformInit() = 0;
 
@@ -44,6 +47,8 @@ namespace VeryCoolEngine {
 		static Mesh* GenerateGenericHeightmap(uint32_t width, uint32_t height);
 		static Mesh* GenerateQuad();
 		static Mesh* GenerateVulkanTest();
+
+		static Mesh* FromFile(const std::string& path);
 
 		Transform m_xTransform;
 
@@ -58,12 +63,14 @@ namespace VeryCoolEngine {
 
 		MeshTopolgy m_eTopolgy = MeshTopolgy::Triangles;
 
+		TextureDescriptorSpecification m_xTexDescSpec;
+
 	protected:
 		VertexArray* m_pxVertexArray;
 		Material* m_pxMaterial;
 		Shader* m_pxShader;//#todo this should be in material
-		Texture2D* m_pxTexture; //#todo so should this
-		Texture2D* m_pxBumpMap; //#todo so should this
+		Texture2D* m_pxTexture = nullptr; //#todo so should this
+		Texture2D* m_pxBumpMap = nullptr; //#todo so should this
 
 		glm::vec3* m_pxVertexPositions = nullptr;
 		glm::vec2* m_pxUVs = nullptr;

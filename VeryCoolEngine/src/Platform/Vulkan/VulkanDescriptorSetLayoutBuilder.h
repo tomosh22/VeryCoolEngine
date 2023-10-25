@@ -28,7 +28,8 @@ namespace VeryCoolEngine {
 
 		vk::DescriptorSetLayout Build(vk::Device device);
 
-		static vk::DescriptorSetLayout FromSpecification(const DescriptorSpecification spec);
+		static vk::DescriptorSetLayout FromSpecification(const BufferDescriptorSpecification spec);
+		static vk::DescriptorSetLayout FromSpecification(const TextureDescriptorSpecification spec);
 
 	protected:
 		std::string	debugName;

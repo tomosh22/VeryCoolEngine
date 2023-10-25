@@ -41,21 +41,16 @@ void VulkanRenderer::InitVulkan() {
 		pMesh->GetShader()->PlatformInit();
 	}
 	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
+	app->_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS, MAX_FRAMES_IN_FLIGHT, 1);
+
 	for (Shader* pxShader : app->_shaders) pxShader->PlatformInit();
-	for (Texture* pxTex : app->_textures) pxTex->PlatformInit();
+	//for (Texture* pxTex : app->_textures) pxTex->PlatformInit();
 
-	app->m_xCameraLayout = VulkanDescriptorSetLayoutBuilder("Camera UBO")
-		.WithUniformBuffers(1, vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment)
-		.Build(m_device);
-	//m_xCameraDescriptor = CreateDescriptorSet(app->m_xCameraLayout, m_descriptorPool);
-
-	app->m_xTextureLayout = VulkanDescriptorSetLayoutBuilder("Object Textures")
-		.WithSamplers(1, vk::ShaderStageFlagBits::eFragment)
-		.Build(m_device);
 
 
 	app->m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Skybox")) );
 	app->m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Blocks")));
+	app->m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Meshes")));
 	
 	
 
@@ -97,26 +92,24 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 	BeginRenderPass(commandBuffer, imageIndex);
 
-	//VulkanPipeline* pxSkyboxPipeline = dynamic_cast<VulkanPipeline*>(app->m_pxSkyboxPipeline);
-	//
-	//commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxSkyboxPipeline->m_xPipeline);
-	//
-	//pxSkyboxPipeline->BindDescriptorSets(commandBuffer, { m_xCameraDescriptor }, //vk::PipelineBindPoint::eGraphics, 0);
-	//
-	//VulkanMesh* pxSkyboxMesh = dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh);
-	//pxSkyboxMesh->BindToCmdBuffer(commandBuffer);
-	//
-	//commandBuffer.drawIndexed(pxSkyboxMesh->m_uNumIndices, 1, 0, 0, 0);
 
 	for (VulkanPipeline*  pipeline : app->m_xPipelines) {
 
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline->m_xPipeline);
 
-		pipeline->BindDescriptorSets(commandBuffer, pipeline->m_axDescSets, vk::PipelineBindPoint::eGraphics, 0);
+		
 
-		for (Mesh* mesh : app->m_axPipelineMeshes.at(pipeline->m_strName)) {
+		for (Mesh* mesh : scene->m_axPipelineMeshes.at(pipeline->m_strName)) {
 			VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
 			pxVulkanMesh->BindToCmdBuffer(commandBuffer);
+
+			std::vector<vk::DescriptorSet> axSets;
+			for (const vk::DescriptorSet set : pipeline->m_axBufferDescSets)
+				axSets.push_back(set);
+			if (pxVulkanMesh->GetTexture() != nullptr)
+				axSets.push_back(pxVulkanMesh->m_xTexDescSet);
+
+			pipeline->BindDescriptorSets(commandBuffer, axSets, vk::PipelineBindPoint::eGraphics, 0);
 
 			commandBuffer.drawIndexed(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
 		}
@@ -169,6 +162,17 @@ void VeryCoolEngine::VulkanRenderer::BeginScene(Scene* scene)
 	memcpy(camData + sizeof(glm::mat4) * 3, &camPos[0], sizeof(glm::vec4));
 	app->_pCameraUBO->UploadData(camData, camDataSize, m_currentFrame, 0);
 	delete[] camData;
+
+
+	const uint32_t dataSize = (sizeof(unsigned int) * 4) + (sizeof(Light) * scene->lights.size());
+	char* data = new char[dataSize];
+	unsigned int numLightsWithPadding[4] = { scene->numLights,0,0,0 };//12 bytes of padding
+
+	memcpy(data, numLightsWithPadding, sizeof(unsigned int) * 4);
+
+	memcpy(data + sizeof(unsigned int) * 4, scene->lights.data(), sizeof(Light) * scene->lights.size());
+	app->_pLightUBO->UploadData(data, dataSize, 1, 0);
+	delete[] data;
 }
 
 void VeryCoolEngine::VulkanRenderer::RenderThreadFunction()

@@ -22,21 +22,26 @@ namespace VeryCoolEngine {
 	Game::Game() {
 
 
-
-		_textures.push_back(Texture2D::Create("atlas.png", false));
+		//_textures.reserve(100);//#TODO this is just so the textures don't get jigged around in memory when adding new ones
 
 		m_pxBlockFaceMesh = Mesh::GenerateQuad(); 
-		m_pxBlockFaceMesh->SetShader(Shader::Create("../Assets/Shaders/vulkan/blockVert.spv", "../Assets/Shaders/vulkan/blockFrag.spv"));
+		m_pxBlockFaceMesh->SetTexture(Texture2D::Create("atlas.png", false));
+		m_pxBlockFaceMesh->SetShader(Shader::Create("vulkan/blockVert.spv", "vulkan/blockFrag.spv"));
 		_meshes.push_back(m_pxBlockFaceMesh);
 
-		DescriptorSpecification xCamSpec;
+		BufferDescriptorSpecification xCamSpec;
 		xCamSpec.m_aeUniformBufferStages.push_back({&_pCameraUBO, ShaderStageVertexAndFragment });
 
-		DescriptorSpecification xTexSpec;
-		xTexSpec.m_aeSamplerStages.push_back({&_textures.back(), ShaderStageFragment});
+		TextureDescriptorSpecification xBlockTexSpec;
+		xBlockTexSpec.m_aeSamplerStages.push_back({m_pxBlockFaceMesh->GetTexturePtr(), ShaderStageFragment});
+
+		m_pxBlockFaceMesh->m_xTexDescSpec = xBlockTexSpec;
 
 		m_pxQuadMesh = Mesh::GenerateQuad();
-		m_pxQuadMesh->SetShader(Shader::Create("../Assets/Shaders/vulkan/fullscreenVert.spv", "../Assets/Shaders/vulkan/fullscreenFrag.spv"));
+		m_pxQuadMesh->SetShader(Shader::Create("vulkan/fullscreenVert.spv", "vulkan/fullscreenFrag.spv"));
+
+		
+
 		_meshes.push_back(m_pxQuadMesh);
 
 		m_xPipelineSpecs.insert(
@@ -52,13 +57,12 @@ namespace VeryCoolEngine {
 					ColourFormat::BGRA8_sRGB,
 					DepthFormat::D32_SFloat,
 					{xCamSpec},
+					{},
 					&m_pxRenderPass
 					)
 			});
 
-		m_axPipelineMeshes.insert({ "Skybox", std::vector<Mesh*>() });
-
-		m_axPipelineMeshes.at("Skybox").push_back(m_pxQuadMesh);
+		
 
 		m_xPipelineSpecs.insert(
 			{ "Blocks",
@@ -72,18 +76,64 @@ namespace VeryCoolEngine {
 					DepthCompareFunc::GreaterOrEqual,
 					ColourFormat::BGRA8_sRGB,
 					DepthFormat::D32_SFloat,
-					{ xCamSpec, xTexSpec },
+					{ xCamSpec},
+					{xBlockTexSpec},
 					&m_pxRenderPass
 					)
 			});
 
-		m_axPipelineMeshes.insert({ "Blocks", std::vector<Mesh*>()});
-
-		m_axPipelineMeshes.at("Blocks").push_back(m_pxBlockFaceMesh);
-
-
 		
 
+
+		m_pxTerrainMesh = Mesh::GenerateGenericHeightmap(100, 100);
+		//m_pxTerrainMesh = Mesh::FromFile("vkTest.obj");
+		
+		m_pxTerrainMesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
+		//m_pxTerrainMesh->SetTexture(Texture2D::Create("modelTest.png", false));
+		
+		m_pxTerrainMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));
+		_meshes.push_back(m_pxTerrainMesh);
+		
+		TextureDescriptorSpecification xTerrainTexSpec;
+		xTerrainTexSpec.m_aeSamplerStages.push_back({ (m_pxTerrainMesh->GetTexturePtr()), ShaderStageFragment });
+
+		m_pxTerrainMesh->m_xTexDescSpec = xTerrainTexSpec;
+
+		BufferDescriptorSpecification xLightSpec;
+		xLightSpec.m_aeUniformBufferStages.push_back({ &_pLightUBO, ShaderStageVertexAndFragment });
+		
+		m_xPipelineSpecs.insert(
+			{ "Meshes",
+					PipelineSpecification(
+					"Meshes",
+					m_pxTerrainMesh,
+					BlendFactor::SrcAlpha,
+					BlendFactor::OneMinusSrcAlpha,
+					true,
+					true,
+					DepthCompareFunc::GreaterOrEqual,
+					ColourFormat::BGRA8_sRGB,
+					DepthFormat::D32_SFloat,
+					{xCamSpec, xLightSpec},
+					{xTerrainTexSpec},
+					&m_pxRenderPass
+					)
+			});
+
+
+		m_pxTestMesh = Mesh::FromFile("vkTest.obj");
+		m_pxTestMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));//#TODO dont duplicate
+		m_pxTestMesh->SetTexture(Texture2D::Create("modelTest.png", false));
+
+		m_pxTestMesh->m_xTexDescSpec = xTerrainTexSpec;
+
+		_meshes.push_back(m_pxTestMesh);
+		
+		
+		_lights.push_back({
+				50,200,50,100,
+				0,1,0,1
+			});
 
 		//#TODO let client set skybox texture
 
@@ -246,6 +296,40 @@ namespace VeryCoolEngine {
 	void Application::GameLoop() {
 		Game* game = (Game*)Application::GetInstance();
 		printf("game loop\n");
+
+
+		sceneMutex.lock();
+		scene->Reset();
+
+		scene->camera = &_Camera;
+		scene->skybox = _pCubemap;
+
+		for (Mesh* mesh : _meshes) {
+			scene->meshes.push_back(mesh);
+		}
+
+		for (Renderer::Light& light : _lights) {
+			scene->lights[scene->numLights++] = light;
+		}
+
+		scene->m_axPipelineMeshes.insert({ "Skybox", std::vector<Mesh*>() });
+		scene->m_axPipelineMeshes.at("Skybox").push_back(game->m_pxQuadMesh);
+
+		scene->m_axPipelineMeshes.insert({ "Blocks", std::vector<Mesh*>() });
+		scene->m_axPipelineMeshes.at("Blocks").push_back(game->m_pxBlockFaceMesh);
+
+		scene->m_axPipelineMeshes.insert({ "Meshes", std::vector<Mesh*>() });
+		scene->m_axPipelineMeshes.at("Meshes").push_back(game->m_pxTerrainMesh);
+		scene->m_axPipelineMeshes.at("Meshes").push_back(game->m_pxTestMesh);
+
+		for (Renderer::Light& light : _lights) {
+			scene->lights[scene->numLights++] = light;
+		}
+
+		scene->ready = true;
+		sceneMutex.unlock();
+
+
 		bool rState = Input::IsKeyPressed(VCE_KEY_R);
 		if (Input::IsKeyPressed(VCE_KEY_R) && prevRState != rState) {
 			Chunk::seed = rand();
