@@ -53,6 +53,7 @@ namespace VeryCoolEngine {
 		std::vector<BufferDescriptorSpecification> m_axBufferDescriptors;
 		std::vector<TextureDescriptorSpecification> m_axTextureDescriptors;
 		RenderPass** m_pxRenderPass;
+		bool bUsePushConstants;//#TODO expand on this, currently just use model matrix
 	};
 	
 	

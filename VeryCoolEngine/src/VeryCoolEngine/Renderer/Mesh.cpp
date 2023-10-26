@@ -381,12 +381,7 @@ namespace VeryCoolEngine {
 
 		for (size_t i = 0; i < xIndices.size(); i++)mesh->m_puIndices[i] = xIndices[i];
 		for (size_t i = 0; i < xPositions.size(); i++) {
-			glm::vec3 pos = xPositions[i];
-			pos *= glm::vec3(10, 10, 10);
-			glm::quat rot = Transform::EulerAnglesToQuat(270, 180, 0);
-			pos = glm::rotate(rot, pos);
-			pos += glm::vec3(20, 75, 20);
-			mesh->m_pxVertexPositions[i] = pos;
+			mesh->m_pxVertexPositions[i] = xPositions[i];
 		}
 		for (size_t i = 0; i < xUVs.size(); i++)mesh->m_pxUVs[i] = xUVs[i];
 		for (size_t i = 0; i < xNormals.size(); i++)mesh->m_pxNormals[i] = xNormals[i];

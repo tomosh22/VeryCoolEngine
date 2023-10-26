@@ -13,6 +13,10 @@ layout(std140, set = 0, binding=0) uniform matrices{
 	vec4 _uCamPos;//4 bytes of padding
 };
 
+layout(push_constant) uniform PushConstantVert{
+	mat4 modelMatrix;
+};
+
 layout(location = 0) out vec2 UV;
 layout(location = 1) out vec3 Normal;
 layout(location = 2) out vec3 WorldPos;
@@ -20,7 +24,8 @@ layout(location = 3) out vec3 Tangent;
 layout(location = 4) out vec3 Binormal;
 
 void main(){
-	WorldPos = _aPosition;//#todo model mat
+	mat4 mvp = _uViewProjMat * modelMatrix;
+	WorldPos = (modelMatrix * vec4(_aPosition,1)).xyz;//#todo model mat
 	UV = _aUV;
 	mat3 normalMat = mat3(1);//#todo transpose(inverse(mat3(modelMatrix)));
 	Normal = normalize(normalMat * normalize(_aNormal));
@@ -32,5 +37,5 @@ void main(){
 	//#TODO delete
 	Normal = _aNormal;
 
-	gl_Position = _uViewProjMat * vec4(_aPosition,1);//#todo model mat
+	gl_Position = mvp * vec4(_aPosition,1);
 }

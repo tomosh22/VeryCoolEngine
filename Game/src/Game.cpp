@@ -33,7 +33,7 @@ namespace VeryCoolEngine {
 		xCamSpec.m_aeUniformBufferStages.push_back({&_pCameraUBO, ShaderStageVertexAndFragment });
 
 		TextureDescriptorSpecification xBlockTexSpec;
-		xBlockTexSpec.m_aeSamplerStages.push_back({m_pxBlockFaceMesh->GetTexturePtr(), ShaderStageFragment});
+		xBlockTexSpec.m_aeSamplerStages.push_back({nullptr, ShaderStageFragment});
 
 		m_pxBlockFaceMesh->m_xTexDescSpec = xBlockTexSpec;
 
@@ -58,7 +58,8 @@ namespace VeryCoolEngine {
 					DepthFormat::D32_SFloat,
 					{xCamSpec},
 					{},
-					&m_pxRenderPass
+					&m_pxRenderPass,
+					false
 					)
 			});
 
@@ -78,7 +79,8 @@ namespace VeryCoolEngine {
 					DepthFormat::D32_SFloat,
 					{ xCamSpec},
 					{xBlockTexSpec},
-					&m_pxRenderPass
+					&m_pxRenderPass,
+					false
 					)
 			});
 
@@ -89,15 +91,24 @@ namespace VeryCoolEngine {
 		//m_pxTerrainMesh = Mesh::FromFile("vkTest.obj");
 		
 		m_pxTerrainMesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
-		//m_pxTerrainMesh->SetTexture(Texture2D::Create("modelTest.png", false));
+		m_pxTerrainMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
+		m_pxTerrainMesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
 		
 		m_pxTerrainMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));
+
+		m_pxTerrainMesh->m_xTransform._scale = glm::vec3(1,1,1);
+		m_pxTerrainMesh->m_xTransform._position = glm::vec3(0, 0, 0);
+		m_pxTerrainMesh->m_xTransform.SetRotationQuat(Transform::EulerAnglesToQuat(0,0,0));
+		m_pxTerrainMesh->m_xTransform.UpdateMatrix();
+
 		_meshes.push_back(m_pxTerrainMesh);
 		
-		TextureDescriptorSpecification xTerrainTexSpec;
-		xTerrainTexSpec.m_aeSamplerStages.push_back({ (m_pxTerrainMesh->GetTexturePtr()), ShaderStageFragment });
+		TextureDescriptorSpecification xMeshTexSpec;
+		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
+		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
+		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 
-		m_pxTerrainMesh->m_xTexDescSpec = xTerrainTexSpec;
+		m_pxTerrainMesh->m_xTexDescSpec = xMeshTexSpec;
 
 		BufferDescriptorSpecification xLightSpec;
 		xLightSpec.m_aeUniformBufferStages.push_back({ &_pLightUBO, ShaderStageVertexAndFragment });
@@ -115,8 +126,9 @@ namespace VeryCoolEngine {
 					ColourFormat::BGRA8_sRGB,
 					DepthFormat::D32_SFloat,
 					{xCamSpec, xLightSpec},
-					{xTerrainTexSpec},
-					&m_pxRenderPass
+					{xMeshTexSpec},
+					&m_pxRenderPass,
+					true
 					)
 			});
 
@@ -124,15 +136,44 @@ namespace VeryCoolEngine {
 		m_pxTestMesh = Mesh::FromFile("vkTest.obj");
 		m_pxTestMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));//#TODO dont duplicate
 		m_pxTestMesh->SetTexture(Texture2D::Create("modelTest.png", false));
+		m_pxTestMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
+		m_pxTestMesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
 
-		m_pxTestMesh->m_xTexDescSpec = xTerrainTexSpec;
+		m_pxTestMesh->m_xTexDescSpec = xMeshTexSpec;
+
+		m_pxTestMesh->m_xTransform._scale = glm::vec3(10, 10, 10);
+		m_pxTestMesh->m_xTransform._position = glm::vec3(50, 75, 60);
+		m_pxTestMesh->m_xTransform.SetRotationQuat(Transform::EulerAnglesToQuat(270, 180, 0));
+		m_pxTestMesh->m_xTransform.UpdateMatrix();
+
 
 		_meshes.push_back(m_pxTestMesh);
+
+
+		m_pxSphereMesh = Mesh::FromFile("sphere.obj");
+		m_pxSphereMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));//#TODO dont duplicate
+		m_pxSphereMesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
+		m_pxSphereMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
+		m_pxSphereMesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
+			
+		m_pxSphereMesh->m_xTexDescSpec = xMeshTexSpec;
+
+		m_pxSphereMesh->m_xTransform._scale = glm::vec3(10, 10, 10);
+		m_pxSphereMesh->m_xTransform._position = glm::vec3(50, 80, 80);
+		m_pxSphereMesh->m_xTransform.UpdateRotation();
+		m_pxSphereMesh->m_xTransform.UpdateMatrix();
+
+		_meshes.push_back(m_pxSphereMesh);
 		
 		
 		_lights.push_back({
 				50,200,50,100,
 				0,1,0,1
+		});
+
+		_lights.push_back({
+				50,110,50,50,
+				1,1,1,1
 			});
 
 		//#TODO let client set skybox texture
@@ -321,6 +362,7 @@ namespace VeryCoolEngine {
 		scene->m_axPipelineMeshes.insert({ "Meshes", std::vector<Mesh*>() });
 		scene->m_axPipelineMeshes.at("Meshes").push_back(game->m_pxTerrainMesh);
 		scene->m_axPipelineMeshes.at("Meshes").push_back(game->m_pxTestMesh);
+		scene->m_axPipelineMeshes.at("Meshes").push_back(game->m_pxSphereMesh);
 
 		for (Renderer::Light& light : _lights) {
 			scene->lights[scene->numLights++] = light;

@@ -36,10 +36,10 @@ namespace VeryCoolEngine {
 
 		void SetTexture(Texture2D* texture) { m_pxTexture = texture; }
 		void SetBumpMap(Texture2D* bumpMap) { m_pxBumpMap = bumpMap; }
+		void SetRoughnessTex(Texture2D* roughnessTex) { m_pxRoughnessTex = roughnessTex; }
 		Texture2D* GetTexture() const { return m_pxTexture; }
 		Texture2D* GetBumpMap() const { return m_pxBumpMap; }
-		Texture** GetTexturePtr() const { return (Texture**)& m_pxTexture; }
-		Texture** GetBumpMapPtr() const { return(Texture**)&m_pxBumpMap; }
+		Texture2D* GetRoughnessTex() const { return m_pxRoughnessTex; }
 
 		virtual void PlatformInit() = 0;
 
@@ -71,6 +71,7 @@ namespace VeryCoolEngine {
 		Shader* m_pxShader;//#todo this should be in material
 		Texture2D* m_pxTexture = nullptr; //#todo so should this
 		Texture2D* m_pxBumpMap = nullptr; //#todo so should this
+		Texture2D* m_pxRoughnessTex = nullptr; //#todo so should this
 
 		glm::vec3* m_pxVertexPositions = nullptr;
 		glm::vec2* m_pxUVs = nullptr;

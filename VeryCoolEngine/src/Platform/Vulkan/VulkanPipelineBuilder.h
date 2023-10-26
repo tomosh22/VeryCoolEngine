@@ -22,6 +22,8 @@ namespace VeryCoolEngine {
 		std::vector<vk::DescriptorSetLayout> m_axTexDescLayouts;
 		std::vector<vk::DescriptorSet> m_axTexDescSets;
 
+		bool bUsePushConstants = false;//#TODO expand on this, currently just use model matrix
+
 		std::string m_strName;
 
 		void BindDescriptorSets(vk::CommandBuffer& xCmd, const std::vector<vk::DescriptorSet>& axSets, vk::PipelineBindPoint eBindPoint, uint32_t ufirstSet) const;

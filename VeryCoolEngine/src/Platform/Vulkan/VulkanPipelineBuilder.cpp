@@ -265,12 +265,16 @@ namespace VeryCoolEngine {
 			xBuilder = xBuilder.WithDescriptorSetLayout(uLayoutIndex++, axTexLayouts.at(i));
 		}
 
+		if (spec.bUsePushConstants)
+			xBuilder = xBuilder.WithPushConstant(vk::ShaderStageFlagBits::eVertex,0, sizeof(glm::mat4));//#TODO expand on this, currently just use model matrix
+
 		VulkanPipeline* xPipeline = xBuilder.Build();
 		xPipeline->m_axBufferDescLayouts = axBufferLayouts;
 		xPipeline->m_axBufferDescSets = axBufferSets;
 		xPipeline->m_axTexDescLayouts = axTexLayouts;
 		xPipeline->m_axTexDescSets = axTexSets;
 		xPipeline->m_strName = spec.m_strName;
+		xPipeline->bUsePushConstants = spec.bUsePushConstants;
 
 		return xPipeline;
 	}

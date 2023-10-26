@@ -34,6 +34,7 @@ namespace VeryCoolEngine {
 		Mesh* m_pxQuadMesh;
 		Mesh* m_pxTerrainMesh;
 		Mesh* m_pxTestMesh;
+		Mesh* m_pxSphereMesh;
 
 		Chunk* chunkPtrs[s_xNumChunks.x * s_xNumChunks.z];
 	};
