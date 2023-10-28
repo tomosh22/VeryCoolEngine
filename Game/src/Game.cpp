@@ -133,7 +133,7 @@ namespace VeryCoolEngine {
 			});
 
 
-		m_pxTestMesh = Mesh::FromFile("vkTest.obj");
+		m_pxTestMesh = Mesh::FromFile("vkTest.obj", true);
 		m_pxTestMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));//#TODO dont duplicate
 		m_pxTestMesh->SetTexture(Texture2D::Create("modelTest.png", false));
 		m_pxTestMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
@@ -150,7 +150,7 @@ namespace VeryCoolEngine {
 		_meshes.push_back(m_pxTestMesh);
 
 
-		m_pxSphereMesh = Mesh::FromFile("sphere.obj");
+		m_pxSphereMesh = Mesh::FromFile("sphereSmooth.obj");
 		m_pxSphereMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));//#TODO dont duplicate
 		m_pxSphereMesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
 		m_pxSphereMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
@@ -164,6 +164,16 @@ namespace VeryCoolEngine {
 		m_pxSphereMesh->m_xTransform.UpdateMatrix();
 
 		_meshes.push_back(m_pxSphereMesh);
+
+		m_apxTestMeshes.push_back(AddTestMesh("sphereFlat.obj", Transform(
+			{ 80,80,80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
+		)));
+		m_apxTestMeshes.push_back(AddTestMesh("cubeFlat.obj", Transform(
+			{ 80,80,10 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
+		)));
+		m_apxTestMeshes.push_back(AddTestMesh("cubeSmooth.obj", Transform(
+			{ 20,80,10 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
+		)));
 		
 		
 		_lights.push_back({
@@ -188,6 +198,29 @@ namespace VeryCoolEngine {
 		
 		_renderThreadCanStart = true;
 		return;
+	}
+
+	Mesh* Game::AddTestMesh(const char* szFileName, const Transform& xTrans)
+	{
+		Mesh* mesh = Mesh::FromFile(szFileName);
+		mesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));//#TODO dont duplicate
+		mesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
+		mesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
+		mesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
+		
+
+		TextureDescriptorSpecification xMeshTexSpec;
+		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
+		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
+		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
+		mesh->m_xTexDescSpec = xMeshTexSpec;
+		
+		mesh->m_xTransform = xTrans;
+		mesh->m_xTransform.UpdateRotation();
+		mesh->m_xTransform.UpdateMatrix();
+
+		_meshes.push_back(mesh);
+		return mesh;
 	}
 
 	void Game::GenerateChunks() {
@@ -333,6 +366,8 @@ namespace VeryCoolEngine {
 		return block;
 	}
 
+	
+
 	//declared in Application.h, defined by game
 	void Application::GameLoop() {
 		Game* game = (Game*)Application::GetInstance();
@@ -364,9 +399,18 @@ namespace VeryCoolEngine {
 		scene->m_axPipelineMeshes.at("Meshes").push_back(game->m_pxTestMesh);
 		scene->m_axPipelineMeshes.at("Meshes").push_back(game->m_pxSphereMesh);
 
+		for(Mesh* mesh : game->m_apxTestMeshes)
+			scene->m_axPipelineMeshes.at("Meshes").push_back(mesh);
+
 		for (Renderer::Light& light : _lights) {
 			scene->lights[scene->numLights++] = light;
 		}
+
+		Renderer::Light camLight{
+				_Camera.GetPosition().x,_Camera.GetPosition().y,_Camera.GetPosition().z,100,
+				1,1,1,1
+		};
+		scene->lights[scene->numLights++] = camLight;
 
 		scene->ready = true;
 		sceneMutex.unlock();

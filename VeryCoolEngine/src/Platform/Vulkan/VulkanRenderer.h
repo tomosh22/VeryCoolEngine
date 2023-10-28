@@ -99,6 +99,9 @@ namespace VeryCoolEngine {
 				return buffer;
 			}
 
+
+			
+
 		protected:
 			static VulkanRenderer* s_pInstance;
 

@@ -25,17 +25,19 @@ layout(location = 4) out vec3 Binormal;
 
 void main(){
 	mat4 mvp = _uViewProjMat * modelMatrix;
-	WorldPos = (modelMatrix * vec4(_aPosition,1)).xyz;//#todo model mat
+	WorldPos = (modelMatrix * vec4(_aPosition,1)).xyz;
 	UV = _aUV;
-	mat3 normalMat = mat3(1);//#todo transpose(inverse(mat3(modelMatrix)));
-	Normal = normalize(normalMat * normalize(_aNormal));
-	vec3 wNormal = normalize(normalMat * normalize(_aNormal));
-	vec3 wTangent = normalize(normalMat * normalize(_aTangent.xyz));
-	Tangent = wTangent;
-	Binormal = cross(wTangent,wNormal) * _aTangent.w;
+	
+	
+	mat3 normalMatrix = transpose ( inverse ( mat3 ( modelMatrix )));
+	
+	vec3 wNormal = normalize ( normalMatrix * normalize ( _aNormal ));
+	vec3 wTangent = normalize ( normalMatrix * normalize ( _aTangent . xyz ));
+	
+	Normal = wNormal ;
+	Tangent = wTangent ;
+	Binormal = cross ( wTangent , wNormal ) * _aTangent . w ;
 
-	//#TODO delete
-	Normal = _aNormal;
 
 	gl_Position = mvp * vec4(_aPosition,1);
 }

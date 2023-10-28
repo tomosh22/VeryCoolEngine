@@ -308,7 +308,7 @@ namespace VeryCoolEngine {
 	};
 	
 
-	Mesh* Mesh::FromFile(const std::string& path)
+	Mesh* Mesh::FromFile(const std::string& path, bool swapYZ /* = false*/)
 	{
 		std::string strPath(MESHDIR);
 		strPath += path;
@@ -344,11 +344,21 @@ namespace VeryCoolEngine {
 				};
 
 				//not sure if x axis needs to be flipped
-				glm::vec3 normal = {
+
+				glm::vec3 normal;
+				if (swapYZ)
+					normal = {
 					attrib.normals[3 * index.normal_index + 0],
-					attrib.normals[3 * index.normal_index + 2],//had to swap y and z
+					attrib.normals[3 * index.normal_index + 2],
 					attrib.normals[3 * index.normal_index + 1]
-				};
+					};
+				else {
+					normal = {
+					attrib.normals[3 * index.normal_index + 0],
+					attrib.normals[3 * index.normal_index + 1],
+					attrib.normals[3 * index.normal_index + 2]
+					};
+				}
 
 				Vertex v;
 				v.pos = pos;
@@ -489,6 +499,7 @@ namespace VeryCoolEngine {
 		glm::vec2 tca = m_pxUVs[c] - m_pxUVs[a];
 
 		glm::mat2 texMatrix(tba, tca);
+		texMatrix = glm::inverse(texMatrix);
 
 		glm::vec3 tangent = ba * texMatrix[0][0] + ca * texMatrix[0][1];
 		glm::vec3 binormal = ba * texMatrix[1][0] + ca * texMatrix[1][1];

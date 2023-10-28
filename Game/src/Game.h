@@ -36,6 +36,9 @@ namespace VeryCoolEngine {
 		Mesh* m_pxTestMesh;
 		Mesh* m_pxSphereMesh;
 
+		Mesh* AddTestMesh(const char* szFileName, const Transform& xTrans);
+		std::vector<Mesh*> m_apxTestMeshes;
+
 		Chunk* chunkPtrs[s_xNumChunks.x * s_xNumChunks.z];
 	};
 

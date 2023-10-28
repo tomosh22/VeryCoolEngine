@@ -97,6 +97,7 @@ namespace VeryCoolEngine {
 			}
 			ImGui::TreePop();
 		}
+		ImGui::Checkbox("Use Bumpmap", &app->_pRenderer->m_bUseBumpMaps);
 
 		//do things
 

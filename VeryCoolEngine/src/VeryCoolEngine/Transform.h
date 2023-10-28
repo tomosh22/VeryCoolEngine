@@ -8,6 +8,8 @@ namespace VeryCoolEngine {
 	public:
 
 		static std::vector<glm::quat> uniqueQuats; //TEST
+		Transform() {};
+		Transform(glm::vec3 xPos, glm::quat xRot, glm::vec3 xScale) : _position(xPos), _rotationQuat(xRot), _scale(xScale) {}
 
 		void SetPosition(const glm::vec3& pos);
 		void SetRotationQuat(const glm::quat& rot);

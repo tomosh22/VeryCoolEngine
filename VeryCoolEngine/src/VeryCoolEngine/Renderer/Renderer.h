@@ -64,6 +64,7 @@ namespace VeryCoolEngine {
 		
 
 		bool m_bShouldResize = false;
+		bool m_bUseBumpMaps = true;
 	private:
 	};
 
