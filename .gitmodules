@@ -12,4 +12,4 @@
 	url = https://github.com/g-truc/glm
 [submodule "VeryCoolEngine/vendor/assimp"]
 	path = VeryCoolEngine/vendor/assimp
-	url = https://github.com/tomosh22/assimp
+	url = https://github.com/tomosh22/assimpPremake
