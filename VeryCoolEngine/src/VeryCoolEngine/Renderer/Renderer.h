@@ -64,6 +64,7 @@ namespace VeryCoolEngine {
 		
 
 		bool m_bShouldResize = false;
+		glm::vec3 m_xOverrideNormal = { 0,0,0 };
 		bool m_bUseBumpMaps = true;
 	private:
 	};

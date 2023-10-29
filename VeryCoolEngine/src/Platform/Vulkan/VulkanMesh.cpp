@@ -30,6 +30,7 @@ namespace VeryCoolEngine {
 		if(m_pxTexture != nullptr)m_pxTexture->PlatformInit();
 		if(m_pxBumpMap != nullptr)m_pxBumpMap->PlatformInit();
 		if(m_pxRoughnessTex != nullptr)m_pxRoughnessTex->PlatformInit();
+		if(m_pxMetallicTex != nullptr)m_pxMetallicTex->PlatformInit();
 
 		uint32_t uBindPoint = 0;
 		for (BufferElement& element : m_pxBufferLayout->GetElements()) {
@@ -92,6 +93,8 @@ namespace VeryCoolEngine {
 				pxRenderer->UpdateImageDescriptor(m_xTexDescSet, 1, 0, dynamic_cast<VulkanTexture2D*>(m_pxBumpMap)->m_xImageView, dynamic_cast<VulkanTexture2D*>(m_pxBumpMap)->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
 			if (m_pxRoughnessTex != nullptr)
 				pxRenderer->UpdateImageDescriptor(m_xTexDescSet, 2, 0, dynamic_cast<VulkanTexture2D*>(m_pxRoughnessTex)->m_xImageView, dynamic_cast<VulkanTexture2D*>(m_pxRoughnessTex)->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
+			if (m_pxMetallicTex != nullptr)
+				pxRenderer->UpdateImageDescriptor(m_xTexDescSet, 3, 0, dynamic_cast<VulkanTexture2D*>(m_pxMetallicTex)->m_xImageView, dynamic_cast<VulkanTexture2D*>(m_pxMetallicTex)->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
 		}
     }
 
@@ -141,7 +144,7 @@ namespace VeryCoolEngine {
 			iNumElements++;
 		}
 #else
-		unsigned int iNumElements = _instanceData.size();
+		unsigned int iNumElements = m_axInstanceData.size();
 #endif
 
 		char* pData = new char[instanceDataSize];

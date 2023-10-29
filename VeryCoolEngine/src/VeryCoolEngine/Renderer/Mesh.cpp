@@ -7,6 +7,10 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #include "VeryCoolEngine/AssetHandling/Assets.h"
 
 namespace VeryCoolEngine {
@@ -32,11 +36,11 @@ namespace VeryCoolEngine {
 		mesh->m_pxVertexPositions = new glm::vec3[mesh->m_uNumVerts];
 		mesh->m_pxUVs = new glm::vec2[mesh->m_uNumVerts];
 		mesh->m_pxNormals = new glm::vec3[mesh->m_uNumVerts];
-		mesh->m_pxTangents = new glm::vec4[mesh->m_uNumVerts];
+		mesh->m_pxTangents = new glm::vec3[mesh->m_uNumVerts];
 		for (size_t i = 0; i < mesh->m_uNumVerts; i++)
 		{
 			mesh->m_pxNormals[i] = { 0,0,0 };
-			mesh->m_pxTangents[i] = { 0,0,0,0 };
+			mesh->m_pxTangents[i] = { 0,0,0 };
 		}
 		mesh->m_puIndices = new unsigned int[mesh->m_uNumIndices];
 
@@ -84,8 +88,8 @@ namespace VeryCoolEngine {
 			numFloats += 3;
 		}
 		if (mesh->m_pxTangents != nullptr) {
-			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float4, "_aTangent" });
-			numFloats += 4;
+			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float3, "_aTangent" });
+			numFloats += 3;
 		}
 
 		mesh->m_pVerts = new float[mesh->m_uNumVerts * numFloats];
@@ -112,7 +116,6 @@ namespace VeryCoolEngine {
 				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].x;
 				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].y;
 				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].z;
-				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].w;
 			}
 		}
 
@@ -155,8 +158,8 @@ namespace VeryCoolEngine {
 			numFloats += 3;
 		}
 		if (mesh->m_pxTangents != nullptr) {
-			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float4, "_aTangent" });
-			numFloats += 4;
+			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float3, "_aTangent" });
+			numFloats += 3;
 		}
 
 		mesh->m_pVerts = new float[mesh->m_uNumVerts * numFloats];
@@ -183,7 +186,6 @@ namespace VeryCoolEngine {
 				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].x;
 				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].y;
 				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].z;
-				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].w;
 			}
 		}
 
@@ -234,8 +236,8 @@ namespace VeryCoolEngine {
 			numFloats += 3;
 		}
 		if (mesh->m_pxTangents != nullptr) {
-			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float4, "_aTangent" });
-			numFloats += 4;
+			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float3, "_aTangent" });
+			numFloats += 3;
 		}
 
 		mesh->m_pVerts = new float[mesh->m_uNumVerts * numFloats];
@@ -262,7 +264,6 @@ namespace VeryCoolEngine {
 				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].x;
 				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].y;
 				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].z;
-				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].w;
 			}
 		}
 
@@ -291,6 +292,8 @@ namespace VeryCoolEngine {
 		glm::vec3 pos;
 		glm::vec2 uv;
 		glm::vec3 normal;
+		glm::vec3 tangent;
+		glm::vec3 bitangent;
 
 		bool operator==(const Vertex& other) const {
 			return pos == other.pos && uv == other.uv && normal == other.normal;
@@ -310,93 +313,71 @@ namespace VeryCoolEngine {
 
 	Mesh* Mesh::FromFile(const std::string& path, bool swapYZ /* = false*/)
 	{
+
 		std::string strPath(MESHDIR);
 		strPath += path;
 
-		tinyobj::attrib_t attrib;
-		std::vector<tinyobj::shape_t> shapes;
-		std::vector<tinyobj::material_t> materials;
+		Assimp::Importer importer;
+		const aiScene* pxScene = importer.ReadFile(strPath.c_str(),
+			aiProcess_CalcTangentSpace |
+			aiProcess_Triangulate |
+			aiProcess_JoinIdenticalVertices |
+			aiProcess_SortByPType);
 
-		std::string err;
-		if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &err, strPath.c_str())) {
-			VCE_ASSERT(false, "Failed to load obj");
+		aiMesh* pxMesh = pxScene->mMeshes[0];
+
+		std::vector<Vertex> axVertices;
+		std::vector<uint32_t> auIndices;
+
+		for (uint32_t i = 0; i < pxMesh->mNumVertices; i++) {
+			const aiVector3D* pxPos = &(pxMesh->mVertices[i]);
+			const aiVector3D* pxNormal = &(pxMesh->mNormals[i]);
+			const aiVector3D* pxTexCoord = &(pxMesh->mTextureCoords[0][i]);
+			const aiVector3D* pxTangent = &(pxMesh->mTangents[i]);
+			const aiVector3D* pxBitangent = &(pxMesh->mBitangents[i]);
+
+			Vertex v(
+				glm::vec3(pxPos->x, pxPos->y, pxPos->z),
+				glm::vec2(pxTexCoord->x, pxTexCoord->y),
+				glm::vec3(pxNormal->x, pxNormal->y, pxNormal->z),
+				glm::vec3(pxTangent->x, pxTangent->y, pxTangent->z),
+				glm::vec3(pxBitangent->x, pxBitangent->y, pxBitangent->z)
+			);
+
+			axVertices.push_back(v);
 		}
-		
-		std::vector<glm::vec3> xPositions;
-		std::vector<glm::vec2> xUVs;
-		std::vector<glm::vec3> xNormals;
-		std::vector<unsigned int> xIndices;
 
-		std::unordered_map<Vertex, uint32_t, VertexHash> xUniqueVertices{};
-
-		for (const auto& shape : shapes) {
-			for (const auto& index : shape.mesh.indices) {
-
-				glm::vec3 pos = {
-					attrib.vertices[3 * index.vertex_index + 0],
-					attrib.vertices[3 * index.vertex_index + 1],
-					attrib.vertices[3 * index.vertex_index + 2]
-				};
-
-				glm::vec2 texCoord = {
-					attrib.texcoords[2 * index.texcoord_index + 0],
-					1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-				};
-
-				//not sure if x axis needs to be flipped
-
-				glm::vec3 normal;
-				if (swapYZ)
-					normal = {
-					attrib.normals[3 * index.normal_index + 0],
-					attrib.normals[3 * index.normal_index + 2],
-					attrib.normals[3 * index.normal_index + 1]
-					};
-				else {
-					normal = {
-					attrib.normals[3 * index.normal_index + 0],
-					attrib.normals[3 * index.normal_index + 1],
-					attrib.normals[3 * index.normal_index + 2]
-					};
-				}
-
-				Vertex v;
-				v.pos = pos;
-				v.uv = texCoord;
-				v.normal = normal;
-
-				if (xUniqueVertices.count(v) == 0) {
-					xUniqueVertices[v] = static_cast<uint32_t>(xPositions.size());
-					xPositions.push_back(pos);
-					xUVs.push_back(texCoord);
-					xNormals.push_back(normal);
-				}
-
-				xIndices.push_back(xUniqueVertices[v]);
-			}
+		for (uint32_t i = 0; i < pxMesh->mNumFaces; i++) {
+			VCE_ASSERT(pxMesh->mFaces[i].mNumIndices == 3, "Face isn't a triangle");
+			auIndices.push_back(pxMesh->mFaces[i].mIndices[0]);
+			auIndices.push_back(pxMesh->mFaces[i].mIndices[1]);
+			auIndices.push_back(pxMesh->mFaces[i].mIndices[2]);
 		}
+
 
 		Mesh* mesh = Mesh::Create();
 		mesh->m_pxBufferLayout = new BufferLayout();
 
-		mesh->m_uNumVerts = xPositions.size();
-		mesh->m_uNumIndices = xIndices.size();
+		mesh->m_uNumVerts = axVertices.size();
+		mesh->m_uNumIndices = auIndices.size();
 
 		mesh->m_puIndices = new unsigned int[mesh->m_uNumIndices];
 		mesh->m_pxVertexPositions = new glm::vec3[mesh->m_uNumVerts];
 		mesh->m_pxNormals = new glm::vec3[mesh->m_uNumVerts]{ glm::vec3(0,0,0) };
-		mesh->m_pxTangents = new glm::vec4[mesh->m_uNumVerts]{ glm::vec4(0,0,0,0) };
+		mesh->m_pxTangents = new glm::vec3[mesh->m_uNumVerts]{ glm::vec3(0,0,0) };
+		mesh->m_pxBitangents = new glm::vec3[mesh->m_uNumVerts]{ glm::vec3(0,0,0) };
 		mesh->m_pxUVs = new glm::vec2[mesh->m_uNumVerts];
 
 
-		for (size_t i = 0; i < xIndices.size(); i++)mesh->m_puIndices[i] = xIndices[i];
-		for (size_t i = 0; i < xPositions.size(); i++) {
-			mesh->m_pxVertexPositions[i] = xPositions[i];
+		for (size_t i = 0; i < auIndices.size(); i++)mesh->m_puIndices[i] = auIndices[i];
+		for (size_t i = 0; i < axVertices.size(); i++) {
+			mesh->m_pxVertexPositions[i] = axVertices[i].pos;
+			mesh->m_pxUVs[i] = axVertices[i].uv;
+			mesh->m_pxNormals[i] = axVertices[i].normal;
+			mesh->m_pxTangents[i] = axVertices[i].tangent;
+			mesh->m_pxBitangents[i] = axVertices[i].bitangent;
 		}
-		for (size_t i = 0; i < xUVs.size(); i++)mesh->m_pxUVs[i] = xUVs[i];
-		for (size_t i = 0; i < xNormals.size(); i++)mesh->m_pxNormals[i] = xNormals[i];
 
-		mesh->GenerateTangents();
 
 		int numFloats = 0;
 		if (mesh->m_pxVertexPositions != nullptr) {
@@ -412,8 +393,12 @@ namespace VeryCoolEngine {
 			numFloats += 3;
 		}
 		if (mesh->m_pxTangents != nullptr) {
-			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float4, "_aTangent" });
-			numFloats += 4;
+			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float3, "_aTangent" });
+			numFloats += 3;
+		}
+		if (mesh->m_pxBitangents != nullptr) {
+			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float3, "_aBitangent" });
+			numFloats += 3;
 		}
 
 		mesh->m_pVerts = new float[mesh->m_uNumVerts * numFloats];
@@ -440,13 +425,19 @@ namespace VeryCoolEngine {
 				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].x;
 				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].y;
 				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].z;
-				((float*)mesh->m_pVerts)[index++] = mesh->m_pxTangents[i].w;
+			}
+			if (mesh->m_pxBitangents != nullptr) {
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxBitangents[i].x;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxBitangents[i].y;
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxBitangents[i].z;
 			}
 		}
 
 		mesh->m_pxBufferLayout->CalculateOffsetsAndStrides();
 
 		return mesh;
+
+		return nullptr;
 	}
 
 	void Mesh::GenerateNormals()
@@ -474,6 +465,7 @@ namespace VeryCoolEngine {
 	}
 	void Mesh::GenerateTangents()
 	{
+#if 0
 		for (uint32_t i = 0; i < m_uNumIndices/3; i++)
 		{
 			unsigned int a = m_puIndices[i * 3];
@@ -491,6 +483,7 @@ namespace VeryCoolEngine {
 			m_pxTangents[i] = glm::normalize(m_pxTangents[i]);
 			m_pxTangents[i].w = handedness;
 		}
+#endif
 	}
 	glm::vec4 Mesh::GenerateTangent(uint32_t a, uint32_t b, uint32_t c) {
 		glm::vec3 ba = m_pxVertexPositions[b] - m_pxVertexPositions[a];

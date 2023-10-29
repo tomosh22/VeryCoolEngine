@@ -114,9 +114,10 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 			if (pipeline->bUsePushConstants) {
 				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), (void*)&mesh->m_xTransform);
 
+				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eFragment, sizeof(glm::mat4), sizeof(glm::vec3), (void*)&m_xOverrideNormal);
 				int uValue = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;
 
-				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eFragment, sizeof(glm::mat4), sizeof(uint32_t), (void*)&uValue);
+				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eFragment, sizeof(glm::mat4) + sizeof(glm::vec3), sizeof(uint32_t), (void*)&uValue);
 			}
 
 			commandBuffer.drawIndexed(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);

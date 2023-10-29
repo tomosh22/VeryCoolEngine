@@ -223,11 +223,11 @@ namespace VeryCoolEngine {
 			break;
 		
 		}
-		VulkanPipelineBuilder xBuilder = VulkanPipelineBuilder("Geometry Pipeline");
+		VulkanPipelineBuilder xBuilder = VulkanPipelineBuilder(spec.m_strName.c_str());
 		xBuilder = xBuilder.WithVertexInputState(dynamic_cast<VulkanMesh*>(spec.m_pxExampleMesh)->m_xVertexInputState);
 		xBuilder = xBuilder.WithTopology(eTopology);
 		xBuilder = xBuilder.WithShader(*dynamic_cast<VulkanShader*>(dynamic_cast<VulkanMesh*>(spec.m_pxExampleMesh)->GetShader()));
-		xBuilder = xBuilder.WithBlendState(vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha, false);
+		xBuilder = xBuilder.WithBlendState(vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha, true);
 		xBuilder = xBuilder.WithDepthState(vk::CompareOp::eGreaterOrEqual, spec.m_bDepthTestEnabled, spec.m_bDepthWriteEnabled, false);
 		xBuilder = xBuilder.WithColourFormats({ vk::Format::eB8G8R8A8Srgb });
 		xBuilder = xBuilder.WithDepthFormat(vk::Format::eD32Sfloat);
@@ -267,7 +267,8 @@ namespace VeryCoolEngine {
 
 		if (spec.bUsePushConstants) {
 			xBuilder = xBuilder.WithPushConstant(vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4));//#TODO expand on this, currently just use model matrix
-			xBuilder = xBuilder.WithPushConstant(vk::ShaderStageFlagBits::eFragment, sizeof(glm::mat4), sizeof(uint32_t));
+			xBuilder = xBuilder.WithPushConstant(vk::ShaderStageFlagBits::eFragment, sizeof(glm::mat4), sizeof(glm::vec3));
+			xBuilder = xBuilder.WithPushConstant(vk::ShaderStageFlagBits::eFragment, sizeof(glm::mat4) + sizeof(glm::vec3), sizeof(uint32_t));
 		}
 
 		VulkanPipeline* xPipeline = xBuilder.Build();

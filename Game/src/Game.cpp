@@ -87,37 +87,62 @@ namespace VeryCoolEngine {
 		
 
 
-		m_pxTerrainMesh = Mesh::GenerateGenericHeightmap(100, 100);
-		//m_pxTerrainMesh = Mesh::FromFile("vkTest.obj");
-		
-		m_pxTerrainMesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
-		m_pxTerrainMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
-		m_pxTerrainMesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
-		
-		m_pxTerrainMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));
-
-		m_pxTerrainMesh->m_xTransform._scale = glm::vec3(1,1,1);
-		m_pxTerrainMesh->m_xTransform._position = glm::vec3(0, 0, 0);
-		m_pxTerrainMesh->m_xTransform.SetRotationQuat(Transform::EulerAnglesToQuat(0,0,0));
-		m_pxTerrainMesh->m_xTransform.UpdateMatrix();
-
-		_meshes.push_back(m_pxTerrainMesh);
+		//m_pxTerrainMesh = Mesh::GenerateGenericHeightmap(100, 100);
+		//
+		//m_pxTerrainMesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
+		//m_pxTerrainMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
+		//m_pxTerrainMesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
+		//
+		//m_pxTerrainMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));
+		//
+		//m_pxTerrainMesh->m_xTransform._scale = glm::vec3(1,1,1);
+		//m_pxTerrainMesh->m_xTransform._position = glm::vec3(0, 0, 0);
+		//m_pxTerrainMesh->m_xTransform.SetRotationQuat(Transform::EulerAnglesToQuat(0,0,0));
+		//m_pxTerrainMesh->m_xTransform.UpdateMatrix();
+		//
+		//_meshes.push_back(m_pxTerrainMesh);
 		
 		TextureDescriptorSpecification xMeshTexSpec;
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 
-		m_pxTerrainMesh->m_xTexDescSpec = xMeshTexSpec;
+		//m_pxTerrainMesh->m_xTexDescSpec = xMeshTexSpec;
 
 		BufferDescriptorSpecification xLightSpec;
 		xLightSpec.m_aeUniformBufferStages.push_back({ &_pLightUBO, ShaderStageVertexAndFragment });
 		
+		
+
+
+		//m_pxTestMesh = Mesh::FromFile("vkTest.obj", true);
+		//m_pxTestMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));//#TODO dont duplicate
+		//m_pxTestMesh->SetTexture(Texture2D::Create("modelTest.png", false));
+		//m_pxTestMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
+		//m_pxTestMesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
+		//
+		//m_pxTestMesh->m_xTexDescSpec = xMeshTexSpec;
+		//
+		//m_pxTestMesh->m_xTransform._scale = glm::vec3(10, 10, 10);
+		//m_pxTestMesh->m_xTransform._position = glm::vec3(50, 75, 60);
+		//m_pxTestMesh->m_xTransform.SetRotationQuat(Transform::EulerAnglesToQuat(270, 180, 0));
+		//m_pxTestMesh->m_xTransform.UpdateMatrix();
+
+
+		//_meshes.push_back(m_pxTestMesh);
+
+
+		m_pxSphereMesh = Mesh::FromFile("sphereSmooth.obj");
+		m_pxSphereMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));//#TODO dont duplicate
+		m_pxSphereMesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
+		m_pxSphereMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
+		m_pxSphereMesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
+
 		m_xPipelineSpecs.insert(
 			{ "Meshes",
 					PipelineSpecification(
 					"Meshes",
-					m_pxTerrainMesh,
+					m_pxSphereMesh,
 					BlendFactor::SrcAlpha,
 					BlendFactor::OneMinusSrcAlpha,
 					true,
@@ -131,30 +156,6 @@ namespace VeryCoolEngine {
 					true
 					)
 			});
-
-
-		m_pxTestMesh = Mesh::FromFile("vkTest.obj", true);
-		m_pxTestMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));//#TODO dont duplicate
-		m_pxTestMesh->SetTexture(Texture2D::Create("modelTest.png", false));
-		m_pxTestMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
-		m_pxTestMesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
-
-		m_pxTestMesh->m_xTexDescSpec = xMeshTexSpec;
-
-		m_pxTestMesh->m_xTransform._scale = glm::vec3(10, 10, 10);
-		m_pxTestMesh->m_xTransform._position = glm::vec3(50, 75, 60);
-		m_pxTestMesh->m_xTransform.SetRotationQuat(Transform::EulerAnglesToQuat(270, 180, 0));
-		m_pxTestMesh->m_xTransform.UpdateMatrix();
-
-
-		_meshes.push_back(m_pxTestMesh);
-
-
-		m_pxSphereMesh = Mesh::FromFile("sphereSmooth.obj");
-		m_pxSphereMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));//#TODO dont duplicate
-		m_pxSphereMesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
-		m_pxSphereMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
-		m_pxSphereMesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
 			
 		m_pxSphereMesh->m_xTexDescSpec = xMeshTexSpec;
 
@@ -207,9 +208,11 @@ namespace VeryCoolEngine {
 		mesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
 		mesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
 		mesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
+		mesh->SetMetallicTex(Texture2D::Create("crystal2k/violet_crystal_43_04_metallic.jpg", false));
 		
 
 		TextureDescriptorSpecification xMeshTexSpec;
+		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
@@ -395,8 +398,8 @@ namespace VeryCoolEngine {
 		scene->m_axPipelineMeshes.at("Blocks").push_back(game->m_pxBlockFaceMesh);
 
 		scene->m_axPipelineMeshes.insert({ "Meshes", std::vector<Mesh*>() });
-		scene->m_axPipelineMeshes.at("Meshes").push_back(game->m_pxTerrainMesh);
-		scene->m_axPipelineMeshes.at("Meshes").push_back(game->m_pxTestMesh);
+		//scene->m_axPipelineMeshes.at("Meshes").push_back(game->m_pxTerrainMesh);
+		//scene->m_axPipelineMeshes.at("Meshes").push_back(game->m_pxTestMesh);
 		scene->m_axPipelineMeshes.at("Meshes").push_back(game->m_pxSphereMesh);
 
 		for(Mesh* mesh : game->m_apxTestMeshes)

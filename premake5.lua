@@ -12,6 +12,7 @@ outputDir = "%{cfg.buildcfg}-%{cfg.cystem}-%{cfg.architecture}"
 
 include "VeryCoolEngine/vendor/GLFW"
 include "VeryCoolEngine/vendor/imgui"
+include "VeryCoolEngine/vendor/assimp"
 
 project "VeryCoolEngine"
 	location"VeryCoolEngine"
@@ -45,6 +46,7 @@ project "VeryCoolEngine"
 		"%{prj.name}/vendor/spdlog/include",
 		"%{prj.name}/vendor/GLFW/include",
 		"%{prj.name}/vendor/Glad/include",
+		"%{prj.name}/vendor/assimp/include",
 		"%{prj.name}/vendor/imgui",
 		"%{prj.name}/vendor/glm",
 		"%{prj.name}/vendor/stb",
@@ -57,9 +59,9 @@ project "VeryCoolEngine"
 	}
 	links{
 		"GLFW",
-		"opengl32.lib",
 		"ImGui",
-		"vulkan-1.lib"
+		"vulkan-1.lib",
+		"assimp"
 	}
 
 	filter "system:windows"
@@ -67,7 +69,6 @@ project "VeryCoolEngine"
 
 		defines{
 			"VCE_WINDOWS",
-			"VCE_BUILD_DLL",
 			"GLFW_INCLUDE_NONE",
 		}
 

@@ -97,6 +97,7 @@ namespace VeryCoolEngine {
 			}
 			ImGui::TreePop();
 		}
+		ImGui::ColorEdit3("Override Normal", &app->_pRenderer->m_xOverrideNormal[0]);
 		ImGui::Checkbox("Use Bumpmap", &app->_pRenderer->m_bUseBumpMaps);
 
 		//do things
