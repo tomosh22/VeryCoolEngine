@@ -45,6 +45,8 @@ namespace VeryCoolEngine {
 		virtual void UploadBoolUniform(const bool b, const std::string& name) const = 0;
 
 		static Shader* Create(const std::string& vertex, const std::string& fragment, const std::string& geometry = "", const std::string& domain = "", const std::string& hull = "");
+
+		bool m_bTesselation = false;
 	protected:
 
 		std::string shaderFiles[(int)ShaderStages::MAXSIZE];

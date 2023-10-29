@@ -104,4 +104,6 @@ void main(){
 	_oColor.rgb += diffuse.rgb * 0.5f;
 	_oColor.a = 1.f;
 	
+	_oColor.rgb = vec3(UV,0);
+	
 }

@@ -10,7 +10,16 @@ namespace VeryCoolEngine {
 		m_vertShaderCode = VulkanRenderer::ReadFile(SHADERDIR + vertex.c_str());
 		m_fragShaderCode = VulkanRenderer::ReadFile(SHADERDIR + fragment.c_str());
 
-		
+		m_uStageCount = 2;
+
+		if (domain.length()) {
+			VCE_ASSERT(hull.length(), "Found tesc but not tese");
+			m_tescShaderCode = VulkanRenderer::ReadFile(SHADERDIR + domain.c_str());
+			m_teseShaderCode = VulkanRenderer::ReadFile(SHADERDIR + hull.c_str());
+			m_uStageCount = 4;
+			m_bTesselation = true;
+		}
+			
 
 	}
 
@@ -29,6 +38,21 @@ namespace VeryCoolEngine {
 		m_xInfos[1].stage = vk::ShaderStageFlagBits::eFragment;
 		m_xInfos[1].module = xFragShaderModule;
 		m_xInfos[1].pName = "main";
+
+		if (m_bTesselation) {
+			xTescShaderModule = CreateShaderModule(m_tescShaderCode);
+			xTeseShaderModule = CreateShaderModule(m_teseShaderCode);
+
+			//vert
+			m_xInfos[2].stage = vk::ShaderStageFlagBits::eTessellationControl;
+			m_xInfos[2].module = xTescShaderModule;
+			m_xInfos[2].pName = "main";
+
+			//frag
+			m_xInfos[3].stage = vk::ShaderStageFlagBits::eTessellationEvaluation;
+			m_xInfos[3].module = xTeseShaderModule;
+			m_xInfos[3].pName = "main";
+		}
 	}
 
 	void VulkanShader::ReloadShader()

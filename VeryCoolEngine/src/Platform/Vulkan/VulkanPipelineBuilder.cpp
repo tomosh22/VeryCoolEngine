@@ -134,6 +134,14 @@ namespace VeryCoolEngine {
 		return *this;
 	}
 
+	VulkanPipelineBuilder& VulkanPipelineBuilder::WithTesselation()
+	{
+		useTesselation = true;
+		inputAsmCreate.setTopology(vk::PrimitiveTopology::ePatchList);
+		tesselationCreate.setPatchControlPoints(3);
+		return *this;
+	}
+
 	VulkanPipelineBuilder& VulkanPipelineBuilder::WithDescriptorSetLayout(uint32_t slot, vk::DescriptorSetLayout layout) {
 		assert(slot < 32);
 		while (allLayouts.size() <= slot) {
@@ -191,6 +199,9 @@ namespace VeryCoolEngine {
 			.setPRasterizationState(&rasterCreate)
 			.setLayout(output->m_xPipelineLayout)
 			.setPVertexInputState(&vertexCreate);
+
+		if (useTesselation)
+			pipelineCreate = pipelineCreate.setPTessellationState(&tesselationCreate);
 
 		//We must be using dynamic rendering, better set it up!
 		/*vk::PipelineRenderingCreateInfoKHR			renderingCreate;
@@ -265,11 +276,12 @@ namespace VeryCoolEngine {
 			xBuilder = xBuilder.WithDescriptorSetLayout(uLayoutIndex++, axTexLayouts.at(i));
 		}
 
-		if (spec.bUsePushConstants) {
-			xBuilder = xBuilder.WithPushConstant(vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4));//#TODO expand on this, currently just use model matrix
-			xBuilder = xBuilder.WithPushConstant(vk::ShaderStageFlagBits::eFragment, sizeof(glm::mat4), sizeof(glm::vec3));
-			xBuilder = xBuilder.WithPushConstant(vk::ShaderStageFlagBits::eFragment, sizeof(glm::mat4) + sizeof(glm::vec3), sizeof(uint32_t));
+		if (spec.m_bUsePushConstants) {
+			xBuilder = xBuilder.WithPushConstant(vk::ShaderStageFlagBits::eAll, 0, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t));//#TODO expand on this, currently just use model matrix
 		}
+
+		if (spec.m_bUseTesselation)
+			xBuilder = xBuilder.WithTesselation();
 
 		VulkanPipeline* xPipeline = xBuilder.Build();
 		xPipeline->m_axBufferDescLayouts = axBufferLayouts;
@@ -277,7 +289,7 @@ namespace VeryCoolEngine {
 		xPipeline->m_axTexDescLayouts = axTexLayouts;
 		xPipeline->m_axTexDescSets = axTexSets;
 		xPipeline->m_strName = spec.m_strName;
-		xPipeline->bUsePushConstants = spec.bUsePushConstants;
+		xPipeline->bUsePushConstants = spec.m_bUsePushConstants;
 
 		return xPipeline;
 	}

@@ -320,6 +320,7 @@ namespace VeryCoolEngine {
 		Assimp::Importer importer;
 		const aiScene* pxScene = importer.ReadFile(strPath.c_str(),
 			aiProcess_CalcTangentSpace |
+			aiProcess_GenSmoothNormals |
 			aiProcess_Triangulate |
 			aiProcess_JoinIdenticalVertices |
 			aiProcess_SortByPType);

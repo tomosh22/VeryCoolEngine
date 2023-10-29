@@ -44,10 +44,12 @@ namespace VeryCoolEngine {
 		void SetBumpMap(Texture2D* bumpMap) { m_pxBumpMap = bumpMap; }
 		void SetRoughnessTex(Texture2D* roughnessTex) { m_pxRoughnessTex = roughnessTex; }
 		void SetMetallicTex(Texture2D* metallicTex) { m_pxMetallicTex = metallicTex; }
+		void SetHeightmapTex(Texture2D* heightmapTex) { m_pxHeightmapTex = heightmapTex; }
 		Texture2D* GetTexture() const { return m_pxTexture; }
 		Texture2D* GetBumpMap() const { return m_pxBumpMap; }
 		Texture2D* GetRoughnessTex() const { return m_pxRoughnessTex; }
 		Texture2D* GetMetallicTex() const { return m_pxMetallicTex; }
+		Texture2D* GetHeightmapTex() const { return m_pxHeightmapTex; }
 
 		virtual void PlatformInit() = 0;
 
@@ -81,6 +83,7 @@ namespace VeryCoolEngine {
 		Texture2D* m_pxBumpMap = nullptr; //#todo so should this
 		Texture2D* m_pxRoughnessTex = nullptr; //#todo so should this
 		Texture2D* m_pxMetallicTex = nullptr; //#todo so should this
+		Texture2D* m_pxHeightmapTex = nullptr; //#todo so should this
 
 		glm::vec3* m_pxVertexPositions = nullptr;
 		glm::vec2* m_pxUVs = nullptr;

@@ -57,6 +57,7 @@ namespace VeryCoolEngine {
 		VulkanPipelineBuilder& WithDepthStencilFormat(vk::Format combinedFormat);
 		VulkanPipelineBuilder& WithDepthFormat(vk::Format depthFormat);
 		VulkanPipelineBuilder& WithColourFormats(const std::vector<vk::Format>& formats);
+		VulkanPipelineBuilder& WithTesselation();
 
 		//VulkanPipelineBuilder& WithDescriptorBuffers();
 
@@ -87,6 +88,9 @@ namespace VeryCoolEngine {
 		std::vector<vk::Format> allColourRenderingFormats;
 		vk::Format depthRenderingFormat;
 		vk::Format stencilRenderingFormat;
+
+		bool useTesselation;
+		vk::PipelineTessellationStateCreateInfo tesselationCreate;
 
 		std::string debugName;
 	};

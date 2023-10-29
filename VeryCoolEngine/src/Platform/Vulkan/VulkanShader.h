@@ -21,14 +21,18 @@ namespace VeryCoolEngine {
 
 		vk::ShaderModule xVertShaderModule;
 		vk::ShaderModule xFragShaderModule;
+		vk::ShaderModule xTescShaderModule;
+		vk::ShaderModule xTeseShaderModule;
 
 		std::vector<char> m_vertShaderCode;
 		std::vector<char> m_fragShaderCode;
+		std::vector<char> m_tescShaderCode;
+		std::vector<char> m_teseShaderCode;
 
 
 		//credit Rich Davison
 		void FillShaderStageCreateInfo(vk::GraphicsPipelineCreateInfo& info) const;
-		int m_uStageCount = 2;//TODO support anything other than vert frag
+		uint32_t m_uStageCount;//TODO support anything other than vert frag
 		vk::PipelineShaderStageCreateInfo* m_xInfos = nullptr;
 
 	private:

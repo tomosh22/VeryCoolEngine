@@ -144,7 +144,8 @@ namespace VeryCoolEngine {
 
 
 		vk::PhysicalDeviceFeatures deviceFeatures = vk::PhysicalDeviceFeatures()
-			.setSamplerAnisotropy(VK_TRUE);
+			.setSamplerAnisotropy(VK_TRUE)
+			.setTessellationShader(VK_TRUE);
 
 		vk::DeviceCreateInfo deviceCreateInfo = vk::DeviceCreateInfo()
 			.setPQueueCreateInfos(queueInfos.data())

@@ -59,6 +59,7 @@ namespace VeryCoolEngine {
 					{xCamSpec},
 					{},
 					&m_pxRenderPass,
+					false,
 					false
 					)
 			});
@@ -80,6 +81,7 @@ namespace VeryCoolEngine {
 					{ xCamSpec},
 					{xBlockTexSpec},
 					&m_pxRenderPass,
+					false,
 					false
 					)
 			});
@@ -103,6 +105,7 @@ namespace VeryCoolEngine {
 		//_meshes.push_back(m_pxTerrainMesh);
 		
 		TextureDescriptorSpecification xMeshTexSpec;
+		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });//currently overriding stage to all
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
@@ -134,11 +137,12 @@ namespace VeryCoolEngine {
 
 
 		m_pxSphereMesh = Mesh::FromFile("sphereSmooth.obj");
-		m_pxSphereMesh->SetShader(Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv"));//#TODO dont duplicate
+		m_pxSphereMesh->SetShader(Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv"));//#TODO dont duplicate
 		m_pxSphereMesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
 		m_pxSphereMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
 		m_pxSphereMesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
 		m_pxSphereMesh->SetMetallicTex(Texture2D::Create("crystal2k/violet_crystal_43_04_metallic.jpg", false));
+		m_pxSphereMesh->SetHeightmapTex(Texture2D::Create("crystal2k/violet_crystal_43_04_height.jpg", false));
 
 		m_xPipelineSpecs.insert(
 			{ "Meshes",
@@ -155,6 +159,7 @@ namespace VeryCoolEngine {
 					{xCamSpec, xLightSpec},
 					{xMeshTexSpec},
 					&m_pxRenderPass,
+					true,
 					true
 					)
 			});
@@ -176,6 +181,9 @@ namespace VeryCoolEngine {
 		)));
 		m_apxTestMeshes.push_back(AddTestMesh("cubeSmooth.obj", Transform(
 			{ 20,80,10 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
+		)));
+		m_apxTestMeshes.push_back(AddTestMesh("sphereSmoothIco.obj", Transform(
+			{ 50,80,50 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
 		)));
 		
 		
@@ -206,14 +214,16 @@ namespace VeryCoolEngine {
 	Mesh* Game::AddTestMesh(const char* szFileName, const Transform& xTrans)
 	{
 		Mesh* mesh = Mesh::FromFile(szFileName);
-		mesh->SetShader(Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv"));//#TODO dont duplicate
+		mesh->SetShader(Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv"));//#TODO dont duplicate
 		mesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
 		mesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
 		mesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
 		mesh->SetMetallicTex(Texture2D::Create("crystal2k/violet_crystal_43_04_metallic.jpg", false));
+		mesh->SetHeightmapTex(Texture2D::Create("crystal2k/violet_crystal_43_04_height.jpg", false));
 		
 
 		TextureDescriptorSpecification xMeshTexSpec;
+		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });

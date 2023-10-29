@@ -14,7 +14,6 @@ License: MIT (see LICENSE file at the top of the source tree)
 namespace VeryCoolEngine {
 
 	VulkanDescriptorSetLayoutBuilder& VulkanDescriptorSetLayoutBuilder::WithSamplers(unsigned int count, vk::ShaderStageFlags inShaders) {
-		VCE_ASSERT((inShaders & vk::ShaderStageFlagBits::eFragment) == vk::ShaderStageFlagBits::eFragment, "");
 		vk::DescriptorSetLayoutBinding binding = vk::DescriptorSetLayoutBinding()
 			.setBinding((uint32_t)addedBindings.size())
 			.setDescriptorCount(count)
@@ -99,7 +98,7 @@ namespace VeryCoolEngine {
 		VulkanDescriptorSetLayoutBuilder xBuilder = VulkanDescriptorSetLayoutBuilder();
 		if (spec.m_aeUniformBufferStages.size()) {
 			for (auto& [ppxUBO, eStage] : spec.m_aeUniformBufferStages) {
-				xBuilder = xBuilder.WithUniformBuffers(1, VulkanShaderStage(eStage));
+				xBuilder = xBuilder.WithUniformBuffers(1, vk::ShaderStageFlagBits::eAll);//#TODO stop passing all
 			}
 		}
 		return std::move(xBuilder.Build(VulkanRenderer::GetInstance()->GetDevice()));
@@ -110,7 +109,7 @@ namespace VeryCoolEngine {
 		VulkanDescriptorSetLayoutBuilder xBuilder = VulkanDescriptorSetLayoutBuilder();
 		if (spec.m_aeSamplerStages.size()) {
 			for (auto& [ppxTexture, eStage] : spec.m_aeSamplerStages) {
-				xBuilder = xBuilder.WithSamplers(1, VulkanShaderStage(eStage));
+				xBuilder = xBuilder.WithSamplers(1, vk::ShaderStageFlagBits::eAll);//#TODO stop passing all
 			}
 		}
 		return std::move(xBuilder.Build(VulkanRenderer::GetInstance()->GetDevice()));
