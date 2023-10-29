@@ -106,6 +106,7 @@ namespace VeryCoolEngine {
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
+		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 
 		//m_pxTerrainMesh->m_xTexDescSpec = xMeshTexSpec;
 
@@ -133,10 +134,11 @@ namespace VeryCoolEngine {
 
 
 		m_pxSphereMesh = Mesh::FromFile("sphereSmooth.obj");
-		m_pxSphereMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));//#TODO dont duplicate
+		m_pxSphereMesh->SetShader(Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv"));//#TODO dont duplicate
 		m_pxSphereMesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
 		m_pxSphereMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
 		m_pxSphereMesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
+		m_pxSphereMesh->SetMetallicTex(Texture2D::Create("crystal2k/violet_crystal_43_04_metallic.jpg", false));
 
 		m_xPipelineSpecs.insert(
 			{ "Meshes",
@@ -204,7 +206,7 @@ namespace VeryCoolEngine {
 	Mesh* Game::AddTestMesh(const char* szFileName, const Transform& xTrans)
 	{
 		Mesh* mesh = Mesh::FromFile(szFileName);
-		mesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));//#TODO dont duplicate
+		mesh->SetShader(Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv"));//#TODO dont duplicate
 		mesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
 		mesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
 		mesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
