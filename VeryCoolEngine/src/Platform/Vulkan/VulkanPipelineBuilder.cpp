@@ -277,7 +277,14 @@ namespace VeryCoolEngine {
 		}
 
 		if (spec.m_bUsePushConstants) {
-			xBuilder = xBuilder.WithPushConstant(vk::ShaderStageFlagBits::eAll, 0, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t));//#TODO expand on this, currently just use model matrix
+			xBuilder = xBuilder.WithPushConstant(vk::ShaderStageFlagBits::eAll, 0, 
+				sizeof(glm::mat4) + //modelmat
+				sizeof(glm::vec3) + //overrideNormal
+				sizeof(uint32_t) +  //useBumpMap
+				sizeof(uint32_t) +	//usePhongTess
+				sizeof(float)	 +	//phongTessFactor
+				sizeof(uint32_t)	//tessLevel
+			);  
 		}
 
 		if (spec.m_bUseTesselation)

@@ -185,6 +185,9 @@ namespace VeryCoolEngine {
 		m_apxTestMeshes.push_back(AddTestMesh("sphereSmoothIco.obj", Transform(
 			{ 50,80,50 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
 		)));
+		m_apxTestMeshes.push_back(AddTestMesh("sphereSmoothIcoLowPoly.obj", Transform(
+			{ 50,120,50 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
+		)));
 		
 		
 		_lights.push_back({

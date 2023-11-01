@@ -11,6 +11,9 @@ layout(push_constant) uniform PushConstantVert{
 	mat4 modelMatrix;
 	vec3 overrideNormal;
 	int useBumpMap;
+	int usePhongTess;
+	float phongTessFactor;
+	int tessLevel;
 };
 
 layout(location = 0) out vec2 _oUV;

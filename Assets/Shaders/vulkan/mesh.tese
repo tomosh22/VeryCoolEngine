@@ -2,6 +2,8 @@
 
 layout(triangles , ccw) in;
 
+
+
 layout(location = 0) in vec2 _aUV[];
 layout(location = 1) in vec3 _aNormal[];
 layout(location = 2) in vec3 _aTangent[];
@@ -25,6 +27,9 @@ layout(push_constant) uniform PushConstantVert{
 	mat4 modelMatrix;
 	vec3 overrideNormal;
 	int useBumpMap;
+	int usePhongTess;
+	float phongTessFactor;
+	int tessLevel;
 };
 
 vec3 TriMixVec3(vec3 a, vec3 b, vec3 c) {
@@ -53,10 +58,49 @@ vec2 TriMixVec2(vec2 a, vec2 b, vec2 c) {
 	return val;
 }
 
+float PhongProjection(int planeToProjectOnto, int vertexToProject, int barycentricUVW)
+{
+	return _aWorldPos[vertexToProject][barycentricUVW] - dot(_aWorldPos[vertexToProject] - _aWorldPos[planeToProjectOnto], _aNormal[planeToProjectOnto]) * _aNormal[planeToProjectOnto][barycentricUVW];
+}
+
+vec3 PhongTesselation(){
+		
+	return 	  pow(gl_TessCoord[0], 2) * _aWorldPos[0]
+			+ pow(gl_TessCoord[1], 2) * _aWorldPos[1]
+			+ pow(gl_TessCoord[2], 2) * _aWorldPos[2]
+			+ gl_TessCoord[0] * gl_TessCoord[1] * vec3(PhongProjection(0, 1, 0) + PhongProjection(1, 0, 0),
+													PhongProjection(0, 1, 1) + PhongProjection(1, 0, 1),
+													PhongProjection(0, 1, 2) + PhongProjection(1, 0, 2)
+												)
+			+ gl_TessCoord[1] * gl_TessCoord[2] * vec3(PhongProjection(1, 2, 0) + PhongProjection(2, 1, 0),
+													PhongProjection(1, 2, 1) + PhongProjection(2, 1, 1),
+													PhongProjection(1, 2, 2) + PhongProjection(2, 1, 2)
+												)
+			+ gl_TessCoord[0] * gl_TessCoord[2] * vec3(PhongProjection(2, 0, 0) + PhongProjection(0, 2, 0),
+													PhongProjection(2, 0, 1) + PhongProjection(0, 2, 1),
+													PhongProjection(2, 0, 2) + PhongProjection(0, 2, 2)
+												);
+	
+}
+ 
 layout(set = 2, binding = 4) uniform sampler2D heightMap;
 
 void main(){
-	vec3 combinedPos = TriMixVec3(gl_in[0].gl_Position.xyz, gl_in[1].gl_Position.xyz, gl_in[2].gl_Position.xyz);
+	vec3 combinedPos;
+	if(usePhongTess > 0){
+		combinedPos = mix(
+		TriMixVec3(_aWorldPos[0], _aWorldPos[1], _aWorldPos[2]),
+			PhongTesselation(),
+			phongTessFactor
+		);
+	}
+	else{
+		combinedPos = TriMixVec3(_aWorldPos[0], _aWorldPos[1], _aWorldPos[2]);
+	}
+	
+	
+
+	
 	
 	_oUV = TriMixVec2(_aUV[0], _aUV[1], _aUV[2]);
 	_oNormal = TriMixVec3(_aNormal[0], _aNormal[1], _aNormal[2]);
@@ -65,10 +109,10 @@ void main(){
 	vec3 combinedTangent = TriMixVec3(_aTangent[0], _aTangent[1], _aTangent[2]);
 	vec3 combinedBitangent = TriMixVec3(_aBitangent[0], _aBitangent[1], _aBitangent[2]);
 	
-	vec4 worldPos = modelMatrix * vec4(combinedPos , 1);
+	vec4 worldPos =  vec4(combinedPos , 1);
 	
 	float height = texture(heightMap , _oUV ).x;
-	worldPos.xyz += _oNormal * height;
+	//worldPos.xyz += _oNormal * height;
 	
 	
 	gl_Position = _uViewProjMat * worldPos;

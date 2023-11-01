@@ -99,6 +99,9 @@ namespace VeryCoolEngine {
 		}
 		ImGui::ColorEdit3("Override Normal", &app->_pRenderer->m_xOverrideNormal[0]);
 		ImGui::Checkbox("Use Bumpmap", &app->_pRenderer->m_bUseBumpMaps);
+		ImGui::Checkbox("Use Phong Tesselation", &app->_pRenderer->m_bUsePhongTess);
+		ImGui::SliderFloat("Phong Tesselation Factor", &app->_pRenderer->m_fPhongTessFactor, -2, 20);
+		ImGui::SliderInt("Tesselation Level", (int*)&app->_pRenderer->m_uTessLevel, 1, 64);
 
 		//do things
 

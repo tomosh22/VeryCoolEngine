@@ -23,6 +23,9 @@ layout(push_constant) uniform PushConstantVert{
 	mat4 modelMatrix;
 	vec3 overrideNormal;
 	int useBumpMap;
+	int usePhongTess;
+	float phongTessFactor;
+	int tessLevel;
 };
 
 layout(std140, set = 1, binding = 0) uniform LightsUBO{
@@ -88,6 +91,7 @@ void main(){
 	
 	
 	
+	
 	float roughness = texture(roughnessTex,UV).x;
 	float metallic = texture(metallicTex,UV).x;
 	_oColor = vec4(0);
@@ -104,6 +108,8 @@ void main(){
 	_oColor.rgb += diffuse.rgb * 0.5f;
 	_oColor.a = 1.f;
 	
-	_oColor.rgb = vec3(UV,0);
+	//_oColor.rgb = vec3(UV,0);
+	//_oColor.rgb = vec3(dFdy(UV),0);
+	//_oColor.rgb = bumpNormal;
 	
 }

@@ -2,6 +2,7 @@
 
 layout(vertices = 3) out;
 
+
 layout(location = 0) in vec2 _aUV[];
 layout(location = 1) in vec3 _aNormal[];
 layout(location = 2) in vec3 _aTangent[];
@@ -19,21 +20,23 @@ layout(push_constant) uniform PushConstantVert{
 	mat4 modelMatrix;
 	vec3 overrideNormal;
 	int useBumpMap;
+	int usePhongTess;
+	float phongTessFactor;
+	int tessLevel;
 };
 
 void main(){
-	gl_TessLevelInner [0] = 8;
-	gl_TessLevelInner [1] = 8;
-	gl_TessLevelOuter [0] = 8;
-	gl_TessLevelOuter [1] = 8;
-	gl_TessLevelOuter [2] = 8;
-	gl_TessLevelOuter [3] = 8;
+
+	gl_TessLevelInner [0] = tessLevel;
+	gl_TessLevelInner [1] = tessLevel;
+	gl_TessLevelOuter [0] = tessLevel;
+	gl_TessLevelOuter [1] = tessLevel;
+	gl_TessLevelOuter [2] = tessLevel;
+	gl_TessLevelOuter [3] = tessLevel;
 
 	_oUV[gl_InvocationID] = _aUV[gl_InvocationID];
 	_oNormal[gl_InvocationID] = _aNormal[gl_InvocationID];
 	_oTangent[gl_InvocationID] = _aTangent[gl_InvocationID];
 	_oBitangent[gl_InvocationID] = _aBitangent[gl_InvocationID];
 	_oWorldPos[gl_InvocationID] = _aWorldPos[gl_InvocationID];
-
-	gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
 }
