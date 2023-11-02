@@ -240,7 +240,6 @@ namespace VeryCoolEngine {
 			std::vector<vk::ImageView> m_swapChainImageViews;
 
 
-			class VulkanPipeline* m_pxSkyboxPipeline;
 			std::vector<class VulkanPipeline*> m_xPipelines;
 
 			void SetupDeferredShading();
