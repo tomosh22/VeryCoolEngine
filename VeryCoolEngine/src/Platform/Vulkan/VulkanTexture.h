@@ -25,6 +25,10 @@ namespace VeryCoolEngine {
 		void InitWithData();
 		void InitWithoutData();
 
+		static VulkanTexture2D* CreateVulkanTexture2D(uint32_t uWidth, uint32_t uHeight, uint32_t uMipCount, vk::Format eFormat, vk::ImageAspectFlags eAspect, vk::ImageUsageFlags eUsage, vk::ImageLayout eLayout, vk::PipelineStageFlags ePipeType);
+		static VulkanTexture2D* CreateColourAttachment(uint32_t uWidth, uint32_t uHeight, uint32_t uMipCount, vk::Format eFormat);
+		static VulkanTexture2D* CreateDepthAttachment(uint32_t uWidth, uint32_t uHeight);
+
 		vk::Image m_xImage;
 		vk::ImageView m_xImageView;
 		vk::DeviceMemory m_xDeviceMemory;

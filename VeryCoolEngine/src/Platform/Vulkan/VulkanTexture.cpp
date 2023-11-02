@@ -84,8 +84,6 @@ namespace VeryCoolEngine {
 
 		xDevice.bindImageMemory(m_xImage, m_xDeviceMemory, 0);
 
-		vk::CommandBuffer xCmd = pxRenderer->BeginSingleUseCmdBuffer();
-
 		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer);
 		VulkanBuffer::CopyBufferToImage(pxStagingBuffer, this, m_uWidth, m_uHeight);
 		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader);//todo will probably need to change this to vertex shader in the future
@@ -231,4 +229,61 @@ namespace VeryCoolEngine {
 		return m_uHeight;
 	}
 	
+	VulkanTexture2D* VulkanTexture2D::CreateVulkanTexture2D(uint32_t uWidth, uint32_t uHeight, uint32_t uMipCount, vk::Format eFormat, vk::ImageAspectFlags eAspect, vk::ImageUsageFlags eUsage, vk::ImageLayout eLayout, vk::PipelineStageFlags ePipeType) {
+		VulkanTexture2D* pxTex = new VulkanTexture2D();
+		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+		vk::Device xDevice = pxRenderer->GetDevice();
+		vk::PhysicalDevice xPhysDevice = pxRenderer->GetPhysicalDevice();
+
+		vk::ImageCreateInfo xImageCreateInfo = vk::ImageCreateInfo()
+			.setImageType(vk::ImageType::e2D)
+			.setExtent(vk::Extent3D(uWidth, uHeight, 1))
+			.setFormat(eFormat)
+			.setUsage(eUsage)
+			.setMipLevels(uMipCount)
+			.setArrayLayers(1)
+			.setImageType(vk::ImageType::e2D);
+
+		pxTex->m_xImage = xDevice.createImage(xImageCreateInfo);
+
+		vk::MemoryRequirements xMemRequirements = xDevice.getImageMemoryRequirements(pxTex->m_xImage);
+
+		uint32_t memoryType = -1;
+		for (uint32_t i = 0; i < xPhysDevice.getMemoryProperties().memoryTypeCount; i++) {
+			if ((xMemRequirements.memoryTypeBits & (1 << i)) && (xPhysDevice.getMemoryProperties().memoryTypes[i].propertyFlags & vk::MemoryPropertyFlagBits::eDeviceLocal) == vk::MemoryPropertyFlagBits::eDeviceLocal) {
+				memoryType = i;
+				break;
+			}
+		}
+		VCE_ASSERT(memoryType != -1, "couldn't find physical memory type");
+
+		vk::MemoryAllocateInfo xAllocInfo = vk::MemoryAllocateInfo()
+			.setAllocationSize(xMemRequirements.size)
+			.setMemoryTypeIndex(memoryType);
+
+		pxTex->m_xDeviceMemory = xDevice.allocateMemory(xAllocInfo);
+
+		xDevice.bindImageMemory(pxTex->m_xImage, pxTex->m_xDeviceMemory, 0);
+
+		vk::ImageViewCreateInfo xViewCreateInfo = vk::ImageViewCreateInfo()
+			.setViewType(vk::ImageViewType::e2D)
+			.setFormat(eFormat)
+			.setSubresourceRange(vk::ImageSubresourceRange(eAspect, 0,uMipCount, 0, 1))
+			.setImage(pxTex->m_xImage);
+
+		pxTex->m_xImageView = xDevice.createImageView(xViewCreateInfo);
+
+		vk::CommandBuffer xCmd = pxRenderer->BeginSingleUseCmdBuffer();
+
+		pxRenderer->ImageTransitionBarrier(pxTex->m_xImage, vk::ImageLayout::eUndefined, eLayout, eAspect, vk::PipelineStageFlagBits::eTopOfPipe, ePipeType);
+
+		return pxTex;
+	}
+
+	VulkanTexture2D* VulkanTexture2D::CreateColourAttachment(uint32_t uWidth, uint32_t uHeight, uint32_t uMipCount, vk::Format eFormat) {
+		return CreateVulkanTexture2D(uWidth, uHeight, uMipCount, eFormat, vk::ImageAspectFlagBits::eColor, vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled, vk::ImageLayout::eColorAttachmentOptimal, vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	}
+	VulkanTexture2D* VulkanTexture2D::CreateDepthAttachment(uint32_t uWidth, uint32_t uHeight) {
+		return CreateVulkanTexture2D(uWidth, uHeight, 1, vk::Format::eD32Sfloat, vk::ImageAspectFlagBits::eDepth, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::ImageLayout::eDepthAttachmentOptimal, vk::PipelineStageFlagBits::eEarlyFragmentTests);
+	}
 }

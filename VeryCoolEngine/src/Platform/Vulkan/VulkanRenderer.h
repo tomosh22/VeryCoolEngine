@@ -239,6 +239,13 @@ namespace VeryCoolEngine {
 			vk::Extent2D m_swapChainExtent;
 			std::vector<vk::ImageView> m_swapChainImageViews;
 
+			void SetupDeferredShading();
+			VulkanTexture2D* m_pxGBufferDiffuse;
+			VulkanTexture2D* m_pxGBufferNormals;
+			VulkanTexture2D* m_pxGBufferDepth;
+			VulkanTexture2D* m_pxDeferredDiffuse;
+			VulkanTexture2D* m_pxDeferredSpecular;
+
 			vk::DescriptorPool m_descriptorPool;
 
 			/*vk::DescriptorSetLayout m_xCameraLayout;

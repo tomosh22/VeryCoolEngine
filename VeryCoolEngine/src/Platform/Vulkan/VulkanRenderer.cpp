@@ -35,6 +35,8 @@ void VulkanRenderer::InitVulkan() {
 	Application* app = Application::GetInstance();
 
 	BoilerplateInit();
+
+	SetupDeferredShading();
 	
 	for (Mesh* pMesh : app->_meshes) {
 		pMesh->PlatformInit();
@@ -55,6 +57,14 @@ void VulkanRenderer::InitVulkan() {
 	
 
 	Application::GetInstance()->renderInitialised = true;
+}
+
+void VulkanRenderer::SetupDeferredShading() {
+	m_pxGBufferDiffuse = VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Unorm);
+	m_pxGBufferNormals = VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Unorm);
+	m_pxGBufferDepth = VulkanTexture2D::CreateDepthAttachment(m_width, m_height);
+	m_pxDeferredDiffuse = VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Unorm);
+	m_pxDeferredSpecular = VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Unorm);
 }
 
 void VulkanRenderer::MainLoop() {

@@ -471,6 +471,9 @@ namespace VeryCoolEngine {
 		case (vk::ImageLayout::eColorAttachmentOptimal):
 			xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
 			break;
+		case (vk::ImageLayout::eDepthAttachmentOptimal):
+			xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eDepthStencilAttachmentWrite);
+			break;
 		case (vk::ImageLayout::eDepthStencilAttachmentOptimal):
 			xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eDepthStencilAttachmentWrite);
 			break;
