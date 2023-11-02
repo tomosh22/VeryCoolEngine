@@ -239,6 +239,10 @@ namespace VeryCoolEngine {
 			vk::Extent2D m_swapChainExtent;
 			std::vector<vk::ImageView> m_swapChainImageViews;
 
+
+			class VulkanPipeline* m_pxSkyboxPipeline;
+			std::vector<class VulkanPipeline*> m_xPipelines;
+
 			void SetupDeferredShading();
 			VulkanTexture2D* m_pxGBufferDiffuse;
 			VulkanTexture2D* m_pxGBufferNormals;

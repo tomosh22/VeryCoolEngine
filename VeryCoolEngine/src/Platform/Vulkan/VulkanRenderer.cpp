@@ -50,9 +50,9 @@ void VulkanRenderer::InitVulkan() {
 
 
 
-	app->m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Skybox")) );
-	app->m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Blocks")));
-	app->m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Meshes")));
+	m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Skybox")) );
+	m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Blocks")));
+	m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Meshes")));
 	
 	
 
@@ -103,7 +103,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	BeginRenderPass(commandBuffer, imageIndex);
 
 
-	for (VulkanPipeline*  pipeline : app->m_xPipelines) {
+	for (VulkanPipeline*  pipeline : m_xPipelines) {
 
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline->m_xPipeline);
 

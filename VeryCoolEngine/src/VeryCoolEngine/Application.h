@@ -84,7 +84,6 @@ namespace VeryCoolEngine {
 
 		//TODO delete these
 		Renderer* _pRenderer;
-		class VulkanPipeline* m_pxSkyboxPipeline;
 		RenderPass* m_pxRenderPass;
 
 		vk::DescriptorSetLayout m_xCameraLayout;
@@ -92,7 +91,7 @@ namespace VeryCoolEngine {
 		vk::DescriptorSetLayout m_xSkyboxTextureLayout;
 
 
-		std::vector<class VulkanPipeline*> m_xPipelines;
+		
 		std::unordered_map<std::string, PipelineSpecification> m_xPipelineSpecs;
 		
 
