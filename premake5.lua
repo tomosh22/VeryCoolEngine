@@ -51,6 +51,7 @@ project "VeryCoolEngine"
 		"%{prj.name}/vendor/glm",
 		"%{prj.name}/vendor/stb",
 		"%{prj.name}/vendor/tinyobj",
+		"%{prj.name}/vendor/PerlinNoise",
 		"%{prj.name}/src",
 		"$(VULKAN_SDK)/include",
 	}
@@ -113,7 +114,6 @@ project "Game"
 		"VeryCoolEngine/vendor/glm",
 		"VeryCoolEngine/vendor/Glad/include",
 		"%{prj.name}/vendor/stb",
-		"Game/vendor/PerlinNoise",
 		"$(VULKAN_SDK)/include",
 
 	}

@@ -2,8 +2,8 @@
 
 #include "VeryCoolEngine/Application.h"
 #include <glm/glm.hpp>
-#include "Block.h"
-#include "Chunk.h"
+#include "VeryCoolEngine/BlockWorld/Block.h"
+#include "VeryCoolEngine/BlockWorld/Chunk.h"
 #include <map>
 
 namespace VeryCoolEngine {
@@ -18,17 +18,11 @@ namespace VeryCoolEngine {
 		void GenerateChunks();
 		void UploadChunks();
 
-		static constexpr glm::ivec3 s_xNumChunks = { 8,1,8 };
+		
 
-		std::map<long long, Chunk*> _chunks;
-		Block GetAdjacentBlock(const Chunk* chunk, int x, int y, int z, int offsetX, int offsetY, int offsetZ);
+		class BlockWorld* m_pxBlockWorld;
 
-		std::vector<Block> _blocks;
-		std::vector<glm::mat4> _instanceMats;
-		std::vector<glm::quat> _instanceQuats;
-		std::vector<glm::vec3> _instancePositions;
-		std::vector<glm::ivec2> _instanceOffsets;
-		std::vector<glm::ivec4> _instanceAOValues;
+		
 
 		
 
@@ -37,7 +31,7 @@ namespace VeryCoolEngine {
 		Mesh* AddTestMesh(const char* szFileName, const Transform& xTrans);
 		
 
-		Chunk* chunkPtrs[s_xNumChunks.x * s_xNumChunks.z];
+		
 	};
 
 

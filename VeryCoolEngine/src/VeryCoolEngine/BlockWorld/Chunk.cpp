@@ -1,9 +1,11 @@
+#include "vcepch.h"
 #include "Chunk.h"
 #include "VeryCoolEngine/Application.h"
-#include "Game.h"
 
 #define DB_PERLIN_IMPL
 #include <db_perlin.hpp>
+
+#include "BlockWorld.h"
 
 namespace VeryCoolEngine {
 
@@ -11,7 +13,7 @@ namespace VeryCoolEngine {
 
 	glm::ivec3 Chunk::_chunkSize = glm::ivec3(16, 256, 16);
 
-	Chunk::Chunk(const glm::ivec3 pos) : _chunkPos(pos)
+	Chunk::Chunk(const glm::ivec3 pos, class BlockWorld* pxParentWorld) : _chunkPos(pos), m_pxParentWorld(pxParentWorld)
 	{
 		_blocks = new Block**[Chunk::_chunkSize.x];
 
@@ -93,15 +95,6 @@ namespace VeryCoolEngine {
 			}
 		}
 
-		//for (int y = 50; y < 65; y++) {
-		//	glm::ivec3 blockPos = {
-		//				   _chunkPos.x * Chunk::_chunkSize.x + 15,
-		//				   _chunkPos.y * Chunk::_chunkSize.y + y,//#todo probably dont need to bother with y
-		//				   _chunkPos.z * Chunk::_chunkSize.z + 15
-		//	};
-		//	_blocks[15][y][15] = Block(blockPos, Block::BlockType::TNT);
-		//}
-
 	}
 
 	Transform Chunk::GetTransformForSide(Block::Side side, const glm::ivec3& position) {
@@ -137,70 +130,68 @@ namespace VeryCoolEngine {
 	}
 
 	void Chunk::UploadFace(Block block, Block::Side side, int x, int y, int z){
-		Game* game = (Game*)Application::GetInstance();
 
 		Transform trans = GetTransformForSide(side, block._position);
 
-		game->_instanceQuats.push_back(trans._rotationQuat);
-		game->_instanceMats.push_back(Transform::RotationMatFromQuat(trans._rotationQuat));
-		game->_instancePositions.push_back(trans._position);
+		m_pxParentWorld->_instanceQuats.push_back(trans._rotationQuat);
+		m_pxParentWorld->_instanceMats.push_back(Transform::RotationMatFromQuat(trans._rotationQuat));
+		m_pxParentWorld->_instancePositions.push_back(trans._position);
 
 		Block::FaceType faceType = Block::BlockToFace(block._blockType, side);
 
-		game->_instanceOffsets.push_back(Block::atlasOffsets.find(faceType)->second);
+		m_pxParentWorld->_instanceOffsets.push_back(Block::atlasOffsets.find(faceType)->second);
 
 
 		switch (side) {
 		case Block::Side::Left:
-			game->_instanceAOValues.push_back(GetAOValuesLeft(block, x, y, z));
+			m_pxParentWorld->_instanceAOValues.push_back(GetAOValuesLeft(block, x, y, z));
 			break;
 		case Block::Side::Right:
-			game->_instanceAOValues.push_back(GetAOValuesRight(block, x, y, z));
+			m_pxParentWorld->_instanceAOValues.push_back(GetAOValuesRight(block, x, y, z));
 			break;
 		case Block::Side::Front:
-			game->_instanceAOValues.push_back(GetAOValuesFront(block, x, y, z));
+			m_pxParentWorld->_instanceAOValues.push_back(GetAOValuesFront(block, x, y, z));
 			break;
 		case Block::Side::Back:
-			game->_instanceAOValues.push_back(GetAOValuesBack(block, x, y, z));
+			m_pxParentWorld->_instanceAOValues.push_back(GetAOValuesBack(block, x, y, z));
 			break;
 		case Block::Side::Top:
-			game->_instanceAOValues.push_back(GetAOValuesTop(block, x, y, z));
+			m_pxParentWorld->_instanceAOValues.push_back(GetAOValuesTop(block, x, y, z));
 			break;
 		case Block::Side::Bottom:
 			//#todo implement bottom side AO
-			game->_instanceAOValues.push_back(GetAOValuesFront(block, x, y, z));
+			m_pxParentWorld->_instanceAOValues.push_back(GetAOValuesFront(block, x, y, z));
 			break;
 		}
 
-		game->m_pxInstanceMesh->m_uNumInstances++;
+		Application::GetInstance()->m_pxInstanceMesh->m_uNumInstances++;
 	}
 
 	glm::ivec4 Chunk::GetAOValuesTop(const Block& block, int x, int y, int z) {
-		Game* game = (Game*)Application::GetInstance();
 		int frontLeft = 0, frontRight = 0, backLeft = 0, backRight = 0;
 		bool checkSides = true;
 		bool checkCorners = true;
 #pragma region sides
 		if (checkSides) {
-			if (game->GetAdjacentBlock(this, x, y, z,-1, 1, 0)._blockType != Block::BlockType::Air) {
+			if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z,-1, 1, 0)._blockType != Block::BlockType::Air) {
 				frontLeft++;
 				backLeft++;
 			}
 			
 			if (x < Chunk::_chunkSize.x) {
-				if (game->GetAdjacentBlock(this, x, y, z, 1, 1, 0)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 1, 1, 0)._blockType != Block::BlockType::Air) {
 					frontRight++;
 					backRight++;
 				}
 			}
 			if (z >= 0) {
-				if (game->GetAdjacentBlock(this, x, y, z, 0, 1, -1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 0, 1, -1)._blockType != Block::BlockType::Air) {
 					frontLeft++;
 					frontRight++;
 				}
 			}
 			if (z < Chunk::_chunkSize.z) {
-				if (game->GetAdjacentBlock(this, x, y, z, 0, 1, 1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 0, 1, 1)._blockType != Block::BlockType::Air) {
 					backLeft++;
 					backRight++;
 				}
@@ -209,19 +200,19 @@ namespace VeryCoolEngine {
 #pragma endregion
 #pragma region corners
 		if (checkCorners) {
-			if (game->GetAdjacentBlock(this, x, y, z,-1, 1, -1)._blockType != Block::BlockType::Air) {
+			if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z,-1, 1, -1)._blockType != Block::BlockType::Air) {
 				frontLeft++;
 			}
 			
-			if (game->GetAdjacentBlock(this, x, y, z,1, 1, -1)._blockType != Block::BlockType::Air) {
+			if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z,1, 1, -1)._blockType != Block::BlockType::Air) {
 				frontRight++;
 			}
 			
-			if (game->GetAdjacentBlock(this, x, y, z,-1, 1, 1)._blockType != Block::BlockType::Air) {
+			if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z,-1, 1, 1)._blockType != Block::BlockType::Air) {
 				backLeft++;
 			}
 			
-			if (game->GetAdjacentBlock(this, x, y, z,1, 1, 1)._blockType != Block::BlockType::Air) {
+			if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z,1, 1, 1)._blockType != Block::BlockType::Air) {
 				backRight++;
 			}
 			
@@ -230,28 +221,27 @@ namespace VeryCoolEngine {
 		return { frontRight,backRight,frontLeft,backLeft };
 	}
 	glm::ivec4 Chunk::GetAOValuesFront(const Block& block, int x, int y, int z) {
-		Game* game = (Game*)Application::GetInstance();
 		int topLeft = 0, topRight = 0, bottomLeft = 0, bottomRight = 0;
 		bool checkSides = true;
 		bool checkCorners = true;
 #pragma region sides
 		if (checkSides) {
-			if (game->GetAdjacentBlock(this, x, y, z,-1, 0, 1)._blockType != Block::BlockType::Air) {
+			if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z,-1, 0, 1)._blockType != Block::BlockType::Air) {
 				topLeft++;
 				bottomLeft++;
 			}
 			
-			if (game->GetAdjacentBlock(this, x, y, z,1, 0, 1)._blockType != Block::BlockType::Air) {
+			if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z,1, 0, 1)._blockType != Block::BlockType::Air) {
 				topRight++;
 				bottomRight++;
 			}
 			
-			if (game->GetAdjacentBlock(this, x, y, z,0, -1, 1)._blockType != Block::BlockType::Air) {
+			if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z,0, -1, 1)._blockType != Block::BlockType::Air) {
 				bottomLeft++;
 				bottomRight++;
 			}
 			
-			if (game->GetAdjacentBlock(this, x, y, z,0, 1, 1)._blockType != Block::BlockType::Air) {
+			if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z,0, 1, 1)._blockType != Block::BlockType::Air) {
 				topLeft++;
 				topRight++;
 			}
@@ -260,19 +250,19 @@ namespace VeryCoolEngine {
 #pragma endregion
 #pragma region corners
 		if (checkCorners) {
-			if (game->GetAdjacentBlock(this, x, y, z,-1, -1, 1)._blockType != Block::BlockType::Air) {
+			if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z,-1, -1, 1)._blockType != Block::BlockType::Air) {
 				bottomLeft++;
 			}
 			
-			if (game->GetAdjacentBlock(this, x, y, z,1, -1, 1)._blockType != Block::BlockType::Air) {
+			if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z,1, -1, 1)._blockType != Block::BlockType::Air) {
 				bottomRight++;
 			}
 			
-			if (game->GetAdjacentBlock(this, x, y, z,-1, 1, 1)._blockType != Block::BlockType::Air) {
+			if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z,-1, 1, 1)._blockType != Block::BlockType::Air) {
 				topLeft++;
 			}
 			
-			if (game->GetAdjacentBlock(this, x, y, z,1, 1, 1)._blockType != Block::BlockType::Air) {
+			if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z,1, 1, 1)._blockType != Block::BlockType::Air) {
 				topRight++;
 			}
 			
@@ -281,28 +271,27 @@ namespace VeryCoolEngine {
 		return { topRight,bottomRight,topLeft,bottomLeft };
 	}
 	glm::ivec4 Chunk::GetAOValuesRight(const Block& block, int x, int y, int z) {
-		Game* game = (Game*)Application::GetInstance();
 		int topFront = 0, topBack = 0, bottomFront = 0, bottomBack = 0;
 		bool checkSides = true;
 		bool checkCorners = true;
 #pragma region sides
 		if (checkSides) {
-			if (game->GetAdjacentBlock(this, x, y, z, 1, 0, -1)._blockType !=Block::BlockType::Air) {
+			if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 1, 0, -1)._blockType !=Block::BlockType::Air) {
 				topFront++;
 				bottomFront++;
 			}
 			
-			if (game->GetAdjacentBlock(this, x, y, z, 1, 0, 1)._blockType !=Block::BlockType::Air) {
+			if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 1, 0, 1)._blockType !=Block::BlockType::Air) {
 				topBack++;
 				bottomBack++;
 			}
 			
-			if (game->GetAdjacentBlock(this, x, y, z, 1, -1, 0)._blockType !=Block::BlockType::Air) {
+			if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 1, -1, 0)._blockType !=Block::BlockType::Air) {
 				bottomFront++;
 				bottomBack++;
 			}
 			
-			if (game->GetAdjacentBlock(this, x, y, z, 1, 1, 0)._blockType !=Block::BlockType::Air) {
+			if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 1, 1, 0)._blockType !=Block::BlockType::Air) {
 				topFront++;
 				topBack++;
 			}
@@ -311,19 +300,19 @@ namespace VeryCoolEngine {
 #pragma endregion
 #pragma region corners
 		if (checkCorners) {
-				if (game->GetAdjacentBlock(this, x, y, z, 1, -1, -1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 1, -1, -1)._blockType != Block::BlockType::Air) {
 					bottomFront++;
 				}
 			
-				if (game->GetAdjacentBlock(this, x, y, z, 1, -1, 1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 1, -1, 1)._blockType != Block::BlockType::Air) {
 					bottomBack++;
 				}
 			
-				if (game->GetAdjacentBlock(this, x, y, z, 1, 1, -1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 1, 1, -1)._blockType != Block::BlockType::Air) {
 					topFront++;
 				}
 			
-				if (game->GetAdjacentBlock(this, x, y, z, 1, 1, 1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 1, 1, 1)._blockType != Block::BlockType::Air) {
 					topBack++;
 				}
 			
@@ -332,32 +321,31 @@ namespace VeryCoolEngine {
 		return { topFront,bottomFront,topBack,bottomBack };
 	}
 	glm::ivec4 Chunk::GetAOValuesLeft(const Block& block, int x, int y, int z) {
-		Game* game = (Game*)Application::GetInstance();
 		int topFront = 0, topBack = 0, bottomFront = 0, bottomBack = 0;
 		bool checkSides = true;
 		bool checkCorners = true;
 #pragma region sides
 		if (checkSides) {
 			if (z >= 0) {
-				if (game->GetAdjacentBlock(this, x, y, z, -1, 0, -1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, -1, 0, -1)._blockType != Block::BlockType::Air) {
 					topFront++;
 					bottomFront++;
 				}
 			}
 			if (z < Chunk::_chunkSize.z) {
-				if (game->GetAdjacentBlock(this, x, y, z, -1, 0, 1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, -1, 0, 1)._blockType != Block::BlockType::Air) {
 					topBack++;
 					bottomBack++;
 				}
 			}
 			if (y >= 0) {
-				if (game->GetAdjacentBlock(this, x, y, z, -1, -1, 0)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, -1, -1, 0)._blockType != Block::BlockType::Air) {
 					bottomFront++;
 					bottomBack++;
 				}
 			}
 			if (y < Chunk::_chunkSize.y) {
-				if (game->GetAdjacentBlock(this, x, y, z, -1, 1, 0)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, -1, 1, 0)._blockType != Block::BlockType::Air) {
 					topFront++;
 					topBack++;
 				}
@@ -367,22 +355,22 @@ namespace VeryCoolEngine {
 #pragma region corners
 		if (checkCorners) {
 			if (z >= 0 && y >= 0) {
-				if (game->GetAdjacentBlock(this, x, y, z, -1, -1, -1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, -1, -1, -1)._blockType != Block::BlockType::Air) {
 					bottomFront++;
 				}
 			}
 			if (z < Chunk::_chunkSize.z && y >= 0) {
-				if (game->GetAdjacentBlock(this, x, y, z, -1, -1, 1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, -1, -1, 1)._blockType != Block::BlockType::Air) {
 					bottomBack++;
 				}
 			}
 			if (z >= 0 && y < Chunk::_chunkSize.y) {
-				if (game->GetAdjacentBlock(this, x, y, z, -1, 1, -1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, -1, 1, -1)._blockType != Block::BlockType::Air) {
 					topFront++;
 				}
 			}
 			if (z < Chunk::_chunkSize.z && y < Chunk::_chunkSize.y) {
-				if (game->GetAdjacentBlock(this, x, y, z, -1, 1, 1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, -1, 1, 1)._blockType != Block::BlockType::Air) {
 					topBack++;
 				}
 			}
@@ -391,32 +379,31 @@ namespace VeryCoolEngine {
 		return { topBack,bottomBack,topFront,bottomFront };
 	}
 	glm::ivec4 Chunk::GetAOValuesBack(const Block& block, int x, int y, int z) {
-		Game* game = (Game*)Application::GetInstance();
 		int topLeft = 0, topRight = 0, bottomLeft = 0, bottomRight = 0;
 		bool checkSides = true;
 		bool checkCorners = true;
 #pragma region sides
 		if (checkSides) {
 			if (x >= 0) {
-				if (game->GetAdjacentBlock(this,x,y,z,-1,0,-1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this,x,y,z,-1,0,-1)._blockType != Block::BlockType::Air) {
 					topLeft++;
 					bottomLeft++;
 				}
 			}
 			if (x < Chunk::_chunkSize.x) {
-				if (game->GetAdjacentBlock(this, x, y, z, 1, 0, -1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 1, 0, -1)._blockType != Block::BlockType::Air) {
 					topRight++;
 					bottomRight++;
 				}
 			}
 			if (y >= 0) {
-				if (game->GetAdjacentBlock(this, x, y, z, 0, -1, -1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 0, -1, -1)._blockType != Block::BlockType::Air) {
 					bottomLeft++;
 					bottomRight++;
 				}
 			}
 			if (y < Chunk::_chunkSize.y) {
-				if (game->GetAdjacentBlock(this, x, y, z, 0, 1, -1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 0, 1, -1)._blockType != Block::BlockType::Air) {
 					topLeft++;
 					topRight++;
 				}
@@ -426,22 +413,22 @@ namespace VeryCoolEngine {
 #pragma region corners
 		if (checkCorners) {
 			if (x >= 0 && y >= 0) {
-				if (game->GetAdjacentBlock(this, x, y, z, -1, -1, -1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, -1, -1, -1)._blockType != Block::BlockType::Air) {
 					bottomLeft++;
 				}
 			}
 			if (x < Chunk::_chunkSize.x && y >= 0) {
-				if (game->GetAdjacentBlock(this, x, y, z, 1, -1, -1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 1, -1, -1)._blockType != Block::BlockType::Air) {
 					bottomRight++;
 				}
 			}
 			if (x >= 0 && y < Chunk::_chunkSize.y) {
-				if (game->GetAdjacentBlock(this, x, y, z, -1, 1, -1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, -1, 1, -1)._blockType != Block::BlockType::Air) {
 					topLeft++;
 				}
 			}
 			if (x < Chunk::_chunkSize.x && y < Chunk::_chunkSize.y) {
-				if (game->GetAdjacentBlock(this, x, y, z, 1, 1, -1)._blockType != Block::BlockType::Air) {
+				if (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 1, 1, -1)._blockType != Block::BlockType::Air) {
 					topRight++;
 				}
 			}
@@ -452,35 +439,27 @@ namespace VeryCoolEngine {
 
 #pragma region FaceCheckFunctions
 	bool Chunk::ShouldUploadRight(const Block& block, int x, int y, int z) {
-		Game* game = (Game*)Application::GetInstance();
-		return (game->GetAdjacentBlock(this, x, y, z, 1, 0, 0)._blockType == Block::BlockType::Air);
+		return (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 1, 0, 0)._blockType == Block::BlockType::Air);
 	}
 	bool Chunk::ShouldUploadLeft(const Block& block, int x, int y, int z) {
-		Game* game = (Game*)Application::GetInstance();
-		return (game->GetAdjacentBlock(this, x, y, z, -1, 0, 0)._blockType == Block::BlockType::Air);
+		return (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, -1, 0, 0)._blockType == Block::BlockType::Air);
 	}
 	bool Chunk::ShouldUploadTop(const Block& block,int x, int y, int z) {
-		Game* game = (Game*)Application::GetInstance();
-		return (game->GetAdjacentBlock(this, x, y, z, 0, 1, 0)._blockType == Block::BlockType::Air);
+		return (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 0, 1, 0)._blockType == Block::BlockType::Air);
 	}
 	bool Chunk::ShouldUploadBottom(const Block& block, int x, int y, int z) {
-		Game* game = (Game*)Application::GetInstance();
-		return (game->GetAdjacentBlock(this, x, y, z, 0, -1, 0)._blockType == Block::BlockType::Air);
+		return (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 0, -1, 0)._blockType == Block::BlockType::Air);
 	}
 	bool Chunk::ShouldUploadFront(const Block& block, int x, int y, int z) {
-		Game* game = (Game*)Application::GetInstance();
-		return (game->GetAdjacentBlock(this, x, y, z, 0, 0, 1)._blockType == Block::BlockType::Air);
+		return (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 0, 0, 1)._blockType == Block::BlockType::Air);
 	}
 	bool Chunk::ShouldUploadBack(const Block& block, int x, int y, int z) {
-		Game* game = (Game*)Application::GetInstance();
-		return (game->GetAdjacentBlock(this, x, y, z, 0, 0, -1)._blockType == Block::BlockType::Air);
+		return (m_pxParentWorld->GetAdjacentBlock(this, x, y, z, 0, 0, -1)._blockType == Block::BlockType::Air);
 	}
 #pragma endregion
 	
 	void Chunk::UploadVisibleFaces()
 	{
-		//#todo should probably cache this
-		Game* game = (Game*)Application::GetInstance();
 
 		for (int x = 0; x < Chunk::_chunkSize.x; x++)
 		{

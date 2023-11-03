@@ -16,7 +16,7 @@ namespace VeryCoolEngine {
 		static float seed;
 
 		Chunk() = default;
-		Chunk(const glm::ivec3 pos);
+		Chunk(const glm::ivec3 pos, class BlockWorld* pxParentWorld);
 		~Chunk() = default;
 
 		void UploadVisibleFaces();
@@ -43,6 +43,8 @@ namespace VeryCoolEngine {
 		Block*** _blocks;//xyz
 
 		glm::ivec3 _chunkPos = { 0,0,0 };
+
+		class BlockWorld* m_pxParentWorld;
 	};
 
 }
