@@ -20,13 +20,6 @@ namespace VeryCoolEngine {
 
 		
 
-		class BlockWorld* m_pxBlockWorld;
-
-		
-
-		
-
-		
 
 		Mesh* AddTestMesh(const char* szFileName, const Transform& xTrans);
 		

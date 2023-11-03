@@ -51,13 +51,9 @@ void VulkanRenderer::InitVulkan() {
 	//for (Texture* pxTex : app->_textures) pxTex->PlatformInit();
 
 
-
-	m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Skybox")) );
-	m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Blocks")));
-	m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Meshes")));
-#ifdef VCE_DEFERRED_SHADING
-	//m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("GBuffer")));
-#endif
+	for (auto it = app->m_xPipelineSpecs.begin(); it != app->m_xPipelineSpecs.end(); it++) {
+		m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(it->second));
+	}
 	
 	
 

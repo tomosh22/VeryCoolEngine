@@ -101,7 +101,7 @@ namespace VeryCoolEngine {
 
 		Camera _Camera;
 
-
+		class BlockWorld* m_pxBlockWorld = nullptr;
 
 		std::vector<Mesh*> _meshes;
 		std::vector<Mesh*> _instanceMeshes;

@@ -163,27 +163,29 @@ namespace VeryCoolEngine {
 			});
 
 		
-		m_xPipelineSpecs.insert(
-			{ "Blocks",
-					PipelineSpecification(
-					"Blocks",
-					m_pxInstanceMesh,
-					Shader::Create("vulkan/blockVert.spv", "vulkan/blockFrag.spv"),
-					{BlendFactor::SrcAlpha},
-					{BlendFactor::OneMinusSrcAlpha},
-					{true},
-					true,
-					true,
-					DepthCompareFunc::GreaterOrEqual,
-					{ColourFormat::BGRA8_sRGB},
-					DepthFormat::D32_SFloat,
-					{ xCamSpec},
-					{xBlockTexSpec},
-					&m_pxRenderPass,
-					false,
-					false
-					)
-			});
+		if (m_pxBlockWorld != nullptr) {
+			m_xPipelineSpecs.insert(
+				{ "Blocks",
+						PipelineSpecification(
+						"Blocks",
+						m_pxInstanceMesh,
+						Shader::Create("vulkan/blockVert.spv", "vulkan/blockFrag.spv"),
+						{BlendFactor::SrcAlpha},
+						{BlendFactor::OneMinusSrcAlpha},
+						{true},
+						true,
+						true,
+						DepthCompareFunc::GreaterOrEqual,
+						{ColourFormat::BGRA8_sRGB},
+						DepthFormat::D32_SFloat,
+						{ xCamSpec},
+						{xBlockTexSpec},
+						&m_pxRenderPass,
+						false,
+						false
+						)
+				});
+		}
 
 		m_xPipelineSpecs.insert(
 			{ "Meshes",
@@ -207,7 +209,8 @@ namespace VeryCoolEngine {
 					)
 			});
 
-#ifdef VCE_DEFERRED_SHADING
+		//#TODO: not ready for pipeline to be made yet
+#if defined(VCE_DEFERRED_SHADING) && false
 		m_xPipelineSpecs.insert(
 			{ "GBuffer",
 					PipelineSpecification(
