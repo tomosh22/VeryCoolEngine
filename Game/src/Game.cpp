@@ -40,7 +40,8 @@ namespace VeryCoolEngine {
 		m_pxQuadMesh = Mesh::GenerateQuad();
 		m_pxQuadMesh->SetShader(Shader::Create("vulkan/fullscreenVert.spv", "vulkan/fullscreenFrag.spv"));
 
-		
+		m_pxMeshShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
+		m_pxGBufferShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshFragGBuffer.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
 
 		_meshes.push_back(m_pxQuadMesh);
 
@@ -49,12 +50,14 @@ namespace VeryCoolEngine {
 					PipelineSpecification(
 					"Skybox",
 					m_pxQuadMesh,
-					BlendFactor::SrcAlpha,
-					BlendFactor::OneMinusSrcAlpha,
+					m_pxQuadMesh->GetShader(),
+					{BlendFactor::SrcAlpha},
+					{BlendFactor::OneMinusSrcAlpha},
+					{true},
 					false,
 					false,
 					DepthCompareFunc::GreaterOrEqual,
-					ColourFormat::BGRA8_sRGB,
+					{ColourFormat::BGRA8_sRGB},
 					DepthFormat::D32_SFloat,
 					{xCamSpec},
 					{},
@@ -71,12 +74,14 @@ namespace VeryCoolEngine {
 					PipelineSpecification(
 					"Blocks",
 					m_pxBlockFaceMesh,
-					BlendFactor::SrcAlpha,
-					BlendFactor::OneMinusSrcAlpha,
+					m_pxBlockFaceMesh->GetShader(),
+					{BlendFactor::SrcAlpha},
+					{BlendFactor::OneMinusSrcAlpha},
+					{true},
 					true,
 					true,
 					DepthCompareFunc::GreaterOrEqual,
-					ColourFormat::BGRA8_sRGB,
+					{ColourFormat::BGRA8_sRGB},
 					DepthFormat::D32_SFloat,
 					{ xCamSpec},
 					{xBlockTexSpec},
@@ -87,22 +92,6 @@ namespace VeryCoolEngine {
 			});
 
 		
-
-
-		//m_pxTerrainMesh = Mesh::GenerateGenericHeightmap(100, 100);
-		//
-		//m_pxTerrainMesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
-		//m_pxTerrainMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
-		//m_pxTerrainMesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
-		//
-		//m_pxTerrainMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));
-		//
-		//m_pxTerrainMesh->m_xTransform._scale = glm::vec3(1,1,1);
-		//m_pxTerrainMesh->m_xTransform._position = glm::vec3(0, 0, 0);
-		//m_pxTerrainMesh->m_xTransform.SetRotationQuat(Transform::EulerAnglesToQuat(0,0,0));
-		//m_pxTerrainMesh->m_xTransform.UpdateMatrix();
-		//
-		//_meshes.push_back(m_pxTerrainMesh);
 		
 		TextureDescriptorSpecification xMeshTexSpec;
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });//currently overriding stage to all
@@ -111,68 +100,16 @@ namespace VeryCoolEngine {
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 
-		//m_pxTerrainMesh->m_xTexDescSpec = xMeshTexSpec;
 
 		BufferDescriptorSpecification xLightSpec;
 		xLightSpec.m_aeUniformBufferStages.push_back({ &_pLightUBO, ShaderStageVertexAndFragment });
 		
 		
+		
 
-
-		//m_pxTestMesh = Mesh::FromFile("vkTest.obj", true);
-		//m_pxTestMesh->SetShader(Shader::Create("vulkan/terrainVert.spv", "vulkan/terrainFrag.spv"));//#TODO dont duplicate
-		//m_pxTestMesh->SetTexture(Texture2D::Create("modelTest.png", false));
-		//m_pxTestMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
-		//m_pxTestMesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
-		//
-		//m_pxTestMesh->m_xTexDescSpec = xMeshTexSpec;
-		//
-		//m_pxTestMesh->m_xTransform._scale = glm::vec3(10, 10, 10);
-		//m_pxTestMesh->m_xTransform._position = glm::vec3(50, 75, 60);
-		//m_pxTestMesh->m_xTransform.SetRotationQuat(Transform::EulerAnglesToQuat(270, 180, 0));
-		//m_pxTestMesh->m_xTransform.UpdateMatrix();
-
-
-		//_meshes.push_back(m_pxTestMesh);
-
-
-		m_pxSphereMesh = Mesh::FromFile("sphereSmooth.obj");
-		m_pxSphereMesh->SetShader(Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv"));//#TODO dont duplicate
-		m_pxSphereMesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
-		m_pxSphereMesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
-		m_pxSphereMesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
-		m_pxSphereMesh->SetMetallicTex(Texture2D::Create("crystal2k/violet_crystal_43_04_metallic.jpg", false));
-		m_pxSphereMesh->SetHeightmapTex(Texture2D::Create("crystal2k/violet_crystal_43_04_height.jpg", false));
-
-		m_xPipelineSpecs.insert(
-			{ "Meshes",
-					PipelineSpecification(
-					"Meshes",
-					m_pxSphereMesh,
-					BlendFactor::SrcAlpha,
-					BlendFactor::OneMinusSrcAlpha,
-					true,
-					true,
-					DepthCompareFunc::GreaterOrEqual,
-					ColourFormat::BGRA8_sRGB,
-					DepthFormat::D32_SFloat,
-					{xCamSpec, xLightSpec},
-					{xMeshTexSpec},
-					&m_pxRenderPass,
-					true,
-					true
-					)
-			});
-			
-		m_pxSphereMesh->m_xTexDescSpec = xMeshTexSpec;
-
-		m_pxSphereMesh->m_xTransform._scale = glm::vec3(10, 10, 10);
-		m_pxSphereMesh->m_xTransform._position = glm::vec3(50, 80, 80);
-		m_pxSphereMesh->m_xTransform.UpdateRotation();
-		m_pxSphereMesh->m_xTransform.UpdateMatrix();
-
-		_meshes.push_back(m_pxSphereMesh);
-
+		m_apxTestMeshes.push_back(AddTestMesh("sphereSmooth.obj", Transform(
+			{ 50, 80, 80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
+		)));
 		m_apxTestMeshes.push_back(AddTestMesh("sphereFlat.obj", Transform(
 			{ 80,80,80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
 		)));
@@ -188,7 +125,52 @@ namespace VeryCoolEngine {
 		m_apxTestMeshes.push_back(AddTestMesh("sphereSmoothIcoLowPoly.obj", Transform(
 			{ 50,120,50 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
 		)));
-		
+
+		m_xPipelineSpecs.insert(
+			{ "Meshes",
+					PipelineSpecification(
+					"Meshes",
+					m_apxTestMeshes.back(),
+					m_pxMeshShader,
+					{BlendFactor::SrcAlpha},
+					{BlendFactor::OneMinusSrcAlpha},
+					{true},
+					true,
+					true,
+					DepthCompareFunc::GreaterOrEqual,
+					{ColourFormat::BGRA8_sRGB},
+					DepthFormat::D32_SFloat,
+					{xCamSpec, xLightSpec},
+					{xMeshTexSpec},
+					&m_pxRenderPass,
+					true,
+					true
+					)
+			});
+
+#ifdef VCE_DEFERRED_SHADING
+		m_xPipelineSpecs.insert(
+			{ "GBuffer",
+					PipelineSpecification(
+					"GBuffer",
+					m_apxTestMeshes.back(),
+					m_pxGBufferShader,
+					{BlendFactor::SrcAlpha},
+					{BlendFactor::OneMinusSrcAlpha},
+					{true},
+					true,
+					true,
+					DepthCompareFunc::GreaterOrEqual,
+					{ColourFormat::BGRA8_Unorm, ColourFormat::BGRA8_Unorm},
+					DepthFormat::D32_SFloat,
+					{xCamSpec, xLightSpec},
+					{xMeshTexSpec},
+					&m_pxRenderPass,
+					true,
+					true
+					)
+			});
+#endif
 		
 		_lights.push_back({
 				50,200,50,100,
@@ -217,7 +199,7 @@ namespace VeryCoolEngine {
 	Mesh* Game::AddTestMesh(const char* szFileName, const Transform& xTrans)
 	{
 		Mesh* mesh = Mesh::FromFile(szFileName);
-		mesh->SetShader(Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv"));//#TODO dont duplicate
+		mesh->SetShader(m_pxMeshShader);//#TODO dont duplicate
 		mesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
 		mesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
 		mesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
@@ -413,12 +395,14 @@ namespace VeryCoolEngine {
 		scene->m_axPipelineMeshes.at("Blocks").push_back(game->m_pxBlockFaceMesh);
 
 		scene->m_axPipelineMeshes.insert({ "Meshes", std::vector<Mesh*>() });
-		//scene->m_axPipelineMeshes.at("Meshes").push_back(game->m_pxTerrainMesh);
-		//scene->m_axPipelineMeshes.at("Meshes").push_back(game->m_pxTestMesh);
-		scene->m_axPipelineMeshes.at("Meshes").push_back(game->m_pxSphereMesh);
 
 		for(Mesh* mesh : game->m_apxTestMeshes)
 			scene->m_axPipelineMeshes.at("Meshes").push_back(mesh);
+
+		scene->m_axPipelineMeshes.insert({ "GBuffer", std::vector<Mesh*>() });
+
+		for (Mesh* mesh : game->m_apxTestMeshes)
+			scene->m_axPipelineMeshes.at("GBuffer").push_back(mesh);
 
 		for (Renderer::Light& light : _lights) {
 			scene->lights[scene->numLights++] = light;

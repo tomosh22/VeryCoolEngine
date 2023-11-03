@@ -18,6 +18,8 @@
 #include "VeryCoolEngine/Renderer/Pipeline.h"
 #include "VeryCoolEngine/Renderer/PipelineSpecification.h"
 
+#define VCE_DEFERRED_SHADING
+
 
 namespace VeryCoolEngine {
 

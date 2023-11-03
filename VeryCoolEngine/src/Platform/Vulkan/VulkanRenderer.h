@@ -242,12 +242,14 @@ namespace VeryCoolEngine {
 
 			std::vector<class VulkanPipeline*> m_xPipelines;
 
+#ifdef VCE_DEFERRED_SHADING
 			void SetupDeferredShading();
 			VulkanTexture2D* m_pxGBufferDiffuse;
 			VulkanTexture2D* m_pxGBufferNormals;
 			VulkanTexture2D* m_pxGBufferDepth;
 			VulkanTexture2D* m_pxDeferredDiffuse;
 			VulkanTexture2D* m_pxDeferredSpecular;
+#endif
 
 			vk::DescriptorPool m_descriptorPool;
 

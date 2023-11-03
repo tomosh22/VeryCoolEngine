@@ -6,6 +6,7 @@
 namespace VeryCoolEngine {
 
 	class Mesh;
+	class Shader;
 	class Texture;
 
 	enum class BlendFactor {
@@ -17,7 +18,8 @@ namespace VeryCoolEngine {
 	};
 
 	enum class ColourFormat {
-		BGRA8_sRGB
+		BGRA8_sRGB,
+		BGRA8_Unorm,
 	};
 
 	enum class DepthFormat {
@@ -43,12 +45,17 @@ namespace VeryCoolEngine {
 	struct PipelineSpecification {
 		std::string m_strName;
 		Mesh* m_pxExampleMesh;
-		BlendFactor m_eSrcBlendFactor;
-		BlendFactor m_eDstBlendFactor;
+		Shader* m_pxShader;
+
+		//#TODO these need to be combined, this is disgusting
+		std::vector<BlendFactor> m_aeSrcBlendFactors;
+		std::vector<BlendFactor> m_aeDstBlendFactors;
+		std::vector<bool> m_abBlendStatesEnabled;
+
 		bool m_bDepthTestEnabled;
 		bool m_bDepthWriteEnabled;
 		DepthCompareFunc m_eDepthCompareFunc;
-		ColourFormat m_eColourFormat;
+		std::vector<ColourFormat> m_aeColourFormats;
 		DepthFormat m_eDepthFormat;
 		std::vector<BufferDescriptorSpecification> m_axBufferDescriptors;
 		std::vector<TextureDescriptorSpecification> m_axTextureDescriptors;

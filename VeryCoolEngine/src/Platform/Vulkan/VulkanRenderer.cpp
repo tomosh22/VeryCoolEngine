@@ -36,7 +36,9 @@ void VulkanRenderer::InitVulkan() {
 
 	BoilerplateInit();
 
+#ifdef VCE_DEFERRED_SHADING
 	SetupDeferredShading();
+#endif
 	
 	for (Mesh* pMesh : app->_meshes) {
 		pMesh->PlatformInit();
@@ -53,12 +55,16 @@ void VulkanRenderer::InitVulkan() {
 	m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Skybox")) );
 	m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Blocks")));
 	m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Meshes")));
+#ifdef VCE_DEFERRED_SHADING
+	m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("GBuffer")));
+#endif
 	
 	
 
 	Application::GetInstance()->renderInitialised = true;
 }
 
+#ifdef VCE_DEFERRED_SHADING
 void VulkanRenderer::SetupDeferredShading() {
 	m_pxGBufferDiffuse = VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Unorm);
 	m_pxGBufferNormals = VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Unorm);
@@ -66,6 +72,7 @@ void VulkanRenderer::SetupDeferredShading() {
 	m_pxDeferredDiffuse = VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Unorm);
 	m_pxDeferredSpecular = VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Unorm);
 }
+#endif
 
 void VulkanRenderer::MainLoop() {
 	glfwPollEvents();
@@ -108,7 +115,9 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline->m_xPipeline);
 
 		
-
+		if (scene->m_axPipelineMeshes.find(pipeline->m_strName) == scene->m_axPipelineMeshes.end()) {
+			continue;
+		}
 		for (Mesh* mesh : scene->m_axPipelineMeshes.at(pipeline->m_strName)) {
 			VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
 			pxVulkanMesh->BindToCmdBuffer(commandBuffer);

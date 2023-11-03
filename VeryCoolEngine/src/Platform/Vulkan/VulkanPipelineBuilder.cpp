@@ -129,7 +129,7 @@ namespace VeryCoolEngine {
 		return *this;
 	}
 
-	VulkanPipelineBuilder& VulkanPipelineBuilder::WithColourFormats(const std::vector<vk::Format>& formats) {
+	VulkanPipelineBuilder& VulkanPipelineBuilder::WithColourFormats(const std::vector<ColourFormat>& formats) {
 		allColourRenderingFormats = formats;
 		return *this;
 	}
@@ -219,6 +219,29 @@ namespace VeryCoolEngine {
 		return output;
 		
 	}
+
+	vk::Format VceFormatToVKFormat(ColourFormat eFmt) {
+		switch (eFmt) {
+		case ColourFormat::BGRA8_sRGB:
+			return vk::Format::eB8G8R8A8Srgb;
+		case ColourFormat::BGRA8_Unorm:
+			return vk::Format::eB8G8R8A8Unorm;
+		default:
+			VCE_ASSERT(false, "Unsupported format");
+		}
+	}
+
+	vk::BlendFactor VceBlendFactorToVKBlendFactor(BlendFactor eFactor) {
+		switch (eFactor) {
+		case BlendFactor::SrcAlpha:
+			return vk::BlendFactor::eSrcAlpha;
+		case BlendFactor::OneMinusSrcAlpha:
+			return vk::BlendFactor::eOneMinusSrcAlpha;
+		default:
+			VCE_ASSERT(false, "Unsupported blend factor");
+		}
+	}
+
 	VulkanPipeline* VulkanPipelineBuilder::FromSpecification(const PipelineSpecification& spec)
 	{
 		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
@@ -234,13 +257,17 @@ namespace VeryCoolEngine {
 			break;
 		
 		}
+
+		VCE_ASSERT(spec.m_aeDstBlendFactors.size() == spec.m_aeSrcBlendFactors.size(), "Do I need to rework this?");
+
 		VulkanPipelineBuilder xBuilder = VulkanPipelineBuilder(spec.m_strName.c_str());
 		xBuilder = xBuilder.WithVertexInputState(dynamic_cast<VulkanMesh*>(spec.m_pxExampleMesh)->m_xVertexInputState);
 		xBuilder = xBuilder.WithTopology(eTopology);
-		xBuilder = xBuilder.WithShader(*dynamic_cast<VulkanShader*>(dynamic_cast<VulkanMesh*>(spec.m_pxExampleMesh)->GetShader()));
-		xBuilder = xBuilder.WithBlendState(vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha, true);
+		xBuilder = xBuilder.WithShader(*dynamic_cast<VulkanShader*>(spec.m_pxShader));
+		for (uint32_t i = 0; i < spec.m_aeDstBlendFactors.size(); i++)
+			xBuilder = xBuilder.WithBlendState(VceBlendFactorToVKBlendFactor(spec.m_aeSrcBlendFactors[i]), VceBlendFactorToVKBlendFactor(spec.m_aeDstBlendFactors[i]), spec.m_abBlendStatesEnabled[i]);
 		xBuilder = xBuilder.WithDepthState(vk::CompareOp::eGreaterOrEqual, spec.m_bDepthTestEnabled, spec.m_bDepthWriteEnabled, false);
-		xBuilder = xBuilder.WithColourFormats({ vk::Format::eB8G8R8A8Srgb });
+		xBuilder = xBuilder.WithColourFormats(spec.m_aeColourFormats);
 		xBuilder = xBuilder.WithDepthFormat(vk::Format::eD32Sfloat);
 			xBuilder = xBuilder.WithPass(dynamic_cast<VulkanRenderPass*>(*spec.m_pxRenderPass)->m_xRenderPass);
 

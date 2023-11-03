@@ -32,9 +32,9 @@ namespace VeryCoolEngine {
 
 		Mesh* m_pxBlockFaceMesh;
 		Mesh* m_pxQuadMesh;
-		Mesh* m_pxTerrainMesh;
-		Mesh* m_pxTestMesh;
-		Mesh* m_pxSphereMesh;
+
+		Shader* m_pxMeshShader;
+		Shader* m_pxGBufferShader;
 
 		Mesh* AddTestMesh(const char* szFileName, const Transform& xTrans);
 		std::vector<Mesh*> m_apxTestMeshes;
