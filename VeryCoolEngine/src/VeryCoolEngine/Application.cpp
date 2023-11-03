@@ -29,7 +29,7 @@ namespace VeryCoolEngine {
 		//_window->SetVSync(true);
 #endif
 		
-
+		SetupPipelines();
 		
 		
 		_renderThread = std::thread([&]() {
@@ -50,19 +50,7 @@ namespace VeryCoolEngine {
 #endif
 			_pRenderer->RenderThreadFunction();
 		});
-
-		//_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 0, 5), 0, 0, 45, 1, 1000, 1280.f/720.f);
-		//_Camera = Camera::BuildOrthoCamera(glm::vec3(0, 0, -5), 0, 0, -10, 10, 5, -5, 1, 100);
-
 		
-
-
-		//_pMesh = Mesh::Create();
-		//_pMesh->SetVertexArray(vertexArray);
-
-		//_pMesh->SetShader( Shader::Create("basic.vert", "basic.frag"));
-
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		
 		scene = new Scene();
 		
@@ -114,19 +102,140 @@ namespace VeryCoolEngine {
 	Application::~Application() { 
 		delete _window;
 		delete scene;
-		//delete _pCamera;
 	}
 
 	
 
 	
+	void Application::SetupPipelines() {
 
+		BufferDescriptorSpecification xCamSpec;
+		xCamSpec.m_aeUniformBufferStages.push_back({ &_pCameraUBO, ShaderStageVertexAndFragment });
+
+		BufferDescriptorSpecification xLightSpec;
+		xLightSpec.m_aeUniformBufferStages.push_back({ &_pLightUBO, ShaderStageVertexAndFragment });
+
+		TextureDescriptorSpecification xBlockTexSpec;
+		xBlockTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
+
+		TextureDescriptorSpecification xMeshTexSpec;
+		//currently overriding stage to all
+		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
+		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
+		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
+		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
+		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
+
+		m_pxMeshShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
+		m_pxGBufferShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshGBufferFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
+
+		m_pxQuadMesh = Mesh::GenerateQuad();
+		m_pxQuadMesh->SetShader(Shader::Create("vulkan/fullscreenVert.spv", "vulkan/fullscreenFrag.spv"));
+		_meshes.push_back(m_pxQuadMesh);
+
+		m_pxInstanceMesh = Mesh::GenerateQuad();
+		m_pxInstanceMesh->SetTexture(Texture2D::Create("atlas.png", false));
+		m_pxInstanceMesh->SetShader(Shader::Create("vulkan/blockVert.spv", "vulkan/blockFrag.spv"));
+		m_pxInstanceMesh->m_xTexDescSpec = xBlockTexSpec;
+		_meshes.push_back(m_pxInstanceMesh);
+
+
+		m_xPipelineSpecs.insert(
+			{ "Skybox",
+					PipelineSpecification(
+					"Skybox",
+					m_pxQuadMesh,
+					m_pxQuadMesh->GetShader(),
+					{BlendFactor::SrcAlpha},
+					{BlendFactor::OneMinusSrcAlpha},
+					{true},
+					false,
+					false,
+					DepthCompareFunc::GreaterOrEqual,
+					{ColourFormat::BGRA8_sRGB},
+					DepthFormat::D32_SFloat,
+					{xCamSpec},
+					{},
+					&m_pxRenderPass,
+					false,
+					false
+					)
+			});
+
+		
+		m_xPipelineSpecs.insert(
+			{ "Blocks",
+					PipelineSpecification(
+					"Blocks",
+					m_pxInstanceMesh,
+					Shader::Create("vulkan/blockVert.spv", "vulkan/blockFrag.spv"),
+					{BlendFactor::SrcAlpha},
+					{BlendFactor::OneMinusSrcAlpha},
+					{true},
+					true,
+					true,
+					DepthCompareFunc::GreaterOrEqual,
+					{ColourFormat::BGRA8_sRGB},
+					DepthFormat::D32_SFloat,
+					{ xCamSpec},
+					{xBlockTexSpec},
+					&m_pxRenderPass,
+					false,
+					false
+					)
+			});
+
+		m_xPipelineSpecs.insert(
+			{ "Meshes",
+					PipelineSpecification(
+					"Meshes",
+					m_pxExampleMesh,
+					m_pxMeshShader,
+					{BlendFactor::SrcAlpha},
+					{BlendFactor::OneMinusSrcAlpha},
+					{true},
+					true,
+					true,
+					DepthCompareFunc::GreaterOrEqual,
+					{ColourFormat::BGRA8_sRGB},
+					DepthFormat::D32_SFloat,
+					{xCamSpec, xLightSpec},
+					{xMeshTexSpec},
+					&m_pxRenderPass,
+					true,
+					true
+					)
+			});
+
+#ifdef VCE_DEFERRED_SHADING
+		m_xPipelineSpecs.insert(
+			{ "GBuffer",
+					PipelineSpecification(
+					"GBuffer",
+					m_pxExampleMesh,
+					m_pxGBufferShader,
+					{BlendFactor::SrcAlpha},
+					{BlendFactor::OneMinusSrcAlpha},
+					{true},
+					true,
+					true,
+					DepthCompareFunc::GreaterOrEqual,
+					{ColourFormat::BGRA8_Unorm, ColourFormat::BGRA8_Unorm},
+					DepthFormat::D32_SFloat,
+					{xCamSpec, xLightSpec},
+					{xMeshTexSpec},
+					&m_pxRenderPass,
+					true,
+					true
+					)
+			});
+#endif
+	}
 
 
 	void Application::Run() {
 		while (true) { 
 			Sleep(1);
-			//printf("Waiting on render thread init\n");
 			if (renderInitialised)break;//#todo implement mutex here
 		}
 		while (_running) {

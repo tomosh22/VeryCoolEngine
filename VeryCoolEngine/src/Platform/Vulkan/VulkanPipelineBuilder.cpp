@@ -261,8 +261,12 @@ namespace VeryCoolEngine {
 		VCE_ASSERT(spec.m_aeDstBlendFactors.size() == spec.m_aeSrcBlendFactors.size(), "Do I need to rework this?");
 
 		VulkanPipelineBuilder xBuilder = VulkanPipelineBuilder(spec.m_strName.c_str());
+		if (!spec.m_pxExampleMesh->m_bInitialised)
+			spec.m_pxExampleMesh->PlatformInit();
 		xBuilder = xBuilder.WithVertexInputState(dynamic_cast<VulkanMesh*>(spec.m_pxExampleMesh)->m_xVertexInputState);
 		xBuilder = xBuilder.WithTopology(eTopology);
+		if (!spec.m_pxShader->m_bInitialised)
+			spec.m_pxShader->PlatformInit();
 		xBuilder = xBuilder.WithShader(*dynamic_cast<VulkanShader*>(spec.m_pxShader));
 		for (uint32_t i = 0; i < spec.m_aeDstBlendFactors.size(); i++)
 			xBuilder = xBuilder.WithBlendState(VceBlendFactorToVKBlendFactor(spec.m_aeSrcBlendFactors[i]), VceBlendFactorToVKBlendFactor(spec.m_aeDstBlendFactors[i]), spec.m_abBlendStatesEnabled[i]);

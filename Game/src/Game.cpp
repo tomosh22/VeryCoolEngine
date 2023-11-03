@@ -22,155 +22,31 @@ namespace VeryCoolEngine {
 	Game::Game() {
 
 
-		//_textures.reserve(100);//#TODO this is just so the textures don't get jigged around in memory when adding new ones
-
-		m_pxBlockFaceMesh = Mesh::GenerateQuad(); 
-		m_pxBlockFaceMesh->SetTexture(Texture2D::Create("atlas.png", false));
-		m_pxBlockFaceMesh->SetShader(Shader::Create("vulkan/blockVert.spv", "vulkan/blockFrag.spv"));
-		_meshes.push_back(m_pxBlockFaceMesh);
-
-		BufferDescriptorSpecification xCamSpec;
-		xCamSpec.m_aeUniformBufferStages.push_back({&_pCameraUBO, ShaderStageVertexAndFragment });
-
-		TextureDescriptorSpecification xBlockTexSpec;
-		xBlockTexSpec.m_aeSamplerStages.push_back({nullptr, ShaderStageFragment});
-
-		m_pxBlockFaceMesh->m_xTexDescSpec = xBlockTexSpec;
-
-		m_pxQuadMesh = Mesh::GenerateQuad();
-		m_pxQuadMesh->SetShader(Shader::Create("vulkan/fullscreenVert.spv", "vulkan/fullscreenFrag.spv"));
-
-		m_pxMeshShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
-		m_pxGBufferShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshGBufferFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
-
-		_meshes.push_back(m_pxQuadMesh);
-
-		m_xPipelineSpecs.insert(
-			{ "Skybox",
-					PipelineSpecification(
-					"Skybox",
-					m_pxQuadMesh,
-					m_pxQuadMesh->GetShader(),
-					{BlendFactor::SrcAlpha},
-					{BlendFactor::OneMinusSrcAlpha},
-					{true},
-					false,
-					false,
-					DepthCompareFunc::GreaterOrEqual,
-					{ColourFormat::BGRA8_sRGB},
-					DepthFormat::D32_SFloat,
-					{xCamSpec},
-					{},
-					&m_pxRenderPass,
-					false,
-					false
-					)
-			});
-
-		
-
-		m_xPipelineSpecs.insert(
-			{ "Blocks",
-					PipelineSpecification(
-					"Blocks",
-					m_pxBlockFaceMesh,
-					m_pxBlockFaceMesh->GetShader(),
-					{BlendFactor::SrcAlpha},
-					{BlendFactor::OneMinusSrcAlpha},
-					{true},
-					true,
-					true,
-					DepthCompareFunc::GreaterOrEqual,
-					{ColourFormat::BGRA8_sRGB},
-					DepthFormat::D32_SFloat,
-					{ xCamSpec},
-					{xBlockTexSpec},
-					&m_pxRenderPass,
-					false,
-					false
-					)
-			});
-
-		
-		
-		TextureDescriptorSpecification xMeshTexSpec;
-		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });//currently overriding stage to all
-		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
-		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
-		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
-		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
-
-
-		BufferDescriptorSpecification xLightSpec;
-		xLightSpec.m_aeUniformBufferStages.push_back({ &_pLightUBO, ShaderStageVertexAndFragment });
 		
 		
 		
 
-		m_apxTestMeshes.push_back(AddTestMesh("sphereSmooth.obj", Transform(
+		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmooth.obj", Transform(
 			{ 50, 80, 80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
 		)));
-		m_apxTestMeshes.push_back(AddTestMesh("sphereFlat.obj", Transform(
+		m_apxGenericMeshes.push_back(AddTestMesh("sphereFlat.obj", Transform(
 			{ 80,80,80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
 		)));
-		m_apxTestMeshes.push_back(AddTestMesh("cubeFlat.obj", Transform(
+		m_apxGenericMeshes.push_back(AddTestMesh("cubeFlat.obj", Transform(
 			{ 80,80,10 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
 		)));
-		m_apxTestMeshes.push_back(AddTestMesh("cubeSmooth.obj", Transform(
+		m_apxGenericMeshes.push_back(AddTestMesh("cubeSmooth.obj", Transform(
 			{ 20,80,10 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
 		)));
-		m_apxTestMeshes.push_back(AddTestMesh("sphereSmoothIco.obj", Transform(
+		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmoothIco.obj", Transform(
 			{ 50,80,50 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
 		)));
-		m_apxTestMeshes.push_back(AddTestMesh("sphereSmoothIcoLowPoly.obj", Transform(
+		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmoothIcoLowPoly.obj", Transform(
 			{ 50,120,50 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
 		)));
 
-		m_xPipelineSpecs.insert(
-			{ "Meshes",
-					PipelineSpecification(
-					"Meshes",
-					m_apxTestMeshes.back(),
-					m_pxMeshShader,
-					{BlendFactor::SrcAlpha},
-					{BlendFactor::OneMinusSrcAlpha},
-					{true},
-					true,
-					true,
-					DepthCompareFunc::GreaterOrEqual,
-					{ColourFormat::BGRA8_sRGB},
-					DepthFormat::D32_SFloat,
-					{xCamSpec, xLightSpec},
-					{xMeshTexSpec},
-					&m_pxRenderPass,
-					true,
-					true
-					)
-			});
+		
 
-#ifdef VCE_DEFERRED_SHADING
-		m_xPipelineSpecs.insert(
-			{ "GBuffer",
-					PipelineSpecification(
-					"GBuffer",
-					m_apxTestMeshes.back(),
-					m_pxGBufferShader,
-					{BlendFactor::SrcAlpha},
-					{BlendFactor::OneMinusSrcAlpha},
-					{true},
-					true,
-					true,
-					DepthCompareFunc::GreaterOrEqual,
-					{ColourFormat::BGRA8_Unorm, ColourFormat::BGRA8_Unorm},
-					DepthFormat::D32_SFloat,
-					{xCamSpec, xLightSpec},
-					{xMeshTexSpec},
-					&m_pxRenderPass,
-					true,
-					true
-					)
-			});
-#endif
 		
 		_lights.push_back({
 				50,200,50,100,
@@ -191,15 +67,16 @@ namespace VeryCoolEngine {
 
 		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, 1280.f / 720.f);
 		
-		
+
 		_renderThreadCanStart = true;
+		
 		return;
 	}
 
 	Mesh* Game::AddTestMesh(const char* szFileName, const Transform& xTrans)
 	{
 		Mesh* mesh = Mesh::FromFile(szFileName);
-		mesh->SetShader(m_pxMeshShader);//#TODO dont duplicate
+		mesh->SetShader(m_pxMeshShader);
 		mesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
 		mesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
 		mesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
@@ -286,7 +163,7 @@ namespace VeryCoolEngine {
 
 		//std::cout << "unique quats " << Transform::uniqueQuats.size() << '\n';
 
-		m_pxBlockFaceMesh->m_axInstanceData.push_back(BufferElement(
+		m_pxInstanceMesh->m_axInstanceData.push_back(BufferElement(
 			ShaderDataType::Float4,
 			"_aInstanceQuat",
 			false,
@@ -297,7 +174,7 @@ namespace VeryCoolEngine {
 		));
 
 
-		m_pxBlockFaceMesh->m_axInstanceData.push_back(BufferElement(
+		m_pxInstanceMesh->m_axInstanceData.push_back(BufferElement(
 			ShaderDataType::Float3,
 			"_aInstancePosition",
 			false,
@@ -307,7 +184,7 @@ namespace VeryCoolEngine {
 			_instancePositions.size()
 		));
 
-		m_pxBlockFaceMesh->m_axInstanceData.push_back(BufferElement(
+		m_pxInstanceMesh->m_axInstanceData.push_back(BufferElement(
 			ShaderDataType::Int2,
 			"_aInstanceAtlasOffset",
 			false,
@@ -317,7 +194,7 @@ namespace VeryCoolEngine {
 			_instanceOffsets.size()
 		));
 
-		m_pxBlockFaceMesh->m_axInstanceData.push_back(BufferElement(
+		m_pxInstanceMesh->m_axInstanceData.push_back(BufferElement(
 			ShaderDataType::Int4,
 			"_ainstanceAOValues",
 			false,
@@ -392,16 +269,16 @@ namespace VeryCoolEngine {
 		scene->m_axPipelineMeshes.at("Skybox").push_back(game->m_pxQuadMesh);
 
 		scene->m_axPipelineMeshes.insert({ "Blocks", std::vector<Mesh*>() });
-		scene->m_axPipelineMeshes.at("Blocks").push_back(game->m_pxBlockFaceMesh);
+		scene->m_axPipelineMeshes.at("Blocks").push_back(game->m_pxInstanceMesh);
 
 		scene->m_axPipelineMeshes.insert({ "Meshes", std::vector<Mesh*>() });
 
-		for(Mesh* mesh : game->m_apxTestMeshes)
+		for(Mesh* mesh : game->m_apxGenericMeshes)
 			scene->m_axPipelineMeshes.at("Meshes").push_back(mesh);
 
 		scene->m_axPipelineMeshes.insert({ "GBuffer", std::vector<Mesh*>() });
 
-		for (Mesh* mesh : game->m_apxTestMeshes)
+		for (Mesh* mesh : game->m_apxGenericMeshes)
 			scene->m_axPipelineMeshes.at("GBuffer").push_back(mesh);
 
 		for (Renderer::Light& light : _lights) {
@@ -422,8 +299,8 @@ namespace VeryCoolEngine {
 		if (Input::IsKeyPressed(VCE_KEY_R) && prevRState != rState) {
 			Chunk::seed = rand();
 			game->_chunks.clear();
-			game->m_pxBlockFaceMesh->m_axInstanceData.clear();
-			game->m_pxBlockFaceMesh->m_uNumInstances = 0;
+			game->m_pxInstanceMesh->m_axInstanceData.clear();
+			game->m_pxInstanceMesh->m_uNumInstances = 0;
 			game->_instanceMats.clear();
 			game->_instanceQuats.clear();
 			game->_instancePositions.clear();
@@ -435,12 +312,12 @@ namespace VeryCoolEngine {
 			scene->_functionsToRun.push_back([]() {//TODO call this from vulkan, currently leaves a load of glitchy block faces at the origin
 				
 				Game* game = (Game*)Application::GetInstance();
-					game->m_pxBlockFaceMesh->GetVertexArray()->DisableVertexBuffer(game->m_pxBlockFaceMesh->GetVertexArray()->_VertexBuffers.back());
+					game->m_pxInstanceMesh->GetVertexArray()->DisableVertexBuffer(game->m_pxInstanceMesh->GetVertexArray()->_VertexBuffers.back());
 				
 					
 
-					VertexBuffer* instancedVertexBuffer = game->m_pxBlockFaceMesh->CreateInstancedVertexBuffer();
-					game->m_pxBlockFaceMesh->GetVertexArray()->AddVertexBuffer(instancedVertexBuffer, true);
+					VertexBuffer* instancedVertexBuffer = game->m_pxInstanceMesh->CreateInstancedVertexBuffer();
+					game->m_pxInstanceMesh->GetVertexArray()->AddVertexBuffer(instancedVertexBuffer, true);
 				
 				});
 

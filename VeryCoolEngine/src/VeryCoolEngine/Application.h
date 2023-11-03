@@ -69,8 +69,7 @@ namespace VeryCoolEngine {
 		void PushOverlay(Layer* layer);
 		Window& GetWindow() const { return *_window; };
 
-		
-
+		void SetupPipelines();
 
 		static Application* GetInstance() { return _spInstance; }
 
@@ -108,6 +107,19 @@ namespace VeryCoolEngine {
 		std::vector<Mesh*> _instanceMeshes;
 		std::vector<Shader*> _shaders;
 		//std::vector<Texture*> _textures;
+
+		//for fullscreen pass
+		Mesh* m_pxQuadMesh;
+
+		Mesh* m_pxInstanceMesh;
+
+		//#TODO i really need a better way to do this, used to provide vertex input state to mesh pipeline
+		Mesh* m_pxExampleMesh = Mesh::FromFile("cubeFlat.obj");
+		std::vector<Mesh*> m_apxGenericMeshes;
+
+
+		Shader* m_pxMeshShader;
+		Shader* m_pxGBufferShader;
 
 		Mesh* _pHeightmap;
 		std::vector<Renderer::Light> _lights{};

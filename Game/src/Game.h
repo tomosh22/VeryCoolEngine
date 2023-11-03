@@ -30,14 +30,12 @@ namespace VeryCoolEngine {
 		std::vector<glm::ivec2> _instanceOffsets;
 		std::vector<glm::ivec4> _instanceAOValues;
 
-		Mesh* m_pxBlockFaceMesh;
-		Mesh* m_pxQuadMesh;
+		
 
-		Shader* m_pxMeshShader;
-		Shader* m_pxGBufferShader;
+		
 
 		Mesh* AddTestMesh(const char* szFileName, const Transform& xTrans);
-		std::vector<Mesh*> m_apxTestMeshes;
+		
 
 		Chunk* chunkPtrs[s_xNumChunks.x * s_xNumChunks.z];
 	};

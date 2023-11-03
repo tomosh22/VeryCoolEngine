@@ -99,6 +99,8 @@ namespace VeryCoolEngine {
 			if (m_pxHeightmapTex != nullptr)
 				pxRenderer->UpdateImageDescriptor(m_xTexDescSet, 4, 0, dynamic_cast<VulkanTexture2D*>(m_pxHeightmapTex)->m_xImageView, dynamic_cast<VulkanTexture2D*>(m_pxHeightmapTex)->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
 		}
+
+		m_bInitialised = true;
     }
 
 

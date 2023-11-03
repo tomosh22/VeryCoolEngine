@@ -47,6 +47,8 @@ namespace VeryCoolEngine {
 		static Shader* Create(const std::string& vertex, const std::string& fragment, const std::string& geometry = "", const std::string& domain = "", const std::string& hull = "");
 
 		bool m_bTesselation = false;
+
+		bool m_bInitialised = false;
 	protected:
 
 		std::string shaderFiles[(int)ShaderStages::MAXSIZE];

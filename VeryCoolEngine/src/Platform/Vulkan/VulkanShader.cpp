@@ -53,6 +53,8 @@ namespace VeryCoolEngine {
 			m_xInfos[3].module = xTeseShaderModule;
 			m_xInfos[3].pName = "main";
 		}
+
+		m_bInitialised = true;
 	}
 
 	void VulkanShader::ReloadShader()

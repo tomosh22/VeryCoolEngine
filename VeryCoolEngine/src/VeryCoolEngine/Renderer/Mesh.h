@@ -75,6 +75,8 @@ namespace VeryCoolEngine {
 
 		TextureDescriptorSpecification m_xTexDescSpec;
 
+		bool m_bInitialised = false;
+
 	protected:
 		VertexArray* m_pxVertexArray;
 		Material* m_pxMaterial;
