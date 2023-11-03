@@ -56,7 +56,7 @@ void VulkanRenderer::InitVulkan() {
 	m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Blocks")));
 	m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Meshes")));
 #ifdef VCE_DEFERRED_SHADING
-	m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("GBuffer")));
+	//m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("GBuffer")));
 #endif
 	
 	

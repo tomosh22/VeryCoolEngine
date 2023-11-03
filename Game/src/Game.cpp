@@ -41,7 +41,7 @@ namespace VeryCoolEngine {
 		m_pxQuadMesh->SetShader(Shader::Create("vulkan/fullscreenVert.spv", "vulkan/fullscreenFrag.spv"));
 
 		m_pxMeshShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
-		m_pxGBufferShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshFragGBuffer.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
+		m_pxGBufferShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshGBufferFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
 
 		_meshes.push_back(m_pxQuadMesh);
 
