@@ -269,6 +269,8 @@ namespace VeryCoolEngine {
 
 			VulkanTexture2D* m_xDepthTexture;
 
+			vk::Sampler m_xDefaultSampler;
+			std::vector<vk::DescriptorSet> m_axFramebufferTexDescSet;
 
 			vk::DescriptorSetLayout m_descriptorLayout;
 			vk::PipelineLayout m_pipelineLayout;

@@ -92,7 +92,6 @@ void VulkanRenderer::MainLoop() {
 
 	
 
-
 	app->sceneMutex.unlock();
 }
 
@@ -205,6 +204,11 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 
 	commandBuffer.endRenderPass();
+
+
+
+	UpdateImageDescriptor(m_axFramebufferTexDescSet[m_currentFrame], 0, 0, m_apxGBufferDiffuse[m_currentFrame]->m_xImageView, m_xDefaultSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
+
 	
 	BeginImguiRenderPass(commandBuffer, imageIndex);
 	
@@ -227,6 +231,7 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 	SubmitCmdBuffer(m_commandBuffers[m_currentFrame], &m_imageAvailableSemaphores[m_currentFrame], 1, &m_renderFinishedSemaphores[m_currentFrame], 1, vk::PipelineStageFlagBits::eColorAttachmentOutput);
 
 	Present(iImageIndex, &m_renderFinishedSemaphores[m_currentFrame], 1);
+
 
 	m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }

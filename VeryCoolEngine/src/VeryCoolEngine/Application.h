@@ -88,10 +88,6 @@ namespace VeryCoolEngine {
 		RenderPass* m_pxImguiRenderPass;//imgui doesn't use depth buffer
 		RenderPass* m_pxGBufferRenderPass;
 
-		vk::DescriptorSetLayout m_xCameraLayout;
-		vk::DescriptorSetLayout m_xTextureLayout;
-		vk::DescriptorSetLayout m_xSkyboxTextureLayout;
-
 
 		
 		std::unordered_map<std::string, PipelineSpecification> m_xPipelineSpecs;

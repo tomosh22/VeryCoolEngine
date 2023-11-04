@@ -3,6 +3,8 @@
 #include "VulkanRenderPass.h"
 #include "VulkanTexture.h"
 #include "VulkanBuffer.h"
+#include "VulkanDescriptorSetLayoutBuilder.h"
+#include "VulkanTexture.h"
 namespace VeryCoolEngine {
 
 	void VulkanRenderer::BoilerplateInit() {
@@ -39,10 +41,15 @@ namespace VeryCoolEngine {
 		
 		CreateCommandBuffers();
 		CreateSyncObjects();
+
+
+			m_xDefaultSampler = VulkanTexture2D::CreateSampler();
+		
 	}
 
 	void VulkanRenderer::Cleanup() {
 
+		
 
 		CleanupSwapChain();
 		m_device.destroyDescriptorPool(m_descriptorPool, nullptr);
@@ -229,6 +236,12 @@ namespace VeryCoolEngine {
 			framebufferInfo.height = m_swapChainExtent.height;
 			framebufferInfo.layers = 1;
 			m_swapChainFramebuffers[swapchainIndex++] = m_device.createFramebuffer(framebufferInfo);
+
+			VulkanDescriptorSetLayoutBuilder xBuilder = VulkanDescriptorSetLayoutBuilder()
+				.WithSamplers(1, vk::ShaderStageFlagBits::eFragment);
+			vk::DescriptorSetLayout xLayout = xBuilder.Build(m_device);
+			m_axFramebufferTexDescSet.emplace_back(CreateDescriptorSet(xLayout, m_descriptorPool));
+
 		}
 	}
 

@@ -76,7 +76,7 @@ namespace VeryCoolEngine {
 			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
 			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
 			.setInitialLayout(vk::ImageLayout::eUndefined)
-			.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+			.setFinalLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
 
 		vk::AttachmentDescription normalColorAttachment = vk::AttachmentDescription()
 			.setFormat(vk::Format::eB8G8R8A8Unorm)
