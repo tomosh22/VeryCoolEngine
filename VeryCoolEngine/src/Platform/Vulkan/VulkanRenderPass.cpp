@@ -148,4 +148,50 @@ namespace VeryCoolEngine {
 			.setPDependencies(&dependency);
 		return xDevice.createRenderPass(renderPassInfo);
 	}
+
+	vk::RenderPass VulkanRenderPass::ImguiRenderPass()
+	{
+		vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
+
+		vk::AttachmentDescription colorAttachment = vk::AttachmentDescription()
+			.setFormat(vk::Format::eB8G8R8A8Unorm)
+			.setSamples(vk::SampleCountFlagBits::e1)
+			.setLoadOp(vk::AttachmentLoadOp::eLoad)
+			.setStoreOp(vk::AttachmentStoreOp::eStore)
+			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+			.setInitialLayout(vk::ImageLayout::ePresentSrcKHR)
+			.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+
+		vk::AttachmentReference colorAttachmentRef = vk::AttachmentReference()
+			.setAttachment(0)
+			.setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+		
+		vk::AttachmentReference axColorAtachments[1]{ colorAttachmentRef };
+
+
+		vk::SubpassDescription subpass = vk::SubpassDescription()
+			.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+			.setColorAttachmentCount(1)
+			.setPColorAttachments(axColorAtachments);
+
+		vk::SubpassDependency dependency = vk::SubpassDependency()
+			.setSrcSubpass(VK_SUBPASS_EXTERNAL)
+			.setDstSubpass(0)
+			.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests)
+			.setSrcAccessMask(vk::AccessFlagBits::eNone)
+			.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests)
+			.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite);
+
+		vk::AttachmentDescription axAllAttachments[]{ colorAttachment };
+
+		vk::RenderPassCreateInfo renderPassInfo = vk::RenderPassCreateInfo()
+			.setAttachmentCount(1)
+			.setPAttachments(axAllAttachments)
+			.setSubpassCount(1)
+			.setPSubpasses(&subpass)
+			.setDependencyCount(1)
+			.setPDependencies(&dependency);
+		return xDevice.createRenderPass(renderPassInfo);
+	}
 }

@@ -204,13 +204,14 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	
 
 
+	commandBuffer.endRenderPass();
 	
+	BeginImguiRenderPass(commandBuffer, imageIndex);
 	
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+	app->_pImGuiLayer->End();
 	commandBuffer.endRenderPass();
 	commandBuffer.end();
-
-	app->_pImGuiLayer->End();
 	
 }
 

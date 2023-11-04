@@ -25,7 +25,12 @@ namespace VeryCoolEngine {
 		m_device.destroyRenderPass(dynamic_cast<VulkanRenderPass*>(app->m_pxGBufferRenderPass)->m_xRenderPass);
 		dynamic_cast<VulkanRenderPass*>(app->m_pxGBufferRenderPass)->m_xRenderPass = VulkanRenderPass::GBufferRenderPass();
 
+		app->m_pxImguiRenderPass = new VulkanRenderPass();
+		m_device.destroyRenderPass(dynamic_cast<VulkanRenderPass*>(app->m_pxImguiRenderPass)->m_xRenderPass);
+		dynamic_cast<VulkanRenderPass*>(app->m_pxImguiRenderPass)->m_xRenderPass = VulkanRenderPass::ImguiRenderPass();
+
 		CreateFrameBuffers();
+		CreateImguiFrameBuffers();//imgui doesn't use depth
 
 #ifdef VCE_DEFERRED_SHADING
 		SetupDeferredShading();
@@ -227,6 +232,23 @@ namespace VeryCoolEngine {
 		}
 	}
 
+	void VulkanRenderer::CreateImguiFrameBuffers() {
+		Application* app = Application::GetInstance();
+		m_axImguiFramebuffers.resize(m_swapChainImageViews.size());
+		int swapchainIndex = 0;
+		for (vk::ImageView imageView : m_swapChainImageViews) {
+			vk::FramebufferCreateInfo framebufferInfo{};
+			vk::ImageView axAttachments[1]{ imageView };
+			framebufferInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxImguiRenderPass)->m_xRenderPass;
+			framebufferInfo.attachmentCount = 1;
+			framebufferInfo.pAttachments = axAttachments;
+			framebufferInfo.width = m_swapChainExtent.width;
+			framebufferInfo.height = m_swapChainExtent.height;
+			framebufferInfo.layers = 1;
+			m_axImguiFramebuffers[swapchainIndex++] = m_device.createFramebuffer(framebufferInfo);
+		}
+	}
+
 	void VulkanRenderer::CreateGBufferFrameBuffers() {
 		Application* app = Application::GetInstance();
 		m_axGBufferFramebuffers.resize(m_swapChainImageViews.size());
@@ -290,7 +312,7 @@ namespace VeryCoolEngine {
 
 	vk::SurfaceFormatKHR VulkanRenderer::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats) {
 		for (const vk::SurfaceFormatKHR& format : availableFormats) {
-			if (format.format == vk::Format::eB8G8R8A8Srgb && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)return format;
+			if (format.format == vk::Format::eB8G8R8A8Unorm && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)return format;
 		}
 		std::cerr << "b8g8r8a8_srgb not supported";
 	}
@@ -725,6 +747,34 @@ namespace VeryCoolEngine {
 		clearColor[3].depthStencil = vk::ClearDepthStencilValue(0, 0);
 		renderPassInfo.clearValueCount = 4;
 		renderPassInfo.pClearValues = clearColor;
+
+		xCmdBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+
+		//flipping because porting from opengl
+		vk::Viewport viewport{};
+		viewport.x = 0;
+		viewport.y = m_swapChainExtent.height;
+		viewport.width = m_swapChainExtent.width;
+		viewport.height = -1 * (float)m_swapChainExtent.height;
+		viewport.minDepth = 0;
+		viewport.minDepth = 1;
+
+		vk::Rect2D scissor{};
+		scissor.offset = vk::Offset2D(0, 0);
+		scissor.extent = m_swapChainExtent;
+
+		xCmdBuffer.setViewport(0, 1, &viewport);
+		xCmdBuffer.setScissor(0, 1, &scissor);
+	}
+
+	void VulkanRenderer::BeginImguiRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex) {
+		Application* app = Application::GetInstance();
+		vk::RenderPassBeginInfo renderPassInfo{};
+		renderPassInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxImguiRenderPass)->m_xRenderPass;
+		renderPassInfo.framebuffer = m_axImguiFramebuffers[uImageIndex];
+		renderPassInfo.renderArea.offset = vk::Offset2D(0, 0);
+		renderPassInfo.renderArea.extent = m_swapChainExtent;
+
 
 		xCmdBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
 

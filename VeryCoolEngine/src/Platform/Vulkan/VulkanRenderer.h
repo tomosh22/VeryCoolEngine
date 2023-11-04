@@ -187,6 +187,7 @@ namespace VeryCoolEngine {
 
 
 			void CreateFrameBuffers();
+			void CreateImguiFrameBuffers();//imgui doesn't use depth buffer
 			void CreateGBufferFrameBuffers();
 
 			void CreateCommandPool();
@@ -213,6 +214,7 @@ namespace VeryCoolEngine {
 
 			void BeginBackbufferRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex);
 			void BeginGBufferRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex);
+			void BeginImguiRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex);//imgui doesn't use depth
 
 #if DEBUG
 			bool CheckValidationLayerSupport();
@@ -272,6 +274,7 @@ namespace VeryCoolEngine {
 			vk::PipelineLayout m_pipelineLayout;
 
 			std::vector<vk::Framebuffer> m_swapChainFramebuffers;
+			std::vector<vk::Framebuffer> m_axImguiFramebuffers;
 			std::vector<vk::Framebuffer> m_axGBufferFramebuffers;
 
 			vk::CommandPool m_commandPool;

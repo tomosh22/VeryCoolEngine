@@ -22,6 +22,7 @@
 
 namespace VeryCoolEngine {
 
+
 	ImGuiLayer::ImGuiLayer() : Layer("ImGui Layer") {
 
 	}
@@ -35,6 +36,11 @@ namespace VeryCoolEngine {
 		ImGui::CreateContext();
 
 		ImGui::StyleColorsDark();
+
+		ImGuiIO& io = ImGui::GetIO();
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 		GLFWwindow* window = (GLFWwindow*)(Application::GetInstance()->GetWindow().GetNativeWindow());
 #ifdef VCE_OPENGL
@@ -52,7 +58,7 @@ namespace VeryCoolEngine {
 		init_info.DescriptorPool = pxRenderer->m_descriptorPool;
 		init_info.MinImageCount = MAX_FRAMES_IN_FLIGHT;
 		init_info.ImageCount = MAX_FRAMES_IN_FLIGHT;
-		ImGui_ImplVulkan_Init(&init_info, dynamic_cast<VulkanRenderPass*>(Application::GetInstance()->m_pxBackbufferRenderPass)->m_xRenderPass);
+		ImGui_ImplVulkan_Init(&init_info, dynamic_cast<VulkanRenderPass*>(Application::GetInstance()->m_pxImguiRenderPass)->m_xRenderPass);
 
 		vk::CommandBuffer xCmd = pxRenderer->BeginSingleUseCmdBuffer();
 		ImGui_ImplVulkan_CreateFontsTexture(xCmd);
@@ -75,6 +81,9 @@ namespace VeryCoolEngine {
 
 	void ImGuiLayer::OnImGuiRender() {
 		Application* app = Application::GetInstance();
+
+		ImGui::Begin("ImGui");
+
 		std::string cameraText = std::string("Camera ") + (app->_mouseEnabled ? "enabled" : "disabled") + ". Q to toggle.";
 		ImGui::Text(cameraText.c_str());
 
@@ -103,7 +112,7 @@ namespace VeryCoolEngine {
 		ImGui::SliderFloat("Phong Tesselation Factor", &app->_pRenderer->m_fPhongTessFactor, -2, 20);
 		ImGui::SliderInt("Tesselation Level", (int*)&app->_pRenderer->m_uTessLevel, 1, 64);
 
-		//do things
+		ImGui::End();
 
 		ImGui::Render();
 
@@ -127,8 +136,13 @@ namespace VeryCoolEngine {
 		}
 
 #elif defined(VCE_VULKAN)
-		ImGui::UpdatePlatformWindows();
-		ImGui::RenderPlatformWindowsDefault();
+		ImGuiIO& io = ImGui::GetIO();
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+			GLFWwindow* backup_current_context = glfwGetCurrentContext();
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+			glfwMakeContextCurrent(backup_current_context);
+		}
 #endif
 
 	}

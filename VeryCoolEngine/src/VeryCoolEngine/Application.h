@@ -85,6 +85,7 @@ namespace VeryCoolEngine {
 
 		Renderer* _pRenderer;
 		RenderPass* m_pxBackbufferRenderPass;
+		RenderPass* m_pxImguiRenderPass;//imgui doesn't use depth buffer
 		RenderPass* m_pxGBufferRenderPass;
 
 		vk::DescriptorSetLayout m_xCameraLayout;

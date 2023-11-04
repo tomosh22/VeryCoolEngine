@@ -13,6 +13,7 @@ namespace VeryCoolEngine {
 		vk::RenderPass m_xRenderPass;
 
 		static vk::RenderPass GBufferRenderPass();
+		static vk::RenderPass ImguiRenderPass();//imgui doesn't use depth buffer
 	};
 
 }
