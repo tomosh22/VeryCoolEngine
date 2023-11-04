@@ -312,7 +312,7 @@ namespace VeryCoolEngine {
 
 	vk::SurfaceFormatKHR VulkanRenderer::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats) {
 		for (const vk::SurfaceFormatKHR& format : availableFormats) {
-			if (format.format == vk::Format::eB8G8R8A8Unorm && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)return format;
+			if (format.format == vk::Format::eB8G8R8A8Srgb && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)return format;
 		}
 		std::cerr << "b8g8r8a8_srgb not supported";
 	}

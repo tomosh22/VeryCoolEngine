@@ -154,7 +154,7 @@ namespace VeryCoolEngine {
 		vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
 
 		vk::AttachmentDescription colorAttachment = vk::AttachmentDescription()
-			.setFormat(vk::Format::eB8G8R8A8Unorm)
+			.setFormat(vk::Format::eB8G8R8A8Srgb)
 			.setSamples(vk::SampleCountFlagBits::e1)
 			.setLoadOp(vk::AttachmentLoadOp::eLoad)
 			.setStoreOp(vk::AttachmentStoreOp::eStore)
