@@ -36,9 +36,7 @@ void VulkanRenderer::InitVulkan() {
 
 	BoilerplateInit();
 
-#ifdef VCE_DEFERRED_SHADING
-	SetupDeferredShading();
-#endif
+
 	
 	for (Mesh* pMesh : app->_meshes) {
 		pMesh->PlatformInit();
@@ -64,11 +62,14 @@ void VulkanRenderer::InitVulkan() {
 
 #ifdef VCE_DEFERRED_SHADING
 void VulkanRenderer::SetupDeferredShading() {
-	m_pxGBufferDiffuse = VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Unorm);
-	m_pxGBufferNormals = VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Unorm);
-	m_pxGBufferDepth = VulkanTexture2D::CreateDepthAttachment(m_width, m_height);
-	m_pxDeferredDiffuse = VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Unorm);
-	m_pxDeferredSpecular = VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Unorm);
+	for (uint32_t i = 0; i < m_swapChainImages.size(); i++) {
+		m_apxGBufferDiffuse.emplace_back(VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Unorm));
+		m_apxGBufferNormals.emplace_back(VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Unorm));
+		m_apxGBufferMaterial.emplace_back(VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Unorm));
+		m_apxGBufferDepth.emplace_back(VulkanTexture2D::CreateDepthAttachment(m_width, m_height));
+		m_apxDeferredDiffuse.emplace_back(VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Unorm));
+		m_apxDeferredSpecular.emplace_back(VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Unorm));
+	}
 }
 #endif
 
@@ -105,10 +106,60 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 	commandBuffer.begin(vk::CommandBufferBeginInfo());
 
-	BeginRenderPass(commandBuffer, imageIndex);
+
+#pragma region gbuffer
+	BeginGBufferRenderPass(commandBuffer, imageIndex);
+	VulkanPipeline* pxGBufferPipeline = nullptr;
+	for (VulkanPipeline* pxPipeline : m_xPipelines) {
+		if (pxPipeline->m_strName == "GBuffer") {
+			pxGBufferPipeline = pxPipeline;
+			break;
+		}
+	}
+	VCE_ASSERT(pxGBufferPipeline != nullptr, "Couldn't find gbuffer pipeline");
+
+	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxGBufferPipeline->m_xPipeline);
+
+	for (Mesh* mesh : scene->m_axPipelineMeshes.at(pxGBufferPipeline->m_strName)) {
+		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
+		pxVulkanMesh->BindToCmdBuffer(commandBuffer);
+
+		std::vector<vk::DescriptorSet> axSets;
+		for (const vk::DescriptorSet set : pxGBufferPipeline->m_axBufferDescSets)
+			axSets.push_back(set);
+		if (pxVulkanMesh->GetTexture() != nullptr)
+			axSets.push_back(pxVulkanMesh->m_xTexDescSet);
+
+		pxGBufferPipeline->BindDescriptorSets(commandBuffer, axSets, vk::PipelineBindPoint::eGraphics, 0);
+
+		if (pxGBufferPipeline->bUsePushConstants) {
+			commandBuffer.pushConstants(pxGBufferPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, 0, sizeof(glm::mat4), (void*)&mesh->m_xTransform);
+
+			commandBuffer.pushConstants(pxGBufferPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4), sizeof(glm::vec3), (void*)&m_xOverrideNormal);
+			int uValue = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;
+
+			commandBuffer.pushConstants(pxGBufferPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3), sizeof(uint32_t), (void*)&uValue);
+
+			int uValueTess = app->_pRenderer->m_bUsePhongTess ? 1 : 0;
+
+			commandBuffer.pushConstants(pxGBufferPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t), sizeof(uint32_t), (void*)&uValueTess);
+
+			commandBuffer.pushConstants(pxGBufferPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t) + sizeof(uint32_t), sizeof(float), (void*)&app->_pRenderer->m_fPhongTessFactor);
+			commandBuffer.pushConstants(pxGBufferPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(float), sizeof(float), (void*)&app->_pRenderer->m_uTessLevel);
+		}
+
+		commandBuffer.drawIndexed(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
+	}
+
+	commandBuffer.endRenderPass();
+
+#pragma endregion
+
+	BeginBackbufferRenderPass(commandBuffer, imageIndex);
 
 
 	for (VulkanPipeline*  pipeline : m_xPipelines) {
+		if (pipeline->m_strName == "GBuffer") continue;
 
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline->m_xPipeline);
 

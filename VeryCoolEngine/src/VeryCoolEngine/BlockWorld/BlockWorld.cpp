@@ -51,7 +51,7 @@ namespace VeryCoolEngine {
 					DepthFormat::D32_SFloat,
 					{ xCamSpec},
 					{xBlockTexSpec},
-					&app->m_pxRenderPass,
+					&app->m_pxBackbufferRenderPass,
 					false,
 					false
 					)

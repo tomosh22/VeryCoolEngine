@@ -187,6 +187,7 @@ namespace VeryCoolEngine {
 
 
 			void CreateFrameBuffers();
+			void CreateGBufferFrameBuffers();
 
 			void CreateCommandPool();
 
@@ -210,7 +211,8 @@ namespace VeryCoolEngine {
 
 			void Present(uint32_t uSwapchainIndex, vk::Semaphore* pxWaitSems = nullptr, uint32_t uWaitSemCount = 0);
 
-			void BeginRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex);
+			void BeginBackbufferRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex);
+			void BeginGBufferRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex);
 
 #if DEBUG
 			bool CheckValidationLayerSupport();
@@ -244,11 +246,14 @@ namespace VeryCoolEngine {
 
 #ifdef VCE_DEFERRED_SHADING
 			void SetupDeferredShading();
-			VulkanTexture2D* m_pxGBufferDiffuse;
-			VulkanTexture2D* m_pxGBufferNormals;
-			VulkanTexture2D* m_pxGBufferDepth;
-			VulkanTexture2D* m_pxDeferredDiffuse;
-			VulkanTexture2D* m_pxDeferredSpecular;
+
+			//one per frame in flight
+			std::vector<VulkanTexture2D*> m_apxGBufferDiffuse;
+			std::vector<VulkanTexture2D*> m_apxGBufferNormals;
+			std::vector<VulkanTexture2D*> m_apxGBufferMaterial;
+			std::vector<VulkanTexture2D*> m_apxGBufferDepth;
+			std::vector<VulkanTexture2D*> m_apxDeferredDiffuse;
+			std::vector<VulkanTexture2D*> m_apxDeferredSpecular;
 #endif
 
 			vk::DescriptorPool m_descriptorPool;
@@ -267,6 +272,7 @@ namespace VeryCoolEngine {
 			vk::PipelineLayout m_pipelineLayout;
 
 			std::vector<vk::Framebuffer> m_swapChainFramebuffers;
+			std::vector<vk::Framebuffer> m_axGBufferFramebuffers;
 
 			vk::CommandPool m_commandPool;
 			std::vector<vk::CommandBuffer> m_commandBuffers;

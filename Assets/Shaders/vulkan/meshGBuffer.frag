@@ -1,7 +1,8 @@
 #version 450 core
 
 layout(location = 0) out vec4 _oDiffuse;
-layout(location = 1) out vec4 _oMaterial;
+layout(location = 1) out vec4 _oNormal;
+layout(location = 2) out vec4 _oMaterial;
 
 layout(location = 0) in vec2 UV;
 layout(location = 1) in vec3 Normal;
@@ -20,14 +21,6 @@ layout(std140, set = 0, binding=0) uniform matrices{
 	vec4 _uCamPos;//4 bytes of padding
 };
 
-layout(push_constant) uniform PushConstantVert{
-	mat4 modelMatrix;
-	vec3 overrideNormal;
-	int useBumpMap;
-	int usePhongTess;
-	float phongTessFactor;
-	int tessLevel;
-};
 
 layout(std140, set = 1, binding = 0) uniform LightsUBO{
 uint numLights;
@@ -49,9 +42,14 @@ void main(){
 	
 	_oDiffuse = texture(diffuseTex,UV);
 	
+	
+	vec3 bumpNormal = texture(bumpMap, UV).rgb;
+	bumpNormal = normalize(TBN * bumpNormal); 
+	_oNormal = vec4(bumpNormal, 1);
+	
 	float roughness = texture(roughnessTex,UV).x;
 	float metallic = texture(metallicTex,UV).x;
 	
-	_oMaterial = vec4(roughness, metallic,1,1);
+	_oMaterial = vec4(roughness, metallic,0,1);
 	
 }

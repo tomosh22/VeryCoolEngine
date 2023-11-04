@@ -11,6 +11,8 @@ namespace VeryCoolEngine {
 			VulkanRenderer::GetInstance()->GetDevice().destroyRenderPass(m_xRenderPass, nullptr);
 		};
 		vk::RenderPass m_xRenderPass;
+
+		static vk::RenderPass GBufferRenderPass();
 	};
 
 }

@@ -83,9 +83,9 @@ namespace VeryCoolEngine {
 		std::mutex sceneMutex;
 		Scene* scene;
 
-		//TODO delete these
 		Renderer* _pRenderer;
-		RenderPass* m_pxRenderPass;
+		RenderPass* m_pxBackbufferRenderPass;
+		RenderPass* m_pxGBufferRenderPass;
 
 		vk::DescriptorSetLayout m_xCameraLayout;
 		vk::DescriptorSetLayout m_xTextureLayout;

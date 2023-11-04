@@ -18,8 +18,20 @@ namespace VeryCoolEngine {
 		CreateCommandPool();
 		CreateDepthTexture();
 		CreateDescriptorPool();
-		app->m_pxRenderPass = new VulkanRenderPass();
+		app->m_pxBackbufferRenderPass = new VulkanRenderPass();
+
+		//#TODO do this properly, I'm too lazy to move the above to a VulkanRenderPass::BackbufferRenderPass
+		app->m_pxGBufferRenderPass = new VulkanRenderPass();
+		m_device.destroyRenderPass(dynamic_cast<VulkanRenderPass*>(app->m_pxGBufferRenderPass)->m_xRenderPass);
+		dynamic_cast<VulkanRenderPass*>(app->m_pxGBufferRenderPass)->m_xRenderPass = VulkanRenderPass::GBufferRenderPass();
+
 		CreateFrameBuffers();
+
+#ifdef VCE_DEFERRED_SHADING
+		SetupDeferredShading();
+		CreateGBufferFrameBuffers();
+#endif
+		
 		CreateCommandBuffers();
 		CreateSyncObjects();
 	}
@@ -205,13 +217,29 @@ namespace VeryCoolEngine {
 		for (vk::ImageView imageView : m_swapChainImageViews) {
 			vk::FramebufferCreateInfo framebufferInfo{};
 			vk::ImageView axAttachments[2]{ imageView,m_xDepthTexture->m_xImageView };
-			framebufferInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxRenderPass)->m_xRenderPass;
+			framebufferInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxBackbufferRenderPass)->m_xRenderPass;
 			framebufferInfo.attachmentCount = 2;
 			framebufferInfo.pAttachments = axAttachments;
 			framebufferInfo.width = m_swapChainExtent.width;
 			framebufferInfo.height = m_swapChainExtent.height;
 			framebufferInfo.layers = 1;
 			m_swapChainFramebuffers[swapchainIndex++] = m_device.createFramebuffer(framebufferInfo);
+		}
+	}
+
+	void VulkanRenderer::CreateGBufferFrameBuffers() {
+		Application* app = Application::GetInstance();
+		m_axGBufferFramebuffers.resize(m_swapChainImageViews.size());
+		for (uint32_t i = 0; i < m_swapChainImages.size(); i++) {
+			vk::FramebufferCreateInfo framebufferInfo{};
+			vk::ImageView axAttachments[4]{ m_apxGBufferDiffuse[i]->m_xImageView, m_apxGBufferNormals[i]->m_xImageView,m_apxGBufferMaterial[i]->m_xImageView, m_apxGBufferDepth[i]->m_xImageView };
+			framebufferInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxGBufferRenderPass)->m_xRenderPass;
+			framebufferInfo.attachmentCount = 4;
+			framebufferInfo.pAttachments = axAttachments;
+			framebufferInfo.width = m_swapChainExtent.width;
+			framebufferInfo.height = m_swapChainExtent.height;
+			framebufferInfo.layers = 1;
+			m_axGBufferFramebuffers[i] = m_device.createFramebuffer(framebufferInfo);
 		}
 	}
 
@@ -427,7 +455,7 @@ namespace VeryCoolEngine {
 			xBeginInfo.setFlags(xBeginInfo.flags | vk::CommandBufferUsageFlagBits::eRenderPassContinue);
 
 			vk::CommandBufferInheritanceInfo xInherit = vk::CommandBufferInheritanceInfo()
-				.setRenderPass(dynamic_cast<VulkanRenderPass*>(Application::GetInstance()->m_pxRenderPass)->m_xRenderPass)
+				.setRenderPass(dynamic_cast<VulkanRenderPass*>(Application::GetInstance()->m_pxBackbufferRenderPass)->m_xRenderPass)
 				.setFramebuffer(m_swapChainFramebuffers[m_currentFrame]);
 			xBeginInfo.setPInheritanceInfo(&xInherit);
 		}
@@ -647,10 +675,10 @@ namespace VeryCoolEngine {
 		VCE_ASSERT(xResult == vk::Result::eSuccess || xResult == vk::Result::eErrorOutOfDateKHR || xResult == vk::Result::eSuboptimalKHR, "Failed to present");
 	}
 
-	void VulkanRenderer::BeginRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex) {
+	void VulkanRenderer::BeginBackbufferRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex) {
 		Application* app = Application::GetInstance();
 		vk::RenderPassBeginInfo renderPassInfo{};
-		renderPassInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxRenderPass)->m_xRenderPass;
+		renderPassInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxBackbufferRenderPass)->m_xRenderPass;
 		renderPassInfo.framebuffer = m_swapChainFramebuffers[uImageIndex];
 		renderPassInfo.renderArea.offset = vk::Offset2D(0, 0);
 		renderPassInfo.renderArea.extent = m_swapChainExtent;
@@ -660,6 +688,42 @@ namespace VeryCoolEngine {
 		clearColor[0].color = { vk::ClearColorValue(tempColor) };
 		clearColor[1].depthStencil = vk::ClearDepthStencilValue(0, 0);
 		renderPassInfo.clearValueCount = 2;
+		renderPassInfo.pClearValues = clearColor;
+
+		xCmdBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+
+		//flipping because porting from opengl
+		vk::Viewport viewport{};
+		viewport.x = 0;
+		viewport.y = m_swapChainExtent.height;
+		viewport.width = m_swapChainExtent.width;
+		viewport.height = -1 * (float)m_swapChainExtent.height;
+		viewport.minDepth = 0;
+		viewport.minDepth = 1;
+
+		vk::Rect2D scissor{};
+		scissor.offset = vk::Offset2D(0, 0);
+		scissor.extent = m_swapChainExtent;
+
+		xCmdBuffer.setViewport(0, 1, &viewport);
+		xCmdBuffer.setScissor(0, 1, &scissor);
+	}
+
+	void VulkanRenderer::BeginGBufferRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex) {
+		Application* app = Application::GetInstance();
+		vk::RenderPassBeginInfo renderPassInfo{};
+		renderPassInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxGBufferRenderPass)->m_xRenderPass;
+		renderPassInfo.framebuffer = m_axGBufferFramebuffers[uImageIndex];
+		renderPassInfo.renderArea.offset = vk::Offset2D(0, 0);
+		renderPassInfo.renderArea.extent = m_swapChainExtent;
+
+		vk::ClearValue clearColor[4];
+		std::array<float, 4> tempColor{ 0.f,0.f,0.f,1.f };
+		clearColor[0].color = { vk::ClearColorValue(tempColor) };
+		clearColor[1].color = { vk::ClearColorValue(tempColor) };
+		clearColor[2].color = { vk::ClearColorValue(tempColor) };
+		clearColor[3].depthStencil = vk::ClearDepthStencilValue(0, 0);
+		renderPassInfo.clearValueCount = 4;
 		renderPassInfo.pClearValues = clearColor;
 
 		xCmdBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);

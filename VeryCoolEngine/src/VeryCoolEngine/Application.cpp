@@ -152,7 +152,7 @@ namespace VeryCoolEngine {
 					DepthFormat::D32_SFloat,
 					{xCamSpec},
 					{},
-					&m_pxRenderPass,
+					&m_pxBackbufferRenderPass,
 					false,
 					false
 					)
@@ -177,31 +177,31 @@ namespace VeryCoolEngine {
 					DepthFormat::D32_SFloat,
 					{xCamSpec, xLightSpec},
 					{xMeshTexSpec},
-					&m_pxRenderPass,
+					&m_pxBackbufferRenderPass,
 					true,
 					true
 					)
 			});
 
 		//#TODO: not ready for pipeline to be made yet
-#if defined(VCE_DEFERRED_SHADING) && false
+#ifdef VCE_DEFERRED_SHADING
 		m_xPipelineSpecs.insert(
 			{ "GBuffer",
 					PipelineSpecification(
 					"GBuffer",
 					m_pxExampleMesh,
 					m_pxGBufferShader,
-					{BlendFactor::SrcAlpha},
-					{BlendFactor::OneMinusSrcAlpha},
-					{true},
+					{BlendFactor::SrcAlpha, BlendFactor::SrcAlpha, BlendFactor::SrcAlpha},
+					{BlendFactor::OneMinusSrcAlpha, BlendFactor::OneMinusSrcAlpha, BlendFactor::OneMinusSrcAlpha},
+					{true, true, true},
 					true,
 					true,
 					DepthCompareFunc::GreaterOrEqual,
-					{ColourFormat::BGRA8_Unorm, ColourFormat::BGRA8_Unorm},
+					{ColourFormat::BGRA8_Unorm, ColourFormat::BGRA8_Unorm, ColourFormat::BGRA8_Unorm},
 					DepthFormat::D32_SFloat,
 					{xCamSpec, xLightSpec},
 					{xMeshTexSpec},
-					&m_pxRenderPass,
+					&m_pxGBufferRenderPass,
 					true,
 					true
 					)

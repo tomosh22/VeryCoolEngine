@@ -52,7 +52,7 @@ namespace VeryCoolEngine {
 		init_info.DescriptorPool = pxRenderer->m_descriptorPool;
 		init_info.MinImageCount = MAX_FRAMES_IN_FLIGHT;
 		init_info.ImageCount = MAX_FRAMES_IN_FLIGHT;
-		ImGui_ImplVulkan_Init(&init_info, dynamic_cast<VulkanRenderPass*>(Application::GetInstance()->m_pxRenderPass)->m_xRenderPass);
+		ImGui_ImplVulkan_Init(&init_info, dynamic_cast<VulkanRenderPass*>(Application::GetInstance()->m_pxBackbufferRenderPass)->m_xRenderPass);
 
 		vk::CommandBuffer xCmd = pxRenderer->BeginSingleUseCmdBuffer();
 		ImGui_ImplVulkan_CreateFontsTexture(xCmd);
