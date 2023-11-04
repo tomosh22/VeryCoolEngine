@@ -133,11 +133,7 @@ namespace VeryCoolEngine {
 		m_pxQuadMesh->SetShader(Shader::Create("vulkan/fullscreenVert.spv", "vulkan/fullscreenFrag.spv"));
 		_meshes.push_back(m_pxQuadMesh);
 
-		m_pxInstanceMesh = Mesh::GenerateQuad();
-		m_pxInstanceMesh->SetTexture(Texture2D::Create("atlas.png", false));
-		m_pxInstanceMesh->SetShader(Shader::Create("vulkan/blockVert.spv", "vulkan/blockFrag.spv"));
-		m_pxInstanceMesh->m_xTexDescSpec = xBlockTexSpec;
-		_meshes.push_back(m_pxInstanceMesh);
+		
 
 
 		m_xPipelineSpecs.insert(
@@ -163,29 +159,7 @@ namespace VeryCoolEngine {
 			});
 
 		
-		if (m_pxBlockWorld != nullptr) {
-			m_xPipelineSpecs.insert(
-				{ "Blocks",
-						PipelineSpecification(
-						"Blocks",
-						m_pxInstanceMesh,
-						Shader::Create("vulkan/blockVert.spv", "vulkan/blockFrag.spv"),
-						{BlendFactor::SrcAlpha},
-						{BlendFactor::OneMinusSrcAlpha},
-						{true},
-						true,
-						true,
-						DepthCompareFunc::GreaterOrEqual,
-						{ColourFormat::BGRA8_sRGB},
-						DepthFormat::D32_SFloat,
-						{ xCamSpec},
-						{xBlockTexSpec},
-						&m_pxRenderPass,
-						false,
-						false
-						)
-				});
-		}
+		
 
 		m_xPipelineSpecs.insert(
 			{ "Meshes",
@@ -233,6 +207,9 @@ namespace VeryCoolEngine {
 					)
 			});
 #endif
+
+	
+
 	}
 
 

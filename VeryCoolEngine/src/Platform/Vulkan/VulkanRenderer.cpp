@@ -50,7 +50,9 @@ void VulkanRenderer::InitVulkan() {
 	for (Shader* pxShader : app->_shaders) pxShader->PlatformInit();
 	//for (Texture* pxTex : app->_textures) pxTex->PlatformInit();
 
-
+	//this is a bit disgusting but the skybox pipeline needs to be first
+	m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Skybox")));
+	app->m_xPipelineSpecs.erase("Skybox");
 	for (auto it = app->m_xPipelineSpecs.begin(); it != app->m_xPipelineSpecs.end(); it++) {
 		m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(it->second));
 	}

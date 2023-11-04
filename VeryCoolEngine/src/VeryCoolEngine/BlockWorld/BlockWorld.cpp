@@ -7,10 +7,55 @@
 namespace VeryCoolEngine {
 
 	BlockWorld::BlockWorld() {
+		Application* app = Application::GetInstance();
+
+		BufferDescriptorSpecification xCamSpec;
+		xCamSpec.m_aeUniformBufferStages.push_back({ &app->_pCameraUBO, ShaderStageVertexAndFragment });
+
+		BufferDescriptorSpecification xLightSpec;
+
+		TextureDescriptorSpecification xBlockTexSpec;
+		xBlockTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
+
+		app->m_pxInstanceMesh = Mesh::GenerateQuad();
+		app->m_pxInstanceMesh->SetTexture(Texture2D::Create("atlas.png", false));
+		app->m_pxInstanceMesh->SetShader(Shader::Create("vulkan/blockVert.spv", "vulkan/blockFrag.spv"));
+		app->m_pxInstanceMesh->m_xTexDescSpec = xBlockTexSpec;
+		app->_meshes.push_back(app->m_pxInstanceMesh);
+
 		Chunk::seed = rand();
 		GenerateChunks();
 
 		UploadChunks();
+
+
+		
+
+
+		
+
+		
+		app->m_xPipelineSpecs.insert(
+			{ "Blocks",
+					PipelineSpecification(
+					"Blocks",
+					app->m_pxInstanceMesh,
+					Shader::Create("vulkan/blockVert.spv", "vulkan/blockFrag.spv"),
+					{BlendFactor::SrcAlpha},
+					{BlendFactor::OneMinusSrcAlpha},
+					{true},
+					true,
+					true,
+					DepthCompareFunc::GreaterOrEqual,
+					{ColourFormat::BGRA8_sRGB},
+					DepthFormat::D32_SFloat,
+					{ xCamSpec},
+					{xBlockTexSpec},
+					&app->m_pxRenderPass,
+					false,
+					false
+					)
+			});
 	}
 
 	void BlockWorld::GenerateChunks() {

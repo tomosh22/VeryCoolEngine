@@ -24,7 +24,7 @@ namespace VeryCoolEngine {
 	Game::Game() {
 
 
-		//m_pxBlockWorld = new BlockWorld();
+		m_pxBlockWorld = new BlockWorld();
 		
 		
 
