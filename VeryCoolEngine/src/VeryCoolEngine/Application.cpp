@@ -126,7 +126,11 @@ namespace VeryCoolEngine {
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 
-		m_pxMeshShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
+#ifdef VCE_USE_EDITOR
+		m_pxMeshShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshEditorFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
+#else
+		m_pxMeshShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshNoEditorFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
+#endif
 		m_pxGBufferShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshGBufferFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
 
 		m_pxQuadMesh = Mesh::GenerateQuad();
@@ -142,13 +146,23 @@ namespace VeryCoolEngine {
 					"Skybox",
 					m_pxQuadMesh,
 					m_pxQuadMesh->GetShader(),
+#ifdef VCE_USE_EDITOR
+					{BlendFactor::SrcAlpha, BlendFactor::SrcAlpha},
+					{BlendFactor::OneMinusSrcAlpha, BlendFactor::OneMinusSrcAlpha},
+					{true, true},
+#else
 					{BlendFactor::SrcAlpha},
 					{BlendFactor::OneMinusSrcAlpha},
 					{true},
+#endif
 					false,
 					false,
 					DepthCompareFunc::GreaterOrEqual,
+#ifdef VCE_USE_EDITOR
+					{ColourFormat::BGRA8_sRGB, ColourFormat::BGRA8_sRGB},
+#else
 					{ColourFormat::BGRA8_sRGB},
+#endif
 					DepthFormat::D32_SFloat,
 					{xCamSpec},
 					{},
@@ -167,13 +181,24 @@ namespace VeryCoolEngine {
 					"Meshes",
 					m_pxExampleMesh,
 					m_pxMeshShader,
+#ifdef VCE_USE_EDITOR
+					{BlendFactor::SrcAlpha, BlendFactor::SrcAlpha},
+					{BlendFactor::OneMinusSrcAlpha, BlendFactor::OneMinusSrcAlpha},
+					{true, true},
+#else
 					{BlendFactor::SrcAlpha},
 					{BlendFactor::OneMinusSrcAlpha},
 					{true},
+#endif
 					true,
 					true,
 					DepthCompareFunc::GreaterOrEqual,
+#ifdef VCE_USE_EDITOR
+					{ColourFormat::BGRA8_sRGB, ColourFormat::BGRA8_sRGB},
+#else
 					{ColourFormat::BGRA8_sRGB},
+#endif
+					
 					DepthFormat::D32_SFloat,
 					{xCamSpec, xLightSpec},
 					{xMeshTexSpec},

@@ -256,6 +256,8 @@ namespace VeryCoolEngine {
 			std::vector<VulkanTexture2D*> m_apxGBufferDepth;
 			std::vector<VulkanTexture2D*> m_apxDeferredDiffuse;
 			std::vector<VulkanTexture2D*> m_apxDeferredSpecular;
+
+			std::vector<VulkanTexture2D*> m_apxEditorSceneTexs;
 #endif
 
 			vk::DescriptorPool m_descriptorPool;

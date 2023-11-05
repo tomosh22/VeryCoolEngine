@@ -1,5 +1,8 @@
 #pragma once
 
+
+#define VCE_USE_EDITOR
+
 #ifdef VCE_WINDOWS
 #if VCE_DYNAMIC_LINK
 	#ifdef VCE_BUILD_DLL

@@ -12,6 +12,8 @@ layout(std140, binding=0) uniform matrices{
 
 
 layout(location = 0) out vec4 _oColor;
+layout(location = 1) out vec4 _oSceneEditorTex;
+
 layout(location = 0) in vec2 UV;
 
 vec3 RayDir(vec2 pixel)//takes pixel in 0,1 range
@@ -36,4 +38,6 @@ void main(){
 	_oColor = vec4(0.2,0.3,0.9,1);
 	_oColor += max(rayDir.y + 0.3,0);
 	//_oColor = vec4(rayDir+0.5,1);
+	
+	_oSceneEditorTex = _oColor;
 }

@@ -7,7 +7,7 @@ namespace VeryCoolEngine {
 	VulkanRenderPass::VulkanRenderPass() {
 
 		vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
-	
+
 		vk::AttachmentDescription colorAttachment = vk::AttachmentDescription()
 			.setFormat(VulkanRenderer::GetInstance()->GetSwapchainFormat())
 			.setSamples(vk::SampleCountFlagBits::e1)
@@ -28,18 +28,46 @@ namespace VeryCoolEngine {
 			.setInitialLayout(vk::ImageLayout::eUndefined)
 			.setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
+#ifdef VCE_USE_EDITOR
+		vk::AttachmentDescription editorAttachment = vk::AttachmentDescription()
+			.setFormat(VulkanRenderer::GetInstance()->GetSwapchainFormat())
+			.setSamples(vk::SampleCountFlagBits::e1)
+			.setLoadOp(vk::AttachmentLoadOp::eClear)
+			.setStoreOp(vk::AttachmentStoreOp::eStore)
+			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+			.setInitialLayout(vk::ImageLayout::eUndefined)
+			.setFinalLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+
+		vk::AttachmentReference editorAttachmentRef = vk::AttachmentReference()
+			.setAttachment(2)
+			.setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+#endif
+
 		vk::AttachmentReference colorAttachmentRef = vk::AttachmentReference()
 			.setAttachment(0)
 			.setLayout(vk::ImageLayout::eColorAttachmentOptimal);
 
 		vk::AttachmentReference depthAttachmentRef = vk::AttachmentReference()
 			.setAttachment(1)
+
 			.setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+		vk::AttachmentReference axColourAttachments[]{
+			colorAttachmentRef,
+#ifdef VCE_USE_EDITOR
+			editorAttachmentRef,
+#endif
+		};
 
 		vk::SubpassDescription subpass = vk::SubpassDescription()
 			.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+#ifdef VCE_USE_EDITOR
+			.setColorAttachmentCount(2)
+#else
 			.setColorAttachmentCount(1)
-			.setPColorAttachments(&colorAttachmentRef)
+#endif
+			.setPColorAttachments(axColourAttachments)
 			.setPDepthStencilAttachment(&depthAttachmentRef);
 
 		vk::SubpassDependency dependency = vk::SubpassDependency()
@@ -50,10 +78,20 @@ namespace VeryCoolEngine {
 			.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests)
 			.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite);
 
-		vk::AttachmentDescription axAttachments[2]{ colorAttachment,depthAttachment };
+		vk::AttachmentDescription axAttachments[]{
+			colorAttachment,
+			depthAttachment,
+			#ifdef VCE_USE_EDITOR
+			editorAttachment,
+#endif
+		};
 
 		vk::RenderPassCreateInfo renderPassInfo = vk::RenderPassCreateInfo()
+#ifdef VCE_USE_EDITOR
+			.setAttachmentCount(3)
+#else
 			.setAttachmentCount(2)
+#endif
 			.setPAttachments(axAttachments)
 			.setSubpassCount(1)
 			.setPSubpasses(&subpass)
