@@ -255,6 +255,10 @@ namespace VeryCoolEngine {
 
 
 			_Camera.UpdateCamera(_DeltaTime);
+			for (Mesh* pxMesh : m_apxGenericMeshes) {
+				pxMesh->m_xTransform.UpdateRotation();
+				pxMesh->m_xTransform.UpdateMatrix();
+			}
 			GameLoop();
 			
 
