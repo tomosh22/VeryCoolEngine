@@ -98,9 +98,10 @@ void VulkanRenderer::MainLoop() {
 void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene) {
 	Application* app = Application::GetInstance();
 
+#ifdef VCE_USE_EDITOR
 	app->_pImGuiLayer->Begin();
 	app->_pImGuiLayer->OnImGuiRender();
-	
+#endif
 	
 
 	commandBuffer.begin(vk::CommandBufferBeginInfo());
@@ -224,11 +225,15 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	commandBuffer.drawIndexed(dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh)->m_uNumIndices, dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh)->m_uNumInstances, 0, 0, 0);
 	commandBuffer.endRenderPass();
 	
+#ifdef VCE_USE_EDITOR
 	BeginImguiRenderPass(commandBuffer, imageIndex);
 	
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 	app->_pImGuiLayer->End();
 	commandBuffer.endRenderPass();
+#endif
+
+	
 	commandBuffer.end();
 	
 }
@@ -282,8 +287,10 @@ void VeryCoolEngine::VulkanRenderer::BeginScene(Scene* scene)
 void VeryCoolEngine::VulkanRenderer::RenderThreadFunction()
 {
 	Application* app = Application::GetInstance();
+#ifdef VCE_USE_EDITOR
 	app->_pImGuiLayer = new ImGuiLayer();
 	app->PushOverlay(app->_pImGuiLayer);
+#endif
 	while (app->_running) {
 		MainLoop();
 	}

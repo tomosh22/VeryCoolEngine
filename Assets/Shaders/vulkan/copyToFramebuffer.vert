@@ -16,4 +16,5 @@ void main(){
     gl_Position = vec4(xPos, yPos, 0.0, 1.0);
 
     UV = vec2((xPos + 1.0) * 0.5, (yPos + 1.0) * 0.5);
+	UV.y = 1 - UV.y;
 }

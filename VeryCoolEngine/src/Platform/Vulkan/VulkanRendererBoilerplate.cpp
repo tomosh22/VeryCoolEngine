@@ -758,7 +758,7 @@ namespace VeryCoolEngine {
 		renderPassInfo.renderArea.offset = vk::Offset2D(0, 0);
 		renderPassInfo.renderArea.extent = m_swapChainExtent;
 
-#ifdef VCE_USE_EDITOR
+#if 0
 		vk::ClearValue clearColor[3];
 		std::array<float, 4> tempColor{ 0.f,0.f,0.f,1.f };
 		clearColor[0].color = { vk::ClearColorValue(tempColor) };

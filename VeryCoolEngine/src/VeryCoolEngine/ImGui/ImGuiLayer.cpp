@@ -172,7 +172,7 @@ namespace VeryCoolEngine {
 		}
 
 		ImGui::Begin("Image");
-		ImGui::Image(VulkanRenderer::GetInstance()->m_axFramebufferTexDescSet[VulkanRenderer::GetInstance()->m_currentFrame], ImVec2(1280, 720));
+		ImGui::Image(VulkanRenderer::GetInstance()->m_axFramebufferTexDescSet[VulkanRenderer::GetInstance()->m_currentFrame], ImVec2(VCE_GAME_WIDTH, VCE_GAME_HEIGHT));
 		ImGui::End();
 
 		ImGui::Begin("ImGui");
@@ -209,7 +209,7 @@ namespace VeryCoolEngine {
 
 		ImGui::End();
 
-		if (ImGui::BeginMenuBar())
+		/*if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("Options"))
 			{
@@ -234,7 +234,7 @@ namespace VeryCoolEngine {
 			ImGui::EndMenuBar();
 
 			
-		}
+		}*/
 
 		ImGui::End();
 #endif

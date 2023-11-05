@@ -11,7 +11,12 @@ namespace VeryCoolEngine {
 
 		WindowProperties
 		(const std::string& title = "Very Cool Engine",
-			unsigned int width = 1920, unsigned int height = 800)
+#ifdef VCE_USE_EDITOR
+			unsigned int width = VCE_GAME_WIDTH + VCE_EDITOR_ADDITIONAL_WIDTH, unsigned int height = VCE_GAME_HEIGHT + VCE_EDITOR_ADDITIONAL_HEIGHT
+#else
+			unsigned int width = VCE_GAME_WIDTH, unsigned int height = VCE_GAME_HEIGHT
+#endif
+		)
 			: _title(title), _width(width), _height(height) {}
 	};
 

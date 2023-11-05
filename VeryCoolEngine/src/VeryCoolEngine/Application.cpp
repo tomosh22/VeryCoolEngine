@@ -130,11 +130,7 @@ namespace VeryCoolEngine {
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 
-#ifdef VCE_USE_EDITOR
-		m_pxMeshShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshEditorFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
-#else
-		m_pxMeshShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshNoEditorFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
-#endif
+		m_pxMeshShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
 		m_pxGBufferShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshGBufferFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
 		m_pxCopyToFramebufferShader = Shader::Create("vulkan/copyToFrameBufferVert.spv", "vulkan/copyToFrameBufferFrag.spv");
 
