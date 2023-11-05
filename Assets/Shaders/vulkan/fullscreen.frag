@@ -12,7 +12,6 @@ layout(std140, binding=0) uniform matrices{
 
 
 layout(location = 0) out vec4 _oColor;
-layout(location = 1) out vec4 _oSceneEditorTex;
 
 layout(location = 0) in vec2 UV;
 
@@ -39,5 +38,4 @@ void main(){
 	_oColor += max(rayDir.y + 0.3,0);
 	//_oColor = vec4(rayDir+0.5,1);
 	
-	_oSceneEditorTex = _oColor;
 }

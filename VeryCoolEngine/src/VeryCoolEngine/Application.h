@@ -87,6 +87,8 @@ namespace VeryCoolEngine {
 		RenderPass* m_pxBackbufferRenderPass;
 		RenderPass* m_pxImguiRenderPass;//imgui doesn't use depth buffer
 		RenderPass* m_pxGBufferRenderPass;
+		RenderPass* m_pxRenderToTexturePass;
+		RenderPass* m_pxCopyToFramebufferPass;
 
 
 		
@@ -117,6 +119,7 @@ namespace VeryCoolEngine {
 
 		Shader* m_pxMeshShader;
 		Shader* m_pxGBufferShader;
+		Shader* m_pxCopyToFramebufferShader;
 
 		Mesh* _pHeightmap;
 		std::vector<Renderer::Light> _lights{};

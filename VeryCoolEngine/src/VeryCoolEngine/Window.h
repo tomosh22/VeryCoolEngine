@@ -11,7 +11,7 @@ namespace VeryCoolEngine {
 
 		WindowProperties
 		(const std::string& title = "Very Cool Engine",
-			unsigned int width = 1280, unsigned int height = 720)
+			unsigned int width = 1920, unsigned int height = 800)
 			: _title(title), _width(width), _height(height) {}
 	};
 

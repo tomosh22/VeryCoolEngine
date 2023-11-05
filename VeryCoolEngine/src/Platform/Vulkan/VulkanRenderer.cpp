@@ -154,11 +154,11 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 #pragma endregion
 
-	BeginBackbufferRenderPass(commandBuffer, imageIndex);
+	BeginRenderToTexturePass(commandBuffer, imageIndex);
 
 
 	for (VulkanPipeline*  pipeline : m_xPipelines) {
-		if (pipeline->m_strName == "GBuffer") continue;
+		if (pipeline->m_strName == "GBuffer" || pipeline->m_strName == "CopyToFramebuffer") continue;
 
 		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline->m_xPipeline);
 
@@ -209,6 +209,20 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 	UpdateImageDescriptor(m_axFramebufferTexDescSet[m_currentFrame], 0, 0, m_apxEditorSceneTexs[m_currentFrame]->m_xImageView, m_xDefaultSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
 
+	BeginBackbufferRenderPass(commandBuffer, imageIndex);
+	VulkanPipeline* pxBackbufferPipeline = nullptr;
+	for (VulkanPipeline* pxPipeline : m_xPipelines) {
+		if (pxPipeline->m_strName == "CopyToFramebuffer") {
+			pxBackbufferPipeline = pxPipeline;
+			break;
+		}
+	}
+	VCE_ASSERT(pxBackbufferPipeline != nullptr, "Couldn't find gbuffer pipeline");
+	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxBackbufferPipeline->m_xPipeline);
+	dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh)->BindToCmdBuffer(commandBuffer);
+	pxBackbufferPipeline->BindDescriptorSets(commandBuffer, { m_axFramebufferTexDescSet[m_currentFrame] }, vk::PipelineBindPoint::eGraphics, 0);
+	commandBuffer.drawIndexed(dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh)->m_uNumIndices, dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh)->m_uNumInstances, 0, 0, 0);
+	commandBuffer.endRenderPass();
 	
 	BeginImguiRenderPass(commandBuffer, imageIndex);
 	

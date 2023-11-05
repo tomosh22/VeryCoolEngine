@@ -189,6 +189,7 @@ namespace VeryCoolEngine {
 			void CreateFrameBuffers();
 			void CreateImguiFrameBuffers();//imgui doesn't use depth buffer
 			void CreateGBufferFrameBuffers();
+			void CreateRenderToTextureFrameBuffers();
 
 			void CreateCommandPool();
 
@@ -215,6 +216,7 @@ namespace VeryCoolEngine {
 			void BeginBackbufferRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex);
 			void BeginGBufferRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex);
 			void BeginImguiRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex);//imgui doesn't use depth
+			void BeginRenderToTexturePass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex);
 
 #if DEBUG
 			bool CheckValidationLayerSupport();
@@ -227,7 +229,7 @@ namespace VeryCoolEngine {
 				const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
 				void* pUserData);
 
-			const int m_width = 1280, m_height = 720;
+			const int m_width = 1920, m_height = 800;
 			vk::Instance m_instance;
 			vk::DebugUtilsMessengerEXT m_debugMessenger;
 			
@@ -280,6 +282,7 @@ namespace VeryCoolEngine {
 			std::vector<vk::Framebuffer> m_swapChainFramebuffers;
 			std::vector<vk::Framebuffer> m_axImguiFramebuffers;
 			std::vector<vk::Framebuffer> m_axGBufferFramebuffers;
+			std::vector<vk::Framebuffer> m_axRenderToTextureFramebuffers;
 
 			vk::CommandPool m_commandPool;
 			std::vector<vk::CommandBuffer> m_commandBuffers;

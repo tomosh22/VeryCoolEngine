@@ -63,7 +63,7 @@ namespace VeryCoolEngine {
 		//#TODO let client set skybox texture
 
 		
-
+		
 		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, 1280.f / 720.f);
 		
 

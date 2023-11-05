@@ -109,7 +109,7 @@ namespace VeryCoolEngine {
 		VulkanDescriptorSetLayoutBuilder xBuilder = VulkanDescriptorSetLayoutBuilder();
 		if (spec.m_aeSamplerStages.size()) {
 			for (auto& [ppxTexture, eStage] : spec.m_aeSamplerStages) {
-				xBuilder = xBuilder.WithSamplers(1, vk::ShaderStageFlagBits::eAll);//#TODO stop passing all
+				xBuilder = xBuilder.WithSamplers(1, spec.m_bJustFragment ? vk::ShaderStageFlagBits::eFragment : vk::ShaderStageFlagBits::eAll);//#TODO stop passing all
 			}
 		}
 		return std::move(xBuilder.Build(VulkanRenderer::GetInstance()->GetDevice()));

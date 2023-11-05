@@ -118,6 +118,10 @@ namespace VeryCoolEngine {
 		TextureDescriptorSpecification xBlockTexSpec;
 		xBlockTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 
+		TextureDescriptorSpecification xFramebufferTexSpec;
+		xFramebufferTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
+		xFramebufferTexSpec.m_bJustFragment = true;
+
 		TextureDescriptorSpecification xMeshTexSpec;
 		//currently overriding stage to all
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
@@ -132,6 +136,7 @@ namespace VeryCoolEngine {
 		m_pxMeshShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshNoEditorFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
 #endif
 		m_pxGBufferShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshGBufferFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
+		m_pxCopyToFramebufferShader = Shader::Create("vulkan/copyToFrameBufferVert.spv", "vulkan/copyToFrameBufferFrag.spv");
 
 		m_pxQuadMesh = Mesh::GenerateQuad();
 		m_pxQuadMesh->SetShader(Shader::Create("vulkan/fullscreenVert.spv", "vulkan/fullscreenFrag.spv"));
@@ -146,27 +151,17 @@ namespace VeryCoolEngine {
 					"Skybox",
 					m_pxQuadMesh,
 					m_pxQuadMesh->GetShader(),
-#ifdef VCE_USE_EDITOR
-					{BlendFactor::SrcAlpha, BlendFactor::SrcAlpha},
-					{BlendFactor::OneMinusSrcAlpha, BlendFactor::OneMinusSrcAlpha},
-					{true, true},
-#else
 					{BlendFactor::SrcAlpha},
 					{BlendFactor::OneMinusSrcAlpha},
 					{true},
-#endif
 					false,
 					false,
 					DepthCompareFunc::GreaterOrEqual,
-#ifdef VCE_USE_EDITOR
-					{ColourFormat::BGRA8_sRGB, ColourFormat::BGRA8_sRGB},
-#else
 					{ColourFormat::BGRA8_sRGB},
-#endif
 					DepthFormat::D32_SFloat,
 					{xCamSpec},
 					{},
-					&m_pxBackbufferRenderPass,
+					&m_pxRenderToTexturePass,
 					false,
 					false
 					)
@@ -181,30 +176,41 @@ namespace VeryCoolEngine {
 					"Meshes",
 					m_pxExampleMesh,
 					m_pxMeshShader,
-#ifdef VCE_USE_EDITOR
-					{BlendFactor::SrcAlpha, BlendFactor::SrcAlpha},
-					{BlendFactor::OneMinusSrcAlpha, BlendFactor::OneMinusSrcAlpha},
-					{true, true},
-#else
 					{BlendFactor::SrcAlpha},
 					{BlendFactor::OneMinusSrcAlpha},
 					{true},
-#endif
 					true,
 					true,
 					DepthCompareFunc::GreaterOrEqual,
-#ifdef VCE_USE_EDITOR
-					{ColourFormat::BGRA8_sRGB, ColourFormat::BGRA8_sRGB},
-#else
 					{ColourFormat::BGRA8_sRGB},
-#endif
-					
 					DepthFormat::D32_SFloat,
 					{xCamSpec, xLightSpec},
 					{xMeshTexSpec},
-					&m_pxBackbufferRenderPass,
+					&m_pxRenderToTexturePass,
 					true,
 					true
+					)
+			});
+
+		m_xPipelineSpecs.insert(
+			{ "CopyToFramebuffer",
+					PipelineSpecification(
+					"CopyToFramebuffer",
+					m_pxQuadMesh,
+					m_pxCopyToFramebufferShader,
+					{BlendFactor::SrcAlpha},
+					{BlendFactor::OneMinusSrcAlpha},
+					{true},
+					false,
+					false,
+					DepthCompareFunc::GreaterOrEqual,
+					{ColourFormat::BGRA8_sRGB},
+					DepthFormat::D32_SFloat,
+					{},
+					{xFramebufferTexSpec},
+					&m_pxCopyToFramebufferPass,
+					false,
+					false
 					)
 			});
 

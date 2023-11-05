@@ -9,4 +9,7 @@
 
 %VULKAN_SDK%\Bin\glslc.exe meshNoEditor.frag -o meshNoEditorFrag.spv
 %VULKAN_SDK%\Bin\glslc.exe meshEditor.frag -o meshEditorFrag.spv
+
+%VULKAN_SDK%\Bin\glslc.exe copyToFrameBuffer.vert -o copyToFrameBufferVert.spv
+%VULKAN_SDK%\Bin\glslc.exe copyToFrameBuffer.frag -o copyToFrameBufferFrag.spv
 pause

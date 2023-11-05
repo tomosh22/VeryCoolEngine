@@ -83,7 +83,7 @@ namespace VeryCoolEngine {
 	void ImGuiLayer::OnImGuiRender() {
 		Application* app = Application::GetInstance();
 
-#if 1
+#if 0
 		ImGui::Begin("ImGui");
 
 
@@ -170,6 +170,44 @@ namespace VeryCoolEngine {
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 		}
+
+		ImGui::Begin("Image");
+		ImGui::Image(VulkanRenderer::GetInstance()->m_axFramebufferTexDescSet[VulkanRenderer::GetInstance()->m_currentFrame], ImVec2(1280, 720));
+		ImGui::End();
+
+		ImGui::Begin("ImGui");
+
+
+		std::string cameraText = std::string("Camera ") + (app->_mouseEnabled ? "enabled" : "disabled") + ". Q to toggle.";
+		ImGui::Text(cameraText.c_str());
+
+		const glm::ivec3& camPos = app->_Camera.GetPosition();
+		std::string camPosText = "Camera Position: " + std::to_string(camPos.x) + " " + std::to_string(camPos.y) + " " + std::to_string(camPos.z);
+		ImGui::Text(camPosText.c_str());
+
+		const glm::vec3& camDir = app->_Camera.ViewDirection();
+		std::string camDirText = "Camera View Direction: " + std::to_string(camDir.x) + " " + std::to_string(camDir.y) + " " + std::to_string(camDir.z);
+		ImGui::Text(camDirText.c_str());
+
+		if (ImGui::TreeNode("Point Lights")) {
+			int lightIndex = 0;
+			for (Renderer::Light& light : app->_lights)
+			{
+				std::string labelPos = "Light" + std::to_string(lightIndex) + " Position";
+				ImGui::DragFloat3(labelPos.c_str(), &light.x);
+				std::string labelCol = "Light" + std::to_string(lightIndex++) + " Colour";
+				ImGui::ColorEdit4(labelCol.c_str(), &light.r);
+			}
+			ImGui::TreePop();
+		}
+		ImGui::ColorEdit3("Override Normal", &app->_pRenderer->m_xOverrideNormal[0]);
+		ImGui::Checkbox("Use Bumpmap", &app->_pRenderer->m_bUseBumpMaps);
+		ImGui::Checkbox("Use Phong Tesselation", &app->_pRenderer->m_bUsePhongTess);
+		ImGui::SliderFloat("Phong Tesselation Factor", &app->_pRenderer->m_fPhongTessFactor, -2, 20);
+		ImGui::SliderInt("Tesselation Level", (int*)&app->_pRenderer->m_uTessLevel, 1, 64);
+
+
+		ImGui::End();
 
 		if (ImGui::BeginMenuBar())
 		{

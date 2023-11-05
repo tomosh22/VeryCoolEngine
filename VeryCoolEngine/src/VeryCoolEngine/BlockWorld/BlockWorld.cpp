@@ -41,27 +41,17 @@ namespace VeryCoolEngine {
 					"Blocks",
 					app->m_pxInstanceMesh,
 					Shader::Create("vulkan/blockVert.spv", "vulkan/blockFrag.spv"),
-#ifdef VCE_USE_EDITOR
-					{BlendFactor::SrcAlpha, BlendFactor::SrcAlpha},
-					{BlendFactor::OneMinusSrcAlpha, BlendFactor::OneMinusSrcAlpha},
-					{true, true},
-#else
 					{BlendFactor::SrcAlpha},
 					{BlendFactor::OneMinusSrcAlpha},
 					{true},
-#endif
 					true,
 					true,
 					DepthCompareFunc::GreaterOrEqual,
-#ifdef VCE_USE_EDITOR
-					{ColourFormat::BGRA8_sRGB, ColourFormat::BGRA8_sRGB},
-#else
 					{ColourFormat::BGRA8_sRGB},
-#endif
 					DepthFormat::D32_SFloat,
 					{ xCamSpec},
 					{xBlockTexSpec},
-					&app->m_pxBackbufferRenderPass,
+					&app->m_pxRenderToTexturePass,
 					false,
 					false
 					)
