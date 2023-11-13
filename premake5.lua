@@ -13,6 +13,7 @@ outputDir = "%{cfg.buildcfg}-%{cfg.cystem}-%{cfg.architecture}"
 include "VeryCoolEngine/vendor/GLFW"
 include "VeryCoolEngine/vendor/imgui"
 include "VeryCoolEngine/vendor/assimp"
+include "VeryCoolEngine/vendor/physx/physx"
 
 project "VeryCoolEngine"
 	location"VeryCoolEngine"
@@ -30,7 +31,8 @@ project "VeryCoolEngine"
 	assetPath = "/Assets/"
 	defines{
 		"ASSETROOTLOCATION=" .. '\"' .. _WORKING_DIR .. assetPath .. '\"',
-		"VCE_VULKAN"
+		"VCE_VULKAN",
+		"PX_PHYSX_STATIC_LIB"
 	}
 
 	files{
@@ -46,6 +48,8 @@ project "VeryCoolEngine"
 		"%{prj.name}/vendor/GLFW/include",
 		"%{prj.name}/vendor/Glad/include",
 		"%{prj.name}/vendor/assimp/include",
+		"%{prj.name}/vendor/physx/physx/include",
+		"%{prj.name}/vendor/physx/physx/include/foundation",
 		"%{prj.name}/vendor/imgui",
 		"%{prj.name}/vendor/glm",
 		"%{prj.name}/vendor/stb",
@@ -61,7 +65,8 @@ project "VeryCoolEngine"
 		"GLFW",
 		"ImGui",
 		"vulkan-1.lib",
-		"assimp"
+		"assimp",
+		"physX"
 	}
 
 	filter "system:windows"
@@ -112,10 +117,14 @@ project "Game"
 		"VeryCoolEngine/vendor/imgui",
 		"VeryCoolEngine/vendor/glm",
 		"VeryCoolEngine/vendor/Glad/include",
+		"VeryCoolEngine/vendor/physx/physx/include",
+		"VeryCoolEngine/vendor/physx/physx/include/foundation",
 		"%{prj.name}/vendor/stb",
 		"$(VULKAN_SDK)/include",
 
 	}
+	
+	
 
 	links{"VeryCoolEngine"}
 

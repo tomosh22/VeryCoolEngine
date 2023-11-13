@@ -27,11 +27,11 @@ namespace VeryCoolEngine {
     {
 		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
 
-		if(m_pxTexture != nullptr)m_pxTexture->PlatformInit();
-		if(m_pxBumpMap != nullptr)m_pxBumpMap->PlatformInit();
-		if(m_pxRoughnessTex != nullptr)m_pxRoughnessTex->PlatformInit();
-		if(m_pxMetallicTex != nullptr)m_pxMetallicTex->PlatformInit();
-		if(m_pxHeightmapTex != nullptr)m_pxHeightmapTex->PlatformInit();
+		if(m_pxTexture != nullptr && !m_pxTexture->m_bInitialised)m_pxTexture->PlatformInit();
+		if(m_pxBumpMap != nullptr && !m_pxBumpMap->m_bInitialised)m_pxBumpMap->PlatformInit();
+		if(m_pxRoughnessTex != nullptr && !m_pxRoughnessTex->m_bInitialised)m_pxRoughnessTex->PlatformInit();
+		if(m_pxMetallicTex != nullptr && !m_pxMetallicTex->m_bInitialised)m_pxMetallicTex->PlatformInit();
+		if(m_pxHeightmapTex != nullptr && !m_pxHeightmapTex->m_bInitialised)m_pxHeightmapTex->PlatformInit();
 
 		uint32_t uBindPoint = 0;
 		for (BufferElement& element : m_pxBufferLayout->GetElements()) {

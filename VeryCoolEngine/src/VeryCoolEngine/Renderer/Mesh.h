@@ -4,6 +4,7 @@
 #include "VeryCoolEngine/Renderer/Texture.h"
 #include "VeryCoolEngine/Transform.h"
 #include "VeryCoolEngine/Renderer/PipelineSpecification.h"
+#include "VeryCoolEngine/Physics/Physics.h"
 namespace VeryCoolEngine {
 	enum class MeshTopolgy {
 		Triangles,
@@ -60,7 +61,9 @@ namespace VeryCoolEngine {
 
 		static Mesh* FromFile(const std::string& path, bool swapYZ = false);
 
-		Transform m_xTransform;
+		//Transform m_xTransform;
+		physx::PxRigidDynamic* m_pxActor;
+		glm::vec3 m_xScale;
 
 
 		std::vector<BufferElement> m_axInstanceData;

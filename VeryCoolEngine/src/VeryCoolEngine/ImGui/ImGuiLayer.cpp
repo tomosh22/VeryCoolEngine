@@ -177,6 +177,10 @@ namespace VeryCoolEngine {
 
 		ImGui::Begin("ImGui");
 
+		std::string fpsText = "FPS: " + std::to_string(1.f / (app->m_fDeltaTime / 1000));
+		ImGui::Text(fpsText.c_str());
+		std::string frameTimeText = "Frame Time: " + std::to_string((app->m_fDeltaTime)) + " ms";
+		ImGui::Text(frameTimeText.c_str());
 
 		std::string cameraText = std::string("Camera ") + (app->_mouseEnabled ? "enabled" : "disabled") + ". Q to toggle.";
 		ImGui::Text(cameraText.c_str());
@@ -201,7 +205,7 @@ namespace VeryCoolEngine {
 			ImGui::TreePop();
 		}
 
-		if (ImGui::TreeNode("Meshes")) {
+		/*if (ImGui::TreeNode("Meshes")) {
 			int meshIndex = 0;
 			for (Mesh* mesh : app->m_apxGenericMeshes)
 			{
@@ -213,7 +217,7 @@ namespace VeryCoolEngine {
 				ImGui::DragFloat3(labelScale.c_str(), &mesh->m_xTransform._scale.x);
 			}
 			ImGui::TreePop();
-		}
+		}*/
 
 
 		ImGui::ColorEdit3("Override Normal", &app->_pRenderer->m_xOverrideNormal[0]);

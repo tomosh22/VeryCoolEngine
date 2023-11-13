@@ -46,7 +46,10 @@ void VulkanRenderer::InitVulkan() {
 	app->_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS, MAX_FRAMES_IN_FLIGHT, 1);
 
 	for (Shader* pxShader : app->_shaders) pxShader->PlatformInit();
-	//for (Texture* pxTex : app->_textures) pxTex->PlatformInit();
+	for (Texture* pxTex : app->m_apxTextures) {
+		if(!pxTex->m_bInitialised)
+			pxTex->PlatformInit();
+	}
 
 	//this is a bit disgusting but the skybox pipeline needs to be first
 	m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Skybox")));
@@ -133,7 +136,24 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 		pxGBufferPipeline->BindDescriptorSets(commandBuffer, axSets, vk::PipelineBindPoint::eGraphics, 0);
 
 		if (pxGBufferPipeline->bUsePushConstants) {
-			commandBuffer.pushConstants(pxGBufferPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, 0, sizeof(glm::mat4), (void*)&mesh->m_xTransform);
+
+			glm::mat4 xModelMat = glm::identity<glm::mat4>();
+			while (xModelMat == glm::identity<glm::mat4>()) {
+				physx::PxMat44 xPhysMat = mesh->m_pxActor->getGlobalPose();
+				for (uint8_t i = 0; i < 4; i++)
+				{
+					for (uint8_t j = 0; j < 4; j++)
+					{
+						xModelMat[i][j] = xPhysMat[i][j];
+					}
+				}
+				
+			}
+			VCE_ASSERT(xModelMat != glm::identity<glm::mat4>(), "Physx glitch");
+			glm::mat4 scale = glm::scale(glm::identity<glm::mat4>(), mesh->m_xScale);
+			xModelMat = xModelMat * scale;
+
+			commandBuffer.pushConstants(pxGBufferPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, 0, sizeof(glm::mat4), (void*)&xModelMat);
 
 			commandBuffer.pushConstants(pxGBufferPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4), sizeof(glm::vec3), (void*)&m_xOverrideNormal);
 			int uValue = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;
@@ -180,7 +200,23 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 			pipeline->BindDescriptorSets(commandBuffer, axSets, vk::PipelineBindPoint::eGraphics, 0);
 
 			if (pipeline->bUsePushConstants) {
-				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, 0, sizeof(glm::mat4), (void*)&mesh->m_xTransform);
+				glm::mat4 xModelMat;
+				physx::PxMat44 xPhysMat = mesh->m_pxActor->getGlobalPose();
+				const physx::PxU32 nbShapes = mesh->m_pxActor->getNbShapes();
+				VCE_ASSERT(nbShapes == 1, "");
+
+				for (uint8_t i = 0; i < 4; i++)
+				{
+					for (uint8_t j = 0; j < 4; j++)
+					{
+						xModelMat[i][j] = xPhysMat[i][j];
+					}
+				}
+				glm::mat4 scale = glm::scale(glm::identity<glm::mat4>(), mesh->m_xScale);
+				//VCE_ASSERT(xModelMat != glm::identity<glm::mat4>(), "Physx glitch")
+				xModelMat = xModelMat * scale;
+
+				commandBuffer.pushConstants(pxGBufferPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, 0, sizeof(glm::mat4), (void*)&xModelMat);
 
 				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4), sizeof(glm::vec3), (void*)&m_xOverrideNormal);
 				int uValue = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;

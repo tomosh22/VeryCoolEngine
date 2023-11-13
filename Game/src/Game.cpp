@@ -27,25 +27,29 @@ namespace VeryCoolEngine {
 		m_pxBlockWorld = new BlockWorld();
 		
 		
-
 		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmooth.obj", Transform(
-			{ 50, 80, 80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
-		)));
+			{ 0, 180, 0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
+		), CollisionVolumeType::Sphere, false));
+		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmooth.obj", Transform(
+			{ 50, 180, 80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
+		), CollisionVolumeType::Sphere, false));
 		m_apxGenericMeshes.push_back(AddTestMesh("sphereFlat.obj", Transform(
-			{ 80,80,80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
-		)));
+			{ 80,180,80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
+		), CollisionVolumeType::Sphere, false));
 		m_apxGenericMeshes.push_back(AddTestMesh("cubeFlat.obj", Transform(
-			{ 80,80,10 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
-		)));
+			{ 80,180,10 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
+		), CollisionVolumeType::Cube, false));
 		m_apxGenericMeshes.push_back(AddTestMesh("cubeSmooth.obj", Transform(
-			{ 20,80,10 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
-		)));
+			{ 20,180,10 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
+		), CollisionVolumeType::Cube, false));
 		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmoothIco.obj", Transform(
-			{ 50,80,50 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
-		)));
+			{ 50,180,50 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
+		), CollisionVolumeType::Sphere, false));
 		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmoothIcoLowPoly.obj", Transform(
-			{ 50,120,50 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
-		)));
+			{ 50,220,50 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
+		), CollisionVolumeType::Sphere, false));
+
+		
 
 		
 
@@ -72,15 +76,15 @@ namespace VeryCoolEngine {
 		return;
 	}
 
-	Mesh* Game::AddTestMesh(const char* szFileName, const Transform& xTrans)
+	Mesh* Application::AddTestMesh(const char* szFileName, const Transform& xTrans, CollisionVolumeType type, bool bIsImmovable)
 	{
 		Mesh* mesh = Mesh::FromFile(szFileName);
 		mesh->SetShader(m_pxMeshShader);
-		mesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
-		mesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
-		mesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
-		mesh->SetMetallicTex(Texture2D::Create("crystal2k/violet_crystal_43_04_metallic.jpg", false));
-		mesh->SetHeightmapTex(Texture2D::Create("crystal2k/violet_crystal_43_04_height.jpg", false));
+		mesh->SetTexture(m_pxGenericDiffuse);
+		mesh->SetBumpMap(m_pxGenericBump);
+		mesh->SetRoughnessTex(m_pxGenericRoughness);
+		mesh->SetMetallicTex(m_pxGenericMetallic);
+		mesh->SetHeightmapTex(m_pxGenericHeightmap);
 		
 
 		TextureDescriptorSpecification xMeshTexSpec;
@@ -91,9 +95,31 @@ namespace VeryCoolEngine {
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		mesh->m_xTexDescSpec = xMeshTexSpec;
 		
-		mesh->m_xTransform = xTrans;
-		mesh->m_xTransform.UpdateRotation();
-		mesh->m_xTransform.UpdateMatrix();
+		physx::PxShape* shape;
+		switch (type) {
+		case CollisionVolumeType::Cube:
+			shape = Physics::s_pxPhysics->createShape(physx::PxBoxGeometry(xTrans._scale.x, xTrans._scale.y, xTrans._scale.z), *Physics::s_pxMaterial);
+			break;
+		case CollisionVolumeType::Sphere:
+			//assuming uniform scale
+			shape = Physics::s_pxPhysics->createShape(physx::PxSphereGeometry(xTrans._scale.x), *Physics::s_pxMaterial);
+			break;
+		}
+		physx::PxTransform pxTrans(xTrans._position.x, xTrans._position.y, xTrans._position.z);
+		physx::PxRigidDynamic* body = Physics::s_pxPhysics->createRigidDynamic(pxTrans);
+		body->attachShape(*shape);
+		if (bIsImmovable) {
+			body->setMass(0);
+			body->setMassSpaceInertiaTensor(physx::PxVec3(0.f, 0.f, 0.f));
+			body->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
+		}
+		else {
+			physx::PxRigidBodyExt::updateMassAndInertia(*body, 10.0f);
+		}
+		Physics::s_pxScene->addActor(*body);
+
+		mesh->m_pxActor = body;
+		mesh->m_xScale = xTrans._scale;
 
 		_meshes.push_back(mesh);
 		return mesh;
@@ -117,6 +143,8 @@ namespace VeryCoolEngine {
 
 		sceneMutex.lock();
 		scene->Reset();
+
+		Physics::UpdatePhysics();
 
 		scene->camera = &_Camera;
 		scene->skybox = _pCubemap;

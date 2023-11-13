@@ -73,6 +73,11 @@ namespace VeryCoolEngine {
 
 		static Application* GetInstance() { return _spInstance; }
 
+		enum class CollisionVolumeType {
+			Cube, Sphere
+		};
+		Mesh* AddTestMesh(const char* szFileName, const Transform& xTrans, CollisionVolumeType type, bool bIsImmovable);
+
 		Window* _window;
 
 		bool _renderThreadCanStart = false;
@@ -121,6 +126,16 @@ namespace VeryCoolEngine {
 		Shader* m_pxGBufferShader;
 		Shader* m_pxCopyToFramebufferShader;
 
+		std::vector<Texture*> m_apxTextures;
+		Texture2D* m_pxGenericDiffuse;
+		Texture2D* m_pxGenericBump;
+		Texture2D* m_pxGenericRoughness;
+		Texture2D* m_pxGenericMetallic;
+		Texture2D* m_pxGenericHeightmap;
+
+		Mesh* m_pxCubeMesh;
+
+
 		Mesh* _pHeightmap;
 		std::vector<Renderer::Light> _lights{};
 		Texture2D* _pDebugTexture;
@@ -135,6 +150,8 @@ namespace VeryCoolEngine {
 		bool _aoEnabled = true;
 
 		bool prevRState = false;
+
+		float m_fDeltaTime;
 
 	private:
 		std::thread _renderThread;
@@ -152,7 +169,7 @@ namespace VeryCoolEngine {
 		//IndexBuffer* _pIndexBuffer;
 
 		std::chrono::high_resolution_clock::time_point _LastFrameTime = std::chrono::high_resolution_clock::now();
-		float _DeltaTime;
+		
 	};
 	Application* CreateApplication();
 

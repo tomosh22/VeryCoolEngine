@@ -5,6 +5,7 @@
 #include "Input.h"
 #include <glm/glm.hpp>
 #include <glm/mat4x4.hpp>
+#include "Physics/Physics.h"
 
 
 
@@ -20,16 +21,19 @@ namespace VeryCoolEngine {
 	Application::Application() {
 		srand(time(0));
 		_spInstance = this;
-#ifdef VCE_OPENGL
-		_window = Window::Create();
-		std::function callback = [this](Event&& e) {OnEvent(e); };
-		_window->SetEventCallback(callback);
-		_window->SetVSync(true);
-
-		//_window->SetVSync(true);
-#endif
 		
 		SetupPipelines();
+
+		m_pxGenericDiffuse = Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false);
+		m_pxGenericBump = Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false);
+		m_pxGenericRoughness = Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false); 
+		m_pxGenericMetallic = Texture2D::Create("crystal2k/violet_crystal_43_04_metallic.jpg", false);
+		m_pxGenericHeightmap = Texture2D::Create("crystal2k/violet_crystal_43_04_height.jpg", false);
+		m_apxTextures.push_back(m_pxGenericDiffuse);
+		m_apxTextures.push_back(m_pxGenericBump);
+		m_apxTextures.push_back(m_pxGenericRoughness);
+		m_apxTextures.push_back(m_pxGenericMetallic);
+		m_apxTextures.push_back(m_pxGenericHeightmap);
 		
 		
 		_renderThread = std::thread([&]() {
@@ -44,13 +48,13 @@ namespace VeryCoolEngine {
 			_window = Window::Create();
 			std::function callback = [this](Event&& e) {OnEvent(e); };
 			_window->SetEventCallback(callback);
-			_window->SetVSync(true);
 			_pRenderer = Renderer::Create();
 			Renderer::_spRenderer = _pRenderer;
 #endif
 			_pRenderer->RenderThreadFunction();
 		});
 		
+		Physics::InitPhysics();
 		
 		scene = new Scene();
 		
@@ -250,15 +254,16 @@ namespace VeryCoolEngine {
 			mainThreadReady = true;
 			std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
 			std::chrono::duration duration = std::chrono::duration_cast<std::chrono::microseconds>(now - _LastFrameTime);
-			_DeltaTime = duration.count()/1000.;
+			m_fDeltaTime = duration.count()/1000.;
 			_LastFrameTime = now;
 
 
-			_Camera.UpdateCamera(_DeltaTime);
+			_Camera.UpdateCamera(m_fDeltaTime);
 			for (Mesh* pxMesh : m_apxGenericMeshes) {
-				pxMesh->m_xTransform.UpdateRotation();
-				pxMesh->m_xTransform.UpdateMatrix();
+				//pxMesh->m_xTransform.UpdateRotation();
+				//pxMesh->m_xTransform.UpdateMatrix();
 			}
+			
 			GameLoop();
 			
 

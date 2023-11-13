@@ -2,6 +2,8 @@
 #include "Block.h"
 #include <glm/glm.hpp>
 
+class VoxelMap;
+
 namespace VeryCoolEngine {
 
 	typedef long long ChunkKey_t;
@@ -45,6 +47,11 @@ namespace VeryCoolEngine {
 		glm::ivec3 _chunkPos = { 0,0,0 };
 
 		class BlockWorld* m_pxParentWorld;
+
+		static std::mutex s_xChunkMutex;
+		static uint32_t s_uNumActors;
+
+		VoxelMap* m_pxVoxelMap;
 	};
 
 }

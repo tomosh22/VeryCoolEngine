@@ -41,7 +41,6 @@ namespace VeryCoolEngine {
 
 		
 		glfwSetWindowUserPointer(_pWindow, &m_pData);
-		//SetVSync(true);
 
 		glfwSetWindowSizeCallback(_pWindow, [](GLFWwindow* window, int width, int height) {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);

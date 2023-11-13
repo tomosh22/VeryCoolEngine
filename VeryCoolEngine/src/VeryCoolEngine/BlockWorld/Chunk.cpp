@@ -6,8 +6,12 @@
 #include <db_perlin.hpp>
 
 #include "BlockWorld.h"
+#include "VeryCoolEngine/Physics/Physics.h"
 
 namespace VeryCoolEngine {
+
+	std::mutex Chunk::s_xChunkMutex = std::mutex();
+	uint32_t Chunk::s_uNumActors = 0;
 
 	float Chunk::seed = rand();
 
@@ -48,6 +52,9 @@ namespace VeryCoolEngine {
 		int freq = 16;
 		int amp = 10;
 
+
+		
+		static uint32_t uCount = 0;
 		//#todo can probably do all this in the above 3 deep loop
 		for (int x = 0; x < Chunk::_chunkSize.x; x++)
 		{
@@ -72,8 +79,11 @@ namespace VeryCoolEngine {
 						   _chunkPos.z * Chunk::_chunkSize.z + z
 				};
 				_blocks[x][surfaceLevel][z] = Block(blockPos, Block::BlockType::Grass);
+				
+				
 			}
 		}
+
 
 		//#todo again probably dont need so many loops
 		for (int x = 0; x < Chunk::_chunkSize.x; x++)
@@ -94,6 +104,20 @@ namespace VeryCoolEngine {
 				}
 			}
 		}
+		
+		//Application::GetInstance()->m_apxGenericMeshes.push_back(Application::GetInstance()->AddTestMesh("cubeFlat.obj", Transform(
+		//	{ _chunkPos.x * Chunk::_chunkSize.x,64, _chunkPos.z * Chunk::_chunkSize.z }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(_chunkSize.x, 10, _chunkSize.z)
+		//), Application::CollisionVolumeType::Cube, true));
+		physx::PxShape* shape = Physics::s_pxPhysics->createShape(physx::PxBoxGeometry(_chunkSize.x, 10, _chunkSize.z), *Physics::s_pxMaterial);
+		physx::PxTransform pxTrans(_chunkPos.x * Chunk::_chunkSize.x, 64, _chunkPos.z * Chunk::_chunkSize.z);
+		physx::PxRigidDynamic* body = Physics::s_pxPhysics->createRigidDynamic(pxTrans);
+		body->attachShape(*shape);
+		body->setMass(0);
+		body->setMassSpaceInertiaTensor(physx::PxVec3(0.f, 0.f, 0.f));
+		body->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
+		s_xChunkMutex.lock();
+		Physics::s_pxScene->addActor(*body);
+		s_xChunkMutex.unlock();
 
 	}
 

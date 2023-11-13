@@ -23,10 +23,10 @@ namespace VeryCoolEngine {
 		mesh->GetShader()->Bind();
 
 		//#todo move these 2 somewhere else
-		mesh->m_xTransform.UpdateMatrix();
-		mesh->m_xTransform.UpdateRotation();
+		//mesh->m_xTransform.UpdateMatrix();
+		//mesh->m_xTransform.UpdateRotation();
 
-		mesh->GetShader()->UploadMatrix4Uniform(mesh->m_xTransform._matrix,"_uModelMat");
+		//mesh->GetShader()->UploadMatrix4Uniform(mesh->m_xTransform._matrix,"_uModelMat");
 		_spRenderer->BindViewProjMat(mesh->GetShader());
 
 		//deleted after move to vulkan

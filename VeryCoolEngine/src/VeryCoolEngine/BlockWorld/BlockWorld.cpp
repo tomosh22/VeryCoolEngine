@@ -4,6 +4,7 @@
 
 #include "VeryCoolEngine/Application.h"
 
+
 namespace VeryCoolEngine {
 
 	BlockWorld::BlockWorld() {
@@ -77,7 +78,7 @@ namespace VeryCoolEngine {
 					*chunk = Chunk({ x,0,z }, this);
 					};
 				threads[index] = std::thread(func, chunk, x, z);
-
+				
 
 				chunkPtrs[index] = chunk;
 			}

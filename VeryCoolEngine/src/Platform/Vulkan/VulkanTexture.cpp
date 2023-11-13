@@ -33,6 +33,7 @@ namespace VeryCoolEngine {
 	}
 
 	void VulkanTexture2D::InitWithData() {
+		VCE_ASSERT(!m_bInitialised, "Already initialised");
 		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
 		vk::Device xDevice = pxRenderer->GetDevice();
 		vk::PhysicalDevice xPhysDevice = pxRenderer->GetPhysicalDevice();

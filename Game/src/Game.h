@@ -20,8 +20,7 @@ namespace VeryCoolEngine {
 
 		
 
-
-		Mesh* AddTestMesh(const char* szFileName, const Transform& xTrans);
+		
 		
 
 		
