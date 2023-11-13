@@ -13,3 +13,6 @@
 [submodule "VeryCoolEngine/vendor/assimp"]
 	path = VeryCoolEngine/vendor/assimp
 	url = https://github.com/tomosh22/assimpPremake
+[submodule "VeryCoolEngine/vendor/physx"]
+	path = VeryCoolEngine/vendor/physx
+	url = https://github.com/tomosh22/PhysXPremake
