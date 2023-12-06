@@ -72,9 +72,6 @@ namespace VeryCoolEngine {
 	private:
 	};
 
-	class RendererAPI {
-
-	};
 }
 
 

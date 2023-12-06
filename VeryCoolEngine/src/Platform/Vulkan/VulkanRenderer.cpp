@@ -15,6 +15,8 @@
 #include <imgui.h>
 #include "backends/imgui_impl_vulkan.h"
 
+#include "VeryCoolEngine/Renderer/RendererAPI.h"
+
 
 using namespace VeryCoolEngine;
 
@@ -245,6 +247,8 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 		return;
 	}
 
+	m_uFrameIndex = iImageIndex;
+
 	RecordCommandBuffer(m_commandBuffers[m_currentFrame], iImageIndex, scene);
 
 	SubmitCmdBuffer(m_commandBuffers[m_currentFrame], &m_imageAvailableSemaphores[m_currentFrame], 1, &m_renderFinishedSemaphores[m_currentFrame], 1, vk::PipelineStageFlagBits::eColorAttachmentOutput);
@@ -294,4 +298,28 @@ void VeryCoolEngine::VulkanRenderer::RenderThreadFunction()
 	while (app->_running) {
 		MainLoop();
 	}
+}
+
+void RendererAPI::Platform_SubmitCmdBuffers() {
+	VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+
+	const uint32_t uNumCmdBuffers = RendererAPI::s_xCmdBuffersToSubmit.size();
+	std::vector<vk::CommandBuffer> xVkCmdBuffers(uNumCmdBuffers);
+	for (uint32_t i = 0; i < uNumCmdBuffers; i++)
+		xVkCmdBuffers.push_back(*reinterpret_cast<vk::CommandBuffer*>(RendererAPI::s_xCmdBuffersToSubmit[i]));
+
+	vk::SubmitInfo submitInfo = vk::SubmitInfo()
+		.setCommandBufferCount(xVkCmdBuffers.size())
+		.setPCommandBuffers(xVkCmdBuffers.data());
+
+	submitInfo.setPWaitSemaphores(&pxRenderer->GetCurrentImageAvailableSem());
+	submitInfo.setWaitSemaphoreCount(1);
+	
+	submitInfo.setPSignalSemaphores(&pxRenderer->GetCurrentRenderCompleteSem());
+	submitInfo.setSignalSemaphoreCount(1);
+	
+	vk::PipelineStageFlags eFlags = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+	submitInfo.setWaitDstStageMask(eFlags);
+
+	pxRenderer->GetGraphicsQueue().submit(submitInfo, pxRenderer->GetCurrentInFlightFence());
 }

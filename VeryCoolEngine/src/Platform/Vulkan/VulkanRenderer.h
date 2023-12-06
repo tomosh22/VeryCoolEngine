@@ -21,6 +21,7 @@ namespace VeryCoolEngine {
 	class VulkanRenderPass;
 	class VulkanTexture2D;
 	class VulkanBuffer;
+	
 
 	static constexpr const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -37,6 +38,7 @@ namespace VeryCoolEngine {
 		public:
 			
 			friend class ImGuiLayer;
+			friend class VulkanCommandBuffer;
 
 			VulkanRenderer();
 
@@ -99,8 +101,10 @@ namespace VeryCoolEngine {
 				return buffer;
 			}
 
-
-			
+			const vk::Semaphore& GetCurrentImageAvailableSem() const { return m_imageAvailableSemaphores[m_currentFrame];}
+			const vk::Semaphore& GetCurrentRenderCompleteSem() const { return m_renderFinishedSemaphores[m_currentFrame];}
+			const vk::Fence& GetCurrentInFlightFence() const { return m_inFlightFences[m_currentFrame];}
+			const vk::Queue& GetGraphicsQueue() const { return m_graphicsQueue; }
 
 		protected:
 			static VulkanRenderer* s_pInstance;
@@ -239,6 +243,8 @@ namespace VeryCoolEngine {
 			
 			vk::Device m_device;
 			vk::PhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
+
+			uint32_t m_uFrameIndex;
 			
 			vk::Queue m_graphicsQueue;
 			vk::Queue m_presentQueue;

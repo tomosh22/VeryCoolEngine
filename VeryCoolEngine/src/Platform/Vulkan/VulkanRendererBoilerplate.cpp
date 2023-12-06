@@ -835,7 +835,7 @@ namespace VeryCoolEngine {
 		Application* app = Application::GetInstance();
 		vk::RenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxImguiRenderPass)->m_xRenderPass;
-		renderPassInfo.framebuffer = m_axImguiFramebuffers[uImageIndex];
+		renderPassInfo.framebuffer = m_swapChainFramebuffers[uImageIndex];
 		renderPassInfo.renderArea.offset = vk::Offset2D(0, 0);
 		renderPassInfo.renderArea.extent = m_swapChainExtent;
 

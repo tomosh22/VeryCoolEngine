@@ -96,10 +96,10 @@ void main(){
 	for(int i = 0; i < numLights; i++){
 		
 		if(useBumpMap != 0){
-			point(_oColor, diffuse, lights[i], bumpNormal, metallic, roughness, 0.5);
+			point(_oColor, diffuse, lights[i], bumpNormal, metallic, roughness, 0.95);
 		}
 		else{
-			point(_oColor, diffuse, lights[i], Normal, 0, roughness, 0.5);
+			point(_oColor, diffuse, lights[i], Normal, 0, roughness, 0.95);
 		}
 	}
 	_oColor.rgb += diffuse.rgb * 0.5f;
