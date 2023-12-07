@@ -54,11 +54,8 @@ void VulkanRenderer::InitVulkan() {
 	for (Shader* pxShader : app->_shaders) pxShader->PlatformInit();
 	//for (Texture* pxTex : app->_textures) pxTex->PlatformInit();
 
-	//this is a bit disgusting but the skybox pipeline needs to be first
-	m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Skybox")));
-	app->m_xPipelineSpecs.erase("Skybox");
 	for (auto it = app->m_xPipelineSpecs.begin(); it != app->m_xPipelineSpecs.end(); it++) {
-		m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(it->second));
+		m_xPipelines.insert({ it->first,VulkanPipelineBuilder::FromSpecification(it->second) });
 	}
 	
 	
@@ -119,14 +116,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	m_pxCommandBuffer->SubmitTargetSetup(RendererAPI::s_xGBufferTargetSetup);
 
 	//BeginGBufferRenderPass(commandBuffer, imageIndex);
-	VulkanPipeline* pxGBufferPipeline = nullptr;
-	for (VulkanPipeline* pxPipeline : m_xPipelines) {
-		if (pxPipeline->m_strName == "GBuffer") {
-			pxGBufferPipeline = pxPipeline;
-			break;
-		}
-	}
-	VCE_ASSERT(pxGBufferPipeline != nullptr, "Couldn't find gbuffer pipeline");
+	VulkanPipeline* pxGBufferPipeline = m_xPipelines.at("GBuffer");
 
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxGBufferPipeline->m_xPipeline);
 
@@ -168,46 +158,54 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	BeginRenderToTexturePass(commandBuffer, imageIndex);
 
 
-	for (VulkanPipeline*  pipeline : m_xPipelines) {
-		if (pipeline->m_strName == "GBuffer" || pipeline->m_strName == "CopyToFramebuffer") continue;
+	VulkanPipeline* pxSkyboxPipeline = m_xPipelines.at("Skybox");
+	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxSkyboxPipeline->m_xPipeline);
+	std::vector<vk::DescriptorSet> axSets;
+	for (const vk::DescriptorSet set : pxSkyboxPipeline->m_axBufferDescSets)
+		axSets.push_back(set);
+	pxSkyboxPipeline->BindDescriptorSets(commandBuffer, axSets, vk::PipelineBindPoint::eGraphics, 0);
+	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(scene->m_axPipelineMeshes.at(pxSkyboxPipeline->m_strName)[0]);
+	pxVulkanMesh->BindToCmdBuffer(commandBuffer);
+	commandBuffer.drawIndexed(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
 
-		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline->m_xPipeline);
+
+
+	VulkanPipeline* pxMeshPipeline = m_xPipelines.at("Meshes");
+
+	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxMeshPipeline->m_xPipeline);
 
 		
-		if (scene->m_axPipelineMeshes.find(pipeline->m_strName) == scene->m_axPipelineMeshes.end()) {
-			continue;
+	for (Mesh* mesh : scene->m_axPipelineMeshes.at(pxMeshPipeline->m_strName)) {
+		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
+		pxVulkanMesh->BindToCmdBuffer(commandBuffer);
+
+		std::vector<vk::DescriptorSet> axSets;
+		for (const vk::DescriptorSet set : pxMeshPipeline->m_axBufferDescSets)
+			axSets.push_back(set);
+		if (pxVulkanMesh->GetTexture() != nullptr)
+			axSets.push_back(pxVulkanMesh->m_xTexDescSet);
+
+		pxMeshPipeline->BindDescriptorSets(commandBuffer, axSets, vk::PipelineBindPoint::eGraphics, 0);
+
+		if (pxMeshPipeline->bUsePushConstants) {
+			commandBuffer.pushConstants(pxMeshPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, 0, sizeof(glm::mat4), (void*)&mesh->m_xTransform);
+
+			commandBuffer.pushConstants(pxMeshPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4), sizeof(glm::vec3), (void*)&m_xOverrideNormal);
+			int uValue = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;
+
+			commandBuffer.pushConstants(pxMeshPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3), sizeof(uint32_t), (void*)&uValue);
+
+			int uValueTess = app->_pRenderer->m_bUsePhongTess ? 1 : 0;
+
+			commandBuffer.pushConstants(pxMeshPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t), sizeof(uint32_t), (void*)&uValueTess);
+
+			commandBuffer.pushConstants(pxMeshPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t) + sizeof(uint32_t), sizeof(float), (void*)&app->_pRenderer->m_fPhongTessFactor);
+			commandBuffer.pushConstants(pxMeshPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(float), sizeof(float), (void*)&app->_pRenderer->m_uTessLevel);
 		}
-		for (Mesh* mesh : scene->m_axPipelineMeshes.at(pipeline->m_strName)) {
-			VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
-			pxVulkanMesh->BindToCmdBuffer(commandBuffer);
 
-			std::vector<vk::DescriptorSet> axSets;
-			for (const vk::DescriptorSet set : pipeline->m_axBufferDescSets)
-				axSets.push_back(set);
-			if (pxVulkanMesh->GetTexture() != nullptr)
-				axSets.push_back(pxVulkanMesh->m_xTexDescSet);
-
-			pipeline->BindDescriptorSets(commandBuffer, axSets, vk::PipelineBindPoint::eGraphics, 0);
-
-			if (pipeline->bUsePushConstants) {
-				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, 0, sizeof(glm::mat4), (void*)&mesh->m_xTransform);
-
-				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4), sizeof(glm::vec3), (void*)&m_xOverrideNormal);
-				int uValue = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;
-
-				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3), sizeof(uint32_t), (void*)&uValue);
-
-				int uValueTess = app->_pRenderer->m_bUsePhongTess ? 1 : 0;
-
-				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t), sizeof(uint32_t), (void*)&uValueTess);
-
-				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t) + sizeof(uint32_t), sizeof(float), (void*)&app->_pRenderer->m_fPhongTessFactor);
-				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(float), sizeof(float), (void*)&app->_pRenderer->m_uTessLevel);
-			}
-
-			commandBuffer.drawIndexed(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
-		}
+		commandBuffer.drawIndexed(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
 	}
+	
 
 
 
@@ -221,14 +219,9 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	UpdateImageDescriptor(m_axFramebufferTexDescSet[m_currentFrame], 0, 0, m_apxEditorSceneTexs[m_currentFrame]->m_xImageView, m_xDefaultSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
 
 	BeginBackbufferRenderPass(commandBuffer, imageIndex);
-	VulkanPipeline* pxBackbufferPipeline = nullptr;
-	for (VulkanPipeline* pxPipeline : m_xPipelines) {
-		if (pxPipeline->m_strName == "CopyToFramebuffer") {
-			pxBackbufferPipeline = pxPipeline;
-			break;
-		}
-	}
-	VCE_ASSERT(pxBackbufferPipeline != nullptr, "Couldn't find gbuffer pipeline");
+
+	VulkanPipeline* pxBackbufferPipeline = m_xPipelines.at("CopyToFramebuffer");
+
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxBackbufferPipeline->m_xPipeline);
 	dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh)->BindToCmdBuffer(commandBuffer);
 	pxBackbufferPipeline->BindDescriptorSets(commandBuffer, { m_axFramebufferTexDescSet[m_currentFrame] }, vk::PipelineBindPoint::eGraphics, 0);

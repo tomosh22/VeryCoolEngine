@@ -258,7 +258,7 @@ namespace VeryCoolEngine {
 			std::vector<vk::ImageView> m_swapChainImageViews;
 
 
-			std::vector<class VulkanPipeline*> m_xPipelines;
+			std::unordered_map<std::string, class VulkanPipeline*> m_xPipelines;
 
 			RendererAPI::TargetSetup CreateGBufferTarget();
 
