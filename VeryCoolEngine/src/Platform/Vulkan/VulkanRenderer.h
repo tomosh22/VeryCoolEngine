@@ -106,6 +106,9 @@ namespace VeryCoolEngine {
 			const vk::Fence& GetCurrentInFlightFence() const { return m_inFlightFences[m_currentFrame];}
 			const vk::Queue& GetGraphicsQueue() const { return m_graphicsQueue; }
 
+			//TODO: move to private
+			uint32_t m_currentFrame = 0;
+
 		protected:
 			static VulkanRenderer* s_pInstance;
 
@@ -244,7 +247,6 @@ namespace VeryCoolEngine {
 			vk::Device m_device;
 			vk::PhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
 
-			uint32_t m_uFrameIndex;
 			
 			vk::Queue m_graphicsQueue;
 			vk::Queue m_presentQueue;
@@ -257,6 +259,8 @@ namespace VeryCoolEngine {
 
 
 			std::vector<class VulkanPipeline*> m_xPipelines;
+
+			RendererAPI::TargetSetup CreateGBufferTarget();
 
 #ifdef VCE_DEFERRED_SHADING
 			void SetupDeferredShading();
@@ -296,12 +300,13 @@ namespace VeryCoolEngine {
 
 			vk::CommandPool m_commandPool;
 			std::vector<vk::CommandBuffer> m_commandBuffers;
+			class VulkanCommandBuffer* m_pxCommandBuffer;
 
 			std::vector<vk::Semaphore> m_imageAvailableSemaphores;
 			std::vector<vk::Semaphore> m_renderFinishedSemaphores;
 			std::vector<vk::Fence> m_inFlightFences;
 
-			uint32_t m_currentFrame = 0;
+			
 
 			bool m_framebufferResized = false;
 

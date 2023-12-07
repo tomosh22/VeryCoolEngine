@@ -318,6 +318,49 @@ namespace VeryCoolEngine {
 		}
 	}
 
+	RendererAPI::TargetSetup VulkanRenderer::CreateGBufferTarget() {
+		Application* app = Application::GetInstance();
+		RendererAPI::TargetSetup xTargetSetup;
+		RendererAPI::RenderTarget xDiffuseTarget;
+		RendererAPI::RenderTarget xNormalTarget;
+		RendererAPI::RenderTarget xMaterialTarget;
+		RendererAPI::RenderTarget xDepthStencilTarget;
+
+		xDiffuseTarget.m_eFormat = RendererAPI::RenderTarget::Format::B8G8R8A8Unorm;
+		xDiffuseTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Clear;
+		xDiffuseTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
+		xDiffuseTarget.m_uHeight = m_height;
+		xDiffuseTarget.m_uWidth = m_width;
+		xDiffuseTarget.m_pPlatformImageView = &m_apxGBufferDiffuse[m_currentFrame]->m_xImageView;
+
+		xNormalTarget.m_eFormat = RendererAPI::RenderTarget::Format::B8G8R8A8Unorm;
+		xNormalTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Clear;
+		xNormalTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
+		xNormalTarget.m_uHeight = m_height;
+		xNormalTarget.m_uWidth = m_width;
+		xNormalTarget.m_pPlatformImageView = &m_apxGBufferNormals[m_currentFrame]->m_xImageView;
+
+		xMaterialTarget.m_eFormat = RendererAPI::RenderTarget::Format::B8G8R8A8Unorm;
+		xMaterialTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Clear;
+		xMaterialTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
+		xMaterialTarget.m_uHeight = m_height;
+		xMaterialTarget.m_uWidth = m_width;
+		xMaterialTarget.m_pPlatformImageView = &m_apxGBufferMaterial[m_currentFrame]->m_xImageView;
+
+		xDepthStencilTarget.m_eFormat = RendererAPI::RenderTarget::Format::D32Sfloat;
+		xDepthStencilTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Clear;
+		xDepthStencilTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
+		xDepthStencilTarget.m_uHeight = m_height;
+		xDepthStencilTarget.m_uWidth = m_width;
+		xDepthStencilTarget.m_pPlatformImageView = &m_apxGBufferDepth[m_currentFrame]->m_xImageView;
+
+		xTargetSetup.m_xColourAttachments.push_back(xDiffuseTarget);
+		xTargetSetup.m_xColourAttachments.push_back(xNormalTarget);
+		xTargetSetup.m_xColourAttachments.push_back(xMaterialTarget);
+		xTargetSetup.m_xDepthStencil = xDepthStencilTarget;
+
+		return xTargetSetup;
+	}
 
 	void VulkanRenderer::CreateSwapChain() {
 		SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(m_physicalDevice);

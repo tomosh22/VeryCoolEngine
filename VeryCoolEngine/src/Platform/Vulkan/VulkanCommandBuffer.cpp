@@ -20,10 +20,13 @@ namespace VeryCoolEngine {
 		{
 			m_xCompleteSems[i] = m_pxRenderer->m_device.createSemaphore(semaphoreInfo);
 		}
+
+		m_xRenderPasses.resize(MAX_FRAMES_IN_FLIGHT);
+		m_xFramebuffers.resize(MAX_FRAMES_IN_FLIGHT);
 	}
 	void VulkanCommandBuffer::BeginRecording()
 	{
-		m_xCurrentCmdBuffer = m_xCmdBuffers[m_pxRenderer->m_uFrameIndex];
+		m_xCurrentCmdBuffer = m_xCmdBuffers[m_pxRenderer->m_currentFrame];
 		m_xCurrentCmdBuffer.begin(vk::CommandBufferBeginInfo());
 	}
 	void VulkanCommandBuffer::EndRecording(bool bSubmit /*= true*/)
@@ -126,7 +129,7 @@ namespace VeryCoolEngine {
 				.setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
 			xDepthStencilAttachmentRef = vk::AttachmentReference()
-				.setAttachment(uNumColourAttachments + 1)
+				.setAttachment(uNumColourAttachments)
 				.setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
 			xAttachmentDescs.push_back(xDepthStencilAttachment);
@@ -191,10 +194,13 @@ namespace VeryCoolEngine {
 
 	void VulkanCommandBuffer::SubmitTargetSetup(const RendererAPI::TargetSetup& xTargetSetup)
 	{
+		uint32_t uIndexToDestroy = (m_pxRenderer->m_currentFrame + MAX_FRAMES_IN_FLIGHT) % MAX_FRAMES_IN_FLIGHT;
 		//TODO: don't make these every single time
+		m_pxRenderer->GetDevice().destroyRenderPass(m_xRenderPasses.at(uIndexToDestroy));
 		m_xRenderPasses.at(m_pxRenderer->m_currentFrame) = TargetSetupToRenderPass(xTargetSetup);
 		m_xCurrentRenderPass = m_xRenderPasses.at(m_pxRenderer->m_currentFrame);
 
+		m_pxRenderer->GetDevice().destroyFramebuffer(m_xFramebuffers.at(uIndexToDestroy));
 		m_xFramebuffers.at(m_pxRenderer->m_currentFrame) = TargetSetupToFramebuffer(xTargetSetup);
 		m_xCurrentFramebuffer = m_xFramebuffers.at(m_pxRenderer->m_currentFrame);
 
@@ -203,28 +209,30 @@ namespace VeryCoolEngine {
 			.setFramebuffer(m_xCurrentFramebuffer)
 			.setRenderArea({ {0,0}, m_pxRenderer->m_swapChainExtent });
 
+		vk::ClearValue* axClearColour = nullptr;
 		//im being lazy and assuming all render targets have the same load action
 		if (xTargetSetup.m_xColourAttachments[0].m_eLoadAction == RendererAPI::RenderTarget::LoadAction::Clear) {
 			bool bHasDepth = xTargetSetup.m_xDepthStencil.m_eFormat != RendererAPI::RenderTarget::Format::None;
 			const uint32_t uNumColourAttachments = xTargetSetup.m_xColourAttachments.size();
 			const uint32_t uNumAttachments = bHasDepth ? uNumColourAttachments + 1 : uNumColourAttachments;
-			vk::ClearValue* axClearColour = new vk::ClearValue[uNumAttachments];
+			axClearColour = new vk::ClearValue[uNumAttachments];
 			std::array<float, 4> tempColour{ 0.f,0.f,0.f,1.f };
 			for (uint32_t i = 0; i < uNumColourAttachments; i++)
 			{
 				axClearColour[i].color = { vk::ClearColorValue(tempColour) };
+				axClearColour[i].depthStencil = vk::ClearDepthStencilValue(0, 0);
 			}
 			if(bHasDepth)
 				axClearColour[uNumAttachments-1].depthStencil = vk::ClearDepthStencilValue(0, 0);
 
 			xRenderPassInfo.clearValueCount = uNumAttachments;
 			xRenderPassInfo.pClearValues = axClearColour;
-
-			delete[] axClearColour;
 		}
 
 
 		m_xCurrentCmdBuffer.beginRenderPass(xRenderPassInfo, vk::SubpassContents::eInline);
+
+		if (axClearColour != nullptr) delete[] axClearColour;
 
 		//flipping because porting from opengl
 		vk::Viewport xViewport{};

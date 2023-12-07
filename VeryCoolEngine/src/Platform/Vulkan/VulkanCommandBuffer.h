@@ -15,7 +15,7 @@ namespace VeryCoolEngine {
 		void SubmitTargetSetup(const RendererAPI::TargetSetup& xTargetSetup) override;
 		void SetPipeline(void* pxPipeline) override;
 
-		const vk::CommandBuffer* GetCurrentCmdBuffer() const { return &m_xCurrentCmdBuffer; }
+		vk::CommandBuffer& GetCurrentCmdBuffer() { return m_xCurrentCmdBuffer; }
 		void* Platform_GetCurrentCmdBuffer() const override { return (void*) & m_xCurrentCmdBuffer; }
 
 		vk::RenderPass TargetSetupToRenderPass(const RendererAPI::TargetSetup& xTargetSetup);

@@ -54,6 +54,8 @@ namespace VeryCoolEngine {
 
 		static std::vector<void*> s_xCmdBuffersToSubmit;
 		static void Platform_SubmitCmdBuffers();
+
+		static TargetSetup s_xGBufferTargetSetup;
 	};
 }
 

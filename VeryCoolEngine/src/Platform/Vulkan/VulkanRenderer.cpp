@@ -16,6 +16,7 @@
 #include "backends/imgui_impl_vulkan.h"
 
 #include "VeryCoolEngine/Renderer/RendererAPI.h"
+#include "Platform/Vulkan/VulkanCommandBuffer.h"
 
 
 using namespace VeryCoolEngine;
@@ -25,6 +26,9 @@ VulkanRenderer* VulkanRenderer::s_pInstance = nullptr;
 VulkanRenderer::VulkanRenderer() {
 	InitWindow();
 	InitVulkan();
+
+	m_pxCommandBuffer = new VulkanCommandBuffer;
+	RendererAPI::s_xGBufferTargetSetup = CreateGBufferTarget();
 }
 
 void VulkanRenderer::InitWindow() {
@@ -106,11 +110,15 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 #endif
 	
 
-	commandBuffer.begin(vk::CommandBufferBeginInfo());
+	//commandBuffer.begin(vk::CommandBufferBeginInfo());
 
 
 #pragma region gbuffer
-	BeginGBufferRenderPass(commandBuffer, imageIndex);
+	
+
+	m_pxCommandBuffer->SubmitTargetSetup(RendererAPI::s_xGBufferTargetSetup);
+
+	//BeginGBufferRenderPass(commandBuffer, imageIndex);
 	VulkanPipeline* pxGBufferPipeline = nullptr;
 	for (VulkanPipeline* pxPipeline : m_xPipelines) {
 		if (pxPipeline->m_strName == "GBuffer") {
@@ -247,11 +255,12 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 		return;
 	}
 
-	m_uFrameIndex = iImageIndex;
 
-	RecordCommandBuffer(m_commandBuffers[m_currentFrame], iImageIndex, scene);
+	m_pxCommandBuffer->BeginRecording();
 
-	SubmitCmdBuffer(m_commandBuffers[m_currentFrame], &m_imageAvailableSemaphores[m_currentFrame], 1, &m_renderFinishedSemaphores[m_currentFrame], 1, vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	RecordCommandBuffer(m_pxCommandBuffer->GetCurrentCmdBuffer(), iImageIndex, scene);
+
+	SubmitCmdBuffer(m_pxCommandBuffer->GetCurrentCmdBuffer(), &m_imageAvailableSemaphores[m_currentFrame], 1, &m_renderFinishedSemaphores[m_currentFrame], 1, vk::PipelineStageFlagBits::eColorAttachmentOutput);
 
 	Present(iImageIndex, &m_renderFinishedSemaphores[m_currentFrame], 1);
 

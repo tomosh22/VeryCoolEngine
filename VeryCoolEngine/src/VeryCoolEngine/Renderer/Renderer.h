@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include "GraphicsContext.h"
 #include "VeryCoolEngine/Renderer/ManagedUniformBuffer.h"
+#include "RendererAPI.h"
 
 namespace VeryCoolEngine {
 	
@@ -69,6 +70,8 @@ namespace VeryCoolEngine {
 		bool m_bUsePhongTess = true;
 		float m_fPhongTessFactor = 1.0f;
 		uint32_t m_uTessLevel = 1;
+
+		
 	private:
 	};
 
