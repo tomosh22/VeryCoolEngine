@@ -169,13 +169,14 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 	VulkanPipeline* pxSkyboxPipeline = m_xPipelines.at("Skybox");
 	m_pxCommandBuffer->SetPipeline(&pxSkyboxPipeline->m_xPipeline);
-	std::vector<vk::DescriptorSet> axSets;
-	for (const vk::DescriptorSet set : pxSkyboxPipeline->m_axBufferDescSets)
-		axSets.push_back(set);
-	pxSkyboxPipeline->BindDescriptorSets(commandBuffer, axSets, vk::PipelineBindPoint::eGraphics, 0);
+
+	VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
+	m_pxCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0);
+
 	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(scene->m_axPipelineMeshes.at(pxSkyboxPipeline->m_strName)[0]);
-	pxVulkanMesh->BindToCmdBuffer(commandBuffer);
-	commandBuffer.drawIndexed(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
+	m_pxCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
+	m_pxCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
+	m_pxCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
 
 
 
