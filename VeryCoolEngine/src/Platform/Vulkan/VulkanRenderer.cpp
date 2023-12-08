@@ -300,7 +300,7 @@ void VeryCoolEngine::VulkanRenderer::BeginScene(Scene* scene)
 	memcpy(data, numLightsWithPadding, sizeof(unsigned int) * 4);
 
 	memcpy(data + sizeof(unsigned int) * 4, scene->lights.data(), sizeof(Light) * scene->lights.size());
-	app->_pLightUBO->UploadData(data, dataSize, 1, 0);
+	app->_pLightUBO->UploadData(data, dataSize, m_currentFrame, 0);
 	delete[] data;
 
 }
