@@ -14,6 +14,7 @@ namespace VeryCoolEngine {
 		void Draw(uint32_t uNumIndices, uint32_t uNumInstances = 1, uint32_t uVertexOffset = 0, uint32_t uIndexOffset = 0, uint32_t uInstanceOffset = 0) override;
 		void SubmitTargetSetup(const RendererAPI::TargetSetup& xTargetSetup) override;
 		void SetPipeline(void* pxPipeline) override;
+		void BindTexture(void* pxTexture, uint32_t uBindPoint) override;
 
 		vk::CommandBuffer& GetCurrentCmdBuffer() { return m_xCurrentCmdBuffer; }
 		void* Platform_GetCurrentCmdBuffer() const override { return (void*) & m_xCurrentCmdBuffer; }
@@ -32,6 +33,10 @@ namespace VeryCoolEngine {
 		vk::Framebuffer m_xCurrentFramebuffer;
 
 		std::vector<vk::Semaphore> m_xCompleteSems;
+
+		class VulkanPipeline* m_pxCurrentPipeline;
+
+		uint32_t m_uCurrentDescSetIndex = 0;
 	};
 
 }

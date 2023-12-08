@@ -121,6 +121,7 @@ namespace VeryCoolEngine {
 		TextureDescriptorSpecification xFramebufferTexSpec;
 		xFramebufferTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		xFramebufferTexSpec.m_bJustFragment = true;
+		xFramebufferTexSpec.m_bBindless = false;
 
 		TextureDescriptorSpecification xMeshTexSpec;
 		//currently overriding stage to all

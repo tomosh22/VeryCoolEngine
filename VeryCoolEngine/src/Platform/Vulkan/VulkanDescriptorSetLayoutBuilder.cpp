@@ -65,7 +65,7 @@ namespace VeryCoolEngine {
 
 		if (usingBindless) {
 			for (int i = 0; i < addedBindings.size(); ++i) {
-				bindingFlags.push_back(vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eVariableDescriptorCount | vk::DescriptorBindingFlagBits::eUpdateAfterBind);
+				bindingFlags.push_back(/*vk::DescriptorBindingFlagBits::ePartiallyBound | vk::DescriptorBindingFlagBits::eVariableDescriptorCount | */vk::DescriptorBindingFlagBits::eUpdateAfterBind);
 			}
 			bindingFlagsInfo.setBindingFlags(bindingFlags);
 			createInfo.pNext = &bindingFlagsInfo;
@@ -112,6 +112,7 @@ namespace VeryCoolEngine {
 				xBuilder = xBuilder.WithSamplers(1, spec.m_bJustFragment ? vk::ShaderStageFlagBits::eFragment : vk::ShaderStageFlagBits::eAll);//#TODO stop passing all
 			}
 		}
+		xBuilder.usingBindless = spec.m_bBindless;
 		return std::move(xBuilder.Build(VulkanRenderer::GetInstance()->GetDevice()));
 	}
 }

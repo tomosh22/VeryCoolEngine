@@ -41,6 +41,7 @@ namespace VeryCoolEngine {
 	struct TextureDescriptorSpecification {
 		std::vector<std::pair<Texture**, ShaderStage>> m_aeSamplerStages;
 		bool m_bJustFragment = false;
+		bool m_bBindless = true;
 	};
 
 	struct PipelineSpecification {

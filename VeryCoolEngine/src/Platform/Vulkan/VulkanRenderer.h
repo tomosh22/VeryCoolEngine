@@ -311,14 +311,14 @@ namespace VeryCoolEngine {
 			bool m_framebufferResized = false;
 
 			const std::vector<const char*> m_deviceExtensions = {
-				VK_KHR_SWAPCHAIN_EXTENSION_NAME
+				VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+				VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME
 			};
 
 #if DEBUG
-			std::vector<const char*> m_validationLayers = { "VK_LAYER_KHRONOS_validation" };
+			std::vector<const char*> m_validationLayers = { "VK_LAYER_KHRONOS_validation"};
 
 #endif
-
 		};
 	
 

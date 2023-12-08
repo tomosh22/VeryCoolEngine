@@ -3,6 +3,7 @@
 #include "VulkanRenderer.h"
 #include "VulkanVertexBuffer.h"
 #include "VulkanIndexBuffer.h"
+#include "VulkanPipelineBuilder.h"
 
 namespace VeryCoolEngine {
 	VulkanCommandBuffer::VulkanCommandBuffer()
@@ -28,6 +29,8 @@ namespace VeryCoolEngine {
 	{
 		m_xCurrentCmdBuffer = m_xCmdBuffers[m_pxRenderer->m_currentFrame];
 		m_xCurrentCmdBuffer.begin(vk::CommandBufferBeginInfo());
+
+		m_uCurrentDescSetIndex = 0;
 	}
 	void VulkanCommandBuffer::EndRecording(bool bSubmit /*= true*/)
 	{
@@ -250,10 +253,43 @@ namespace VeryCoolEngine {
 		m_xCurrentCmdBuffer.setViewport(0, 1, &xViewport);
 		m_xCurrentCmdBuffer.setScissor(0, 1, &xScissor);
 	}
+
 	void VulkanCommandBuffer::SetPipeline(void* pxPipeline)
 	{
-		vk::Pipeline pxVkPipeline = *reinterpret_cast<vk::Pipeline*>(pxPipeline);
-		m_xCurrentCmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxVkPipeline);
+		VulkanPipeline* pxVkPipeline = reinterpret_cast<VulkanPipeline*>(pxPipeline);
+		m_xCurrentCmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxVkPipeline->m_xPipeline);
+
+		std::vector<vk::DescriptorSet> axSets;
+		for (const vk::DescriptorSet set : pxVkPipeline->m_axBufferDescSets)
+			axSets.push_back(set);
+		for (const vk::DescriptorSet set : pxVkPipeline->m_axTexDescSets) {
+			axSets.push_back(set);
+		}
+		m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pxVkPipeline->m_xPipelineLayout, 0, axSets.size(), axSets.data(), 0, nullptr);
+
+		m_uCurrentDescSetIndex = axSets.size();
+
+		m_pxCurrentPipeline = pxVkPipeline;
+	}
+
+	void VulkanCommandBuffer::BindTexture(void* pxTexture, uint32_t uBindPoint) {
+		VulkanTexture2D* pxTex = reinterpret_cast<VulkanTexture2D*>(pxTexture);
+
+		vk::DescriptorImageInfo xInfo = vk::DescriptorImageInfo()
+			.setSampler(pxTex->m_xSampler)
+			.setImageView(pxTex->m_xImageView)
+			.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+
+		vk::WriteDescriptorSet xWrite = vk::WriteDescriptorSet()
+			.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+			.setDstSet(m_pxCurrentPipeline->m_axTexDescSets[0])
+			.setDstBinding(uBindPoint)
+			.setDstArrayElement(0)
+			.setDescriptorCount(1)
+			.setPImageInfo(&xInfo);
+
+		m_pxRenderer->GetDevice().updateDescriptorSets(1, &xWrite, 0, nullptr);
+
 	}
 }
 

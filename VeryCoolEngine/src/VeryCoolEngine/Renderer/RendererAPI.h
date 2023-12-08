@@ -48,6 +48,7 @@ namespace VeryCoolEngine {
 			virtual void Draw(uint32_t uNumIndices, uint32_t uNumInstances = 1, uint32_t uVertexOffset = 0, uint32_t uIndexOffset = 0, uint32_t uInstanceOffset = 0) = 0;
 			virtual void SubmitTargetSetup(const TargetSetup& xTargetSetup) = 0;
 			virtual void SetPipeline(void* pxPipeline) = 0;
+			virtual void BindTexture(void* pxTexture, uint32_t uBindPoint) = 0;
 
 			virtual void* Platform_GetCurrentCmdBuffer() const = 0;
 		};

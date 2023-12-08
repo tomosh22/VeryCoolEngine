@@ -19,7 +19,7 @@ License: MIT (see LICENSE file at the top of the source tree)
 namespace VeryCoolEngine {
 
 	void VulkanPipeline::BindDescriptorSets(vk::CommandBuffer& xCmd, const std::vector<vk::DescriptorSet>& axSets, vk::PipelineBindPoint eBindPoint, uint32_t ufirstSet) const {
-		xCmd.bindDescriptorSets(eBindPoint, m_xPipelineLayout, 0, axSets.size(), axSets.data(), 0, nullptr);
+		xCmd.bindDescriptorSets(eBindPoint, m_xPipelineLayout, ufirstSet, axSets.size(), axSets.data(), 0, nullptr);
 	}
 
 	VulkanPipelineBuilder::VulkanPipelineBuilder(const std::string& pipeName) {

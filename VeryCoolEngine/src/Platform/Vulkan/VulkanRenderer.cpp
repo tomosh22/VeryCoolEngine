@@ -172,21 +172,23 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 	VulkanPipeline* pxMeshPipeline = m_xPipelines.at("Meshes");
 
-	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxMeshPipeline->m_xPipeline);
+	
+	m_pxCommandBuffer->SetPipeline(&pxMeshPipeline->m_xPipeline);
 
 		
 	for (Mesh* mesh : scene->m_axPipelineMeshes.at(pxMeshPipeline->m_strName)) {
 		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
-		pxVulkanMesh->BindToCmdBuffer(commandBuffer);
+		m_pxCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
+		m_pxCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
 
-		std::vector<vk::DescriptorSet> axSets;
-		for (const vk::DescriptorSet set : pxMeshPipeline->m_axBufferDescSets)
-			axSets.push_back(set);
-		if (pxVulkanMesh->GetTexture() != nullptr)
-			axSets.push_back(pxVulkanMesh->m_xTexDescSet);
+		m_pxCommandBuffer->BindTexture(pxVulkanMesh->GetTexture(), 0);
+		m_pxCommandBuffer->BindTexture(pxVulkanMesh->GetBumpMap(), 1);
+		m_pxCommandBuffer->BindTexture(pxVulkanMesh->GetRoughnessTex(), 2);
+		m_pxCommandBuffer->BindTexture(pxVulkanMesh->GetMetallicTex(), 3);
+		m_pxCommandBuffer->BindTexture(pxVulkanMesh->GetHeightmapTex(), 4);
 
-		pxMeshPipeline->BindDescriptorSets(commandBuffer, axSets, vk::PipelineBindPoint::eGraphics, 0);
-
+//TODO: push constants
+#if 0
 		if (pxMeshPipeline->bUsePushConstants) {
 			commandBuffer.pushConstants(pxMeshPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, 0, sizeof(glm::mat4), (void*)&mesh->m_xTransform);
 
@@ -202,8 +204,9 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 			commandBuffer.pushConstants(pxMeshPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t) + sizeof(uint32_t), sizeof(float), (void*)&app->_pRenderer->m_fPhongTessFactor);
 			commandBuffer.pushConstants(pxMeshPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(float), sizeof(float), (void*)&app->_pRenderer->m_uTessLevel);
 		}
+#endif
 
-		commandBuffer.drawIndexed(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
+		m_pxCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
 	}
 	
 

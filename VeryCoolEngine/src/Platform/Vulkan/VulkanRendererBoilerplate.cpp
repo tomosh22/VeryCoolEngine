@@ -119,6 +119,8 @@ namespace VeryCoolEngine {
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
+		
+
 		vk::InstanceCreateInfo instanceInfo = vk::InstanceCreateInfo()
 			.setPApplicationInfo(&appInfo)
 			.setEnabledExtensionCount(extensions.size())
@@ -186,10 +188,21 @@ namespace VeryCoolEngine {
 			.setSamplerAnisotropy(VK_TRUE)
 			.setTessellationShader(VK_TRUE);
 
+		vk::PhysicalDeviceFeatures2 deviceFeatures2;
+		deviceFeatures2.setFeatures(deviceFeatures);
+
+		vk::PhysicalDeviceDescriptorIndexingFeatures indexingFeatures;
+		indexingFeatures.descriptorBindingUniformBufferUpdateAfterBind = true;
+		indexingFeatures.descriptorBindingSampledImageUpdateAfterBind = true;
+		indexingFeatures.descriptorBindingPartiallyBound = true;
+		indexingFeatures.descriptorBindingVariableDescriptorCount = true;
+		indexingFeatures.runtimeDescriptorArray = true;
+		deviceFeatures2.setPNext((void*)&indexingFeatures);
+
 		vk::DeviceCreateInfo deviceCreateInfo = vk::DeviceCreateInfo()
+			.setPNext(&deviceFeatures2)
 			.setPQueueCreateInfos(queueInfos.data())
 			.setQueueCreateInfoCount(queueInfos.size())
-			.setPEnabledFeatures(&deviceFeatures)
 			.setEnabledExtensionCount(m_deviceExtensions.size())
 			.setPpEnabledExtensionNames(m_deviceExtensions.data())
 #if DEBUG
@@ -258,6 +271,7 @@ namespace VeryCoolEngine {
 			TextureDescriptorSpecification xTexSpec;
 			xTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 			xTexSpec.m_bJustFragment = true;
+			xTexSpec.m_bBindless = false;
 			vk::DescriptorSetLayout xLayout = VulkanDescriptorSetLayoutBuilder::FromSpecification(xTexSpec);
 			m_axFramebufferTexDescSet.emplace_back(CreateDescriptorSet(xLayout, m_descriptorPool));
 
@@ -477,7 +491,7 @@ namespace VeryCoolEngine {
 			.setPoolSizeCount(sizeof(axPoolSizes) / sizeof(axPoolSizes[0]))
 			.setPPoolSizes(axPoolSizes)
 			.setMaxSets(1000)
-			.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet);
+			.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind);
 
 		m_descriptorPool = m_device.createDescriptorPool(xPoolInfo);
 
