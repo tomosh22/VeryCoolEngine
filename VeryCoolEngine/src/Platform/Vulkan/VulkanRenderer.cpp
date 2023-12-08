@@ -28,7 +28,9 @@ VulkanRenderer::VulkanRenderer() {
 	InitVulkan();
 
 	m_pxCommandBuffer = new VulkanCommandBuffer;
+#ifdef VCE_DEFERRED_SHADING
 	RendererAPI::s_xGBufferTargetSetup = CreateGBufferTarget();
+#endif
 }
 
 void VulkanRenderer::InitWindow() {
@@ -50,6 +52,7 @@ void VulkanRenderer::InitVulkan() {
 	}
 	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
 	app->_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS, MAX_FRAMES_IN_FLIGHT, 1);
+	app->m_pxPushConstantUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS, MAX_FRAMES_IN_FLIGHT, 2);
 
 	for (Shader* pxShader : app->_shaders) pxShader->PlatformInit();
 	//for (Texture* pxTex : app->_textures) pxTex->PlatformInit();
@@ -112,7 +115,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 #pragma region gbuffer
 	
-
+#ifdef VCE_DEFERRED_SHADING
 	m_pxCommandBuffer->SubmitTargetSetup(RendererAPI::s_xGBufferTargetSetup);
 
 	//BeginGBufferRenderPass(commandBuffer, imageIndex);
@@ -152,6 +155,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	}
 
 	commandBuffer.endRenderPass();
+#endif
 
 #pragma endregion
 
@@ -187,24 +191,28 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 		m_pxCommandBuffer->BindTexture(pxVulkanMesh->GetMetallicTex(), 3);
 		m_pxCommandBuffer->BindTexture(pxVulkanMesh->GetHeightmapTex(), 4);
 
-//TODO: push constants
-#if 0
-		if (pxMeshPipeline->bUsePushConstants) {
-			commandBuffer.pushConstants(pxMeshPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, 0, sizeof(glm::mat4), (void*)&mesh->m_xTransform);
+		
 
-			commandBuffer.pushConstants(pxMeshPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4), sizeof(glm::vec3), (void*)&m_xOverrideNormal);
-			int uValue = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;
 
-			commandBuffer.pushConstants(pxMeshPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3), sizeof(uint32_t), (void*)&uValue);
+		VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
+		m_pxCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame],0);
 
-			int uValueTess = app->_pRenderer->m_bUsePhongTess ? 1 : 0;
+		VulkanManagedUniformBuffer* pxLightUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pLightUBO);
+		m_pxCommandBuffer->BindBuffer(pxLightUBO->ppBuffers[m_currentFrame], 1);
 
-			commandBuffer.pushConstants(pxMeshPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t), sizeof(uint32_t), (void*)&uValueTess);
 
-			commandBuffer.pushConstants(pxMeshPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t) + sizeof(uint32_t), sizeof(float), (void*)&app->_pRenderer->m_fPhongTessFactor);
-			commandBuffer.pushConstants(pxMeshPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(float), sizeof(float), (void*)&app->_pRenderer->m_uTessLevel);
-		}
-#endif
+		Application::PushConstants xPushConstants;
+
+		xPushConstants.xOverrideNormal = m_xOverrideNormal;
+		xPushConstants.uUseBumpMap = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;
+		xPushConstants.uUsePhongTess = app->_pRenderer->m_bUsePhongTess ? 1 : 0;
+		xPushConstants.fPhongTessFactor = app->_pRenderer->m_fPhongTessFactor;
+		xPushConstants.uTessLevel = app->_pRenderer->m_uTessLevel;
+
+		app->m_pxPushConstantUBO->UploadData(&xPushConstants, sizeof(Application::PushConstants), m_currentFrame, 0);
+
+		VulkanManagedUniformBuffer* pxPushConstantUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxPushConstantUBO);
+		m_pxCommandBuffer->BindBuffer(pxPushConstantUBO->ppBuffers[m_currentFrame], 2);
 
 		m_pxCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
 	}
@@ -291,6 +299,7 @@ void VeryCoolEngine::VulkanRenderer::BeginScene(Scene* scene)
 	memcpy(data + sizeof(unsigned int) * 4, scene->lights.data(), sizeof(Light) * scene->lights.size());
 	app->_pLightUBO->UploadData(data, dataSize, 1, 0);
 	delete[] data;
+
 }
 
 void VeryCoolEngine::VulkanRenderer::RenderThreadFunction()

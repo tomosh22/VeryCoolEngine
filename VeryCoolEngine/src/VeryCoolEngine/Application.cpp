@@ -160,7 +160,10 @@ namespace VeryCoolEngine {
 					{},
 					&m_pxRenderToTexturePass,
 					false,
-					false
+					false,
+					false,
+					0,
+					0
 					)
 			});
 
@@ -185,7 +188,10 @@ namespace VeryCoolEngine {
 					{xMeshTexSpec},
 					&m_pxRenderToTexturePass,
 					true,
-					true
+					true,
+					true,
+					3,
+					5
 					)
 			});
 
@@ -207,7 +213,10 @@ namespace VeryCoolEngine {
 					{xFramebufferTexSpec},
 					&m_pxCopyToFramebufferPass,
 					false,
-					false
+					false,
+					false,
+					0,
+					0
 					)
 			});
 
@@ -231,7 +240,10 @@ namespace VeryCoolEngine {
 					{xMeshTexSpec},
 					&m_pxGBufferRenderPass,
 					true,
-					true
+					true,
+					false,
+					0,
+					0
 					)
 			});
 #endif

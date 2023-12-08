@@ -15,6 +15,8 @@ namespace VeryCoolEngine {
 		void SubmitTargetSetup(const RendererAPI::TargetSetup& xTargetSetup) override;
 		void SetPipeline(void* pxPipeline) override;
 		void BindTexture(void* pxTexture, uint32_t uBindPoint) override;
+		void BindBuffer(void* pxBuffer, uint32_t uBindPoint) override;
+		void UploadUniformData(void* pData, size_t uSize) override;
 
 		vk::CommandBuffer& GetCurrentCmdBuffer() { return m_xCurrentCmdBuffer; }
 		void* Platform_GetCurrentCmdBuffer() const override { return (void*) & m_xCurrentCmdBuffer; }

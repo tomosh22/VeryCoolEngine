@@ -23,7 +23,7 @@ layout(std140, set = 0, binding=0) uniform matrices{
 	vec4 _uCamPos;//4 bytes of padding
 };
 
-layout(push_constant) uniform PushConstantVert{
+layout(std140, set = 0, binding = 2) uniform Misc{
 	mat4 modelMatrix;
 	vec3 overrideNormal;
 	int useBumpMap;
@@ -83,7 +83,7 @@ vec3 PhongTesselation(){
 	
 }
  
-layout(set = 2, binding = 4) uniform sampler2D heightMap;
+layout(set = 1, binding = 4) uniform sampler2D heightMap;
 
 void main(){
 	vec3 combinedPos;

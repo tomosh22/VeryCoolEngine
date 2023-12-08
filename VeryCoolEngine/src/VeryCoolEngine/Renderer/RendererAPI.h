@@ -8,6 +8,7 @@ static constexpr const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 namespace VeryCoolEngine {
 	class VertexBuffer;
 	class IndexBuffer;
+	class ManagedUniformBuffer;
 	namespace RendererAPI
 	{
 		struct RenderTarget {
@@ -49,8 +50,12 @@ namespace VeryCoolEngine {
 			virtual void SubmitTargetSetup(const TargetSetup& xTargetSetup) = 0;
 			virtual void SetPipeline(void* pxPipeline) = 0;
 			virtual void BindTexture(void* pxTexture, uint32_t uBindPoint) = 0;
+			virtual void BindBuffer(void* pxBuffer, uint32_t uBindPoint) = 0;
+			virtual void UploadUniformData(void* pData, size_t uSize) = 0;
 
 			virtual void* Platform_GetCurrentCmdBuffer() const = 0;
+
+			ManagedUniformBuffer* m_pxUniformBuffer;
 		};
 
 		static std::vector<void*> s_xCmdBuffersToSubmit;

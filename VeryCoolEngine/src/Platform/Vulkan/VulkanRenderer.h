@@ -260,9 +260,10 @@ namespace VeryCoolEngine {
 
 			std::unordered_map<std::string, class VulkanPipeline*> m_xPipelines;
 
+#ifdef VCE_DEFERRED_SHADING
 			RendererAPI::TargetSetup CreateGBufferTarget();
 
-#ifdef VCE_DEFERRED_SHADING
+
 			void SetupDeferredShading();
 
 			//one per frame in flight
@@ -273,8 +274,9 @@ namespace VeryCoolEngine {
 			std::vector<VulkanTexture2D*> m_apxDeferredDiffuse;
 			std::vector<VulkanTexture2D*> m_apxDeferredSpecular;
 
-			std::vector<VulkanTexture2D*> m_apxEditorSceneTexs;
+			
 #endif
+			std::vector<VulkanTexture2D*> m_apxEditorSceneTexs;
 
 			vk::DescriptorPool m_descriptorPool;
 

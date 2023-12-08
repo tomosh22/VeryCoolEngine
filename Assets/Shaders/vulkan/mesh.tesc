@@ -16,7 +16,7 @@ layout(location = 3) out vec3 _oBitangent[];
 layout(location = 4) out vec3 _oWorldPos[];
 
 
-layout(push_constant) uniform PushConstantVert{
+layout(std140, set = 0, binding = 2) uniform Misc{
 	mat4 modelMatrix;
 	vec3 overrideNormal;
 	int useBumpMap;

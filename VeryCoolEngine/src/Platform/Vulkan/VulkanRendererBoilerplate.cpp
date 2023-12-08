@@ -315,7 +315,7 @@ namespace VeryCoolEngine {
 			m_axImguiFramebuffers[swapchainIndex++] = m_device.createFramebuffer(framebufferInfo);
 		}
 	}
-
+#ifdef VCE_DEFERRED_SHADING
 	void VulkanRenderer::CreateGBufferFrameBuffers() {
 		Application* app = Application::GetInstance();
 		m_axGBufferFramebuffers.resize(m_swapChainImageViews.size());
@@ -331,6 +331,7 @@ namespace VeryCoolEngine {
 			m_axGBufferFramebuffers[i] = m_device.createFramebuffer(framebufferInfo);
 		}
 	}
+
 
 	RendererAPI::TargetSetup VulkanRenderer::CreateGBufferTarget() {
 		Application* app = Application::GetInstance();
@@ -375,6 +376,7 @@ namespace VeryCoolEngine {
 
 		return xTargetSetup;
 	}
+#endif
 
 	void VulkanRenderer::CreateSwapChain() {
 		SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(m_physicalDevice);

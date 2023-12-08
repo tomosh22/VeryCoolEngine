@@ -1,9 +1,11 @@
 #include "vcepch.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanRenderer.h"
+#include "VulkanBuffer.h"
 #include "VulkanVertexBuffer.h"
 #include "VulkanIndexBuffer.h"
 #include "VulkanPipelineBuilder.h"
+#include "VulkanManagedUniformBuffer.h"
 
 namespace VeryCoolEngine {
 	VulkanCommandBuffer::VulkanCommandBuffer()
@@ -24,6 +26,8 @@ namespace VeryCoolEngine {
 
 		m_xRenderPasses.resize(MAX_FRAMES_IN_FLIGHT);
 		m_xFramebuffers.resize(MAX_FRAMES_IN_FLIGHT);
+
+		m_pxUniformBuffer = new VulkanManagedUniformBuffer;
 	}
 	void VulkanCommandBuffer::BeginRecording()
 	{
@@ -258,7 +262,7 @@ namespace VeryCoolEngine {
 	{
 		VulkanPipeline* pxVkPipeline = reinterpret_cast<VulkanPipeline*>(pxPipeline);
 		m_xCurrentCmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxVkPipeline->m_xPipeline);
-
+		
 		std::vector<vk::DescriptorSet> axSets;
 		for (const vk::DescriptorSet set : pxVkPipeline->m_axBufferDescSets)
 			axSets.push_back(set);
@@ -290,6 +294,30 @@ namespace VeryCoolEngine {
 
 		m_pxRenderer->GetDevice().updateDescriptorSets(1, &xWrite, 0, nullptr);
 
+	}
+
+	void VulkanCommandBuffer::BindBuffer(void* pxBuffer, uint32_t uBindPoint) {
+		VulkanBuffer* pxBuf = reinterpret_cast<VulkanBuffer*>(pxBuffer);
+
+		vk::DescriptorBufferInfo xInfo = vk::DescriptorBufferInfo()
+			.setBuffer(pxBuf->m_xBuffer)
+			.setOffset(0)
+			.setRange(pxBuf->m_uSize);
+
+		vk::WriteDescriptorSet xWrite = vk::WriteDescriptorSet()
+			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+			.setDstSet(m_pxCurrentPipeline->m_axBufferDescSets[0])
+			.setDstBinding(uBindPoint)
+			.setDescriptorCount(1)
+			.setPBufferInfo(&xInfo);
+
+		m_pxRenderer->GetDevice().updateDescriptorSets(1, &xWrite, 0, nullptr);
+
+	}
+
+	void VulkanCommandBuffer::UploadUniformData(void* pData, size_t uSize)
+	{
+		m_pxUniformBuffer->UploadData(pData, uSize, m_pxRenderer->m_currentFrame);
 	}
 }
 

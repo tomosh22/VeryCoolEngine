@@ -20,7 +20,7 @@ layout(std140, set = 0, binding=0) uniform matrices{
 	vec4 _uCamPos;//4 bytes of padding
 };
 
-layout(push_constant) uniform PushConstantVert{
+layout(std140, set = 0, binding = 2) uniform Misc{
 	mat4 modelMatrix;
 	vec3 overrideNormal;
 	int useBumpMap;
@@ -29,7 +29,7 @@ layout(push_constant) uniform PushConstantVert{
 	int tessLevel;
 };
 
-layout(std140, set = 1, binding = 0) uniform LightsUBO{
+layout(std140, set = 0, binding = 1) uniform LightsUBO{
 uint numLights;
 uint pad0;
 uint pad1;
@@ -37,10 +37,10 @@ uint pad2;
 Light lights[100];
 };
 
-layout(set = 2, binding = 0) uniform sampler2D diffuseTex;
-layout(set = 2, binding = 1) uniform sampler2D bumpMap;
-layout(set = 2, binding = 2) uniform sampler2D roughnessTex;
-layout(set = 2, binding = 3) uniform sampler2D metallicTex;
+layout(set = 1, binding = 0) uniform sampler2D diffuseTex;
+layout(set = 1, binding = 1) uniform sampler2D bumpMap;
+layout(set = 1, binding = 2) uniform sampler2D roughnessTex;
+layout(set = 1, binding = 3) uniform sampler2D metallicTex;
 
 void point(inout vec4 finalColor, vec4 diffuse, Light light, vec3 bumpNormal, float metal, float rough, float reflectivity) {
 	vec3 lightDir = normalize(light.positionAndRadius.xyz - WorldPos);
