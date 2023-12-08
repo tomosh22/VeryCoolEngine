@@ -51,6 +51,7 @@ namespace VeryCoolEngine {
 			virtual void SetPipeline(void* pxPipeline) = 0;
 			virtual void BindTexture(void* pxTexture, uint32_t uBindPoint) = 0;
 			virtual void BindBuffer(void* pxBuffer, uint32_t uBindPoint) = 0;
+			virtual void PushConstant(void* pData, size_t uSize) = 0;
 			virtual void UploadUniformData(void* pData, size_t uSize) = 0;
 
 			virtual void* Platform_GetCurrentCmdBuffer() const = 0;

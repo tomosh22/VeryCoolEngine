@@ -15,6 +15,9 @@ layout(location = 1) out vec3 _oNormal;
 layout(location = 2) out vec3 _oWorldPos;
 layout(location = 3) out mat3 _oTBN;
 
+layout(push_constant) uniform ModelMatrix{
+	mat4 modelMatrix;
+};
 
 layout(std140, set = 0, binding=0) uniform matrices{
 	mat4 _uViewMat;
@@ -24,7 +27,6 @@ layout(std140, set = 0, binding=0) uniform matrices{
 };
 
 layout(std140, set = 0, binding = 2) uniform Misc{
-	mat4 modelMatrix;
 	vec3 overrideNormal;
 	int useBumpMap;
 	int usePhongTess;

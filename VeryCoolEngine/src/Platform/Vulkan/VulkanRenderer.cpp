@@ -179,7 +179,16 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	
 	m_pxCommandBuffer->SetPipeline(&pxMeshPipeline->m_xPipeline);
 
-		
+	Application::MeshRenderData xMeshRenderData;
+
+	xMeshRenderData.xOverrideNormal = m_xOverrideNormal;
+	xMeshRenderData.uUseBumpMap = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;
+	xMeshRenderData.uUsePhongTess = app->_pRenderer->m_bUsePhongTess ? 1 : 0;
+	xMeshRenderData.fPhongTessFactor = app->_pRenderer->m_fPhongTessFactor;
+	xMeshRenderData.uTessLevel = app->_pRenderer->m_uTessLevel;
+
+	app->m_pxPushConstantUBO->UploadData(&xMeshRenderData, sizeof(Application::MeshRenderData), m_currentFrame, 0);
+
 	for (Mesh* mesh : scene->m_axPipelineMeshes.at(pxMeshPipeline->m_strName)) {
 		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
 		m_pxCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
@@ -201,18 +210,12 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 		m_pxCommandBuffer->BindBuffer(pxLightUBO->ppBuffers[m_currentFrame], 1);
 
 
-		Application::PushConstants xPushConstants;
-
-		xPushConstants.xOverrideNormal = m_xOverrideNormal;
-		xPushConstants.uUseBumpMap = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;
-		xPushConstants.uUsePhongTess = app->_pRenderer->m_bUsePhongTess ? 1 : 0;
-		xPushConstants.fPhongTessFactor = app->_pRenderer->m_fPhongTessFactor;
-		xPushConstants.uTessLevel = app->_pRenderer->m_uTessLevel;
-
-		app->m_pxPushConstantUBO->UploadData(&xPushConstants, sizeof(Application::PushConstants), m_currentFrame, 0);
+		
 
 		VulkanManagedUniformBuffer* pxPushConstantUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxPushConstantUBO);
 		m_pxCommandBuffer->BindBuffer(pxPushConstantUBO->ppBuffers[m_currentFrame], 2);
+
+		m_pxCommandBuffer->PushConstant(&mesh->m_xTransform._matrix, sizeof(glm::mat4));
 
 		m_pxCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
 	}

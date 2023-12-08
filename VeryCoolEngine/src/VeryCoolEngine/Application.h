@@ -99,7 +99,7 @@ namespace VeryCoolEngine {
 		ManagedUniformBuffer* _pCameraUBO = nullptr;
 
 		//don't know where i want to put this yet
-		struct PushConstants {
+		struct MeshRenderData {
 			glm::vec3 xOverrideNormal;
 			int uUseBumpMap;
 			int uUsePhongTess;

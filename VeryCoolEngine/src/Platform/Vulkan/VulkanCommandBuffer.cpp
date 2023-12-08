@@ -315,6 +315,11 @@ namespace VeryCoolEngine {
 
 	}
 
+	void VulkanCommandBuffer::PushConstant(void* pData, size_t uSize)
+	{
+		m_xCurrentCmdBuffer.pushConstants(m_pxCurrentPipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, 0, uSize, pData);
+	}
+
 	void VulkanCommandBuffer::UploadUniformData(void* pData, size_t uSize)
 	{
 		m_pxUniformBuffer->UploadData(pData, uSize, m_pxRenderer->m_currentFrame);

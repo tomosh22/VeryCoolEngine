@@ -6,9 +6,11 @@ layout(location = 2) in vec3 _aNormal;
 layout(location = 3) in vec3 _aTangent;
 layout(location = 4) in vec3 _aBitangent;
 
+layout(push_constant) uniform ModelMatrix{
+	mat4 modelMatrix;
+};
 
 layout(std140, set = 0, binding = 2) uniform Misc{
-	mat4 modelMatrix;
 	vec3 overrideNormal;
 	int useBumpMap;
 	int usePhongTess;

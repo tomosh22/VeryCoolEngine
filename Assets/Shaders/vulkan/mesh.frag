@@ -13,6 +13,10 @@ struct Light{
 	vec4 color;
 };
 
+layout(push_constant) uniform ModelMatrix{
+	mat4 modelMatrix;
+};
+
 layout(std140, set = 0, binding=0) uniform matrices{
 	mat4 _uViewMat;
 	mat4 _uProjMat;
@@ -21,7 +25,6 @@ layout(std140, set = 0, binding=0) uniform matrices{
 };
 
 layout(std140, set = 0, binding = 2) uniform Misc{
-	mat4 modelMatrix;
 	vec3 overrideNormal;
 	int useBumpMap;
 	int usePhongTess;

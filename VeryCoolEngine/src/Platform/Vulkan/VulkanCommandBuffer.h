@@ -16,6 +16,7 @@ namespace VeryCoolEngine {
 		void SetPipeline(void* pxPipeline) override;
 		void BindTexture(void* pxTexture, uint32_t uBindPoint) override;
 		void BindBuffer(void* pxBuffer, uint32_t uBindPoint) override;
+		void PushConstant(void* pData, size_t uSize) override;
 		void UploadUniformData(void* pData, size_t uSize) override;
 
 		vk::CommandBuffer& GetCurrentCmdBuffer() { return m_xCurrentCmdBuffer; }
