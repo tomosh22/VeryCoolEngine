@@ -27,9 +27,13 @@ namespace VeryCoolEngine {
 			enum class StoreAction : uint32_t {
 				DontCare, Store
 			};
+			enum class Usage : uint32_t {
+				RenderTarget, ShaderRead
+			};
 			Format m_eFormat = Format::None;
 			LoadAction m_eLoadAction = LoadAction::DontCare;
 			StoreAction m_eStoreAction = StoreAction::DontCare;
+			Usage m_eUsage = Usage::RenderTarget;
 			uint32_t m_uWidth = 0;
 			uint32_t m_uHeight = 0;
 			void* m_pPlatformImageView;
@@ -63,6 +67,7 @@ namespace VeryCoolEngine {
 		static void Platform_SubmitCmdBuffers();
 
 		static TargetSetup s_xGBufferTargetSetup;
+		static TargetSetup s_xRenderToTextureTargetSetup;
 	};
 }
 

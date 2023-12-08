@@ -28,9 +28,7 @@ VulkanRenderer::VulkanRenderer() {
 	InitVulkan();
 
 	m_pxCommandBuffer = new VulkanCommandBuffer;
-#ifdef VCE_DEFERRED_SHADING
-	RendererAPI::s_xGBufferTargetSetup = CreateGBufferTarget();
-#endif
+
 }
 
 void VulkanRenderer::InitWindow() {
@@ -90,6 +88,13 @@ void VulkanRenderer::MainLoop() {
 		if (scene->ready)break;//#todo implement mutex here
 	}
 	app->sceneMutex.lock();
+
+	//TODO: stop doing this every frame
+	RendererAPI::s_xRenderToTextureTargetSetup = CreateRenderToTextureTarget();
+#ifdef VCE_DEFERRED_SHADING
+	RendererAPI::s_xGBufferTargetSetup = CreateGBufferTarget();
+#endif
+
 	BeginScene(scene);
 
 	
@@ -159,11 +164,11 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 #pragma endregion
 
-	BeginRenderToTexturePass(commandBuffer, imageIndex);
+	m_pxCommandBuffer->SubmitTargetSetup(RendererAPI::s_xRenderToTextureTargetSetup);
 
 
 	VulkanPipeline* pxSkyboxPipeline = m_xPipelines.at("Skybox");
-	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxSkyboxPipeline->m_xPipeline);
+	m_pxCommandBuffer->SetPipeline(&pxSkyboxPipeline->m_xPipeline);
 	std::vector<vk::DescriptorSet> axSets;
 	for (const vk::DescriptorSet set : pxSkyboxPipeline->m_axBufferDescSets)
 		axSets.push_back(set);
@@ -174,10 +179,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 
 
-	VulkanPipeline* pxMeshPipeline = m_xPipelines.at("Meshes");
-
-	
-	m_pxCommandBuffer->SetPipeline(&pxMeshPipeline->m_xPipeline);
+	m_pxCommandBuffer->SetPipeline(&m_xPipelines.at("Meshes")->m_xPipeline);
 
 	Application::MeshRenderData xMeshRenderData;
 
@@ -189,7 +191,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 	app->m_pxPushConstantUBO->UploadData(&xMeshRenderData, sizeof(Application::MeshRenderData), m_currentFrame, 0);
 
-	for (Mesh* mesh : scene->m_axPipelineMeshes.at(pxMeshPipeline->m_strName)) {
+	for (Mesh* mesh : scene->m_axPipelineMeshes.at("Meshes")) {
 		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
 		m_pxCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
 		m_pxCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);

@@ -378,6 +378,33 @@ namespace VeryCoolEngine {
 	}
 #endif
 
+	RendererAPI::TargetSetup VulkanRenderer::CreateRenderToTextureTarget() {
+		Application* app = Application::GetInstance();
+		RendererAPI::TargetSetup xTargetSetup;
+		RendererAPI::RenderTarget xColourTarget;
+		RendererAPI::RenderTarget xDepthStencilTarget;
+
+		xColourTarget.m_eFormat = RendererAPI::RenderTarget::Format::B8G8R8A8Srgb;
+		xColourTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Clear;
+		xColourTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
+		xColourTarget.m_uHeight = m_height;
+		xColourTarget.m_uWidth = m_width;
+		xColourTarget.m_pPlatformImageView = &m_apxEditorSceneTexs[m_currentFrame]->m_xImageView;
+		xColourTarget.m_eUsage = RendererAPI::RenderTarget::Usage::ShaderRead;
+
+		xDepthStencilTarget.m_eFormat = RendererAPI::RenderTarget::Format::D32Sfloat;
+		xDepthStencilTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Clear;
+		xDepthStencilTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
+		xDepthStencilTarget.m_uHeight = m_height;
+		xDepthStencilTarget.m_uWidth = m_width;
+		xDepthStencilTarget.m_pPlatformImageView = &m_xDepthTexture->m_xImageView;
+
+		xTargetSetup.m_xColourAttachments.push_back(xColourTarget);
+		xTargetSetup.m_xDepthStencil = xDepthStencilTarget;
+
+		return xTargetSetup;
+	}
+
 	void VulkanRenderer::CreateSwapChain() {
 		SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(m_physicalDevice);
 		vk::SurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);

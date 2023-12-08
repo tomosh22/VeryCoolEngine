@@ -259,7 +259,8 @@ namespace VeryCoolEngine {
 
 
 			std::unordered_map<std::string, class VulkanPipeline*> m_xPipelines;
-
+			
+			RendererAPI::TargetSetup CreateRenderToTextureTarget();
 #ifdef VCE_DEFERRED_SHADING
 			RendererAPI::TargetSetup CreateGBufferTarget();
 

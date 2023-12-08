@@ -98,6 +98,17 @@ namespace VeryCoolEngine {
 		}
 	}
 
+	vk::ImageLayout ConvertToVkTargetUsage(RendererAPI::RenderTarget::Usage eUsage) {
+		switch (eUsage) {
+		case RendererAPI::RenderTarget::Usage::RenderTarget:
+			return vk::ImageLayout::eColorAttachmentOptimal;
+		case RendererAPI::RenderTarget::Usage::ShaderRead:
+			return vk::ImageLayout::eShaderReadOnlyOptimal;
+		default:
+			VCE_ASSERT(false, "Invalid usage");
+		}
+	}
+
 	vk::RenderPass VulkanCommandBuffer::TargetSetupToRenderPass(const RendererAPI::TargetSetup& xTargetSetup) {
 		const uint32_t uNumColourAttachments = xTargetSetup.m_xColourAttachments.size();
 		std::vector<vk::AttachmentDescription> xAttachmentDescs(uNumColourAttachments);
@@ -113,7 +124,7 @@ namespace VeryCoolEngine {
 				.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
 				.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
 				.setInitialLayout(vk::ImageLayout::eUndefined)
-				.setFinalLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+				.setFinalLayout(ConvertToVkTargetUsage(xTarget.m_eUsage));
 
 			xAttachmentRefs.at(i)
 				.setAttachment(i)
