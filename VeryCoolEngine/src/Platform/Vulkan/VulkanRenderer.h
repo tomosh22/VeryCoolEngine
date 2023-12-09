@@ -21,6 +21,7 @@ namespace VeryCoolEngine {
 	class VulkanRenderPass;
 	class VulkanTexture2D;
 	class VulkanBuffer;
+	class VulkanCommandBuffer;
 	
 
 	static constexpr const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
@@ -197,6 +198,7 @@ namespace VeryCoolEngine {
 			void CreateImguiFrameBuffers();//imgui doesn't use depth buffer
 			void CreateGBufferFrameBuffers();
 			void CreateRenderToTextureFrameBuffers();
+			void CreateRenderToTextureFrameBuffersNoClear();
 
 			void CreateCommandPool();
 
@@ -212,11 +214,13 @@ namespace VeryCoolEngine {
 
 			void DrawFrame(Scene* scene);
 
+			void DrawSkybox();
+
 			void RecreateSwapChain();
 
 			int8_t AcquireSwapchainImage();
 
-			void SubmitCmdBuffer(vk::CommandBuffer& xCmdBuffer, vk::Semaphore* pxWaitSems = nullptr, uint32_t uWaitSemCount = 0, vk::Semaphore* pxSignalSems = nullptr, uint32_t uSignalSemCount = 0, vk::PipelineStageFlags eWaitStages = vk::PipelineStageFlagBits::eNone);
+			void SubmitCmdBuffer(vk::CommandBuffer& xCmdBuffer, vk::Semaphore* pxWaitSems, uint32_t uWaitSemCount, vk::Semaphore* pxSignalSems, uint32_t uSignalSemCount, vk::Fence xFence, vk::PipelineStageFlags eWaitStages);
 
 			void Present(uint32_t uSwapchainIndex, vk::Semaphore* pxWaitSems = nullptr, uint32_t uWaitSemCount = 0);
 
@@ -259,8 +263,15 @@ namespace VeryCoolEngine {
 
 
 			std::unordered_map<std::string, class VulkanPipeline*> m_xPipelines;
+
+
+			std::unordered_map<std::string, RendererAPI::TargetSetup> m_xTargetSetups;
+			std::unordered_map<std::string, vk::RenderPass> m_xTargetSetupPasses;
+			std::unordered_map<std::string, std::vector<vk::Framebuffer>> m_xTargetSetupFramebuffers;
 			
+			void UpdateRenderToTextureTarget();
 			RendererAPI::TargetSetup CreateRenderToTextureTarget();
+
 #ifdef VCE_DEFERRED_SHADING
 			RendererAPI::TargetSetup CreateGBufferTarget();
 
@@ -300,12 +311,16 @@ namespace VeryCoolEngine {
 			std::vector<vk::Framebuffer> m_axImguiFramebuffers;
 			std::vector<vk::Framebuffer> m_axGBufferFramebuffers;
 			std::vector<vk::Framebuffer> m_axRenderToTextureFramebuffers;
+			std::vector<vk::Framebuffer> m_axRenderToTextureFramebuffersNoClear;
 
 			vk::CommandPool m_commandPool;
 			std::vector<vk::CommandBuffer> m_commandBuffers;
-			class VulkanCommandBuffer* m_pxCommandBuffer;
+
+			VulkanCommandBuffer* m_pxCommandBuffer;
+			VulkanCommandBuffer* m_pxSkyboxCommandBuffer;
 
 			std::vector<vk::Semaphore> m_imageAvailableSemaphores;
+			std::vector<vk::Semaphore> m_xSkyboxRenderedSemaphores;
 			std::vector<vk::Semaphore> m_renderFinishedSemaphores;
 			std::vector<vk::Fence> m_inFlightFences;
 

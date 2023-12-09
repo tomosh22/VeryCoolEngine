@@ -88,6 +88,7 @@ namespace VeryCoolEngine {
 		RenderPass* m_pxImguiRenderPass;//imgui doesn't use depth buffer
 		RenderPass* m_pxGBufferRenderPass;
 		RenderPass* m_pxRenderToTexturePass;
+		RenderPass* m_pxRenderToTexturePassNoClear;
 		RenderPass* m_pxCopyToFramebufferPass;
 
 

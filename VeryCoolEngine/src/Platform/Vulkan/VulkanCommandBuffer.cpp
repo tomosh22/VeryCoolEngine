@@ -38,6 +38,7 @@ namespace VeryCoolEngine {
 	}
 	void VulkanCommandBuffer::EndRecording(bool bSubmit /*= true*/)
 	{
+
 		m_xCurrentCmdBuffer.end();
 		if (bSubmit) {
 			RendererAPI::s_xCmdBuffersToSubmit.push_back(&m_xCurrentCmdBuffer);
@@ -210,17 +211,16 @@ namespace VeryCoolEngine {
 		return xFrameBuffer;
 	}
 
-	void VulkanCommandBuffer::SubmitTargetSetup(const RendererAPI::TargetSetup& xTargetSetup)
+	void VulkanCommandBuffer::SubmitTargetSetup(const RendererAPI::TargetSetup& xTargetSetup, bool bClear)
 	{
-		uint32_t uIndexToDestroy = (m_pxRenderer->m_currentFrame + MAX_FRAMES_IN_FLIGHT) % MAX_FRAMES_IN_FLIGHT;
-		//TODO: don't make these every single time
-		m_pxRenderer->GetDevice().destroyRenderPass(m_xRenderPasses.at(uIndexToDestroy));
-		m_xRenderPasses.at(m_pxRenderer->m_currentFrame) = TargetSetupToRenderPass(xTargetSetup);
-		m_xCurrentRenderPass = m_xRenderPasses.at(m_pxRenderer->m_currentFrame);
+		std::string strLookupName = xTargetSetup.m_strName;
+		if (!bClear)
+			strLookupName += "NoClear";
 
-		m_pxRenderer->GetDevice().destroyFramebuffer(m_xFramebuffers.at(uIndexToDestroy));
-		m_xFramebuffers.at(m_pxRenderer->m_currentFrame) = TargetSetupToFramebuffer(xTargetSetup);
-		m_xCurrentFramebuffer = m_xFramebuffers.at(m_pxRenderer->m_currentFrame);
+		m_xCurrentRenderPass = m_pxRenderer->m_xTargetSetupPasses.at(strLookupName.c_str());
+
+		
+		m_xCurrentFramebuffer = m_pxRenderer->m_xTargetSetupFramebuffers.at(strLookupName.c_str()).at(m_pxRenderer->m_currentFrame);
 
 		vk::RenderPassBeginInfo xRenderPassInfo = vk::RenderPassBeginInfo()
 			.setRenderPass(m_xCurrentRenderPass)
@@ -229,7 +229,7 @@ namespace VeryCoolEngine {
 
 		vk::ClearValue* axClearColour = nullptr;
 		//im being lazy and assuming all render targets have the same load action
-		if (xTargetSetup.m_xColourAttachments[0].m_eLoadAction == RendererAPI::RenderTarget::LoadAction::Clear) {
+		if (bClear && xTargetSetup.m_xColourAttachments[0].m_eLoadAction == RendererAPI::RenderTarget::LoadAction::Clear) {
 			bool bHasDepth = xTargetSetup.m_xDepthStencil.m_eFormat != RendererAPI::RenderTarget::Format::None;
 			const uint32_t uNumColourAttachments = xTargetSetup.m_xColourAttachments.size();
 			const uint32_t uNumAttachments = bHasDepth ? uNumColourAttachments + 1 : uNumColourAttachments;

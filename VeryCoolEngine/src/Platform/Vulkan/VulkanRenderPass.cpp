@@ -208,10 +208,77 @@ namespace VeryCoolEngine {
 			.setFormat(vk::Format::eD32Sfloat)
 			.setSamples(vk::SampleCountFlagBits::e1)
 			.setLoadOp(vk::AttachmentLoadOp::eClear)
-			.setStoreOp(vk::AttachmentStoreOp::eDontCare)
+			.setStoreOp(vk::AttachmentStoreOp::eStore)
 			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
 			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
 			.setInitialLayout(vk::ImageLayout::eUndefined)
+			.setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+
+		vk::AttachmentReference colorAttachmentRef = vk::AttachmentReference()
+			.setAttachment(0)
+			.setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+
+		vk::AttachmentReference depthAttachmentRef = vk::AttachmentReference()
+			.setAttachment(1)
+
+			.setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+		vk::AttachmentReference axColourAttachments[]{
+			colorAttachmentRef,
+		};
+
+		vk::SubpassDescription subpass = vk::SubpassDescription()
+			.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+			.setColorAttachmentCount(1)
+			.setPColorAttachments(axColourAttachments)
+			.setPDepthStencilAttachment(&depthAttachmentRef);
+
+		vk::SubpassDependency dependency = vk::SubpassDependency()
+			.setSrcSubpass(VK_SUBPASS_EXTERNAL)
+			.setDstSubpass(0)
+			.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests)
+			.setSrcAccessMask(vk::AccessFlagBits::eNone)
+			.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests)
+			.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite);
+
+		vk::AttachmentDescription axAttachments[]{
+			colorAttachment,
+			depthAttachment,
+		};
+
+		vk::RenderPassCreateInfo renderPassInfo = vk::RenderPassCreateInfo()
+			.setAttachmentCount(2)
+			.setPAttachments(axAttachments)
+			.setSubpassCount(1)
+			.setPSubpasses(&subpass)
+			.setDependencyCount(1)
+			.setPDependencies(&dependency);
+		return xDevice.createRenderPass(renderPassInfo);
+	}
+
+	vk::RenderPass VulkanRenderPass::RenderToTexturePassNoClear()
+	{
+		vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
+
+		vk::AttachmentDescription colorAttachment = vk::AttachmentDescription()
+			.setFormat(vk::Format::eB8G8R8A8Srgb)
+			.setSamples(vk::SampleCountFlagBits::e1)
+			.setLoadOp(vk::AttachmentLoadOp::eLoad)
+			.setStoreOp(vk::AttachmentStoreOp::eStore)
+			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+			.setInitialLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+			.setFinalLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+
+		vk::AttachmentDescription depthAttachment = vk::AttachmentDescription()
+			.setFormat(vk::Format::eD32Sfloat)
+			.setSamples(vk::SampleCountFlagBits::e1)
+			.setLoadOp(vk::AttachmentLoadOp::eLoad)
+			.setStoreOp(vk::AttachmentStoreOp::eDontCare)
+			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+			.setInitialLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
 			.setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
 

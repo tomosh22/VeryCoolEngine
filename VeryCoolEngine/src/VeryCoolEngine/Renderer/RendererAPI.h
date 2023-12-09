@@ -1,7 +1,4 @@
 #pragma once
-#ifdef VCE_VULKAN
-#include <vulkan/vulkan.h>
-#endif
 
 static constexpr const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -41,6 +38,7 @@ namespace VeryCoolEngine {
 		struct TargetSetup {
 			std::vector<RenderTarget> m_xColourAttachments;
 			RenderTarget m_xDepthStencil;
+			std::string m_strName;
 		};
 
 		class CommandBuffer {
@@ -51,7 +49,7 @@ namespace VeryCoolEngine {
 			virtual void SetVertexBuffer(VertexBuffer* xVertexBuffer, uint32_t uBindPoint = 0) = 0;
 			virtual void SetIndexBuffer(IndexBuffer* xIndexBuffer) = 0;
 			virtual void Draw(uint32_t uNumIndices, uint32_t uNumInstances = 1, uint32_t uVertexOffset = 0, uint32_t uIndexOffset = 0, uint32_t uInstanceOffset = 0) = 0;
-			virtual void SubmitTargetSetup(const TargetSetup& xTargetSetup) = 0;
+			virtual void SubmitTargetSetup(const TargetSetup& xTargetSetup, bool bClear) = 0;
 			virtual void SetPipeline(void* pxPipeline) = 0;
 			virtual void BindTexture(void* pxTexture, uint32_t uBindPoint) = 0;
 			virtual void BindBuffer(void* pxBuffer, uint32_t uBindPoint) = 0;
@@ -67,7 +65,6 @@ namespace VeryCoolEngine {
 		static void Platform_SubmitCmdBuffers();
 
 		static TargetSetup s_xGBufferTargetSetup;
-		static TargetSetup s_xRenderToTextureTargetSetup;
 	};
 }
 

@@ -23,12 +23,18 @@ using namespace VeryCoolEngine;
 
 VulkanRenderer* VulkanRenderer::s_pInstance = nullptr;
 
+
 VulkanRenderer::VulkanRenderer() {
 	InitWindow();
 	InitVulkan();
 
 	m_pxCommandBuffer = new VulkanCommandBuffer;
+	m_pxSkyboxCommandBuffer = new VulkanCommandBuffer;
 
+#ifdef VCE_DEFERRED_SHADING
+	RendererAPI::s_xGBufferTargetSetup = CreateGBufferTarget();
+#endif
+	m_xTargetSetups.insert({ "RenderToTexture", CreateRenderToTextureTarget() });
 }
 
 void VulkanRenderer::InitWindow() {
@@ -89,11 +95,7 @@ void VulkanRenderer::MainLoop() {
 	}
 	app->sceneMutex.lock();
 
-	//TODO: stop doing this every frame
-	RendererAPI::s_xRenderToTextureTargetSetup = CreateRenderToTextureTarget();
-#ifdef VCE_DEFERRED_SHADING
-	RendererAPI::s_xGBufferTargetSetup = CreateGBufferTarget();
-#endif
+	UpdateRenderToTextureTarget();
 
 	BeginScene(scene);
 
@@ -164,19 +166,7 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 #pragma endregion
 
-	m_pxCommandBuffer->SubmitTargetSetup(RendererAPI::s_xRenderToTextureTargetSetup);
-
-
-	VulkanPipeline* pxSkyboxPipeline = m_xPipelines.at("Skybox");
-	m_pxCommandBuffer->SetPipeline(&pxSkyboxPipeline->m_xPipeline);
-
-	VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
-	m_pxCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0);
-
-	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(scene->m_axPipelineMeshes.at(pxSkyboxPipeline->m_strName)[0]);
-	m_pxCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
-	m_pxCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
-	m_pxCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
+	m_pxCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTexture"), false);
 
 
 
@@ -254,8 +244,31 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 #endif
 
 	
-	commandBuffer.end();
+	m_pxCommandBuffer->EndRecording();
 	
+}
+
+void VulkanRenderer::DrawSkybox() {
+	Application* app = Application::GetInstance();
+
+	m_pxSkyboxCommandBuffer->BeginRecording();
+
+	m_pxSkyboxCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTexture"), true);
+
+	VulkanPipeline* pxSkyboxPipeline = m_xPipelines.at("Skybox");
+	m_pxSkyboxCommandBuffer->SetPipeline(&pxSkyboxPipeline->m_xPipeline);
+
+	VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
+	m_pxSkyboxCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0);
+
+	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh);
+	m_pxSkyboxCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
+	m_pxSkyboxCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
+	m_pxSkyboxCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
+
+	m_pxSkyboxCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
+
+	m_pxSkyboxCommandBuffer->EndRecording();
 }
 
 void VulkanRenderer::DrawFrame(Scene* scene) {
@@ -265,12 +278,15 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 		return;
 	}
 
+	DrawSkybox();
 
 	m_pxCommandBuffer->BeginRecording();
 
 	RecordCommandBuffer(m_pxCommandBuffer->GetCurrentCmdBuffer(), iImageIndex, scene);
 
-	SubmitCmdBuffer(m_pxCommandBuffer->GetCurrentCmdBuffer(), &m_imageAvailableSemaphores[m_currentFrame], 1, &m_renderFinishedSemaphores[m_currentFrame], 1, vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	SubmitCmdBuffer(m_pxSkyboxCommandBuffer->GetCurrentCmdBuffer(), &m_imageAvailableSemaphores[m_currentFrame], 1, &m_xSkyboxRenderedSemaphores[m_currentFrame], 1, VK_NULL_HANDLE, vk::PipelineStageFlagBits::eColorAttachmentOutput);
+
+	SubmitCmdBuffer(m_pxCommandBuffer->GetCurrentCmdBuffer(), &m_xSkyboxRenderedSemaphores[m_currentFrame], 1, &m_renderFinishedSemaphores[m_currentFrame], 1, m_inFlightFences[m_currentFrame], vk::PipelineStageFlagBits::eColorAttachmentOutput);
 
 	Present(iImageIndex, &m_renderFinishedSemaphores[m_currentFrame], 1);
 
@@ -342,4 +358,6 @@ void RendererAPI::Platform_SubmitCmdBuffers() {
 	submitInfo.setWaitDstStageMask(eFlags);
 
 	pxRenderer->GetGraphicsQueue().submit(submitInfo, pxRenderer->GetCurrentInFlightFence());
+
+	pxRenderer->GetDevice().waitIdle();
 }
