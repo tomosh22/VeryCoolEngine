@@ -768,6 +768,7 @@ namespace VeryCoolEngine {
 
 	VKAPI_ATTR vk::Bool32 VKAPI_CALL VulkanRenderer::debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity, vk::DebugUtilsMessageTypeFlagsEXT messageType, const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
 		if (messageSeverity >= vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)std::cerr << "validation layer: " << pCallbackData->pMessage << '\n';
+		__debugbreak();
 		return VK_FALSE;
 	}
 
@@ -841,23 +842,21 @@ namespace VeryCoolEngine {
 		return static_cast<int8_t>(uImageIndex);
 	}
 
-	void VulkanRenderer::SubmitCmdBuffer(vk::CommandBuffer& xCmdBuffer, vk::Semaphore* pxWaitSems, uint32_t uWaitSemCount, vk::Semaphore* pxSignalSems, uint32_t uSignalSemCount, vk::Fence xFence, vk::PipelineStageFlags eWaitStages) {
-		vk::SubmitInfo submitInfo = vk::SubmitInfo()
-			.setCommandBufferCount(1)
-			.setPCommandBuffers(&xCmdBuffer);
+	void VulkanRenderer::SubmitCmdBuffers(const std::vector<vk::CommandBuffer>& xCmdBuffers, const std::vector<vk::Semaphore>& xWaitSems, const std::vector<vk::Semaphore>& xSignalSems, vk::Fence xFence, vk::PipelineStageFlags eWaitStages) {
 
-		if (uWaitSemCount > 0) {
-			submitInfo.setPWaitSemaphores(pxWaitSems);
-			submitInfo.setWaitSemaphoreCount(uWaitSemCount);
-		}
-		if (uSignalSemCount > 0) {
-			submitInfo.setPSignalSemaphores(pxSignalSems);
-			submitInfo.setSignalSemaphoreCount(uSignalSemCount);
-		}
+		vk::SubmitInfo xSubmitInfo = vk::SubmitInfo()
+			.setCommandBufferCount(xCmdBuffers.size())
+			.setPCommandBuffers(xCmdBuffers.data())
+			.setPWaitSemaphores(xWaitSems.data())
+			.setPSignalSemaphores(xSignalSems.data())
+			.setWaitSemaphoreCount(xWaitSems.size())
+			.setSignalSemaphoreCount(xSignalSems.size())
+			.setWaitDstStageMask(eWaitStages);
 
-		submitInfo.setWaitDstStageMask(eWaitStages);
 
-		m_graphicsQueue.submit(submitInfo, xFence);
+		VCE_ASSERT(xSubmitInfo.waitSemaphoreCount == xWaitSems.size() && xSubmitInfo.signalSemaphoreCount == xSignalSems.size(), "Something wrong with wait stages?");
+
+		m_graphicsQueue.submit(xSubmitInfo, xFence);
 	}
 
 	void VulkanRenderer::Present(uint32_t uSwapchainIndex, vk::Semaphore* pxWaitSems, uint32_t uWaitSemCount) {

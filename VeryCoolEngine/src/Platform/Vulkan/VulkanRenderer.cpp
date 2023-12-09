@@ -284,9 +284,7 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 
 	RecordCommandBuffer(m_pxCommandBuffer->GetCurrentCmdBuffer(), iImageIndex, scene);
 
-	SubmitCmdBuffer(m_pxSkyboxCommandBuffer->GetCurrentCmdBuffer(), &m_imageAvailableSemaphores[m_currentFrame], 1, &m_xSkyboxRenderedSemaphores[m_currentFrame], 1, VK_NULL_HANDLE, vk::PipelineStageFlagBits::eColorAttachmentOutput);
-
-	SubmitCmdBuffer(m_pxCommandBuffer->GetCurrentCmdBuffer(), &m_xSkyboxRenderedSemaphores[m_currentFrame], 1, &m_renderFinishedSemaphores[m_currentFrame], 1, m_inFlightFences[m_currentFrame], vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	SubmitCmdBuffers({ m_pxSkyboxCommandBuffer->GetCurrentCmdBuffer(), m_pxCommandBuffer->GetCurrentCmdBuffer()}, {m_imageAvailableSemaphores[m_currentFrame]}, {m_renderFinishedSemaphores[m_currentFrame]}, m_inFlightFences[m_currentFrame], vk::PipelineStageFlagBits::eColorAttachmentOutput);
 
 	Present(iImageIndex, &m_renderFinishedSemaphores[m_currentFrame], 1);
 

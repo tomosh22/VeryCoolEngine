@@ -220,7 +220,7 @@ namespace VeryCoolEngine {
 
 			int8_t AcquireSwapchainImage();
 
-			void SubmitCmdBuffer(vk::CommandBuffer& xCmdBuffer, vk::Semaphore* pxWaitSems, uint32_t uWaitSemCount, vk::Semaphore* pxSignalSems, uint32_t uSignalSemCount, vk::Fence xFence, vk::PipelineStageFlags eWaitStages);
+			void SubmitCmdBuffers(const std::vector<vk::CommandBuffer>& xCmdBuffers, const std::vector<vk::Semaphore>& xWaitSems, const std::vector<vk::Semaphore>& xSignalSems, vk::Fence xFence, vk::PipelineStageFlags eWaitStages);
 
 			void Present(uint32_t uSwapchainIndex, vk::Semaphore* pxWaitSems = nullptr, uint32_t uWaitSemCount = 0);
 
