@@ -406,8 +406,6 @@ namespace VeryCoolEngine {
 
 	void VulkanRenderer::UpdateRenderToTextureTarget() {
 		m_xTargetSetups.at("RenderToTexture").m_xColourAttachments[0].m_pPlatformImageView = &m_apxEditorSceneTexs[m_currentFrame]->m_xImageView;
-
-
 	}
 
 	RendererAPI::TargetSetup VulkanRenderer::CreateRenderToTextureTarget() {

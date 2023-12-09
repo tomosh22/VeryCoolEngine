@@ -30,6 +30,7 @@ VulkanRenderer::VulkanRenderer() {
 
 	m_pxCommandBuffer = new VulkanCommandBuffer;
 	m_pxSkyboxCommandBuffer = new VulkanCommandBuffer;
+	m_pxOpaqueMeshesCommandBuffer = new VulkanCommandBuffer;
 
 #ifdef VCE_DEFERRED_SHADING
 	RendererAPI::s_xGBufferTargetSetup = CreateGBufferTarget();
@@ -166,62 +167,6 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 #pragma endregion
 
-	m_pxCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTexture"), false);
-
-
-
-	m_pxCommandBuffer->SetPipeline(&m_xPipelines.at("Meshes")->m_xPipeline);
-
-	Application::MeshRenderData xMeshRenderData;
-
-	xMeshRenderData.xOverrideNormal = m_xOverrideNormal;
-	xMeshRenderData.uUseBumpMap = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;
-	xMeshRenderData.uUsePhongTess = app->_pRenderer->m_bUsePhongTess ? 1 : 0;
-	xMeshRenderData.fPhongTessFactor = app->_pRenderer->m_fPhongTessFactor;
-	xMeshRenderData.uTessLevel = app->_pRenderer->m_uTessLevel;
-
-	app->m_pxPushConstantUBO->UploadData(&xMeshRenderData, sizeof(Application::MeshRenderData), m_currentFrame, 0);
-
-	for (Mesh* mesh : scene->m_axPipelineMeshes.at("Meshes")) {
-		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
-		m_pxCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
-		m_pxCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
-
-		m_pxCommandBuffer->BindTexture(pxVulkanMesh->GetTexture(), 0);
-		m_pxCommandBuffer->BindTexture(pxVulkanMesh->GetBumpMap(), 1);
-		m_pxCommandBuffer->BindTexture(pxVulkanMesh->GetRoughnessTex(), 2);
-		m_pxCommandBuffer->BindTexture(pxVulkanMesh->GetMetallicTex(), 3);
-		m_pxCommandBuffer->BindTexture(pxVulkanMesh->GetHeightmapTex(), 4);
-
-		
-
-
-		VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
-		m_pxCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame],0);
-
-		VulkanManagedUniformBuffer* pxLightUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pLightUBO);
-		m_pxCommandBuffer->BindBuffer(pxLightUBO->ppBuffers[m_currentFrame], 1);
-
-
-		
-
-		VulkanManagedUniformBuffer* pxPushConstantUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxPushConstantUBO);
-		m_pxCommandBuffer->BindBuffer(pxPushConstantUBO->ppBuffers[m_currentFrame], 2);
-
-		m_pxCommandBuffer->PushConstant(&mesh->m_xTransform._matrix, sizeof(glm::mat4));
-
-		m_pxCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
-	}
-	
-
-
-
-	
-
-
-	commandBuffer.endRenderPass();
-
-
 
 	UpdateImageDescriptor(m_axFramebufferTexDescSet[m_currentFrame], 0, 0, m_apxEditorSceneTexs[m_currentFrame]->m_xImageView, m_xDefaultSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
 
@@ -271,6 +216,62 @@ void VulkanRenderer::DrawSkybox() {
 	m_pxSkyboxCommandBuffer->EndRecording();
 }
 
+void VulkanRenderer::DrawOpaqueMeshes() {
+	Application* app = Application::GetInstance();
+
+	m_pxOpaqueMeshesCommandBuffer->BeginRecording();
+
+	m_pxOpaqueMeshesCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTexture"), false);
+
+
+	m_pxOpaqueMeshesCommandBuffer->SetPipeline(&m_xPipelines.at("Meshes")->m_xPipeline);
+
+	Application::MeshRenderData xMeshRenderData;
+
+	xMeshRenderData.xOverrideNormal = m_xOverrideNormal;
+	xMeshRenderData.uUseBumpMap = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;
+	xMeshRenderData.uUsePhongTess = app->_pRenderer->m_bUsePhongTess ? 1 : 0;
+	xMeshRenderData.fPhongTessFactor = app->_pRenderer->m_fPhongTessFactor;
+	xMeshRenderData.uTessLevel = app->_pRenderer->m_uTessLevel;
+
+	app->m_pxPushConstantUBO->UploadData(&xMeshRenderData, sizeof(Application::MeshRenderData), m_currentFrame, 0);
+
+	for (Mesh* mesh : app->scene->m_axPipelineMeshes.at("Meshes")) {
+		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
+		m_pxOpaqueMeshesCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
+		m_pxOpaqueMeshesCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
+
+		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetTexture(), 0);
+		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetBumpMap(), 1);
+		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetRoughnessTex(), 2);
+		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetMetallicTex(), 3);
+		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetHeightmapTex(), 4);
+
+
+
+
+		VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
+		m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0);
+
+		VulkanManagedUniformBuffer* pxLightUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pLightUBO);
+		m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxLightUBO->ppBuffers[m_currentFrame], 1);
+
+
+
+
+		VulkanManagedUniformBuffer* pxPushConstantUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxPushConstantUBO);
+		m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxPushConstantUBO->ppBuffers[m_currentFrame], 2);
+
+		m_pxOpaqueMeshesCommandBuffer->PushConstant(&mesh->m_xTransform._matrix, sizeof(glm::mat4));
+
+		m_pxOpaqueMeshesCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
+	}
+
+	m_pxOpaqueMeshesCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
+
+	m_pxOpaqueMeshesCommandBuffer->EndRecording();
+}
+
 void VulkanRenderer::DrawFrame(Scene* scene) {
 	uint32_t iImageIndex = AcquireSwapchainImage();
 	if (iImageIndex == -1) {
@@ -280,11 +281,13 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 
 	DrawSkybox();
 
+	DrawOpaqueMeshes();
+
 	m_pxCommandBuffer->BeginRecording();
 
 	RecordCommandBuffer(m_pxCommandBuffer->GetCurrentCmdBuffer(), iImageIndex, scene);
 
-	SubmitCmdBuffers({ m_pxSkyboxCommandBuffer->GetCurrentCmdBuffer(), m_pxCommandBuffer->GetCurrentCmdBuffer()}, {m_imageAvailableSemaphores[m_currentFrame]}, {m_renderFinishedSemaphores[m_currentFrame]}, m_inFlightFences[m_currentFrame], vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	SubmitCmdBuffers({ m_pxSkyboxCommandBuffer->GetCurrentCmdBuffer(), m_pxOpaqueMeshesCommandBuffer->GetCurrentCmdBuffer(), m_pxCommandBuffer->GetCurrentCmdBuffer()}, {m_imageAvailableSemaphores[m_currentFrame]}, {m_renderFinishedSemaphores[m_currentFrame]}, m_inFlightFences[m_currentFrame], vk::PipelineStageFlagBits::eColorAttachmentOutput);
 
 	Present(iImageIndex, &m_renderFinishedSemaphores[m_currentFrame], 1);
 
