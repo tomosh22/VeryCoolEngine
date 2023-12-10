@@ -1,7 +1,7 @@
 #pragma once
 
 
-//#define VCE_USE_EDITOR
+#define VCE_USE_EDITOR
 #define VCE_GAME_WIDTH 1280
 #define VCE_GAME_HEIGHT 720
 #define VCE_EDITOR_ADDITIONAL_WIDTH 400

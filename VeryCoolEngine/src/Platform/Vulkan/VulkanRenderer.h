@@ -110,6 +110,7 @@ namespace VeryCoolEngine {
 			//TODO: move to private
 			uint32_t m_currentFrame = 0;
 
+			RendererAPI* m_pxRendererAPI;
 		protected:
 			static VulkanRenderer* s_pInstance;
 

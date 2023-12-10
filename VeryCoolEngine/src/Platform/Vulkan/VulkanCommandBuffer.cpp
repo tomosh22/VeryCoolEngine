@@ -38,10 +38,10 @@ namespace VeryCoolEngine {
 	}
 	void VulkanCommandBuffer::EndRecording(bool bSubmit /*= true*/)
 	{
-
+		RendererAPI* pxRendererAPI = VulkanRenderer::GetInstance()->m_pxRendererAPI;
 		m_xCurrentCmdBuffer.end();
 		if (bSubmit) {
-			RendererAPI::s_xCmdBuffersToSubmit.push_back(&m_xCurrentCmdBuffer);
+			pxRendererAPI->s_xCmdBuffersToSubmit.push_back(&m_xCurrentCmdBuffer);
 		}
 
 	}

@@ -6,8 +6,9 @@ namespace VeryCoolEngine {
 	class VertexBuffer;
 	class IndexBuffer;
 	class ManagedUniformBuffer;
-	namespace RendererAPI
+	class RendererAPI
 	{
+	public:
 		struct RenderTarget {
 			enum class Format : uint32_t {
 				None,
@@ -61,10 +62,10 @@ namespace VeryCoolEngine {
 			ManagedUniformBuffer* m_pxUniformBuffer;
 		};
 
-		static std::vector<void*> s_xCmdBuffersToSubmit;
-		static void Platform_SubmitCmdBuffers();
+		std::vector<void*> s_xCmdBuffersToSubmit;
+		void Platform_SubmitCmdBuffers();
 
-		static TargetSetup s_xGBufferTargetSetup;
+		//static TargetSetup s_xGBufferTargetSetup;
 	};
 }
 

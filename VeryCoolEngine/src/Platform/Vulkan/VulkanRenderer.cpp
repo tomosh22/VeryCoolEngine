@@ -23,14 +23,18 @@ using namespace VeryCoolEngine;
 
 VulkanRenderer* VulkanRenderer::s_pInstance = nullptr;
 
-
 VulkanRenderer::VulkanRenderer() {
 	InitWindow();
 	InitVulkan();
 
+	m_pxRendererAPI = new RendererAPI;
+
 	m_pxCommandBuffer = new VulkanCommandBuffer;
 	m_pxSkyboxCommandBuffer = new VulkanCommandBuffer;
 	m_pxOpaqueMeshesCommandBuffer = new VulkanCommandBuffer;
+
+
+
 
 #ifdef VCE_DEFERRED_SHADING
 	RendererAPI::s_xGBufferTargetSetup = CreateGBufferTarget();
@@ -279,16 +283,17 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 		return;
 	}
 
+	DrawOpaqueMeshes();
+
 	DrawSkybox();
 
-	DrawOpaqueMeshes();
+	
 
 	m_pxCommandBuffer->BeginRecording();
 
 	RecordCommandBuffer(m_pxCommandBuffer->GetCurrentCmdBuffer(), iImageIndex, scene);
 	
-	
-	SubmitCmdBuffers({ m_pxOpaqueMeshesCommandBuffer->GetCurrentCmdBuffer(), m_pxSkyboxCommandBuffer->GetCurrentCmdBuffer(), m_pxCommandBuffer->GetCurrentCmdBuffer()}, {m_imageAvailableSemaphores[m_currentFrame]}, {m_renderFinishedSemaphores[m_currentFrame]}, m_inFlightFences[m_currentFrame], vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	m_pxRendererAPI->Platform_SubmitCmdBuffers();
 	
 
 	Present(iImageIndex, &m_renderFinishedSemaphores[m_currentFrame], 1);
@@ -342,25 +347,25 @@ void VeryCoolEngine::VulkanRenderer::RenderThreadFunction()
 void RendererAPI::Platform_SubmitCmdBuffers() {
 	VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
 
-	const uint32_t uNumCmdBuffers = RendererAPI::s_xCmdBuffersToSubmit.size();
-	std::vector<vk::CommandBuffer> xVkCmdBuffers(uNumCmdBuffers);
-	for (uint32_t i = 0; i < uNumCmdBuffers; i++)
-		xVkCmdBuffers.push_back(*reinterpret_cast<vk::CommandBuffer*>(RendererAPI::s_xCmdBuffersToSubmit[i]));
+	vk::PipelineStageFlags eWaitStages = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 
-	vk::SubmitInfo submitInfo = vk::SubmitInfo()
-		.setCommandBufferCount(xVkCmdBuffers.size())
-		.setPCommandBuffers(xVkCmdBuffers.data());
+	std::vector<vk::CommandBuffer> xPlatformCmdBufs;
+	for (void* pCmdBuf : s_xCmdBuffersToSubmit) {
+		vk::CommandBuffer& xBuf = *reinterpret_cast<vk::CommandBuffer*>(pCmdBuf);
+		xPlatformCmdBufs.push_back(xBuf);
+	}
 
-	submitInfo.setPWaitSemaphores(&pxRenderer->GetCurrentImageAvailableSem());
-	submitInfo.setWaitSemaphoreCount(1);
-	
-	submitInfo.setPSignalSemaphores(&pxRenderer->GetCurrentRenderCompleteSem());
-	submitInfo.setSignalSemaphoreCount(1);
-	
-	vk::PipelineStageFlags eFlags = vk::PipelineStageFlagBits::eColorAttachmentOutput;
-	submitInfo.setWaitDstStageMask(eFlags);
+	vk::SubmitInfo xSubmitInfo = vk::SubmitInfo()
+		.setCommandBufferCount(s_xCmdBuffersToSubmit.size())
+		.setPCommandBuffers(xPlatformCmdBufs.data())
+		.setPWaitSemaphores(&pxRenderer->GetCurrentImageAvailableSem())
+		.setPSignalSemaphores(&pxRenderer->GetCurrentRenderCompleteSem())
+		.setWaitSemaphoreCount(1)
+		.setSignalSemaphoreCount(1)
+		.setWaitDstStageMask(eWaitStages);
 
-	pxRenderer->GetGraphicsQueue().submit(submitInfo, pxRenderer->GetCurrentInFlightFence());
+	pxRenderer->GetGraphicsQueue().submit(xSubmitInfo, pxRenderer->GetCurrentInFlightFence());
 
-	pxRenderer->GetDevice().waitIdle();
+	//TODO: put this in end frame when I eventually write it
+	s_xCmdBuffersToSubmit.clear();
 }
