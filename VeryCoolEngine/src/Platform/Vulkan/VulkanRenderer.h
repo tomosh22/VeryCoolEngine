@@ -208,8 +208,8 @@ namespace VeryCoolEngine {
 			void BoilerplateInit();
 
 			
-
-			void RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
+			//also handles imgui
+			void CopyToFramebuffer();
 
 			void CreateSyncObjects();
 
@@ -273,6 +273,8 @@ namespace VeryCoolEngine {
 			
 			void UpdateRenderToTextureTarget();
 			RendererAPI::TargetSetup CreateRenderToTextureTarget();
+			void UpdateFramebufferTarget();
+			RendererAPI::TargetSetup CreateFramebufferTarget();
 
 #ifdef VCE_DEFERRED_SHADING
 			RendererAPI::TargetSetup CreateGBufferTarget();

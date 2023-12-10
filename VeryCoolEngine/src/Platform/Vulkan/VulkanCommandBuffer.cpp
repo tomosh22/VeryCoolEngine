@@ -222,6 +222,7 @@ namespace VeryCoolEngine {
 		
 		m_xCurrentFramebuffer = m_pxRenderer->m_xTargetSetupFramebuffers.at(strLookupName.c_str()).at(m_pxRenderer->m_currentFrame);
 
+
 		vk::RenderPassBeginInfo xRenderPassInfo = vk::RenderPassBeginInfo()
 			.setRenderPass(m_xCurrentRenderPass)
 			.setFramebuffer(m_xCurrentFramebuffer)

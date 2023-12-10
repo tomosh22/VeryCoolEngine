@@ -26,7 +26,7 @@ namespace VeryCoolEngine {
 				DontCare, Store
 			};
 			enum class Usage : uint32_t {
-				RenderTarget, ShaderRead
+				RenderTarget, ShaderRead, Present
 			};
 			Format m_eFormat = Format::None;
 			LoadAction m_eLoadAction = LoadAction::DontCare;

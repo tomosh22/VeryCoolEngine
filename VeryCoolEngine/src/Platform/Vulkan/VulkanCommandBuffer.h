@@ -24,7 +24,7 @@ namespace VeryCoolEngine {
 
 		vk::RenderPass TargetSetupToRenderPass(const RendererAPI::TargetSetup& xTargetSetup);
 		vk::Framebuffer TargetSetupToFramebuffer(const RendererAPI::TargetSetup& xTargetSetup);
-	private:
+	public:
 		class VulkanRenderer* m_pxRenderer;
 
 		std::vector<vk::CommandBuffer> m_xCmdBuffers;

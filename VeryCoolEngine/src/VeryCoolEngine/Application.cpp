@@ -214,9 +214,9 @@ namespace VeryCoolEngine {
 					&m_pxCopyToFramebufferPass,
 					false,
 					false,
-					false,
+					true,
 					0,
-					0
+					1
 					)
 			});
 

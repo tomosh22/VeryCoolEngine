@@ -40,6 +40,7 @@ VulkanRenderer::VulkanRenderer() {
 	RendererAPI::s_xGBufferTargetSetup = CreateGBufferTarget();
 #endif
 	m_xTargetSetups.insert({ "RenderToTexture", CreateRenderToTextureTarget() });
+	m_xTargetSetups.insert({ "CopyToFramebuffer", CreateFramebufferTarget() });
 }
 
 void VulkanRenderer::InitWindow() {
@@ -101,6 +102,7 @@ void VulkanRenderer::MainLoop() {
 	app->sceneMutex.lock();
 
 	UpdateRenderToTextureTarget();
+	UpdateFramebufferTarget();
 
 	BeginScene(scene);
 
@@ -113,7 +115,7 @@ void VulkanRenderer::MainLoop() {
 	app->sceneMutex.unlock();
 }
 
-void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene) {
+void VulkanRenderer::CopyToFramebuffer() {
 	Application* app = Application::GetInstance();
 
 #ifdef VCE_USE_EDITOR
@@ -122,7 +124,6 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 #endif
 	
 
-	//commandBuffer.begin(vk::CommandBufferBeginInfo());
 
 
 #pragma region gbuffer
@@ -171,25 +172,30 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 
 #pragma endregion
 
+	m_pxCommandBuffer->BeginRecording();
+
+	m_pxCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("CopyToFramebuffer"), true);
+
+	m_pxCommandBuffer->SetPipeline(m_xPipelines.at("CopyToFramebuffer"));
+
+	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh);
+	m_pxCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
+	m_pxCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
+
+	m_pxCommandBuffer->BindTexture(m_apxEditorSceneTexs[m_currentFrame], 0);
+	
+	m_pxCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
+	m_pxCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
+	
+#ifdef VCE_USE_EDITOR
 
 	UpdateImageDescriptor(m_axFramebufferTexDescSet[m_currentFrame], 0, 0, m_apxEditorSceneTexs[m_currentFrame]->m_xImageView, m_xDefaultSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
 
-	BeginBackbufferRenderPass(commandBuffer, imageIndex);
-
-	VulkanPipeline* pxBackbufferPipeline = m_xPipelines.at("CopyToFramebuffer");
-
-	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxBackbufferPipeline->m_xPipeline);
-	dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh)->BindToCmdBuffer(commandBuffer);
-	pxBackbufferPipeline->BindDescriptorSets(commandBuffer, { m_axFramebufferTexDescSet[m_currentFrame] }, vk::PipelineBindPoint::eGraphics, 0);
-	commandBuffer.drawIndexed(dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh)->m_uNumIndices, dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh)->m_uNumInstances, 0, 0, 0);
-	commandBuffer.endRenderPass();
+	BeginImguiRenderPass(m_pxCommandBuffer->GetCurrentCmdBuffer(), m_currentFrame);
 	
-#ifdef VCE_USE_EDITOR
-	BeginImguiRenderPass(commandBuffer, imageIndex);
-	
-	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_pxCommandBuffer->GetCurrentCmdBuffer());
 	app->_pImGuiLayer->End();
-	commandBuffer.endRenderPass();
+	m_pxCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
 #endif
 
 	
@@ -289,9 +295,9 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 
 	
 
-	m_pxCommandBuffer->BeginRecording();
+	
 
-	RecordCommandBuffer(m_pxCommandBuffer->GetCurrentCmdBuffer(), iImageIndex, scene);
+	CopyToFramebuffer();
 	
 	m_pxRendererAPI->Platform_SubmitCmdBuffers();
 	
