@@ -110,6 +110,7 @@ namespace VeryCoolEngine {
 		}
 	}
 
+	//currently unused
 	vk::RenderPass VulkanCommandBuffer::TargetSetupToRenderPass(const RendererAPI::TargetSetup& xTargetSetup) {
 		const uint32_t uNumColourAttachments = xTargetSetup.m_xColourAttachments.size();
 		std::vector<vk::AttachmentDescription> xAttachmentDescs(uNumColourAttachments);
@@ -181,6 +182,7 @@ namespace VeryCoolEngine {
 		return std::move(m_pxRenderer->GetDevice().createRenderPass(xRenderPassInfo));
 	}
 
+	//currently unused
 	vk::Framebuffer VulkanCommandBuffer::TargetSetupToFramebuffer(const RendererAPI::TargetSetup& xTargetSetup) {
 		bool bHasDepth = xTargetSetup.m_xDepthStencil.m_eFormat != RendererAPI::RenderTarget::Format::None;
 		const uint32_t uNumColourAttachments = xTargetSetup.m_xColourAttachments.size();

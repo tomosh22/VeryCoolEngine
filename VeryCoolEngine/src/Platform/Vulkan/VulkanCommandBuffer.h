@@ -22,7 +22,9 @@ namespace VeryCoolEngine {
 		vk::CommandBuffer& GetCurrentCmdBuffer() { return m_xCurrentCmdBuffer; }
 		void* Platform_GetCurrentCmdBuffer() const override { return (void*) & m_xCurrentCmdBuffer; }
 
+		//currently unused
 		vk::RenderPass TargetSetupToRenderPass(const RendererAPI::TargetSetup& xTargetSetup);
+		//currently unused
 		vk::Framebuffer TargetSetupToFramebuffer(const RendererAPI::TargetSetup& xTargetSetup);
 	public:
 		class VulkanRenderer* m_pxRenderer;

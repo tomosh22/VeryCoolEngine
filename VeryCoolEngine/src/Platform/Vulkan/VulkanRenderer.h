@@ -271,9 +271,7 @@ namespace VeryCoolEngine {
 			std::unordered_map<std::string, vk::RenderPass> m_xTargetSetupPasses;
 			std::unordered_map<std::string, std::vector<vk::Framebuffer>> m_xTargetSetupFramebuffers;
 			
-			void UpdateRenderToTextureTarget();
 			RendererAPI::TargetSetup CreateRenderToTextureTarget();
-			void UpdateFramebufferTarget();
 			RendererAPI::TargetSetup CreateFramebufferTarget();
 
 #ifdef VCE_DEFERRED_SHADING
@@ -320,7 +318,7 @@ namespace VeryCoolEngine {
 			vk::CommandPool m_commandPool;
 			std::vector<vk::CommandBuffer> m_commandBuffers;
 
-			VulkanCommandBuffer* m_pxCommandBuffer;
+			VulkanCommandBuffer* m_pxCopyToFramebufferCommandBuffer;
 			VulkanCommandBuffer* m_pxSkyboxCommandBuffer;
 			VulkanCommandBuffer* m_pxOpaqueMeshesCommandBuffer;
 

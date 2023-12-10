@@ -29,7 +29,7 @@ VulkanRenderer::VulkanRenderer() {
 
 	m_pxRendererAPI = new RendererAPI;
 
-	m_pxCommandBuffer = new VulkanCommandBuffer;
+	m_pxCopyToFramebufferCommandBuffer = new VulkanCommandBuffer;
 	m_pxSkyboxCommandBuffer = new VulkanCommandBuffer;
 	m_pxOpaqueMeshesCommandBuffer = new VulkanCommandBuffer;
 
@@ -101,8 +101,6 @@ void VulkanRenderer::MainLoop() {
 	}
 	app->sceneMutex.lock();
 
-	UpdateRenderToTextureTarget();
-	UpdateFramebufferTarget();
 
 	BeginScene(scene);
 
@@ -129,7 +127,7 @@ void VulkanRenderer::CopyToFramebuffer() {
 #pragma region gbuffer
 	
 #ifdef VCE_DEFERRED_SHADING
-	m_pxCommandBuffer->SubmitTargetSetup(RendererAPI::s_xGBufferTargetSetup);
+	m_pxCopyToFramebufferCommandBuffer->SubmitTargetSetup(RendererAPI::s_xGBufferTargetSetup);
 
 	//BeginGBufferRenderPass(commandBuffer, imageIndex);
 	VulkanPipeline* pxGBufferPipeline = m_xPipelines.at("GBuffer");
@@ -172,34 +170,34 @@ void VulkanRenderer::CopyToFramebuffer() {
 
 #pragma endregion
 
-	m_pxCommandBuffer->BeginRecording();
+	m_pxCopyToFramebufferCommandBuffer->BeginRecording();
 
-	m_pxCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("CopyToFramebuffer"), true);
+	m_pxCopyToFramebufferCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("CopyToFramebuffer"), true);
 
-	m_pxCommandBuffer->SetPipeline(m_xPipelines.at("CopyToFramebuffer"));
+	m_pxCopyToFramebufferCommandBuffer->SetPipeline(m_xPipelines.at("CopyToFramebuffer"));
 
 	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh);
-	m_pxCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
-	m_pxCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
+	m_pxCopyToFramebufferCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
+	m_pxCopyToFramebufferCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
 
-	m_pxCommandBuffer->BindTexture(m_apxEditorSceneTexs[m_currentFrame], 0);
+	m_pxCopyToFramebufferCommandBuffer->BindTexture(m_apxEditorSceneTexs[m_currentFrame], 0);
 	
-	m_pxCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
-	m_pxCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
+	m_pxCopyToFramebufferCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
+	m_pxCopyToFramebufferCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
 	
 #ifdef VCE_USE_EDITOR
 
 	UpdateImageDescriptor(m_axFramebufferTexDescSet[m_currentFrame], 0, 0, m_apxEditorSceneTexs[m_currentFrame]->m_xImageView, m_xDefaultSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
 
-	BeginImguiRenderPass(m_pxCommandBuffer->GetCurrentCmdBuffer(), m_currentFrame);
+	BeginImguiRenderPass(m_pxCopyToFramebufferCommandBuffer->GetCurrentCmdBuffer(), m_currentFrame);
 	
-	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_pxCommandBuffer->GetCurrentCmdBuffer());
+	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_pxCopyToFramebufferCommandBuffer->GetCurrentCmdBuffer());
 	app->_pImGuiLayer->End();
-	m_pxCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
+	m_pxCopyToFramebufferCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
 #endif
 
 	
-	m_pxCommandBuffer->EndRecording();
+	m_pxCopyToFramebufferCommandBuffer->EndRecording();
 	
 }
 

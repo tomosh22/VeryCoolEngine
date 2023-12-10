@@ -404,9 +404,6 @@ namespace VeryCoolEngine {
 	}
 #endif
 
-	void VulkanRenderer::UpdateRenderToTextureTarget() {
-		m_xTargetSetups.at("RenderToTexture").m_xColourAttachments[0].m_pPlatformImageView = &m_apxEditorSceneTexs[m_currentFrame]->m_xImageView;
-	}
 
 	RendererAPI::TargetSetup VulkanRenderer::CreateFramebufferTarget() {
 		Application* app = Application::GetInstance();
@@ -441,9 +438,7 @@ namespace VeryCoolEngine {
 		return xTargetSetup;
 	}
 
-	void VulkanRenderer::UpdateFramebufferTarget() {
-		m_xTargetSetups.at("CopyToFramebuffer").m_xColourAttachments[0].m_pPlatformImageView = &m_swapChainImageViews[m_currentFrame];
-	}
+	
 
 	RendererAPI::TargetSetup VulkanRenderer::CreateRenderToTextureTarget() {
 		Application* app = Application::GetInstance();
