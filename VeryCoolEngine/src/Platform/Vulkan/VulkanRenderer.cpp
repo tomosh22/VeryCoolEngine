@@ -91,7 +91,7 @@ void VulkanRenderer::MainLoop() {
 
 	Scene* scene = app->scene;
 	while (true) {
-		printf("Waiting on scene to be ready\n");
+		std::this_thread::yield();
 		if (scene->ready)break;//#todo implement mutex here
 	}
 	app->sceneMutex.lock();
@@ -198,7 +198,7 @@ void VulkanRenderer::DrawSkybox() {
 
 	m_pxSkyboxCommandBuffer->BeginRecording();
 
-	m_pxSkyboxCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTexture"), true);
+	m_pxSkyboxCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTexture"), false);
 
 	VulkanPipeline* pxSkyboxPipeline = m_xPipelines.at("Skybox");
 	m_pxSkyboxCommandBuffer->SetPipeline(&pxSkyboxPipeline->m_xPipeline);
@@ -221,7 +221,7 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 
 	m_pxOpaqueMeshesCommandBuffer->BeginRecording();
 
-	m_pxOpaqueMeshesCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTexture"), false);
+	m_pxOpaqueMeshesCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTexture"), true);
 
 
 	m_pxOpaqueMeshesCommandBuffer->SetPipeline(&m_xPipelines.at("Meshes")->m_xPipeline);
@@ -286,8 +286,10 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 	m_pxCommandBuffer->BeginRecording();
 
 	RecordCommandBuffer(m_pxCommandBuffer->GetCurrentCmdBuffer(), iImageIndex, scene);
-
-	SubmitCmdBuffers({ m_pxSkyboxCommandBuffer->GetCurrentCmdBuffer(), m_pxOpaqueMeshesCommandBuffer->GetCurrentCmdBuffer(), m_pxCommandBuffer->GetCurrentCmdBuffer()}, {m_imageAvailableSemaphores[m_currentFrame]}, {m_renderFinishedSemaphores[m_currentFrame]}, m_inFlightFences[m_currentFrame], vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	
+	
+	SubmitCmdBuffers({ m_pxOpaqueMeshesCommandBuffer->GetCurrentCmdBuffer(), m_pxSkyboxCommandBuffer->GetCurrentCmdBuffer(), m_pxCommandBuffer->GetCurrentCmdBuffer()}, {m_imageAvailableSemaphores[m_currentFrame]}, {m_renderFinishedSemaphores[m_currentFrame]}, m_inFlightFences[m_currentFrame], vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	
 
 	Present(iImageIndex, &m_renderFinishedSemaphores[m_currentFrame], 1);
 

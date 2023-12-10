@@ -231,6 +231,23 @@ namespace VeryCoolEngine {
 		}
 	}
 
+	vk::CompareOp VceCompareFuncToVkCompareFunc(DepthCompareFunc eFunc) {
+		switch (eFunc) {
+		case DepthCompareFunc::GreaterOrEqual:
+			return vk::CompareOp::eGreaterOrEqual;
+		case DepthCompareFunc::LessOrEqual:
+			return vk::CompareOp::eLessOrEqual;
+		case DepthCompareFunc::Never:
+			return vk::CompareOp::eNever;
+		case DepthCompareFunc::Always:
+			return vk::CompareOp::eAlways;
+		case DepthCompareFunc::Disabled:
+			return vk::CompareOp::eAlways;
+		default:
+			VCE_ASSERT(false, "Unsupported blend factor");
+		}
+	}
+
 	vk::BlendFactor VceBlendFactorToVKBlendFactor(BlendFactor eFactor) {
 		switch (eFactor) {
 		case BlendFactor::SrcAlpha:
@@ -332,7 +349,7 @@ namespace VeryCoolEngine {
 		xBuilder = xBuilder.WithShader(*dynamic_cast<VulkanShader*>(spec.m_pxShader));
 		for (uint32_t i = 0; i < spec.m_aeDstBlendFactors.size(); i++)
 			xBuilder = xBuilder.WithBlendState(VceBlendFactorToVKBlendFactor(spec.m_aeSrcBlendFactors[i]), VceBlendFactorToVKBlendFactor(spec.m_aeDstBlendFactors[i]), spec.m_abBlendStatesEnabled[i]);
-		xBuilder = xBuilder.WithDepthState(vk::CompareOp::eGreaterOrEqual, spec.m_bDepthTestEnabled, spec.m_bDepthWriteEnabled, false);
+		xBuilder = xBuilder.WithDepthState(VceCompareFuncToVkCompareFunc(spec.m_eDepthCompareFunc), spec.m_bDepthTestEnabled, spec.m_bDepthWriteEnabled, false);
 		xBuilder = xBuilder.WithColourFormats(spec.m_aeColourFormats);
 		xBuilder = xBuilder.WithDepthFormat(vk::Format::eD32Sfloat);
 		xBuilder = xBuilder.WithPass(dynamic_cast<VulkanRenderPass*>(*spec.m_pxRenderPass)->m_xRenderPass);

@@ -151,7 +151,7 @@ namespace VeryCoolEngine {
 					{BlendFactor::SrcAlpha},
 					{BlendFactor::OneMinusSrcAlpha},
 					{true},
-					false,
+					true,
 					false,
 					DepthCompareFunc::GreaterOrEqual,
 					{ColourFormat::BGRA8_sRGB},

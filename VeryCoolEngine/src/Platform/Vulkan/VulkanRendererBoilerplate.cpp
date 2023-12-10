@@ -764,8 +764,12 @@ namespace VeryCoolEngine {
 		app->m_framebufferResized = true;
 	}
 
+
+
 	VKAPI_ATTR vk::Bool32 VKAPI_CALL VulkanRenderer::debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity, vk::DebugUtilsMessageTypeFlagsEXT messageType, const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
-		if (messageSeverity >= vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)std::cerr << "validation layer: " << pCallbackData->pMessage << '\n';
+		if (messageSeverity >= vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning) {
+			std::cerr << "validation layer: " << pCallbackData->pMessage << '\n';
+		}
 		__debugbreak();
 		return VK_FALSE;
 	}

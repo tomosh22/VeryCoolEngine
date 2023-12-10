@@ -112,7 +112,6 @@ namespace VeryCoolEngine {
 	//declared in Application.h, defined by game
 	void Application::GameLoop() {
 		Game* game = (Game*)Application::GetInstance();
-		printf("game loop\n");
 
 
 		sceneMutex.lock();

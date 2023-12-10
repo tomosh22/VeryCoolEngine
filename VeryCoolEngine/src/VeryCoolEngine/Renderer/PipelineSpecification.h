@@ -14,7 +14,7 @@ namespace VeryCoolEngine {
 	};
 
 	enum class DepthCompareFunc {
-		Disabled, GreaterOrEqual
+		Disabled, LessOrEqual, GreaterOrEqual, Never, Always
 	};
 
 	enum class ColourFormat {
