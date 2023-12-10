@@ -20,7 +20,7 @@ namespace VeryCoolEngine {
 		CreateCommandPool();
 		CreateDepthTexture();
 		CreateDescriptorPool();
-		app->m_pxBackbufferRenderPass = new VulkanRenderPass();
+		//app->m_pxBackbufferRenderPass = new VulkanRenderPass();
 
 		//#TODO do this properly, I'm too lazy to move the above to a VulkanRenderPass::BackbufferRenderPass
 		app->m_pxGBufferRenderPass = new VulkanRenderPass();
@@ -35,6 +35,10 @@ namespace VeryCoolEngine {
 		m_device.destroyRenderPass(dynamic_cast<VulkanRenderPass*>(app->m_pxRenderToTexturePass)->m_xRenderPass);
 		dynamic_cast<VulkanRenderPass*>(app->m_pxRenderToTexturePass)->m_xRenderPass = VulkanRenderPass::RenderToTexturePass();
 
+		app->m_pxRenderToTexturePassNoClear = new VulkanRenderPass();
+		m_device.destroyRenderPass(dynamic_cast<VulkanRenderPass*>(app->m_pxRenderToTexturePassNoClear)->m_xRenderPass);
+		dynamic_cast<VulkanRenderPass*>(app->m_pxRenderToTexturePassNoClear)->m_xRenderPass = VulkanRenderPass::RenderToTexturePassNoClear();
+
 		app->m_pxCopyToFramebufferPass = new VulkanRenderPass();
 		m_device.destroyRenderPass(dynamic_cast<VulkanRenderPass*>(app->m_pxCopyToFramebufferPass)->m_xRenderPass);
 		dynamic_cast<VulkanRenderPass*>(app->m_pxCopyToFramebufferPass)->m_xRenderPass = VulkanRenderPass::CopyToFramebufferPass();
@@ -46,6 +50,7 @@ namespace VeryCoolEngine {
 		CreateFrameBuffers();
 		CreateImguiFrameBuffers();//imgui doesn't use depth
 		CreateRenderToTextureFrameBuffers();
+		CreateRenderToTextureFrameBuffersNoClear();
 
 #ifdef VCE_DEFERRED_SHADING
 		SetupDeferredShading();
@@ -119,6 +124,8 @@ namespace VeryCoolEngine {
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
+		
+
 		vk::InstanceCreateInfo instanceInfo = vk::InstanceCreateInfo()
 			.setPApplicationInfo(&appInfo)
 			.setEnabledExtensionCount(extensions.size())
@@ -186,10 +193,21 @@ namespace VeryCoolEngine {
 			.setSamplerAnisotropy(VK_TRUE)
 			.setTessellationShader(VK_TRUE);
 
+		vk::PhysicalDeviceFeatures2 deviceFeatures2;
+		deviceFeatures2.setFeatures(deviceFeatures);
+
+		vk::PhysicalDeviceDescriptorIndexingFeatures indexingFeatures;
+		indexingFeatures.descriptorBindingUniformBufferUpdateAfterBind = true;
+		indexingFeatures.descriptorBindingSampledImageUpdateAfterBind = true;
+		indexingFeatures.descriptorBindingPartiallyBound = true;
+		indexingFeatures.descriptorBindingVariableDescriptorCount = true;
+		indexingFeatures.runtimeDescriptorArray = true;
+		deviceFeatures2.setPNext((void*)&indexingFeatures);
+
 		vk::DeviceCreateInfo deviceCreateInfo = vk::DeviceCreateInfo()
+			.setPNext(&deviceFeatures2)
 			.setPQueueCreateInfos(queueInfos.data())
 			.setQueueCreateInfoCount(queueInfos.size())
-			.setPEnabledFeatures(&deviceFeatures)
 			.setEnabledExtensionCount(m_deviceExtensions.size())
 			.setPpEnabledExtensionNames(m_deviceExtensions.data())
 #if DEBUG
@@ -246,7 +264,7 @@ namespace VeryCoolEngine {
 			vk::ImageView axAttachments[]{
 				imageView,
 			};
-			framebufferInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxBackbufferRenderPass)->m_xRenderPass;
+			framebufferInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxCopyToFramebufferPass)->m_xRenderPass;
 			framebufferInfo.attachmentCount = 1;
 			framebufferInfo.pAttachments = axAttachments;
 			framebufferInfo.width = m_swapChainExtent.width;
@@ -258,6 +276,7 @@ namespace VeryCoolEngine {
 			TextureDescriptorSpecification xTexSpec;
 			xTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 			xTexSpec.m_bJustFragment = true;
+			xTexSpec.m_bBindless = false;
 			vk::DescriptorSetLayout xLayout = VulkanDescriptorSetLayoutBuilder::FromSpecification(xTexSpec);
 			m_axFramebufferTexDescSet.emplace_back(CreateDescriptorSet(xLayout, m_descriptorPool));
 
@@ -285,6 +304,27 @@ namespace VeryCoolEngine {
 		}
 	}
 
+	void VulkanRenderer::CreateRenderToTextureFrameBuffersNoClear() {
+		Application* app = Application::GetInstance();
+		m_axRenderToTextureFramebuffersNoClear.resize(m_swapChainImageViews.size());
+		int swapchainIndex = 0;
+		for (vk::ImageView imageView : m_swapChainImageViews) {
+			vk::FramebufferCreateInfo framebufferInfo{};
+			vk::ImageView axAttachments[]{
+				m_apxEditorSceneTexs[swapchainIndex]->m_xImageView,
+				m_xDepthTexture->m_xImageView,
+			};
+			framebufferInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxRenderToTexturePassNoClear)->m_xRenderPass;
+			framebufferInfo.attachmentCount = 2;
+			framebufferInfo.pAttachments = axAttachments;
+			framebufferInfo.width = m_swapChainExtent.width;
+			framebufferInfo.height = m_swapChainExtent.height;
+			framebufferInfo.layers = 1;
+			m_axRenderToTextureFramebuffersNoClear[swapchainIndex++] = m_device.createFramebuffer(framebufferInfo);
+
+		}
+	}
+
 	void VulkanRenderer::CreateImguiFrameBuffers() {
 		Application* app = Application::GetInstance();
 		m_axImguiFramebuffers.resize(m_swapChainImageViews.size());
@@ -301,7 +341,7 @@ namespace VeryCoolEngine {
 			m_axImguiFramebuffers[swapchainIndex++] = m_device.createFramebuffer(framebufferInfo);
 		}
 	}
-
+#ifdef VCE_DEFERRED_SHADING
 	void VulkanRenderer::CreateGBufferFrameBuffers() {
 		Application* app = Application::GetInstance();
 		m_axGBufferFramebuffers.resize(m_swapChainImageViews.size());
@@ -319,12 +359,131 @@ namespace VeryCoolEngine {
 	}
 
 
+	RendererAPI::TargetSetup VulkanRenderer::CreateGBufferTarget() {
+		Application* app = Application::GetInstance();
+		RendererAPI::TargetSetup xTargetSetup;
+		RendererAPI::RenderTarget xDiffuseTarget;
+		RendererAPI::RenderTarget xNormalTarget;
+		RendererAPI::RenderTarget xMaterialTarget;
+		RendererAPI::RenderTarget xDepthStencilTarget;
+
+		xDiffuseTarget.m_eFormat = RendererAPI::RenderTarget::Format::B8G8R8A8Unorm;
+		xDiffuseTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Clear;
+		xDiffuseTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
+		xDiffuseTarget.m_uHeight = m_height;
+		xDiffuseTarget.m_uWidth = m_width;
+		xDiffuseTarget.m_pPlatformImageView = &m_apxGBufferDiffuse[m_currentFrame]->m_xImageView;
+
+		xNormalTarget.m_eFormat = RendererAPI::RenderTarget::Format::B8G8R8A8Unorm;
+		xNormalTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Clear;
+		xNormalTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
+		xNormalTarget.m_uHeight = m_height;
+		xNormalTarget.m_uWidth = m_width;
+		xNormalTarget.m_pPlatformImageView = &m_apxGBufferNormals[m_currentFrame]->m_xImageView;
+
+		xMaterialTarget.m_eFormat = RendererAPI::RenderTarget::Format::B8G8R8A8Unorm;
+		xMaterialTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Clear;
+		xMaterialTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
+		xMaterialTarget.m_uHeight = m_height;
+		xMaterialTarget.m_uWidth = m_width;
+		xMaterialTarget.m_pPlatformImageView = &m_apxGBufferMaterial[m_currentFrame]->m_xImageView;
+
+		xDepthStencilTarget.m_eFormat = RendererAPI::RenderTarget::Format::D32Sfloat;
+		xDepthStencilTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Clear;
+		xDepthStencilTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
+		xDepthStencilTarget.m_uHeight = m_height;
+		xDepthStencilTarget.m_uWidth = m_width;
+		xDepthStencilTarget.m_pPlatformImageView = &m_apxGBufferDepth[m_currentFrame]->m_xImageView;
+
+		xTargetSetup.m_xColourAttachments.push_back(xDiffuseTarget);
+		xTargetSetup.m_xColourAttachments.push_back(xNormalTarget);
+		xTargetSetup.m_xColourAttachments.push_back(xMaterialTarget);
+		xTargetSetup.m_xDepthStencil = xDepthStencilTarget;
+
+		return xTargetSetup;
+	}
+#endif
+
+
+	RendererAPI::TargetSetup VulkanRenderer::CreateFramebufferTarget() {
+		Application* app = Application::GetInstance();
+		RendererAPI::TargetSetup xTargetSetup;
+		RendererAPI::RenderTarget xColourTarget;
+		RendererAPI::RenderTarget xDepthStencilTarget;
+
+		xColourTarget.m_eFormat = RendererAPI::RenderTarget::Format::B8G8R8A8Srgb;
+		xColourTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Clear;
+		xColourTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
+		xColourTarget.m_uHeight = m_height;
+		xColourTarget.m_uWidth = m_width;
+		
+		xColourTarget.m_eUsage = RendererAPI::RenderTarget::Usage::Present;
+
+		xDepthStencilTarget.m_eFormat = RendererAPI::RenderTarget::Format::D32Sfloat;
+		xDepthStencilTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Clear;
+		xDepthStencilTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
+		xDepthStencilTarget.m_uHeight = m_height;
+		xDepthStencilTarget.m_uWidth = m_width;
+		xDepthStencilTarget.m_pPlatformImageView = &m_xDepthTexture->m_xImageView;
+
+		xTargetSetup.m_xColourAttachments.push_back(xColourTarget);
+		xTargetSetup.m_xDepthStencil = xDepthStencilTarget;
+
+		xTargetSetup.m_strName = "CopyToFramebuffer";
+
+		m_xTargetSetupPasses.insert({ "CopyToFramebuffer" ,dynamic_cast<VulkanRenderPass*>(app->m_pxCopyToFramebufferPass)->m_xRenderPass });
+
+		m_xTargetSetupFramebuffers.insert({ "CopyToFramebuffer" ,m_swapChainFramebuffers });
+
+		return xTargetSetup;
+	}
+
+	
+
+	RendererAPI::TargetSetup VulkanRenderer::CreateRenderToTextureTarget() {
+		Application* app = Application::GetInstance();
+		RendererAPI::TargetSetup xTargetSetup;
+		RendererAPI::RenderTarget xColourTarget;
+		RendererAPI::RenderTarget xDepthStencilTarget;
+
+		xColourTarget.m_eFormat = RendererAPI::RenderTarget::Format::B8G8R8A8Srgb;
+		xColourTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Clear;
+		xColourTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
+		xColourTarget.m_uHeight = m_height;
+		xColourTarget.m_uWidth = m_width;
+
+		xColourTarget.m_eUsage = RendererAPI::RenderTarget::Usage::ShaderRead;
+
+		xDepthStencilTarget.m_eFormat = RendererAPI::RenderTarget::Format::D32Sfloat;
+		xDepthStencilTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Clear;
+		xDepthStencilTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
+		xDepthStencilTarget.m_uHeight = m_height;
+		xDepthStencilTarget.m_uWidth = m_width;
+		xDepthStencilTarget.m_pPlatformImageView = &m_xDepthTexture->m_xImageView;
+
+		xTargetSetup.m_xColourAttachments.push_back(xColourTarget);
+		xTargetSetup.m_xDepthStencil = xDepthStencilTarget;
+
+		xTargetSetup.m_strName = "RenderToTexture";
+
+		m_xTargetSetupPasses.insert({ "RenderToTexture" ,dynamic_cast<VulkanRenderPass*>(app->m_pxRenderToTexturePass)->m_xRenderPass });
+		m_xTargetSetupPasses.insert({ "RenderToTextureNoClear" ,dynamic_cast<VulkanRenderPass*>(app->m_pxRenderToTexturePassNoClear)->m_xRenderPass });
+
+		m_xTargetSetupFramebuffers.insert({ "RenderToTexture" ,m_axRenderToTextureFramebuffers });
+		m_xTargetSetupFramebuffers.insert({ "RenderToTextureNoClear" ,m_axRenderToTextureFramebuffersNoClear });
+
+		return xTargetSetup;
+	}
+
 	void VulkanRenderer::CreateSwapChain() {
 		SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(m_physicalDevice);
 		vk::SurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
 		vk::PresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
 		vk::Extent2D extent = ChooseSwapExtent(swapChainSupport.capabilities);
-		uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+
+		//do i need to + 1 here?
+		uint32_t imageCount = swapChainSupport.capabilities.minImageCount;
+
 		if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount)
 			imageCount = swapChainSupport.capabilities.maxImageCount;
 		vk::SwapchainCreateInfoKHR createInfo{};
@@ -434,7 +593,7 @@ namespace VeryCoolEngine {
 			.setPoolSizeCount(sizeof(axPoolSizes) / sizeof(axPoolSizes[0]))
 			.setPPoolSizes(axPoolSizes)
 			.setMaxSets(1000)
-			.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet);
+			.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind);
 
 		m_descriptorPool = m_device.createDescriptorPool(xPoolInfo);
 
@@ -530,7 +689,7 @@ namespace VeryCoolEngine {
 			xBeginInfo.setFlags(xBeginInfo.flags | vk::CommandBufferUsageFlagBits::eRenderPassContinue);
 
 			vk::CommandBufferInheritanceInfo xInherit = vk::CommandBufferInheritanceInfo()
-				.setRenderPass(dynamic_cast<VulkanRenderPass*>(Application::GetInstance()->m_pxBackbufferRenderPass)->m_xRenderPass)
+				.setRenderPass(dynamic_cast<VulkanRenderPass*>(Application::GetInstance()->m_pxCopyToFramebufferPass)->m_xRenderPass)
 				.setFramebuffer(m_swapChainFramebuffers[m_currentFrame]);
 			xBeginInfo.setPInheritanceInfo(&xInherit);
 		}
@@ -596,6 +755,7 @@ namespace VeryCoolEngine {
 	void VulkanRenderer::CreateSyncObjects() {
 		m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 		m_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+		m_xSkyboxRenderedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 		m_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
 		vk::SemaphoreCreateInfo semaphoreInfo{};
 
@@ -605,6 +765,7 @@ namespace VeryCoolEngine {
 		{
 			m_imageAvailableSemaphores[i] = m_device.createSemaphore(semaphoreInfo);
 			m_renderFinishedSemaphores[i] = m_device.createSemaphore(semaphoreInfo);
+			m_xSkyboxRenderedSemaphores[i] = m_device.createSemaphore(semaphoreInfo);
 			m_inFlightFences[i] = m_device.createFence(fenceInfo);
 		}
 
@@ -638,8 +799,13 @@ namespace VeryCoolEngine {
 		app->m_framebufferResized = true;
 	}
 
+
+
 	VKAPI_ATTR vk::Bool32 VKAPI_CALL VulkanRenderer::debugCallback(vk::DebugUtilsMessageSeverityFlagBitsEXT messageSeverity, vk::DebugUtilsMessageTypeFlagsEXT messageType, const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
-		if (messageSeverity >= vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)std::cerr << "validation layer: " << pCallbackData->pMessage << '\n';
+		if (messageSeverity >= vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning) {
+			std::cerr << "validation layer: " << pCallbackData->pMessage << '\n';
+		}
+		__debugbreak();
 		return VK_FALSE;
 	}
 
@@ -713,23 +879,21 @@ namespace VeryCoolEngine {
 		return static_cast<int8_t>(uImageIndex);
 	}
 
-	void VulkanRenderer::SubmitCmdBuffer(vk::CommandBuffer& xCmdBuffer, vk::Semaphore* pxWaitSems, uint32_t uWaitSemCount, vk::Semaphore* pxSignalSems, uint32_t uSignalSemCount, vk::PipelineStageFlags eWaitStages) {
-		vk::SubmitInfo submitInfo = vk::SubmitInfo()
-			.setCommandBufferCount(1)
-			.setPCommandBuffers(&xCmdBuffer);
+	void VulkanRenderer::SubmitCmdBuffers(const std::vector<vk::CommandBuffer>& xCmdBuffers, const std::vector<vk::Semaphore>& xWaitSems, const std::vector<vk::Semaphore>& xSignalSems, vk::Fence xFence, vk::PipelineStageFlags eWaitStages) {
 
-		if (uWaitSemCount > 0) {
-			submitInfo.setPWaitSemaphores(pxWaitSems);
-			submitInfo.setWaitSemaphoreCount(uWaitSemCount);
-		}
-		if (uSignalSemCount > 0) {
-			submitInfo.setPSignalSemaphores(pxSignalSems);
-			submitInfo.setSignalSemaphoreCount(uSignalSemCount);
-		}
+		vk::SubmitInfo xSubmitInfo = vk::SubmitInfo()
+			.setCommandBufferCount(xCmdBuffers.size())
+			.setPCommandBuffers(xCmdBuffers.data())
+			.setPWaitSemaphores(xWaitSems.data())
+			.setPSignalSemaphores(xSignalSems.data())
+			.setWaitSemaphoreCount(xWaitSems.size())
+			.setSignalSemaphoreCount(xSignalSems.size())
+			.setWaitDstStageMask(eWaitStages);
 
-		submitInfo.setWaitDstStageMask(eWaitStages);
 
-		m_graphicsQueue.submit(submitInfo, m_inFlightFences[m_currentFrame]);
+		VCE_ASSERT(xSubmitInfo.waitSemaphoreCount == xWaitSems.size() && xSubmitInfo.signalSemaphoreCount == xSignalSems.size(), "Something wrong with wait stages?");
+
+		m_graphicsQueue.submit(xSubmitInfo, xFence);
 	}
 
 	void VulkanRenderer::Present(uint32_t uSwapchainIndex, vk::Semaphore* pxWaitSems, uint32_t uWaitSemCount) {
@@ -753,8 +917,12 @@ namespace VeryCoolEngine {
 	void VulkanRenderer::BeginBackbufferRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex) {
 		Application* app = Application::GetInstance();
 		vk::RenderPassBeginInfo renderPassInfo{};
-		renderPassInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxBackbufferRenderPass)->m_xRenderPass;
+		renderPassInfo.renderPass = m_xTargetSetupPasses.at("CopyToFramebuffer");
+#if 1
+		renderPassInfo.framebuffer = m_xTargetSetupFramebuffers.at("CopyToFramebuffer").at(m_currentFrame);
+#else
 		renderPassInfo.framebuffer = m_swapChainFramebuffers[uImageIndex];
+#endif
 		renderPassInfo.renderArea.offset = vk::Offset2D(0, 0);
 		renderPassInfo.renderArea.extent = m_swapChainExtent;
 
@@ -835,7 +1003,7 @@ namespace VeryCoolEngine {
 		Application* app = Application::GetInstance();
 		vk::RenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxImguiRenderPass)->m_xRenderPass;
-		renderPassInfo.framebuffer = m_axImguiFramebuffers[uImageIndex];
+		renderPassInfo.framebuffer = m_swapChainFramebuffers[uImageIndex];
 		renderPassInfo.renderArea.offset = vk::Offset2D(0, 0);
 		renderPassInfo.renderArea.extent = m_swapChainExtent;
 

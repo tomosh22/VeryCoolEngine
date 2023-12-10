@@ -18,7 +18,7 @@
 #include "VeryCoolEngine/Renderer/Pipeline.h"
 #include "VeryCoolEngine/Renderer/PipelineSpecification.h"
 
-#define VCE_DEFERRED_SHADING
+//#define VCE_DEFERRED_SHADING
 
 
 namespace VeryCoolEngine {
@@ -84,10 +84,11 @@ namespace VeryCoolEngine {
 		Scene* scene;
 
 		Renderer* _pRenderer;
-		RenderPass* m_pxBackbufferRenderPass;
+		//RenderPass* m_pxBackbufferRenderPass;
 		RenderPass* m_pxImguiRenderPass;//imgui doesn't use depth buffer
 		RenderPass* m_pxGBufferRenderPass;
 		RenderPass* m_pxRenderToTexturePass;
+		RenderPass* m_pxRenderToTexturePassNoClear;
 		RenderPass* m_pxCopyToFramebufferPass;
 
 
@@ -97,6 +98,16 @@ namespace VeryCoolEngine {
 
 		ManagedUniformBuffer* _pLightUBO = nullptr;
 		ManagedUniformBuffer* _pCameraUBO = nullptr;
+
+		//don't know where i want to put this yet
+		struct MeshRenderData {
+			glm::vec3 xOverrideNormal;
+			int uUseBumpMap;
+			int uUsePhongTess;
+			float fPhongTessFactor;
+			int uTessLevel;
+		};
+		ManagedUniformBuffer* m_pxPushConstantUBO = nullptr;
 
 		Camera _Camera;
 

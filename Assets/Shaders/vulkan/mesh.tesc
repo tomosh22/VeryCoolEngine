@@ -15,9 +15,11 @@ layout(location = 2) out vec3 _oTangent[];
 layout(location = 3) out vec3 _oBitangent[];
 layout(location = 4) out vec3 _oWorldPos[];
 
-
-layout(push_constant) uniform PushConstantVert{
+layout(push_constant) uniform ModelMatrix{
 	mat4 modelMatrix;
+};
+
+layout(std140, set = 0, binding = 2) uniform Misc{
 	vec3 overrideNormal;
 	int useBumpMap;
 	int usePhongTess;

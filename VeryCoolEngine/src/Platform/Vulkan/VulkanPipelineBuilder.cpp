@@ -19,7 +19,7 @@ License: MIT (see LICENSE file at the top of the source tree)
 namespace VeryCoolEngine {
 
 	void VulkanPipeline::BindDescriptorSets(vk::CommandBuffer& xCmd, const std::vector<vk::DescriptorSet>& axSets, vk::PipelineBindPoint eBindPoint, uint32_t ufirstSet) const {
-		xCmd.bindDescriptorSets(eBindPoint, m_xPipelineLayout, 0, axSets.size(), axSets.data(), 0, nullptr);
+		xCmd.bindDescriptorSets(eBindPoint, m_xPipelineLayout, ufirstSet, axSets.size(), axSets.data(), 0, nullptr);
 	}
 
 	VulkanPipelineBuilder::VulkanPipelineBuilder(const std::string& pipeName) {
@@ -231,6 +231,23 @@ namespace VeryCoolEngine {
 		}
 	}
 
+	vk::CompareOp VceCompareFuncToVkCompareFunc(DepthCompareFunc eFunc) {
+		switch (eFunc) {
+		case DepthCompareFunc::GreaterOrEqual:
+			return vk::CompareOp::eGreaterOrEqual;
+		case DepthCompareFunc::LessOrEqual:
+			return vk::CompareOp::eLessOrEqual;
+		case DepthCompareFunc::Never:
+			return vk::CompareOp::eNever;
+		case DepthCompareFunc::Always:
+			return vk::CompareOp::eAlways;
+		case DepthCompareFunc::Disabled:
+			return vk::CompareOp::eAlways;
+		default:
+			VCE_ASSERT(false, "Unsupported blend factor");
+		}
+	}
+
 	vk::BlendFactor VceBlendFactorToVKBlendFactor(BlendFactor eFactor) {
 		switch (eFactor) {
 		case BlendFactor::SrcAlpha:
@@ -240,6 +257,68 @@ namespace VeryCoolEngine {
 		default:
 			VCE_ASSERT(false, "Unsupported blend factor");
 		}
+	}
+
+	VulkanPipelineBuilder::DescriptorThings VulkanPipelineBuilder::HandleDescriptorsOld(const PipelineSpecification& spec, VulkanPipelineBuilder& xBuilder) {
+		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+
+		std::vector<vk::DescriptorSetLayout> axBufferLayouts;
+		std::vector<vk::DescriptorSet> axBufferSets;
+		for (BufferDescriptorSpecification spec : spec.m_axBufferDescriptors) {
+			axBufferLayouts.emplace_back(VulkanDescriptorSetLayoutBuilder::FromSpecification(spec));
+			axBufferSets.emplace_back(pxRenderer->CreateDescriptorSet(axBufferLayouts.back(), pxRenderer->GetDescriptorPool()));
+
+
+			for (auto& [ppxUBO, eStage] : spec.m_aeUniformBufferStages) {
+				for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+				{
+					pxRenderer->UpdateBufferDescriptor(axBufferSets.back(), dynamic_cast<VulkanManagedUniformBuffer*>(*ppxUBO)->ppBuffers[i], 0, vk::DescriptorType::eUniformBuffer, 0);
+				}
+			}
+		}
+
+		std::vector<vk::DescriptorSetLayout> axTexLayouts;
+		std::vector<vk::DescriptorSet> axTexSets;
+		for (TextureDescriptorSpecification spec : spec.m_axTextureDescriptors) {
+			axTexLayouts.emplace_back(VulkanDescriptorSetLayoutBuilder::FromSpecification(spec));
+			axTexSets.emplace_back(pxRenderer->CreateDescriptorSet(axTexLayouts.back(), pxRenderer->GetDescriptorPool()));
+
+		}
+
+		uint32_t uLayoutIndex = 0;
+		for (uint32_t i = 0; i < axBufferLayouts.size(); i++) {
+			xBuilder = xBuilder.WithDescriptorSetLayout(uLayoutIndex++, axBufferLayouts.at(i));
+		}
+		for (uint32_t i = 0; i < axTexLayouts.size(); i++) {
+			xBuilder = xBuilder.WithDescriptorSetLayout(uLayoutIndex++, axTexLayouts.at(i));
+		}
+
+		return { axBufferLayouts, axBufferSets, axTexLayouts, axTexSets };
+	}
+
+	VulkanPipelineBuilder::DescriptorThings VulkanPipelineBuilder::HandleDescriptorsNew(const PipelineSpecification& spec, VulkanPipelineBuilder& xBuilder)
+	{
+		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+
+		//TODO: what happens if number of buffer and tex bindings is zero?
+
+		VulkanDescriptorSetLayoutBuilder xBufferDescBuilder = VulkanDescriptorSetLayoutBuilder();
+		VulkanDescriptorSetLayoutBuilder xTexDescBuilder = VulkanDescriptorSetLayoutBuilder();
+		xBufferDescBuilder = xBufferDescBuilder.WithBindlessAccess();
+		xTexDescBuilder = xTexDescBuilder.WithBindlessAccess();
+
+		for (uint32_t i = 0; i < spec.uNumBufferBindings; i++)
+			xBufferDescBuilder = xBufferDescBuilder.WithUniformBuffers(1);
+		for (uint32_t i = 0; i < spec.uNumTexBindings; i++)
+			xTexDescBuilder = xTexDescBuilder.WithSamplers(1);
+
+		vk::DescriptorSetLayout xBufferLayout = xBufferDescBuilder.Build(pxRenderer->GetDevice());
+		vk::DescriptorSetLayout xTexLayout = xTexDescBuilder.Build(pxRenderer->GetDevice());
+
+		xBuilder = xBuilder.WithDescriptorSetLayout(0, xBufferLayout);
+		xBuilder = xBuilder.WithDescriptorSetLayout(1, xTexLayout);
+		return { {xBufferLayout}, {pxRenderer->CreateDescriptorSet(xBufferLayout, pxRenderer->GetDescriptorPool())},{xTexLayout}, {pxRenderer->CreateDescriptorSet(xTexLayout, pxRenderer->GetDescriptorPool())} };
+		
 	}
 
 	VulkanPipeline* VulkanPipelineBuilder::FromSpecification(const PipelineSpecification& spec)
@@ -270,42 +349,16 @@ namespace VeryCoolEngine {
 		xBuilder = xBuilder.WithShader(*dynamic_cast<VulkanShader*>(spec.m_pxShader));
 		for (uint32_t i = 0; i < spec.m_aeDstBlendFactors.size(); i++)
 			xBuilder = xBuilder.WithBlendState(VceBlendFactorToVKBlendFactor(spec.m_aeSrcBlendFactors[i]), VceBlendFactorToVKBlendFactor(spec.m_aeDstBlendFactors[i]), spec.m_abBlendStatesEnabled[i]);
-		xBuilder = xBuilder.WithDepthState(vk::CompareOp::eGreaterOrEqual, spec.m_bDepthTestEnabled, spec.m_bDepthWriteEnabled, false);
+		xBuilder = xBuilder.WithDepthState(VceCompareFuncToVkCompareFunc(spec.m_eDepthCompareFunc), spec.m_bDepthTestEnabled, spec.m_bDepthWriteEnabled, false);
 		xBuilder = xBuilder.WithColourFormats(spec.m_aeColourFormats);
 		xBuilder = xBuilder.WithDepthFormat(vk::Format::eD32Sfloat);
-			xBuilder = xBuilder.WithPass(dynamic_cast<VulkanRenderPass*>(*spec.m_pxRenderPass)->m_xRenderPass);
+		xBuilder = xBuilder.WithPass(dynamic_cast<VulkanRenderPass*>(*spec.m_pxRenderPass)->m_xRenderPass);
 
-		
-		std::vector<vk::DescriptorSetLayout> axBufferLayouts;
-		std::vector<vk::DescriptorSet> axBufferSets;
-		for (BufferDescriptorSpecification spec : spec.m_axBufferDescriptors) {
-			axBufferLayouts.emplace_back(VulkanDescriptorSetLayoutBuilder::FromSpecification(spec));
-			axBufferSets.emplace_back(pxRenderer->CreateDescriptorSet(axBufferLayouts.back(), pxRenderer->GetDescriptorPool()));
-
-
-			for(auto& [ppxUBO, eStage] : spec.m_aeUniformBufferStages) {
-				for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-				{
-					pxRenderer->UpdateBufferDescriptor(axBufferSets.back(), dynamic_cast<VulkanManagedUniformBuffer*>(*ppxUBO)->ppBuffers[i], 0, vk::DescriptorType::eUniformBuffer, 0);
-				}
-			}
-		}
-
-		std::vector<vk::DescriptorSetLayout> axTexLayouts;
-		std::vector<vk::DescriptorSet> axTexSets;
-		for (TextureDescriptorSpecification spec : spec.m_axTextureDescriptors) {
-			axTexLayouts.emplace_back(VulkanDescriptorSetLayoutBuilder::FromSpecification(spec));
-			axTexSets.emplace_back(pxRenderer->CreateDescriptorSet(axTexLayouts.back(), pxRenderer->GetDescriptorPool()));
-
-		}
-
-		uint32_t uLayoutIndex = 0;
-		for (uint32_t i = 0; i < axBufferLayouts.size(); i++) {
-			xBuilder = xBuilder.WithDescriptorSetLayout(uLayoutIndex++, axBufferLayouts.at(i));
-		}
-		for (uint32_t i = 0; i < axTexLayouts.size(); i++) {
-			xBuilder = xBuilder.WithDescriptorSetLayout(uLayoutIndex++, axTexLayouts.at(i));
-		}
+		DescriptorThings xDescThings;
+		if (!spec.m_bNewVersion)
+			xDescThings = HandleDescriptorsOld(spec, xBuilder);
+		else
+			xDescThings = HandleDescriptorsNew(spec, xBuilder);
 
 		if (spec.m_bUsePushConstants) {
 			xBuilder = xBuilder.WithPushConstant(vk::ShaderStageFlagBits::eAll, 0, 
@@ -322,12 +375,14 @@ namespace VeryCoolEngine {
 			xBuilder = xBuilder.WithTesselation();
 
 		VulkanPipeline* xPipeline = xBuilder.Build();
-		xPipeline->m_axBufferDescLayouts = axBufferLayouts;
-		xPipeline->m_axBufferDescSets = axBufferSets;
-		xPipeline->m_axTexDescLayouts = axTexLayouts;
-		xPipeline->m_axTexDescSets = axTexSets;
-		xPipeline->m_strName = spec.m_strName;
-		xPipeline->bUsePushConstants = spec.m_bUsePushConstants;
+		if (!spec.m_bNewVersion || true) {
+			xPipeline->m_axBufferDescLayouts = xDescThings.xBufferLayouts;
+			xPipeline->m_axBufferDescSets = xDescThings.xBufferSets;
+			xPipeline->m_axTexDescLayouts = xDescThings.xTexLayouts;
+			xPipeline->m_axTexDescSets = xDescThings.xTexSets;
+			xPipeline->m_strName = spec.m_strName;
+			xPipeline->bUsePushConstants = spec.m_bUsePushConstants;
+		}
 
 		return xPipeline;
 	}

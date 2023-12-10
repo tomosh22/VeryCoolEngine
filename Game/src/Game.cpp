@@ -24,7 +24,7 @@ namespace VeryCoolEngine {
 	Game::Game() {
 
 
-		m_pxBlockWorld = new BlockWorld();
+		//m_pxBlockWorld = new BlockWorld();
 		
 		
 
@@ -112,7 +112,6 @@ namespace VeryCoolEngine {
 	//declared in Application.h, defined by game
 	void Application::GameLoop() {
 		Game* game = (Game*)Application::GetInstance();
-		printf("game loop\n");
 
 
 		sceneMutex.lock();

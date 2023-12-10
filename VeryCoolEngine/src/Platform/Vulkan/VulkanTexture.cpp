@@ -273,6 +273,8 @@ namespace VeryCoolEngine {
 
 		pxTex->m_xImageView = xDevice.createImageView(xViewCreateInfo);
 
+		pxTex->m_xSampler = CreateSampler();
+
 		vk::CommandBuffer xCmd = pxRenderer->BeginSingleUseCmdBuffer();
 
 		pxRenderer->ImageTransitionBarrier(pxTex->m_xImage, vk::ImageLayout::eUndefined, eLayout, eAspect, vk::PipelineStageFlagBits::eTopOfPipe, ePipeType);

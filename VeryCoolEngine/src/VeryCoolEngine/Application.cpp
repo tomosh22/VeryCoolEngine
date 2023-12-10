@@ -121,6 +121,7 @@ namespace VeryCoolEngine {
 		TextureDescriptorSpecification xFramebufferTexSpec;
 		xFramebufferTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 		xFramebufferTexSpec.m_bJustFragment = true;
+		xFramebufferTexSpec.m_bBindless = false;
 
 		TextureDescriptorSpecification xMeshTexSpec;
 		//currently overriding stage to all
@@ -150,16 +151,19 @@ namespace VeryCoolEngine {
 					{BlendFactor::SrcAlpha},
 					{BlendFactor::OneMinusSrcAlpha},
 					{true},
-					false,
+					true,
 					false,
 					DepthCompareFunc::GreaterOrEqual,
 					{ColourFormat::BGRA8_sRGB},
 					DepthFormat::D32_SFloat,
-					{xCamSpec},
+					{},
 					{},
 					&m_pxRenderToTexturePass,
 					false,
-					false
+					false,
+					true,
+					1,
+					0
 					)
 			});
 
@@ -180,11 +184,14 @@ namespace VeryCoolEngine {
 					DepthCompareFunc::GreaterOrEqual,
 					{ColourFormat::BGRA8_sRGB},
 					DepthFormat::D32_SFloat,
-					{xCamSpec, xLightSpec},
-					{xMeshTexSpec},
+					{},
+					{},
 					&m_pxRenderToTexturePass,
 					true,
-					true
+					true,
+					true,
+					3,
+					5
 					)
 			});
 
@@ -206,7 +213,10 @@ namespace VeryCoolEngine {
 					{xFramebufferTexSpec},
 					&m_pxCopyToFramebufferPass,
 					false,
-					false
+					false,
+					true,
+					0,
+					1
 					)
 			});
 
@@ -230,7 +240,10 @@ namespace VeryCoolEngine {
 					{xMeshTexSpec},
 					&m_pxGBufferRenderPass,
 					true,
-					true
+					true,
+					false,
+					0,
+					0
 					)
 			});
 #endif

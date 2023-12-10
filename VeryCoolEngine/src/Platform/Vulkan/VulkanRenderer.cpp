@@ -15,6 +15,9 @@
 #include <imgui.h>
 #include "backends/imgui_impl_vulkan.h"
 
+#include "VeryCoolEngine/Renderer/RendererAPI.h"
+#include "Platform/Vulkan/VulkanCommandBuffer.h"
+
 
 using namespace VeryCoolEngine;
 
@@ -23,6 +26,21 @@ VulkanRenderer* VulkanRenderer::s_pInstance = nullptr;
 VulkanRenderer::VulkanRenderer() {
 	InitWindow();
 	InitVulkan();
+
+	m_pxRendererAPI = new RendererAPI;
+
+	m_pxCopyToFramebufferCommandBuffer = new VulkanCommandBuffer;
+	m_pxSkyboxCommandBuffer = new VulkanCommandBuffer;
+	m_pxOpaqueMeshesCommandBuffer = new VulkanCommandBuffer;
+
+
+
+
+#ifdef VCE_DEFERRED_SHADING
+	RendererAPI::s_xGBufferTargetSetup = CreateGBufferTarget();
+#endif
+	m_xTargetSetups.insert({ "RenderToTexture", CreateRenderToTextureTarget() });
+	m_xTargetSetups.insert({ "CopyToFramebuffer", CreateFramebufferTarget() });
 }
 
 void VulkanRenderer::InitWindow() {
@@ -44,15 +62,13 @@ void VulkanRenderer::InitVulkan() {
 	}
 	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
 	app->_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS, MAX_FRAMES_IN_FLIGHT, 1);
+	app->m_pxPushConstantUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS, MAX_FRAMES_IN_FLIGHT, 2);
 
 	for (Shader* pxShader : app->_shaders) pxShader->PlatformInit();
 	//for (Texture* pxTex : app->_textures) pxTex->PlatformInit();
 
-	//this is a bit disgusting but the skybox pipeline needs to be first
-	m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(app->m_xPipelineSpecs.at("Skybox")));
-	app->m_xPipelineSpecs.erase("Skybox");
 	for (auto it = app->m_xPipelineSpecs.begin(); it != app->m_xPipelineSpecs.end(); it++) {
-		m_xPipelines.emplace_back(VulkanPipelineBuilder::FromSpecification(it->second));
+		m_xPipelines.insert({ it->first,VulkanPipelineBuilder::FromSpecification(it->second) });
 	}
 	
 	
@@ -80,10 +96,12 @@ void VulkanRenderer::MainLoop() {
 
 	Scene* scene = app->scene;
 	while (true) {
-		printf("Waiting on scene to be ready\n");
+		std::this_thread::yield();
 		if (scene->ready)break;//#todo implement mutex here
 	}
 	app->sceneMutex.lock();
+
+
 	BeginScene(scene);
 
 	
@@ -95,7 +113,7 @@ void VulkanRenderer::MainLoop() {
 	app->sceneMutex.unlock();
 }
 
-void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene) {
+void VulkanRenderer::CopyToFramebuffer() {
 	Application* app = Application::GetInstance();
 
 #ifdef VCE_USE_EDITOR
@@ -104,19 +122,15 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 #endif
 	
 
-	commandBuffer.begin(vk::CommandBufferBeginInfo());
 
 
 #pragma region gbuffer
-	BeginGBufferRenderPass(commandBuffer, imageIndex);
-	VulkanPipeline* pxGBufferPipeline = nullptr;
-	for (VulkanPipeline* pxPipeline : m_xPipelines) {
-		if (pxPipeline->m_strName == "GBuffer") {
-			pxGBufferPipeline = pxPipeline;
-			break;
-		}
-	}
-	VCE_ASSERT(pxGBufferPipeline != nullptr, "Couldn't find gbuffer pipeline");
+	
+#ifdef VCE_DEFERRED_SHADING
+	m_pxCopyToFramebufferCommandBuffer->SubmitTargetSetup(RendererAPI::s_xGBufferTargetSetup);
+
+	//BeginGBufferRenderPass(commandBuffer, imageIndex);
+	VulkanPipeline* pxGBufferPipeline = m_xPipelines.at("GBuffer");
 
 	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxGBufferPipeline->m_xPipeline);
 
@@ -152,90 +166,118 @@ void VulkanRenderer::RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32
 	}
 
 	commandBuffer.endRenderPass();
+#endif
 
 #pragma endregion
 
-	BeginRenderToTexturePass(commandBuffer, imageIndex);
+	m_pxCopyToFramebufferCommandBuffer->BeginRecording();
 
+	m_pxCopyToFramebufferCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("CopyToFramebuffer"), true);
 
-	for (VulkanPipeline*  pipeline : m_xPipelines) {
-		if (pipeline->m_strName == "GBuffer" || pipeline->m_strName == "CopyToFramebuffer") continue;
+	m_pxCopyToFramebufferCommandBuffer->SetPipeline(m_xPipelines.at("CopyToFramebuffer"));
 
-		commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline->m_xPipeline);
+	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh);
+	m_pxCopyToFramebufferCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
+	m_pxCopyToFramebufferCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
 
-		
-		if (scene->m_axPipelineMeshes.find(pipeline->m_strName) == scene->m_axPipelineMeshes.end()) {
-			continue;
-		}
-		for (Mesh* mesh : scene->m_axPipelineMeshes.at(pipeline->m_strName)) {
-			VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
-			pxVulkanMesh->BindToCmdBuffer(commandBuffer);
-
-			std::vector<vk::DescriptorSet> axSets;
-			for (const vk::DescriptorSet set : pipeline->m_axBufferDescSets)
-				axSets.push_back(set);
-			if (pxVulkanMesh->GetTexture() != nullptr)
-				axSets.push_back(pxVulkanMesh->m_xTexDescSet);
-
-			pipeline->BindDescriptorSets(commandBuffer, axSets, vk::PipelineBindPoint::eGraphics, 0);
-
-			if (pipeline->bUsePushConstants) {
-				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, 0, sizeof(glm::mat4), (void*)&mesh->m_xTransform);
-
-				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4), sizeof(glm::vec3), (void*)&m_xOverrideNormal);
-				int uValue = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;
-
-				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3), sizeof(uint32_t), (void*)&uValue);
-
-				int uValueTess = app->_pRenderer->m_bUsePhongTess ? 1 : 0;
-
-				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t), sizeof(uint32_t), (void*)&uValueTess);
-
-				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t) + sizeof(uint32_t), sizeof(float), (void*)&app->_pRenderer->m_fPhongTessFactor);
-				commandBuffer.pushConstants(pipeline->m_xPipelineLayout, vk::ShaderStageFlagBits::eAll, sizeof(glm::mat4) + sizeof(glm::vec3) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(float), sizeof(float), (void*)&app->_pRenderer->m_uTessLevel);
-			}
-
-			commandBuffer.drawIndexed(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
-		}
-	}
-
-
-
+	m_pxCopyToFramebufferCommandBuffer->BindTexture(m_apxEditorSceneTexs[m_currentFrame], 0);
 	
-
-
-	commandBuffer.endRenderPass();
-
-
+	m_pxCopyToFramebufferCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
+	m_pxCopyToFramebufferCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
+	
+#ifdef VCE_USE_EDITOR
 
 	UpdateImageDescriptor(m_axFramebufferTexDescSet[m_currentFrame], 0, 0, m_apxEditorSceneTexs[m_currentFrame]->m_xImageView, m_xDefaultSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
 
-	BeginBackbufferRenderPass(commandBuffer, imageIndex);
-	VulkanPipeline* pxBackbufferPipeline = nullptr;
-	for (VulkanPipeline* pxPipeline : m_xPipelines) {
-		if (pxPipeline->m_strName == "CopyToFramebuffer") {
-			pxBackbufferPipeline = pxPipeline;
-			break;
-		}
-	}
-	VCE_ASSERT(pxBackbufferPipeline != nullptr, "Couldn't find gbuffer pipeline");
-	commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxBackbufferPipeline->m_xPipeline);
-	dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh)->BindToCmdBuffer(commandBuffer);
-	pxBackbufferPipeline->BindDescriptorSets(commandBuffer, { m_axFramebufferTexDescSet[m_currentFrame] }, vk::PipelineBindPoint::eGraphics, 0);
-	commandBuffer.drawIndexed(dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh)->m_uNumIndices, dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh)->m_uNumInstances, 0, 0, 0);
-	commandBuffer.endRenderPass();
+	BeginImguiRenderPass(m_pxCopyToFramebufferCommandBuffer->GetCurrentCmdBuffer(), m_currentFrame);
 	
-#ifdef VCE_USE_EDITOR
-	BeginImguiRenderPass(commandBuffer, imageIndex);
-	
-	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_pxCopyToFramebufferCommandBuffer->GetCurrentCmdBuffer());
 	app->_pImGuiLayer->End();
-	commandBuffer.endRenderPass();
+	m_pxCopyToFramebufferCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
 #endif
 
 	
-	commandBuffer.end();
+	m_pxCopyToFramebufferCommandBuffer->EndRecording();
 	
+}
+
+void VulkanRenderer::DrawSkybox() {
+	Application* app = Application::GetInstance();
+
+	m_pxSkyboxCommandBuffer->BeginRecording();
+
+	m_pxSkyboxCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTexture"), false);
+
+	VulkanPipeline* pxSkyboxPipeline = m_xPipelines.at("Skybox");
+	m_pxSkyboxCommandBuffer->SetPipeline(&pxSkyboxPipeline->m_xPipeline);
+
+	VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
+	m_pxSkyboxCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0);
+
+	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh);
+	m_pxSkyboxCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
+	m_pxSkyboxCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
+	m_pxSkyboxCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
+
+	m_pxSkyboxCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
+
+	m_pxSkyboxCommandBuffer->EndRecording();
+}
+
+void VulkanRenderer::DrawOpaqueMeshes() {
+	Application* app = Application::GetInstance();
+
+	m_pxOpaqueMeshesCommandBuffer->BeginRecording();
+
+	m_pxOpaqueMeshesCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTexture"), true);
+
+
+	m_pxOpaqueMeshesCommandBuffer->SetPipeline(&m_xPipelines.at("Meshes")->m_xPipeline);
+
+	Application::MeshRenderData xMeshRenderData;
+
+	xMeshRenderData.xOverrideNormal = m_xOverrideNormal;
+	xMeshRenderData.uUseBumpMap = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;
+	xMeshRenderData.uUsePhongTess = app->_pRenderer->m_bUsePhongTess ? 1 : 0;
+	xMeshRenderData.fPhongTessFactor = app->_pRenderer->m_fPhongTessFactor;
+	xMeshRenderData.uTessLevel = app->_pRenderer->m_uTessLevel;
+
+	app->m_pxPushConstantUBO->UploadData(&xMeshRenderData, sizeof(Application::MeshRenderData), m_currentFrame, 0);
+
+	for (Mesh* mesh : app->scene->m_axPipelineMeshes.at("Meshes")) {
+		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
+		m_pxOpaqueMeshesCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
+		m_pxOpaqueMeshesCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
+
+		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetTexture(), 0);
+		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetBumpMap(), 1);
+		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetRoughnessTex(), 2);
+		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetMetallicTex(), 3);
+		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetHeightmapTex(), 4);
+
+
+
+
+		VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
+		m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0);
+
+		VulkanManagedUniformBuffer* pxLightUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pLightUBO);
+		m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxLightUBO->ppBuffers[m_currentFrame], 1);
+
+
+
+
+		VulkanManagedUniformBuffer* pxPushConstantUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxPushConstantUBO);
+		m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxPushConstantUBO->ppBuffers[m_currentFrame], 2);
+
+		m_pxOpaqueMeshesCommandBuffer->PushConstant(&mesh->m_xTransform._matrix, sizeof(glm::mat4));
+
+		m_pxOpaqueMeshesCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
+	}
+
+	m_pxOpaqueMeshesCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
+
+	m_pxOpaqueMeshesCommandBuffer->EndRecording();
 }
 
 void VulkanRenderer::DrawFrame(Scene* scene) {
@@ -245,9 +287,18 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 		return;
 	}
 
-	RecordCommandBuffer(m_commandBuffers[m_currentFrame], iImageIndex, scene);
+	DrawOpaqueMeshes();
 
-	SubmitCmdBuffer(m_commandBuffers[m_currentFrame], &m_imageAvailableSemaphores[m_currentFrame], 1, &m_renderFinishedSemaphores[m_currentFrame], 1, vk::PipelineStageFlagBits::eColorAttachmentOutput);
+	DrawSkybox();
+
+	
+
+	
+
+	CopyToFramebuffer();
+	
+	m_pxRendererAPI->Platform_SubmitCmdBuffers();
+	
 
 	Present(iImageIndex, &m_renderFinishedSemaphores[m_currentFrame], 1);
 
@@ -280,8 +331,9 @@ void VeryCoolEngine::VulkanRenderer::BeginScene(Scene* scene)
 	memcpy(data, numLightsWithPadding, sizeof(unsigned int) * 4);
 
 	memcpy(data + sizeof(unsigned int) * 4, scene->lights.data(), sizeof(Light) * scene->lights.size());
-	app->_pLightUBO->UploadData(data, dataSize, 1, 0);
+	app->_pLightUBO->UploadData(data, dataSize, m_currentFrame, 0);
 	delete[] data;
+
 }
 
 void VeryCoolEngine::VulkanRenderer::RenderThreadFunction()
@@ -294,4 +346,30 @@ void VeryCoolEngine::VulkanRenderer::RenderThreadFunction()
 	while (app->_running) {
 		MainLoop();
 	}
+}
+
+void RendererAPI::Platform_SubmitCmdBuffers() {
+	VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+
+	vk::PipelineStageFlags eWaitStages = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+
+	std::vector<vk::CommandBuffer> xPlatformCmdBufs;
+	for (void* pCmdBuf : s_xCmdBuffersToSubmit) {
+		vk::CommandBuffer& xBuf = *reinterpret_cast<vk::CommandBuffer*>(pCmdBuf);
+		xPlatformCmdBufs.push_back(xBuf);
+	}
+
+	vk::SubmitInfo xSubmitInfo = vk::SubmitInfo()
+		.setCommandBufferCount(s_xCmdBuffersToSubmit.size())
+		.setPCommandBuffers(xPlatformCmdBufs.data())
+		.setPWaitSemaphores(&pxRenderer->GetCurrentImageAvailableSem())
+		.setPSignalSemaphores(&pxRenderer->GetCurrentRenderCompleteSem())
+		.setWaitSemaphoreCount(1)
+		.setSignalSemaphoreCount(1)
+		.setWaitDstStageMask(eWaitStages);
+
+	pxRenderer->GetGraphicsQueue().submit(xSubmitInfo, pxRenderer->GetCurrentInFlightFence());
+
+	//TODO: put this in end frame when I eventually write it
+	s_xCmdBuffersToSubmit.clear();
 }

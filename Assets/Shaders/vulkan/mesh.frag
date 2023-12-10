@@ -13,6 +13,10 @@ struct Light{
 	vec4 color;
 };
 
+layout(push_constant) uniform ModelMatrix{
+	mat4 modelMatrix;
+};
+
 layout(std140, set = 0, binding=0) uniform matrices{
 	mat4 _uViewMat;
 	mat4 _uProjMat;
@@ -20,8 +24,7 @@ layout(std140, set = 0, binding=0) uniform matrices{
 	vec4 _uCamPos;//4 bytes of padding
 };
 
-layout(push_constant) uniform PushConstantVert{
-	mat4 modelMatrix;
+layout(std140, set = 0, binding = 2) uniform Misc{
 	vec3 overrideNormal;
 	int useBumpMap;
 	int usePhongTess;
@@ -29,7 +32,7 @@ layout(push_constant) uniform PushConstantVert{
 	int tessLevel;
 };
 
-layout(std140, set = 1, binding = 0) uniform LightsUBO{
+layout(std140, set = 0, binding = 1) uniform LightsUBO{
 uint numLights;
 uint pad0;
 uint pad1;
@@ -37,10 +40,10 @@ uint pad2;
 Light lights[100];
 };
 
-layout(set = 2, binding = 0) uniform sampler2D diffuseTex;
-layout(set = 2, binding = 1) uniform sampler2D bumpMap;
-layout(set = 2, binding = 2) uniform sampler2D roughnessTex;
-layout(set = 2, binding = 3) uniform sampler2D metallicTex;
+layout(set = 1, binding = 0) uniform sampler2D diffuseTex;
+layout(set = 1, binding = 1) uniform sampler2D bumpMap;
+layout(set = 1, binding = 2) uniform sampler2D roughnessTex;
+layout(set = 1, binding = 3) uniform sampler2D metallicTex;
 
 void point(inout vec4 finalColor, vec4 diffuse, Light light, vec3 bumpNormal, float metal, float rough, float reflectivity) {
 	vec3 lightDir = normalize(light.positionAndRadius.xyz - WorldPos);
@@ -96,10 +99,10 @@ void main(){
 	for(int i = 0; i < numLights; i++){
 		
 		if(useBumpMap != 0){
-			point(_oColor, diffuse, lights[i], bumpNormal, metallic, roughness, 0.5);
+			point(_oColor, diffuse, lights[i], bumpNormal, metallic, roughness, 0.95);
 		}
 		else{
-			point(_oColor, diffuse, lights[i], Normal, 0, roughness, 0.5);
+			point(_oColor, diffuse, lights[i], Normal, 0, roughness, 0.95);
 		}
 	}
 	_oColor.rgb += diffuse.rgb * 0.5f;

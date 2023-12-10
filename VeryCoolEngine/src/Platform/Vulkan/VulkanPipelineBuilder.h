@@ -19,6 +19,10 @@ namespace VeryCoolEngine {
 		std::vector<vk::DescriptorSetLayout> m_axBufferDescLayouts;
 		std::vector<vk::DescriptorSet> m_axBufferDescSets;
 
+
+
+
+
 		std::vector<vk::DescriptorSetLayout> m_axTexDescLayouts;
 		std::vector<vk::DescriptorSet> m_axTexDescSets;
 
@@ -66,6 +70,15 @@ namespace VeryCoolEngine {
 		static VulkanPipeline* FromSpecification(const PipelineSpecification& spec);
 
 	protected:
+		struct DescriptorThings {
+			std::vector<vk::DescriptorSetLayout> xBufferLayouts;
+			std::vector<vk::DescriptorSet> xBufferSets;
+			std::vector<vk::DescriptorSetLayout> xTexLayouts;
+			std::vector<vk::DescriptorSet> xTexSets;
+		};
+		static DescriptorThings HandleDescriptorsOld(const PipelineSpecification& spec, VulkanPipelineBuilder& xBuilder);
+		static DescriptorThings HandleDescriptorsNew(const PipelineSpecification& spec, VulkanPipelineBuilder& xBuilder);
+
 		vk::GraphicsPipelineCreateInfo				pipelineCreate;
 		vk::PipelineCacheCreateInfo					cacheCreate;
 		vk::PipelineInputAssemblyStateCreateInfo	inputAsmCreate;

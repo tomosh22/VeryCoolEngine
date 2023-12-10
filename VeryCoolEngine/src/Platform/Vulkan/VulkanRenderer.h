@@ -21,6 +21,8 @@ namespace VeryCoolEngine {
 	class VulkanRenderPass;
 	class VulkanTexture2D;
 	class VulkanBuffer;
+	class VulkanCommandBuffer;
+	
 
 	static constexpr const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -37,6 +39,7 @@ namespace VeryCoolEngine {
 		public:
 			
 			friend class ImGuiLayer;
+			friend class VulkanCommandBuffer;
 
 			VulkanRenderer();
 
@@ -99,9 +102,15 @@ namespace VeryCoolEngine {
 				return buffer;
 			}
 
+			const vk::Semaphore& GetCurrentImageAvailableSem() const { return m_imageAvailableSemaphores[m_currentFrame];}
+			const vk::Semaphore& GetCurrentRenderCompleteSem() const { return m_renderFinishedSemaphores[m_currentFrame];}
+			const vk::Fence& GetCurrentInFlightFence() const { return m_inFlightFences[m_currentFrame];}
+			const vk::Queue& GetGraphicsQueue() const { return m_graphicsQueue; }
 
-			
+			//TODO: move to private
+			uint32_t m_currentFrame = 0;
 
+			RendererAPI* m_pxRendererAPI;
 		protected:
 			static VulkanRenderer* s_pInstance;
 
@@ -190,6 +199,7 @@ namespace VeryCoolEngine {
 			void CreateImguiFrameBuffers();//imgui doesn't use depth buffer
 			void CreateGBufferFrameBuffers();
 			void CreateRenderToTextureFrameBuffers();
+			void CreateRenderToTextureFrameBuffersNoClear();
 
 			void CreateCommandPool();
 
@@ -198,18 +208,21 @@ namespace VeryCoolEngine {
 			void BoilerplateInit();
 
 			
-
-			void RecordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex, Scene* scene);
+			//also handles imgui
+			void CopyToFramebuffer();
 
 			void CreateSyncObjects();
 
 			void DrawFrame(Scene* scene);
 
+			void DrawSkybox();
+			void DrawOpaqueMeshes();
+
 			void RecreateSwapChain();
 
 			int8_t AcquireSwapchainImage();
 
-			void SubmitCmdBuffer(vk::CommandBuffer& xCmdBuffer, vk::Semaphore* pxWaitSems = nullptr, uint32_t uWaitSemCount = 0, vk::Semaphore* pxSignalSems = nullptr, uint32_t uSignalSemCount = 0, vk::PipelineStageFlags eWaitStages = vk::PipelineStageFlagBits::eNone);
+			void SubmitCmdBuffers(const std::vector<vk::CommandBuffer>& xCmdBuffers, const std::vector<vk::Semaphore>& xWaitSems, const std::vector<vk::Semaphore>& xSignalSems, vk::Fence xFence, vk::PipelineStageFlags eWaitStages);
 
 			void Present(uint32_t uSwapchainIndex, vk::Semaphore* pxWaitSems = nullptr, uint32_t uWaitSemCount = 0);
 
@@ -239,6 +252,7 @@ namespace VeryCoolEngine {
 			
 			vk::Device m_device;
 			vk::PhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
+
 			
 			vk::Queue m_graphicsQueue;
 			vk::Queue m_presentQueue;
@@ -250,9 +264,20 @@ namespace VeryCoolEngine {
 			std::vector<vk::ImageView> m_swapChainImageViews;
 
 
-			std::vector<class VulkanPipeline*> m_xPipelines;
+			std::unordered_map<std::string, class VulkanPipeline*> m_xPipelines;
+
+
+			std::unordered_map<std::string, RendererAPI::TargetSetup> m_xTargetSetups;
+			std::unordered_map<std::string, vk::RenderPass> m_xTargetSetupPasses;
+			std::unordered_map<std::string, std::vector<vk::Framebuffer>> m_xTargetSetupFramebuffers;
+			
+			RendererAPI::TargetSetup CreateRenderToTextureTarget();
+			RendererAPI::TargetSetup CreateFramebufferTarget();
 
 #ifdef VCE_DEFERRED_SHADING
+			RendererAPI::TargetSetup CreateGBufferTarget();
+
+
 			void SetupDeferredShading();
 
 			//one per frame in flight
@@ -263,8 +288,9 @@ namespace VeryCoolEngine {
 			std::vector<VulkanTexture2D*> m_apxDeferredDiffuse;
 			std::vector<VulkanTexture2D*> m_apxDeferredSpecular;
 
-			std::vector<VulkanTexture2D*> m_apxEditorSceneTexs;
+			
 #endif
+			std::vector<VulkanTexture2D*> m_apxEditorSceneTexs;
 
 			vk::DescriptorPool m_descriptorPool;
 
@@ -287,27 +313,33 @@ namespace VeryCoolEngine {
 			std::vector<vk::Framebuffer> m_axImguiFramebuffers;
 			std::vector<vk::Framebuffer> m_axGBufferFramebuffers;
 			std::vector<vk::Framebuffer> m_axRenderToTextureFramebuffers;
+			std::vector<vk::Framebuffer> m_axRenderToTextureFramebuffersNoClear;
 
 			vk::CommandPool m_commandPool;
 			std::vector<vk::CommandBuffer> m_commandBuffers;
 
+			VulkanCommandBuffer* m_pxCopyToFramebufferCommandBuffer;
+			VulkanCommandBuffer* m_pxSkyboxCommandBuffer;
+			VulkanCommandBuffer* m_pxOpaqueMeshesCommandBuffer;
+
 			std::vector<vk::Semaphore> m_imageAvailableSemaphores;
+			std::vector<vk::Semaphore> m_xSkyboxRenderedSemaphores;
 			std::vector<vk::Semaphore> m_renderFinishedSemaphores;
 			std::vector<vk::Fence> m_inFlightFences;
 
-			uint32_t m_currentFrame = 0;
+			
 
 			bool m_framebufferResized = false;
 
 			const std::vector<const char*> m_deviceExtensions = {
-				VK_KHR_SWAPCHAIN_EXTENSION_NAME
+				VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+				VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME
 			};
 
 #if DEBUG
-			std::vector<const char*> m_validationLayers = { "VK_LAYER_KHRONOS_validation" };
+			std::vector<const char*> m_validationLayers = { "VK_LAYER_KHRONOS_validation"};
 
 #endif
-
 		};
 	
 

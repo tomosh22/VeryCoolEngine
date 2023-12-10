@@ -5,7 +5,7 @@
 
 namespace VeryCoolEngine {
 
-	class VulkanIndexBuffer : IndexBuffer
+	class VulkanIndexBuffer : public IndexBuffer
 	{
 	public:
 		VulkanIndexBuffer() = default;

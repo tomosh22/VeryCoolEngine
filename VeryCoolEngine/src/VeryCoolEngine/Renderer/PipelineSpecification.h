@@ -14,7 +14,7 @@ namespace VeryCoolEngine {
 	};
 
 	enum class DepthCompareFunc {
-		Disabled, GreaterOrEqual
+		Disabled, LessOrEqual, GreaterOrEqual, Never, Always
 	};
 
 	enum class ColourFormat {
@@ -41,6 +41,7 @@ namespace VeryCoolEngine {
 	struct TextureDescriptorSpecification {
 		std::vector<std::pair<Texture**, ShaderStage>> m_aeSamplerStages;
 		bool m_bJustFragment = false;
+		bool m_bBindless = true;
 	};
 
 	struct PipelineSpecification {
@@ -63,6 +64,11 @@ namespace VeryCoolEngine {
 		RenderPass** m_pxRenderPass;
 		bool m_bUsePushConstants;//#TODO expand on this, currently just use model matrix
 		bool m_bUseTesselation;
+
+
+		bool m_bNewVersion = false;
+		uint32_t uNumBufferBindings = 0;
+		uint32_t uNumTexBindings = 0;
 	};
 	
 	
