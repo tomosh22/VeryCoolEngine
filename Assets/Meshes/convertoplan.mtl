@@ -1,0 +1,113 @@
+# Blender MTL File: 'internal.blend'
+# Material Count: 11
+
+newmtl Eye
+Ns 249.019608
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.000000 0.000000 0.000000
+Ni -1.000000
+d 1.000000
+illum 0
+map_Kd texture\\brown_eye.png
+
+newmtl Glass
+Ns 586.274510
+Ka 0.000000 0.000000 0.000000
+Kd 0.300443 0.279059 0.640000
+Ks 1.000000 1.000000 1.000000
+Ni 1.200000
+d 0.456897
+illum 2
+map_Bump D:\\RPJOKE\\Deone\\clouds.png
+map_Kd D:\\RPJOKE\\Deone\\glass.png
+map_d D:\\RPJOKE\\Deone\\glass.png
+
+newmtl MainMaterial
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 0
+map_Kd texture\\textureswithAO_1.png
+
+newmtl MainMaterial_Untitled
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 0
+map_Kd texture\\textureswithAO_1.png
+
+newmtl Metall.001
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.273908 0.273908 0.273908
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl MetallBlack
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.048575 0.048575 0.048575
+Ks 0.612069 0.612069 0.612069
+Ni 1.000000
+d 1.000000
+illum 2
+
+newmtl body
+Ns 249.019608
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.000000 0.000000 0.000000
+Ni -1.000000
+d 1.000000
+illum 0
+map_Kd texture\body.png
+
+newmtl brow
+Ns 249.019608
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.000000 0.000000 0.000000
+Ni -1.000000
+d 0.000000
+illum 2
+map_Kd texture\\eyebrow001.png
+map_d texture\\eyebrow001.png
+
+newmtl bullet
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.357456 0.237409
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 0
+
+newmtl fabric_12h
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.306497 0.024844 0.019315
+Ks 0.072650 0.072650 0.072650
+Ni 1.000000
+d 1.000000
+illum 0
+map_Kd texture\cloth.png
+
+newmtl lashes
+Ns 249.019608
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.000000 0.000000 0.000000
+Ni -1.000000
+d 0.000000
+illum 2
+map_Kd texture\\eyelashes01.png
+map_d texture\\eyelashes01.png

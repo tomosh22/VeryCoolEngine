@@ -13,6 +13,8 @@
 
 #include "VeryCoolEngine/AssetHandling/Assets.h"
 
+#include "Bone.h"
+
 namespace VeryCoolEngine {
 
 	Mesh* Mesh::Create() {
@@ -288,31 +290,104 @@ namespace VeryCoolEngine {
 
 	
 
-	struct Vertex {
-		glm::vec3 pos;
-		glm::vec2 uv;
-		glm::vec3 normal;
-		glm::vec3 tangent;
-		glm::vec3 bitangent;
-
-		bool operator==(const Vertex& other) const {
-			return pos == other.pos && uv == other.uv && normal == other.normal;
-		}
-	};
-
-	struct VertexHash
-	{
-		size_t operator()(Vertex const& vertex) const {
-			size_t posHash = std::hash<int>()(vertex.pos.x) ^ std::hash<int>()(vertex.pos.y) ^ std::hash<int>()(vertex.pos.z);
-			size_t uvHash = std::hash<int>()(vertex.uv.x) ^ std::hash<int>()(vertex.uv.y);
-			size_t normalHash = std::hash<int>()(vertex.normal.x) ^ std::hash<int>()(vertex.normal.y) ^ std::hash<int>()(vertex.normal.z);
-			return posHash ^ uvHash ^ normalHash;
-		}
-	};
 	
 
-	Mesh* Mesh::FromFile(const std::string& path, bool swapYZ /* = false*/)
+
+	
+	
+#if 0
+	void ReadNodeHierarchy(Mesh* pxVCEMesh, aiMesh* pxAiMesh, const aiScene* pxScene, aiNode* pNode, glm::mat4& ParentTransform)
 	{
+		std::string NodeName(pNode->mName.data);
+
+		const aiAnimation* pAnimation = pxScene->mAnimations[0];
+
+		glm::mat4 NodeTransformation = *reinterpret_cast<glm::mat4*>(&pNode->mTransformation);
+
+		auto pNodeAnimIt = pxVCEMesh->m_xNodeNameToAnim.find(NodeName);
+
+		if (pNodeAnimIt != pxVCEMesh->m_xNodeNameToAnim.end()) {
+			aiNodeAnim* pNodeAnim = pNodeAnimIt->second;
+			aiVector3D Scaling = pNodeAnim->mScalingKeys[0].mValue;
+			glm::vec3 xScale = *reinterpret_cast<glm::vec3*>(&Scaling);
+			glm::mat4 xScaleMat = glm::scale(glm::identity<glm::mat4>(), xScale);
+			
+
+			aiQuaternion RotationQ = pNodeAnim->mRotationKeys[0].mValue;
+			glm::quat xRot = *reinterpret_cast<glm::quat*>(&RotationQ);
+			glm::mat4 xRotMat = Transform::RotationMatFromQuat(xRot);
+
+			aiVector3D Translation = pNodeAnim->mPositionKeys[0].mValue;
+			glm::vec3 xTrans = *reinterpret_cast<glm::vec3*>(&Translation);
+			glm::mat4 xTransMat = glm::translate(glm::identity<glm::mat4>(), xTrans);
+
+			NodeTransformation = xTransMat * xRotMat * xScaleMat;
+		}
+
+		glm::mat4 GlobalTransformation = ParentTransform * NodeTransformation;
+
+		if (pxVCEMesh->m_xBoneNameToIndex.find(NodeName) != pxVCEMesh->m_xBoneNameToIndex.end()) {
+			uint32_t BoneIndex = pxVCEMesh->m_xBoneNameToIndex[NodeName];
+			pxVCEMesh->m_xBoneMats.at(BoneIndex) = GlobalTransformation * *reinterpret_cast<glm::mat4*>(&pxAiMesh->mBones[BoneIndex]->mOffsetMatrix);
+				//m_BoneInfo[BoneIndex].BoneOffset;
+		}
+
+		for (uint32_t i = 0; i < pNode->mNumChildren; i++) {
+			ReadNodeHierarchy(pxVCEMesh, pxAiMesh, pxScene, pNode->mChildren[i], GlobalTransformation);
+		}
+	}
+#endif
+
+	glm::mat4 Mesh::ConvertMatrixToGLMFormat(const aiMatrix4x4& from)
+	{
+		glm::mat4 to;
+		//the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column
+		to[0][0] = from.a1; to[1][0] = from.a2; to[2][0] = from.a3; to[3][0] = from.a4;
+		to[0][1] = from.b1; to[1][1] = from.b2; to[2][1] = from.b3; to[3][1] = from.b4;
+		to[0][2] = from.c1; to[1][2] = from.c2; to[2][2] = from.c3; to[3][2] = from.c4;
+		to[0][3] = from.d1; to[1][3] = from.d2; to[2][3] = from.d3; to[3][3] = from.d4;
+		return to;
+	}
+
+	void ExtractBoneWeightForVertices(Mesh* pxMesh, std::vector<Mesh::Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
+	{
+		for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+		{
+			int boneID = -1;
+			std::string boneName = mesh->mBones[boneIndex]->mName.C_Str();
+			if (pxMesh->m_BoneInfoMap.find(boneName) == pxMesh->m_BoneInfoMap.end())
+			{
+				Mesh::BoneInfo newBoneInfo;
+				newBoneInfo.id = pxMesh->m_BoneCounter;
+				newBoneInfo.offset = Mesh::ConvertMatrixToGLMFormat(
+					mesh->mBones[boneIndex]->mOffsetMatrix);
+				pxMesh->m_BoneInfoMap[boneName] = newBoneInfo;
+				boneID = pxMesh->m_BoneCounter;
+				pxMesh->m_BoneCounter++;
+			}
+			else
+			{
+				boneID = pxMesh->m_BoneInfoMap[boneName].id;
+			}
+			assert(boneID != -1);
+			aiVertexWeight* weights = mesh->mBones[boneIndex]->mWeights;
+			int numWeights = mesh->mBones[boneIndex]->mNumWeights;
+
+			for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+			{
+				int vertexId = weights[weightIndex].mVertexId;
+				float weight = weights[weightIndex].mWeight;
+				assert(vertexId <= pxMesh->m_uNumVerts);
+				Mesh::SetVertexBoneData(vertices[vertexId], boneID, weight);
+			}
+		}
+	}
+
+	
+
+	Mesh* Mesh::FromFile(const std::string& path, uint32_t uMeshIndex /*= 0*/, bool swapYZ /* = false*/)
+	{
+		Mesh* mesh = Mesh::Create();
 
 		std::string strPath(MESHDIR);
 		strPath += path;
@@ -325,7 +400,88 @@ namespace VeryCoolEngine {
 			aiProcess_JoinIdenticalVertices |
 			aiProcess_SortByPType);
 
-		aiMesh* pxMesh = pxScene->mMeshes[0];
+#if 0
+		if (pxScene->mNumAnimations) {
+			std::vector<aiMesh*> xMeshes;
+			for (uint32_t i = 0; i < pxScene->mNumMeshes; i++) {
+				xMeshes.push_back(pxScene->mMeshes[i]);
+			}
+			aiMesh* pxMesh = xMeshes.at(uMeshIndex);
+			aiAnimation* pxAnim = pxScene->mAnimations[0];
+
+			mesh->m_uNumBones = pxMesh->mNumBones;
+
+			//fill map with empty vector for each vertex
+			for (uint32_t i = 0; i < pxMesh->mNumVertices; i++) {
+				mesh->m_xBoneInfluences.insert({ i, {}});
+			}
+
+			for (uint32_t uBoneID = 0; uBoneID < pxMesh->mNumBones; uBoneID++) {
+				int boneID = -1;
+				std::string boneName = pxMesh->mBones[uBoneID]->mName.C_Str();
+				if (mesh->m_BoneInfoMap.find(boneName) == mesh->m_BoneInfoMap.end())
+				{
+					BoneInfo newBoneInfo;
+					newBoneInfo.id = mesh->m_BoneCounter;
+					newBoneInfo.offset = ConvertMatrixToGLMFormat(
+						pxMesh->mBones[uBoneID]->mOffsetMatrix);
+					mesh->m_BoneInfoMap[boneName] = newBoneInfo;
+					boneID = mesh->m_BoneCounter;
+					mesh->m_BoneCounter++;
+				}
+				else
+				{
+					boneID = mesh->m_BoneInfoMap[boneName].id;
+				}
+				assert(boneID != -1);
+				auto weights = pxMesh->mBones[uBoneID]->mWeights;
+				int numWeights = pxMesh->mBones[uBoneID]->mNumWeights;
+
+				for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex)
+				{
+					int vertexId = weights[weightIndex].mVertexId;
+					float weight = weights[weightIndex].mWeight;
+					VCE_ASSERT(vertexId <= pxMesh->mNumVertices, "VertexID too big");
+					SetVertexBoneData(vertices[vertexId], boneID, weight);
+				}
+			}
+			for (uint32_t i = 0; i < pxMesh->mNumVertices; i++) {
+				float fTotalWeight = 0;
+				for (auto& [uBoneID, fWeight] : mesh->m_xBoneInfluences.at(i))
+					fTotalWeight += fWeight;
+				VCE_ASSERT(fTotalWeight > 0.9f && fTotalWeight < 1.1f, "dodgy weights");
+				BoneData xBoneData;
+				for (uint32_t j = 0; j < mesh->m_xBoneInfluences.at(i).size(); j++) {
+					xBoneData.m_auIDs[j] = mesh->m_xBoneInfluences.at(i).at(j).first;
+					xBoneData.m_afWeights[j] = mesh->m_xBoneInfluences.at(i).at(j).second;
+				}
+				mesh->m_xBoneData.push_back(xBoneData);
+			}
+
+
+			for (uint32_t i = 0; i < pxAnim->mNumChannels; i++) {
+				aiNodeAnim* pxNodeAnim = pxAnim->mChannels[i];
+				mesh->m_xNodeNameToAnim.insert({ std::string(pxNodeAnim->mNodeName.C_Str()),pxNodeAnim });
+				bool a = false;
+			}
+			glm::mat4 identity = glm::identity<glm::mat4>();
+			ReadNodeHierarchy(mesh, pxMesh, pxScene,pxScene->mRootNode, identity);
+			bool a = false;
+		}
+		
+#endif
+
+		
+
+		aiMesh* pxMesh = pxScene->mMeshes[uMeshIndex];
+
+		mesh->m_uNumBones = pxMesh->mNumBones;
+
+		mesh->m_uNumVerts = pxMesh->mNumVertices;
+
+		mesh->m_xBoneMats.resize(pxMesh->mNumBones);
+		for (auto& xMat : mesh->m_xBoneMats)
+			xMat = glm::identity<glm::mat4>();
 
 		std::vector<Vertex> axVertices;
 		std::vector<uint32_t> auIndices;
@@ -337,16 +493,17 @@ namespace VeryCoolEngine {
 			const aiVector3D* pxTangent = &(pxMesh->mTangents[i]);
 			const aiVector3D* pxBitangent = &(pxMesh->mBitangents[i]);
 
-			Vertex v(
-				glm::vec3(pxPos->x, pxPos->y, pxPos->z),
-				glm::vec2(pxTexCoord->x, pxTexCoord->y),
-				glm::vec3(pxNormal->x, pxNormal->y, pxNormal->z),
-				glm::vec3(pxTangent->x, pxTangent->y, pxTangent->z),
-				glm::vec3(pxBitangent->x, pxBitangent->y, pxBitangent->z)
-			);
-
+			Vertex v;
+			v.pos = glm::vec3(pxPos->x, pxPos->y, pxPos->z);
+			v.uv = glm::vec2(pxTexCoord->x, pxTexCoord->y);
+			v.normal = glm::vec3(pxNormal->x, pxNormal->y, pxNormal->z);
+			v.tangent = glm::vec3(pxTangent->x, pxTangent->y, pxTangent->z);
+			v.bitangent = glm::vec3(pxBitangent->x, pxBitangent->y, pxBitangent->z);
+			//if (mesh->m_uNumBones)
+				//v.m_xBoneData = mesh->m_xBoneData[i];
 			axVertices.push_back(v);
 		}
+		ExtractBoneWeightForVertices(mesh,axVertices, pxMesh, pxScene);
 
 		for (uint32_t i = 0; i < pxMesh->mNumFaces; i++) {
 			VCE_ASSERT(pxMesh->mFaces[i].mNumIndices == 3, "Face isn't a triangle");
@@ -356,10 +513,10 @@ namespace VeryCoolEngine {
 		}
 
 
-		Mesh* mesh = Mesh::Create();
+		
 		mesh->m_pxBufferLayout = new BufferLayout();
 
-		mesh->m_uNumVerts = axVertices.size();
+		
 		mesh->m_uNumIndices = auIndices.size();
 
 		mesh->m_puIndices = new unsigned int[mesh->m_uNumIndices];
@@ -368,6 +525,8 @@ namespace VeryCoolEngine {
 		mesh->m_pxTangents = new glm::vec3[mesh->m_uNumVerts]{ glm::vec3(0,0,0) };
 		mesh->m_pxBitangents = new glm::vec3[mesh->m_uNumVerts]{ glm::vec3(0,0,0) };
 		mesh->m_pxUVs = new glm::vec2[mesh->m_uNumVerts];
+		if(mesh->m_uNumBones)
+			mesh->m_pxBoneDatas = new BoneData[mesh->m_uNumVerts];
 
 
 		for (size_t i = 0; i < auIndices.size(); i++)mesh->m_puIndices[i] = auIndices[i];
@@ -377,6 +536,14 @@ namespace VeryCoolEngine {
 			mesh->m_pxNormals[i] = axVertices[i].normal;
 			mesh->m_pxTangents[i] = axVertices[i].tangent;
 			mesh->m_pxBitangents[i] = axVertices[i].bitangent;
+			if (mesh->m_uNumBones) {
+				BoneData xData;
+				for (uint32_t j = 0; j < MAX_BONES_PER_VERTEX; j++) {
+					xData.m_auIDs[j] = axVertices[i].m_BoneIDs[j];
+					xData.m_afWeights[j] = axVertices[i].m_Weights[j];
+				}
+				mesh->m_pxBoneDatas[i] = xData;
+			}
 		}
 
 
@@ -400,6 +567,13 @@ namespace VeryCoolEngine {
 		if (mesh->m_pxBitangents != nullptr) {
 			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float3, "_aBitangent" });
 			numFloats += 3;
+		}
+		if (mesh->m_pxBoneDatas != nullptr) {
+			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::UInt4, "_aBoneIndices0to4" });
+			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::UInt4, "_aBoneIndices5to8" });
+			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float4, "_aBoneWeights0to4" });
+			mesh->m_pxBufferLayout->GetElements().push_back({ ShaderDataType::Float4, "_aBoneWeights5to8" });
+			numFloats += 16;
 		}
 
 		mesh->m_pVerts = new float[mesh->m_uNumVerts * numFloats];
@@ -431,6 +605,25 @@ namespace VeryCoolEngine {
 				((float*)mesh->m_pVerts)[index++] = mesh->m_pxBitangents[i].x;
 				((float*)mesh->m_pVerts)[index++] = mesh->m_pxBitangents[i].y;
 				((float*)mesh->m_pVerts)[index++] = mesh->m_pxBitangents[i].z;
+			}
+			if (mesh->m_pxBoneDatas != nullptr) {
+				((uint32_t*)mesh->m_pVerts)[index++] = mesh->m_pxBoneDatas[i].m_auIDs[0];
+				((uint32_t*)mesh->m_pVerts)[index++] = mesh->m_pxBoneDatas[i].m_auIDs[1];
+				((uint32_t*)mesh->m_pVerts)[index++] = mesh->m_pxBoneDatas[i].m_auIDs[2];
+				((uint32_t*)mesh->m_pVerts)[index++] = mesh->m_pxBoneDatas[i].m_auIDs[3];
+				((uint32_t*)mesh->m_pVerts)[index++] = mesh->m_pxBoneDatas[i].m_auIDs[4];
+				((uint32_t*)mesh->m_pVerts)[index++] = mesh->m_pxBoneDatas[i].m_auIDs[5];
+				((uint32_t*)mesh->m_pVerts)[index++] = mesh->m_pxBoneDatas[i].m_auIDs[6];
+				((uint32_t*)mesh->m_pVerts)[index++] = mesh->m_pxBoneDatas[i].m_auIDs[7];
+
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxBoneDatas[i].m_afWeights[0];
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxBoneDatas[i].m_afWeights[1];
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxBoneDatas[i].m_afWeights[2];
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxBoneDatas[i].m_afWeights[3];
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxBoneDatas[i].m_afWeights[4];
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxBoneDatas[i].m_afWeights[5];
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxBoneDatas[i].m_afWeights[6];
+				((float*)mesh->m_pVerts)[index++] = mesh->m_pxBoneDatas[i].m_afWeights[7];
 			}
 		}
 

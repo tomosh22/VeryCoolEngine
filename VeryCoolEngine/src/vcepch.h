@@ -14,6 +14,7 @@
 #include <vector>
 #include <filesystem>
 #include <thread>
+#include <map>
 
 #include "VeryCoolEngine/Log.h"
 

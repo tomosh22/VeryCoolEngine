@@ -70,6 +70,8 @@ namespace VeryCoolEngine {
 		bool m_bUsePhongTess = true;
 		float m_fPhongTessFactor = 1.0f;
 		uint32_t m_uTessLevel = 1;
+		bool bAnimate = true;
+		float fAnimAlpha = 1;
 
 		
 	private:

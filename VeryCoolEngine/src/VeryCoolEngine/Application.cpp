@@ -134,6 +134,7 @@ namespace VeryCoolEngine {
 		m_pxMeshShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
 		m_pxGBufferShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshGBufferFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
 		m_pxCopyToFramebufferShader = Shader::Create("vulkan/copyToFrameBufferVert.spv", "vulkan/copyToFrameBufferFrag.spv");
+		m_pxSkinnedMeshShader = Shader::Create("vulkan/skinnedMeshVert.spv", "vulkan/meshFrag.spv");
 
 		m_pxQuadMesh = Mesh::GenerateQuad();
 		m_pxQuadMesh->SetShader(Shader::Create("vulkan/fullscreenVert.spv", "vulkan/fullscreenFrag.spv"));
@@ -192,6 +193,31 @@ namespace VeryCoolEngine {
 					true,
 					3,
 					5
+					)
+			});
+
+		m_xPipelineSpecs.insert(
+			{ "SkinnedMeshes",
+					PipelineSpecification(
+					"SkinnedMeshes",
+					m_pxExampleSkinnedMesh,
+					m_pxSkinnedMeshShader,
+					{BlendFactor::SrcAlpha},
+					{BlendFactor::OneMinusSrcAlpha},
+					{true},
+					true,
+					true,
+					DepthCompareFunc::GreaterOrEqual,
+					{ColourFormat::BGRA8_sRGB},
+					DepthFormat::D32_SFloat,
+					{},
+					{},
+					&m_pxRenderToTexturePass,
+					true,
+					false,
+					true,
+					4,
+					4
 					)
 			});
 

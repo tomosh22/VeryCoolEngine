@@ -217,6 +217,7 @@ namespace VeryCoolEngine {
 
 			void DrawSkybox();
 			void DrawOpaqueMeshes();
+			void DrawSkinnedMeshes();
 
 			void RecreateSwapChain();
 
@@ -321,6 +322,7 @@ namespace VeryCoolEngine {
 			VulkanCommandBuffer* m_pxCopyToFramebufferCommandBuffer;
 			VulkanCommandBuffer* m_pxSkyboxCommandBuffer;
 			VulkanCommandBuffer* m_pxOpaqueMeshesCommandBuffer;
+			VulkanCommandBuffer* m_pxSkinnedMeshesCommandBuffer;
 
 			std::vector<vk::Semaphore> m_imageAvailableSemaphores;
 			std::vector<vk::Semaphore> m_xSkyboxRenderedSemaphores;

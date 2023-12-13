@@ -100,6 +100,30 @@ namespace VeryCoolEngine {
 				pxRenderer->UpdateImageDescriptor(m_xTexDescSet, 4, 0, dynamic_cast<VulkanTexture2D*>(m_pxHeightmapTex)->m_xImageView, dynamic_cast<VulkanTexture2D*>(m_pxHeightmapTex)->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
 		}
 
+		if (m_uNumBones) {
+			uint64_t uSize = m_xBoneMats.size() * sizeof(glm::mat4);
+			//TODO: does this want to be device local?
+#if 0
+			VulkanBuffer pxStagingBuffer = VulkanBuffer(uSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+
+			vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
+			void* pData = xDevice.mapMemory(pxStagingBuffer.m_xDeviceMem, 0, uSize);
+			memcpy(pData, m_xBoneMats.data(), uSize);
+			xDevice.unmapMemory(pxStagingBuffer.m_xDeviceMem);
+
+			m_pxBoneBuffer = new VulkanBuffer(uSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal);
+
+			VulkanBuffer::CopyBufferToBuffer(&pxStagingBuffer, m_pxBoneBuffer, uSize);
+#endif
+			m_pxBoneBuffer = new VulkanBuffer(uSize, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+
+			vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
+			void* pData = xDevice.mapMemory(m_pxBoneBuffer->m_xDeviceMem, 0, uSize);
+			memcpy(pData, m_xBoneMats.data(), uSize);
+			xDevice.unmapMemory(m_pxBoneBuffer->m_xDeviceMem);
+
+		}
+
 		m_bInitialised = true;
     }
 

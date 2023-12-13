@@ -316,7 +316,7 @@ namespace VeryCoolEngine {
 		vk::DescriptorBufferInfo xInfo = vk::DescriptorBufferInfo()
 			.setBuffer(pxBuf->m_xBuffer)
 			.setOffset(0)
-			.setRange(pxBuf->m_uSize);
+			.setRange(pxBuf->GetSize());
 
 		vk::WriteDescriptorSet xWrite = vk::WriteDescriptorSet()
 			.setDescriptorType(vk::DescriptorType::eUniformBuffer)

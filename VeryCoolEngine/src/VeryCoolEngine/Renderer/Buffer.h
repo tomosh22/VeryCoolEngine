@@ -166,5 +166,20 @@ namespace VeryCoolEngine {
 	protected:
 		uint32_t _Count;
 	};
+
+	//this class doesn't do anything other than hold the size, i was going to use it for bone data then realized I should do that at the platform level
+	class Buffer {
+
+	public:
+		virtual ~Buffer() = default;
+
+		static Buffer* Create(uint64_t uSize);
+
+		uint64_t GetSize() const {return m_uSize;}
+
+	protected:
+		void* m_pData;
+		uint64_t m_uSize;
+	};
 }
 

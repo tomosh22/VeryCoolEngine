@@ -1,9 +1,18 @@
 #pragma once
 #include "VeryCoolEngine/Renderer/VertexArray.h"
+#include "VeryCoolEngine/Renderer/Buffer.h"
 #include "VeryCoolEngine/Renderer/Shader.h"
 #include "VeryCoolEngine/Renderer/Texture.h"
 #include "VeryCoolEngine/Transform.h"
 #include "VeryCoolEngine/Renderer/PipelineSpecification.h"
+#include <map>
+#define MAX_BONES_PER_VERTEX 8
+
+class aiNodeAnim;
+typedef float ai_real;
+template<typename TReal>
+class aiMatrix4x4t;
+typedef aiMatrix4x4t<ai_real> aiMatrix4x4;
 namespace VeryCoolEngine {
 	enum class MeshTopolgy {
 		Triangles,
@@ -58,7 +67,7 @@ namespace VeryCoolEngine {
 		static Mesh* GenerateQuad();
 		static Mesh* GenerateVulkanTest();
 
-		static Mesh* FromFile(const std::string& path, bool swapYZ = false);
+		static Mesh* FromFile(const std::string& path, uint32_t uMeshIndex = 0, bool swapYZ = false);
 
 		Transform m_xTransform;
 
@@ -75,7 +84,81 @@ namespace VeryCoolEngine {
 
 		TextureDescriptorSpecification m_xTexDescSpec;
 
+		struct Vertex {
+			glm::vec3 pos;
+			glm::vec2 uv;
+			glm::vec3 normal;
+			glm::vec3 tangent;
+			glm::vec3 bitangent;
+			int m_BoneIDs[MAX_BONES_PER_VERTEX]{0};
+			float m_Weights[MAX_BONES_PER_VERTEX]{0.0f};
+			uint32_t m_uNumBones = 0;
+
+			bool operator==(const Vertex& other) const {
+				return pos == other.pos && uv == other.uv && normal == other.normal
+
+					//just to be safe
+					&& m_BoneIDs[0] == other.m_BoneIDs[0];
+			}
+		};
+		struct VertexHash
+		{
+			size_t operator()(Vertex const& vertex) const {
+				size_t posHash = std::hash<int>()(vertex.pos.x) ^ std::hash<int>()(vertex.pos.y) ^ std::hash<int>()(vertex.pos.z);
+				size_t uvHash = std::hash<int>()(vertex.uv.x) ^ std::hash<int>()(vertex.uv.y);
+				size_t normalHash = std::hash<int>()(vertex.normal.x) ^ std::hash<int>()(vertex.normal.y) ^ std::hash<int>()(vertex.normal.z);
+				return posHash ^ uvHash ^ normalHash;
+			}
+		};
+
+		static glm::mat4 ConvertMatrixToGLMFormat(const aiMatrix4x4& from);
+
 		bool m_bInitialised = false;
+
+		int m_BoneCounter = 0;
+		struct BoneInfo
+		{
+			int id;
+			glm::mat4 offset;
+		};
+		std::map<std::string, BoneInfo> m_BoneInfoMap;
+		static void SetVertexBoneData(Vertex& vertex, int boneID, float weight)
+		{
+			vertex.m_BoneIDs[vertex.m_uNumBones] = boneID;
+			vertex.m_Weights[vertex.m_uNumBones] = weight;
+			vertex.m_uNumBones++;
+			return;
+			for (int i = 0; i < MAX_BONES_PER_VERTEX; ++i)
+			{
+				if (vertex.m_BoneIDs[i] == 0)
+				{
+					vertex.m_Weights[i] = weight;
+					vertex.m_BoneIDs[i] = boneID;
+					break;
+				}
+			}
+		}
+
+		
+
+		struct BoneData {
+			uint32_t m_auIDs[MAX_BONES_PER_VERTEX]{ 0 };
+			float m_afWeights[MAX_BONES_PER_VERTEX]{ 0 };
+			void AddBoneData(uint32_t uBoneID, float fWeight) {
+				for (uint32_t i = 0; i < MAX_BONES_PER_VERTEX; i++) {
+					if (m_afWeights[i] == 0.f) {
+						m_auIDs[i] = uBoneID;
+						m_afWeights[i] = fWeight;
+						return;
+					}
+				}
+			}
+		};
+
+		std::map<std::string, aiNodeAnim*> m_xNodeNameToAnim;
+		std::map<std::string, uint32_t> m_xBoneNameToIndex;
+		std::map<uint32_t, std::string> m_xBoneIndexToName;
+		std::vector<glm::mat4> m_xBoneMats;
 
 	protected:
 		VertexArray* m_pxVertexArray;
@@ -87,12 +170,22 @@ namespace VeryCoolEngine {
 		Texture2D* m_pxMetallicTex = nullptr; //#todo so should this
 		Texture2D* m_pxHeightmapTex = nullptr; //#todo so should this
 
+		
+		uint32_t m_uNumBones = 0;
+		
+		std::vector<BoneData> m_xBoneData;
+		
+		
+		std::map<uint32_t, std::vector<std::pair<uint32_t, float>>> m_xBoneInfluences;
+
 		glm::vec3* m_pxVertexPositions = nullptr;
 		glm::vec2* m_pxUVs = nullptr;
 		glm::vec3* m_pxNormals = nullptr;
 		glm::vec3* m_pxTangents = nullptr;
 		glm::vec3* m_pxBitangents = nullptr;
 		unsigned int* m_puIndices = nullptr;
+		BoneData* m_pxBoneDatas = nullptr;
+
 		
 		void* m_pVerts;
 

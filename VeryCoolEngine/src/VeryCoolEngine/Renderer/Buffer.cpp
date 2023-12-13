@@ -22,5 +22,16 @@ namespace VeryCoolEngine {
 		VCE_INFO("implement me");
 		return nullptr;
 	}
+
+	Buffer* Buffer::Create(uint64_t uSize) {
+#ifdef VCE_OPENGL
+		return new OpenGLIndexBuffer(indices, count);
+#endif
+#ifdef VCE_VULKAN
+		VCE_INFO("implement me");
+		return nullptr;
+
+#endif
+	}
 	
 }

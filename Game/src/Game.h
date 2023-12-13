@@ -21,7 +21,7 @@ namespace VeryCoolEngine {
 		
 
 
-		Mesh* AddTestMesh(const char* szFileName, const Transform& xTrans);
+		Mesh* AddTestMesh(const char* szFileName, const Transform& xTrans, uint32_t uMeshIndex = 0);
 		
 
 		

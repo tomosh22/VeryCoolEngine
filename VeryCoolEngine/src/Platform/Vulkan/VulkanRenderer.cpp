@@ -32,6 +32,7 @@ VulkanRenderer::VulkanRenderer() {
 	m_pxCopyToFramebufferCommandBuffer = new VulkanCommandBuffer;
 	m_pxSkyboxCommandBuffer = new VulkanCommandBuffer;
 	m_pxOpaqueMeshesCommandBuffer = new VulkanCommandBuffer;
+	m_pxSkinnedMeshesCommandBuffer = new VulkanCommandBuffer;
 
 
 
@@ -280,6 +281,71 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 	m_pxOpaqueMeshesCommandBuffer->EndRecording();
 }
 
+void VulkanRenderer::DrawSkinnedMeshes() {
+	Application* app = Application::GetInstance();
+
+	m_pxSkinnedMeshesCommandBuffer->BeginRecording();
+
+	m_pxSkinnedMeshesCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTexture"), false);
+
+
+	m_pxSkinnedMeshesCommandBuffer->SetPipeline(&m_xPipelines.at("SkinnedMeshes")->m_xPipeline);
+
+	Application::MeshRenderData xMeshRenderData;
+
+	xMeshRenderData.xOverrideNormal = m_xOverrideNormal;
+	xMeshRenderData.uUseBumpMap = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;
+	xMeshRenderData.uUsePhongTess = app->_pRenderer->m_bUsePhongTess ? 1 : 0;
+	xMeshRenderData.fPhongTessFactor = app->_pRenderer->m_fPhongTessFactor;
+	xMeshRenderData.uTessLevel = app->_pRenderer->m_uTessLevel;
+
+	app->m_pxPushConstantUBO->UploadData(&xMeshRenderData, sizeof(Application::MeshRenderData), m_currentFrame, 0);
+
+	for (Mesh* mesh : app->scene->m_axPipelineMeshes.at("SkinnedMeshes")) {
+		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
+		m_pxSkinnedMeshesCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
+		m_pxSkinnedMeshesCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
+
+		m_pxSkinnedMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetTexture(), 0);
+		m_pxSkinnedMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetBumpMap(), 1);
+		m_pxSkinnedMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetRoughnessTex(), 2);
+		m_pxSkinnedMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetMetallicTex(), 3);
+
+
+
+
+		VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
+		m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0);
+
+		VulkanManagedUniformBuffer* pxLightUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pLightUBO);
+		m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxLightUBO->ppBuffers[m_currentFrame], 1);
+
+		VulkanBuffer* pxBoneBuffer = pxVulkanMesh->m_pxBoneBuffer;
+		pxBoneBuffer->UploadData(pxVulkanMesh->m_xBoneMats.data(), pxVulkanMesh->m_xBoneMats.size() * sizeof(glm::mat4));
+		m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxBoneBuffer, 3);
+
+
+		VulkanManagedUniformBuffer* pxPushConstantUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxPushConstantUBO);
+		m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxPushConstantUBO->ppBuffers[m_currentFrame], 2);
+
+		void* pPushConstant = malloc(sizeof(glm::mat4) + sizeof(int) + sizeof(float));
+		int uAnimate = bAnimate ? 1 : 0;
+		memcpy(pPushConstant, &mesh->m_xTransform._matrix, sizeof(glm::mat4));
+		memcpy((char*)pPushConstant + sizeof(glm::mat4), &uAnimate, sizeof(int));
+		memcpy((char*)pPushConstant + sizeof(glm::mat4) + sizeof(int), &fAnimAlpha, sizeof(float));
+
+		m_pxSkinnedMeshesCommandBuffer->PushConstant(pPushConstant, sizeof(glm::mat4) + sizeof(int) + sizeof(float));
+
+		free(pPushConstant);
+
+		m_pxSkinnedMeshesCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
+	}
+
+	m_pxSkinnedMeshesCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
+
+	m_pxSkinnedMeshesCommandBuffer->EndRecording();
+}
+
 void VulkanRenderer::DrawFrame(Scene* scene) {
 	uint32_t iImageIndex = AcquireSwapchainImage();
 	if (iImageIndex == -1) {
@@ -288,6 +354,8 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 	}
 
 	DrawOpaqueMeshes();
+
+	DrawSkinnedMeshes();
 
 	DrawSkybox();
 

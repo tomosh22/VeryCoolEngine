@@ -4,7 +4,7 @@
 #include "Platform/Vulkan/VulkanTexture.h"
 namespace VeryCoolEngine {
 
-	class VulkanBuffer
+	class VulkanBuffer : public Buffer
 	{
 	public:
 		VulkanBuffer() = default;
@@ -23,7 +23,6 @@ namespace VeryCoolEngine {
 
 		vk::Buffer m_xBuffer;
 		vk::DeviceMemory m_xDeviceMem;
-		size_t m_uSize;
 	private:
 		
 	};

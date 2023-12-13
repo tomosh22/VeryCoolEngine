@@ -17,6 +17,8 @@
 #include "VeryCoolEngine/Renderer/Mesh.h"
 #include "VeryCoolEngine/Renderer/Pipeline.h"
 #include "VeryCoolEngine/Renderer/PipelineSpecification.h"
+#include "VeryCoolEngine/Renderer/Animator.h"
+#include "VeryCoolEngine/Renderer/Animation.h"
 
 //#define VCE_DEFERRED_SHADING
 
@@ -92,6 +94,8 @@ namespace VeryCoolEngine {
 		RenderPass* m_pxCopyToFramebufferPass;
 
 
+		Mesh* m_pxAnimationTestMesh;
+
 		
 		std::unordered_map<std::string, PipelineSpecification> m_xPipelineSpecs;
 		
@@ -125,10 +129,20 @@ namespace VeryCoolEngine {
 
 		//#TODO i really need a better way to do this, used to provide vertex input state to mesh pipeline
 		Mesh* m_pxExampleMesh = Mesh::FromFile("cubeFlat.obj");
+		Mesh* m_pxExampleSkinnedMesh = Mesh::FromFile("ogre.fbx");
 		std::vector<Mesh*> m_apxGenericMeshes;
+		std::vector<Mesh*> m_apxSkinnedMeshes;
+
+		Mesh* m_pxAnimatedMesh0;
+		Mesh* m_pxAnimatedMesh1;
+		Animator* m_pxAnimator0;
+		Animator* m_pxAnimator1;
+		Animation* m_pxAnimation0;
+		Animation* m_pxAnimation1;
 
 
 		Shader* m_pxMeshShader;
+		Shader* m_pxSkinnedMeshShader;
 		Shader* m_pxGBufferShader;
 		Shader* m_pxCopyToFramebufferShader;
 

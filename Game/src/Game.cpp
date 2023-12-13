@@ -47,7 +47,18 @@ namespace VeryCoolEngine {
 			{ 50,120,50 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
 		)));
 
+
 		
+		m_pxAnimatedMesh0 = AddTestMesh("ogre.fbx", Transform(
+			{ 50,100,40 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(0.1f, 0.1f, 0.1f)
+		), 0);
+		m_pxAnimatedMesh1 = AddTestMesh("ogre.fbx", Transform(
+			{ 50,100,80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(0.1f, 0.1f, 0.1f)
+		), 1);
+		m_pxAnimation0 = new Animation(std::string("ogre.fbx"), m_pxAnimatedMesh0);
+		m_pxAnimator0 = new Animator(m_pxAnimation0);
+		m_pxAnimation1 = new Animation(std::string("ogre.fbx"), m_pxAnimatedMesh1);
+		m_pxAnimator1 = new Animator(m_pxAnimation1);
 
 		
 		_lights.push_back({
@@ -72,9 +83,9 @@ namespace VeryCoolEngine {
 		return;
 	}
 
-	Mesh* Game::AddTestMesh(const char* szFileName, const Transform& xTrans)
+	Mesh* Game::AddTestMesh(const char* szFileName, const Transform& xTrans, uint32_t uMeshIndex /*= 0*/)
 	{
-		Mesh* mesh = Mesh::FromFile(szFileName);
+		Mesh* mesh = Mesh::FromFile(szFileName, uMeshIndex);
 		mesh->SetShader(m_pxMeshShader);
 		mesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
 		mesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
@@ -113,6 +124,8 @@ namespace VeryCoolEngine {
 	void Application::GameLoop() {
 		Game* game = (Game*)Application::GetInstance();
 
+		m_pxAnimator0->UpdateAnimation(0.01);
+		m_pxAnimator1->UpdateAnimation(0.01);
 
 		sceneMutex.lock();
 		scene->Reset();
@@ -135,9 +148,23 @@ namespace VeryCoolEngine {
 		scene->m_axPipelineMeshes.at("Blocks").push_back(game->m_pxInstanceMesh);
 
 		scene->m_axPipelineMeshes.insert({ "Meshes", std::vector<Mesh*>() });
+		
 
 		for(Mesh* mesh : game->m_apxGenericMeshes)
 			scene->m_axPipelineMeshes.at("Meshes").push_back(mesh);
+
+
+		std::vector<glm::mat4>& xAnimMats0 = m_pxAnimator0->GetFinalBoneMatrices();
+		for (uint32_t i = 0; i < m_pxAnimatedMesh0->m_xBoneMats.size(); i++) {
+			m_pxAnimatedMesh0->m_xBoneMats.at(i) = xAnimMats0.at(i);
+		}
+		std::vector<glm::mat4>& xAnimMats1 = m_pxAnimator1->GetFinalBoneMatrices();
+		for (uint32_t i = 0; i < m_pxAnimatedMesh1->m_xBoneMats.size(); i++) {
+			m_pxAnimatedMesh1->m_xBoneMats.at(i) = xAnimMats1.at(i);
+		}
+		scene->m_axPipelineMeshes.insert({ "SkinnedMeshes", std::vector<Mesh*>() });
+		scene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(m_pxAnimatedMesh0);
+		scene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(m_pxAnimatedMesh1);
 
 		scene->m_axPipelineMeshes.insert({ "GBuffer", std::vector<Mesh*>() });
 

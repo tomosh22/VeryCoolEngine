@@ -222,6 +222,9 @@ namespace VeryCoolEngine {
 		ImGui::Checkbox("Use Phong Tesselation", &app->_pRenderer->m_bUsePhongTess);
 		ImGui::SliderFloat("Phong Tesselation Factor", &app->_pRenderer->m_fPhongTessFactor, -2, 20);
 		ImGui::SliderInt("Tesselation Level", (int*)&app->_pRenderer->m_uTessLevel, 1, 64);
+		ImGui::Checkbox("Animate", &app->_pRenderer->bAnimate);
+		ImGui::SliderFloat("Animation Alpha", &app->_pRenderer->fAnimAlpha, 0,1);
+
 
 
 		ImGui::End();
