@@ -56,9 +56,7 @@ namespace VeryCoolEngine {
 			{ 50,100,80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(0.1f, 0.1f, 0.1f)
 		), 1);
 		m_pxAnimation0 = new Animation(std::string("ogre.fbx"), m_pxAnimatedMesh0);
-		m_pxAnimator0 = new Animator(m_pxAnimation0);
 		m_pxAnimation1 = new Animation(std::string("ogre.fbx"), m_pxAnimatedMesh1);
-		m_pxAnimator1 = new Animator(m_pxAnimation1);
 
 		
 		_lights.push_back({
@@ -129,8 +127,8 @@ namespace VeryCoolEngine {
 		sceneMutex.lock();
 		scene->Reset();
 
-		m_pxAnimator0->UpdateAnimation(0.01);
-		m_pxAnimator1->UpdateAnimation(0.01);
+		m_pxAnimation0->UpdateAnimation(0.01);
+		m_pxAnimation1->UpdateAnimation(0.01);
 
 		scene->camera = &_Camera;
 		scene->skybox = _pCubemap;
@@ -156,11 +154,11 @@ namespace VeryCoolEngine {
 			scene->m_axPipelineMeshes.at("Meshes").push_back(mesh);
 
 
-		std::vector<glm::mat4>& xAnimMats0 = m_pxAnimator0->GetFinalBoneMatrices();
+		std::vector<glm::mat4>& xAnimMats0 = m_pxAnimation0->GetFinalBoneMatrices();
 		for (uint32_t i = 0; i < m_pxAnimatedMesh0->m_xBoneMats.size(); i++) {
 			m_pxAnimatedMesh0->m_xBoneMats.at(i) = xAnimMats0.at(i);
 		}
-		std::vector<glm::mat4>& xAnimMats1 = m_pxAnimator1->GetFinalBoneMatrices();
+		std::vector<glm::mat4>& xAnimMats1 = m_pxAnimation1->GetFinalBoneMatrices();
 		for (uint32_t i = 0; i < m_pxAnimatedMesh1->m_xBoneMats.size(); i++) {
 			m_pxAnimatedMesh1->m_xBoneMats.at(i) = xAnimMats1.at(i);
 		}

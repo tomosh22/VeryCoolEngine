@@ -17,7 +17,6 @@
 #include "VeryCoolEngine/Renderer/Mesh.h"
 #include "VeryCoolEngine/Renderer/Pipeline.h"
 #include "VeryCoolEngine/Renderer/PipelineSpecification.h"
-#include "VeryCoolEngine/Renderer/Animator.h"
 #include "VeryCoolEngine/Renderer/Animation.h"
 
 //#define VCE_DEFERRED_SHADING
@@ -135,8 +134,6 @@ namespace VeryCoolEngine {
 
 		Mesh* m_pxAnimatedMesh0;
 		Mesh* m_pxAnimatedMesh1;
-		Animator* m_pxAnimator0;
-		Animator* m_pxAnimator1;
 		Animation* m_pxAnimation0;
 		Animation* m_pxAnimation1;
 

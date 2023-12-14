@@ -54,6 +54,51 @@ namespace VeryCoolEngine {
             return m_BoneInfoMap;
         }
 
+
+
+        void UpdateAnimation(float dt)
+        {
+            m_DeltaTime = dt;
+            m_CurrentTime += GetTicksPerSecond() * dt;
+            m_CurrentTime = fmod(m_CurrentTime, GetDuration());
+                if (m_CurrentTime > GetDuration() - 10)
+                    m_CurrentTime = 0;
+                CalculateBoneTransform(&GetRootNode(), glm::mat4(1.0f));
+            
+        }
+
+
+        void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform)
+        {
+            std::string nodeName = node->name;
+            glm::mat4 nodeTransform = node->transformation;
+
+            Bone* Bone = FindBone(nodeName);
+
+            if (Bone)
+            {
+                Bone->Update(m_CurrentTime);
+                nodeTransform = Bone->GetLocalTransform();
+            }
+
+            glm::mat4 globalTransformation = parentTransform * nodeTransform;
+
+            auto boneInfoMap = GetBoneIDMap();
+            if (boneInfoMap.find(nodeName) != boneInfoMap.end())
+            {
+                int index = boneInfoMap[nodeName].id;
+                glm::mat4 offset = boneInfoMap[nodeName].offset;
+                m_FinalBoneMatrices[index] = globalTransformation * offset;
+            }
+
+            for (int i = 0; i < node->childrenCount; i++)
+                CalculateBoneTransform(&node->children[i], globalTransformation);
+        }
+
+        std::vector<glm::mat4>& GetFinalBoneMatrices()
+        {
+            return m_FinalBoneMatrices;
+        }
     private:
         void ReadMissingBones(const aiAnimation* animation, Mesh& model);
 
@@ -63,5 +108,9 @@ namespace VeryCoolEngine {
         std::vector<Bone> m_Bones;
         AssimpNodeData m_RootNode;
         std::map<std::string, Mesh::BoneInfo> m_BoneInfoMap;
+
+        std::vector<glm::mat4> m_FinalBoneMatrices;
+        float m_CurrentTime;
+        float m_DeltaTime;
     };
 }

@@ -70,6 +70,12 @@ namespace VeryCoolEngine {
         m_TicksPerSecond = animation->mTicksPerSecond;
         ReadHeirarchyData(m_RootNode, scene->mRootNode);
         ReadMissingBones(animation, *model);
+
+        m_CurrentTime = 0.0;
+        m_FinalBoneMatrices.reserve(100);
+
+        for (int i = 0; i < 100; i++)
+            m_FinalBoneMatrices.push_back(glm::mat4(1.0f));
 	}
 
     void Animation::ReadMissingBones(const aiAnimation* animation, Mesh& model)
