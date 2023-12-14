@@ -320,9 +320,9 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 		VulkanManagedUniformBuffer* pxLightUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pLightUBO);
 		m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxLightUBO->ppBuffers[m_currentFrame], 1);
 
-		VulkanBuffer* pxBoneBuffer = pxVulkanMesh->m_pxBoneBuffer;
-		pxBoneBuffer->UploadData(pxVulkanMesh->m_xBoneMats.data(), pxVulkanMesh->m_xBoneMats.size() * sizeof(glm::mat4));
-		m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxBoneBuffer, 3);
+		VulkanManagedUniformBuffer* pxBoneBuffer = pxVulkanMesh->m_pxBoneBuffer;
+		pxBoneBuffer->UploadData(pxVulkanMesh->m_xBoneMats.data(), pxVulkanMesh->m_xBoneMats.size() * sizeof(glm::mat4), m_currentFrame);
+		m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxBoneBuffer->ppBuffers[m_currentFrame], 3);
 
 
 		VulkanManagedUniformBuffer* pxPushConstantUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxPushConstantUBO);

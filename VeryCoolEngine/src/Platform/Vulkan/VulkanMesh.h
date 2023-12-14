@@ -4,7 +4,7 @@
 #include "Platform/Vulkan/VulkanIndexBuffer.h"
 
 namespace VeryCoolEngine {
-
+	class VulkanManagedUniformBuffer;
 	class VulkanMesh : public Mesh
 	{
 	public:
@@ -23,7 +23,7 @@ namespace VeryCoolEngine {
 		VulkanIndexBuffer* m_pxIndexBuffer;
 		VulkanVertexBuffer* m_pxInstanceBuffer = nullptr;
 
-		VulkanBuffer* m_pxBoneBuffer = nullptr;
+		VulkanManagedUniformBuffer* m_pxBoneBuffer = nullptr;
 
 		vk::PipelineVertexInputStateCreateInfo m_xVertexInputState;
 

@@ -1,6 +1,7 @@
 #include "vcepch.h"
 #include "VulkanMesh.h"
 #include "VeryCoolEngine/Application.h"
+#include "VulkanManagedUniformBuffer.h"
 
 #include "VulkanDescriptorSetLayoutBuilder.h"
 
@@ -115,12 +116,9 @@ namespace VeryCoolEngine {
 
 			VulkanBuffer::CopyBufferToBuffer(&pxStagingBuffer, m_pxBoneBuffer, uSize);
 #endif
-			m_pxBoneBuffer = new VulkanBuffer(uSize, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
-			vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
-			void* pData = xDevice.mapMemory(m_pxBoneBuffer->m_xDeviceMem, 0, uSize);
-			memcpy(pData, m_xBoneMats.data(), uSize);
-			xDevice.unmapMemory(m_pxBoneBuffer->m_xDeviceMem);
+			//TODO: get rid of last parameter
+			m_pxBoneBuffer = new VulkanManagedUniformBuffer(uSize, MAX_FRAMES_IN_FLIGHT, 0);
 
 		}
 

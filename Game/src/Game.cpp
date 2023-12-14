@@ -124,11 +124,13 @@ namespace VeryCoolEngine {
 	void Application::GameLoop() {
 		Game* game = (Game*)Application::GetInstance();
 
-		m_pxAnimator0->UpdateAnimation(0.01);
-		m_pxAnimator1->UpdateAnimation(0.01);
+		
 
 		sceneMutex.lock();
 		scene->Reset();
+
+		m_pxAnimator0->UpdateAnimation(0.01);
+		m_pxAnimator1->UpdateAnimation(0.01);
 
 		scene->camera = &_Camera;
 		scene->skybox = _pCubemap;

@@ -5,6 +5,7 @@
 namespace VeryCoolEngine {
 
 
+	//TODO: get rid of last parameter
 	VulkanManagedUniformBuffer::VulkanManagedUniformBuffer(uint32_t size, uint8_t numFrames, uint32_t baseBinding) : m_uNumFrames(numFrames), m_uSize(size), m_uBaseBinding(baseBinding)
 	{
 
