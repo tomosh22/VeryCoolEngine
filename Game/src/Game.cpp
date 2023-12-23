@@ -28,31 +28,43 @@ namespace VeryCoolEngine {
 		
 		
 
-		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmooth.obj", Transform(
+		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmooth.obj",
+			(char*)"crystal2k", Transform(
 			{ 50, 80, 80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
 		)));
-		m_apxGenericMeshes.push_back(AddTestMesh("sphereFlat.obj", Transform(
+		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmooth.obj",
+			(char*)"rock2k", Transform(
+				{ 50, 100, 80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
+			)));
+		m_apxGenericMeshes.push_back(AddTestMesh("sphereFlat.obj",
+			(char*)"crystal2k", Transform(
 			{ 80,80,80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
 		)));
-		m_apxGenericMeshes.push_back(AddTestMesh("cubeFlat.obj", Transform(
+		m_apxGenericMeshes.push_back(AddTestMesh("cubeFlat.obj",
+			(char*)"crystal2k", Transform(
 			{ 80,80,10 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
 		)));
-		m_apxGenericMeshes.push_back(AddTestMesh("cubeSmooth.obj", Transform(
+		m_apxGenericMeshes.push_back(AddTestMesh("cubeSmooth.obj",
+			(char*)"crystal2k", Transform(
 			{ 20,80,10 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
 		)));
-		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmoothIco.obj", Transform(
+		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmoothIco.obj",
+			(char*)"crystal2k", Transform(
 			{ 50,80,50 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
 		)));
-		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmoothIcoLowPoly.obj", Transform(
+		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmoothIcoLowPoly.obj",
+			(char*)"crystal2k", Transform(
 			{ 50,120,50 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
 		)));
 
 
 		
-		m_pxAnimatedMesh0 = AddTestMesh("ogre.fbx", Transform(
+		m_pxAnimatedMesh0 = AddTestMesh("ogre.fbx",
+			(char*)"crystal2k", Transform(
 			{ 50,100,40 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(0.1f, 0.1f, 0.1f)
 		), 0);
-		m_pxAnimatedMesh1 = AddTestMesh("ogre.fbx", Transform(
+		m_pxAnimatedMesh1 = AddTestMesh("ogre.fbx",
+			(char*)"crystal2k", Transform(
 			{ 50,100,80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(0.1f, 0.1f, 0.1f)
 		), 1);
 		m_pxAnimation0 = new Animation(std::string("ogre.fbx"), m_pxAnimatedMesh0);
@@ -81,16 +93,23 @@ namespace VeryCoolEngine {
 		return;
 	}
 
-	Mesh* Game::AddTestMesh(const char* szFileName, const Transform& xTrans, uint32_t uMeshIndex /*= 0*/)
+	Mesh* Game::AddTestMesh(const char* szFileName, char* szMaterialName, const Transform& xTrans, uint32_t uMeshIndex /*= 0*/)
 	{
 		Mesh* mesh = Mesh::FromFile(szFileName, uMeshIndex);
 		mesh->SetShader(m_pxMeshShader);
+#ifdef newmaterialstuff
 		mesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
 		mesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
 		mesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
 		mesh->SetMetallicTex(Texture2D::Create("crystal2k/violet_crystal_43_04_metallic.jpg", false));
 		mesh->SetHeightmapTex(Texture2D::Create("crystal2k/violet_crystal_43_04_height.jpg", false));
-		
+#endif
+		mesh->m_pxMaterial = Material::Create();
+		mesh->m_pxMaterial->SetAlbedo(Texture2D::Create((std::string(szMaterialName) + "/diffuse.jpg").c_str(), false));
+		mesh->m_pxMaterial->SetBumpMap(Texture2D::Create((std::string(szMaterialName) + "/normal.jpg").c_str(), false));
+		mesh->m_pxMaterial->SetRoughness(Texture2D::Create((std::string(szMaterialName) + "/roughness.jpg").c_str(), false));
+		mesh->m_pxMaterial->SetMetallic(Texture2D::Create((std::string(szMaterialName) + "/metallic.jpg").c_str(), false));
+		mesh->m_pxMaterial->SetHeightmap(Texture2D::Create((std::string(szMaterialName) + "/height.jpg").c_str(), false));
 
 		TextureDescriptorSpecification xMeshTexSpec;
 		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
@@ -127,8 +146,8 @@ namespace VeryCoolEngine {
 		sceneMutex.lock();
 		scene->Reset();
 
-		m_pxAnimation0->UpdateAnimation(0.01);
-		m_pxAnimation1->UpdateAnimation(0.01);
+		//m_pxAnimation0->UpdateAnimation(0.01);
+		//m_pxAnimation1->UpdateAnimation(0.01);
 
 		scene->camera = &_Camera;
 		scene->skybox = _pCubemap;

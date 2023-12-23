@@ -18,7 +18,9 @@ namespace VeryCoolEngine {
 		xBlockTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 
 		app->m_pxInstanceMesh = Mesh::GenerateQuad();
+#ifdef newmaterialstuff
 		app->m_pxInstanceMesh->SetTexture(Texture2D::Create("atlas.png", false));
+#endif
 		app->m_pxInstanceMesh->SetShader(Shader::Create("vulkan/blockVert.spv", "vulkan/blockFrag.spv"));
 		app->m_pxInstanceMesh->m_xTexDescSpec = xBlockTexSpec;
 		app->_meshes.push_back(app->m_pxInstanceMesh);

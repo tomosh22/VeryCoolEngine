@@ -110,7 +110,7 @@ namespace VeryCoolEngine {
 			float fPhongTessFactor;
 			int uTessLevel;
 		};
-		ManagedUniformBuffer* m_pxPushConstantUBO = nullptr;
+		ManagedUniformBuffer* m_pxMiscMeshRenderDataUBO = nullptr;
 
 		Camera _Camera;
 
@@ -127,8 +127,8 @@ namespace VeryCoolEngine {
 		Mesh* m_pxInstanceMesh;
 
 		//#TODO i really need a better way to do this, used to provide vertex input state to mesh pipeline
-		Mesh* m_pxExampleMesh = Mesh::FromFile("cubeFlat.obj");
-		Mesh* m_pxExampleSkinnedMesh = Mesh::FromFile("ogre.fbx");
+		Mesh* m_pxExampleMesh;
+		Mesh* m_pxExampleSkinnedMesh;
 		std::vector<Mesh*> m_apxGenericMeshes;
 		std::vector<Mesh*> m_apxSkinnedMeshes;
 

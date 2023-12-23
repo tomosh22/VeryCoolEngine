@@ -28,7 +28,8 @@ namespace VeryCoolEngine {
 
 		//_window->SetVSync(true);
 #endif
-		
+		m_pxExampleSkinnedMesh = Mesh::FromFile("ogre.fbx");
+		m_pxExampleMesh = Mesh::FromFile("cubeFlat.obj");
 		SetupPipelines();
 		
 		
@@ -217,7 +218,7 @@ namespace VeryCoolEngine {
 					false,
 					true,
 					4,
-					4
+					5
 					)
 			});
 

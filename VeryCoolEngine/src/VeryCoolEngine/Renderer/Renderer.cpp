@@ -35,8 +35,9 @@ namespace VeryCoolEngine {
 		
 
 
-
+#ifndef VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT
 		mesh->GetTexture()->BindToShader(mesh->GetShader(),"diffuseTex",0);//#todo how to determine bind point
+#endif
 		//mesh->GetBumpMap()->BindToShader(mesh->GetShader(), "bumpMap", 1);//#todo how to determine bind point
 		VertexArray* vertexArray = mesh->GetVertexArray();
 		vertexArray->Bind();
@@ -49,8 +50,9 @@ namespace VeryCoolEngine {
 		_spRenderer->BindViewProjMat(mesh->GetShader());
 
 
-
+#ifndef VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT
 		mesh->GetTexture()->BindToShader(mesh->GetShader(), "diffuseTex", 0);//#todo how to determine bind point
+#endif
 		//mesh->GetBumpMap()->BindToShader(mesh->GetShader(), "bumpMap", 1);//#todo how to determine bind point
 
 		//#todo temporary, need to implement proper uniform system

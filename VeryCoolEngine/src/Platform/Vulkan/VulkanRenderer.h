@@ -13,6 +13,8 @@
 #include "VeryCoolEngine/Renderer/Renderer.h"
 #include "VeryCoolEngine/Application.h"
 
+#define VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT 1
+
 #define DEBUG 1
 
 namespace VeryCoolEngine {

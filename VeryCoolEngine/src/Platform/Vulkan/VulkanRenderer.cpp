@@ -18,6 +18,8 @@
 #include "VeryCoolEngine/Renderer/RendererAPI.h"
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 
+#include "VulkanMaterial.h"
+
 
 using namespace VeryCoolEngine;
 
@@ -60,10 +62,12 @@ void VulkanRenderer::InitVulkan() {
 	for (Mesh* pMesh : app->_meshes) {
 		pMesh->PlatformInit();
 		pMesh->GetShader()->PlatformInit();
+		if(pMesh->m_pxMaterial != nullptr)
+			pMesh->m_pxMaterial->PlatformInit();
 	}
 	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
 	app->_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS, MAX_FRAMES_IN_FLIGHT, 1);
-	app->m_pxPushConstantUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS, MAX_FRAMES_IN_FLIGHT, 2);
+	app->m_pxMiscMeshRenderDataUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS, MAX_FRAMES_IN_FLIGHT, 2);
 
 	for (Shader* pxShader : app->_shaders) pxShader->PlatformInit();
 	//for (Texture* pxTex : app->_textures) pxTex->PlatformInit();
@@ -243,18 +247,25 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 	xMeshRenderData.fPhongTessFactor = app->_pRenderer->m_fPhongTessFactor;
 	xMeshRenderData.uTessLevel = app->_pRenderer->m_uTessLevel;
 
-	app->m_pxPushConstantUBO->UploadData(&xMeshRenderData, sizeof(Application::MeshRenderData), m_currentFrame, 0);
+	app->m_pxMiscMeshRenderDataUBO->UploadData(&xMeshRenderData, sizeof(Application::MeshRenderData), m_currentFrame, 0);
 
 	for (Mesh* mesh : app->scene->m_axPipelineMeshes.at("Meshes")) {
 		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
 		m_pxOpaqueMeshesCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
 		m_pxOpaqueMeshesCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
 
+		VulkanMaterial* pxVkMaterial = dynamic_cast<VulkanMaterial*>(mesh->m_pxMaterial);
+
+		m_pxOpaqueMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxOpaqueMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT, 1, &pxVkMaterial->m_xDescSet, 0, nullptr);
+
+#ifndef VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT
 		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetTexture(), 0);
 		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetBumpMap(), 1);
 		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetRoughnessTex(), 2);
 		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetMetallicTex(), 3);
 		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetHeightmapTex(), 4);
+#endif
+
 
 
 
@@ -268,7 +279,7 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 
 
 
-		VulkanManagedUniformBuffer* pxPushConstantUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxPushConstantUBO);
+		VulkanManagedUniformBuffer* pxPushConstantUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxMiscMeshRenderDataUBO);
 		m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxPushConstantUBO->ppBuffers[m_currentFrame], 2);
 
 		m_pxOpaqueMeshesCommandBuffer->PushConstant(&mesh->m_xTransform._matrix, sizeof(glm::mat4));
@@ -299,17 +310,24 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 	xMeshRenderData.fPhongTessFactor = app->_pRenderer->m_fPhongTessFactor;
 	xMeshRenderData.uTessLevel = app->_pRenderer->m_uTessLevel;
 
-	app->m_pxPushConstantUBO->UploadData(&xMeshRenderData, sizeof(Application::MeshRenderData), m_currentFrame, 0);
+	app->m_pxMiscMeshRenderDataUBO->UploadData(&xMeshRenderData, sizeof(Application::MeshRenderData), m_currentFrame, 0);
 
 	for (Mesh* mesh : app->scene->m_axPipelineMeshes.at("SkinnedMeshes")) {
 		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
 		m_pxSkinnedMeshesCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
 		m_pxSkinnedMeshesCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
 
-		m_pxSkinnedMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetTexture(), 0);
-		m_pxSkinnedMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetBumpMap(), 1);
-		m_pxSkinnedMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetRoughnessTex(), 2);
-		m_pxSkinnedMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetMetallicTex(), 3);
+		VulkanMaterial* pxVkMaterial = dynamic_cast<VulkanMaterial*>(mesh->m_pxMaterial);
+
+		m_pxSkinnedMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT, 1, &pxVkMaterial->m_xDescSet, 0, nullptr);
+
+#ifndef VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT
+		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetTexture(), 0);
+		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetBumpMap(), 1);
+		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetRoughnessTex(), 2);
+		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetMetallicTex(), 3);
+		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetHeightmapTex(), 4);
+#endif
 
 
 
@@ -325,7 +343,7 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 		m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxBoneBuffer->ppBuffers[m_currentFrame], 3);
 
 
-		VulkanManagedUniformBuffer* pxPushConstantUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxPushConstantUBO);
+		VulkanManagedUniformBuffer* pxPushConstantUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxMiscMeshRenderDataUBO);
 		m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxPushConstantUBO->ppBuffers[m_currentFrame], 2);
 
 		void* pPushConstant = malloc(sizeof(glm::mat4) + sizeof(int) + sizeof(float));

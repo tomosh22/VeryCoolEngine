@@ -3,6 +3,7 @@
 #include "VeryCoolEngine/Renderer/Buffer.h"
 #include "VeryCoolEngine/Renderer/Shader.h"
 #include "VeryCoolEngine/Renderer/Texture.h"
+#include "VeryCoolEngine/Renderer/Material.h"
 #include "VeryCoolEngine/Transform.h"
 #include "VeryCoolEngine/Renderer/PipelineSpecification.h"
 #include <map>
@@ -26,7 +27,6 @@ namespace VeryCoolEngine {
 		void* m_pData;
 		unsigned int m_uNumElements;
 	};
-	class Material;//todo implement
 	class Mesh
 	{
 	public:
@@ -49,6 +49,7 @@ namespace VeryCoolEngine {
 		void SetShader(Shader* shader) { m_pxShader = shader; }
 		Shader* GetShader() const { return m_pxShader; }
 
+#ifdef VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT
 		void SetTexture(Texture2D* texture) { m_pxTexture = texture; }
 		void SetBumpMap(Texture2D* bumpMap) { m_pxBumpMap = bumpMap; }
 		void SetRoughnessTex(Texture2D* roughnessTex) { m_pxRoughnessTex = roughnessTex; }
@@ -59,6 +60,7 @@ namespace VeryCoolEngine {
 		Texture2D* GetRoughnessTex() const { return m_pxRoughnessTex; }
 		Texture2D* GetMetallicTex() const { return m_pxMetallicTex; }
 		Texture2D* GetHeightmapTex() const { return m_pxHeightmapTex; }
+#endif
 
 		virtual void PlatformInit() = 0;
 
@@ -160,15 +162,12 @@ namespace VeryCoolEngine {
 		std::map<uint32_t, std::string> m_xBoneIndexToName;
 		std::vector<glm::mat4> m_xBoneMats;
 
+		Material* m_pxMaterial = nullptr;
+
 	protected:
 		VertexArray* m_pxVertexArray;
-		Material* m_pxMaterial;
 		Shader* m_pxShader;//#todo this should be in material
-		Texture2D* m_pxTexture = nullptr; //#todo so should this
-		Texture2D* m_pxBumpMap = nullptr; //#todo so should this
-		Texture2D* m_pxRoughnessTex = nullptr; //#todo so should this
-		Texture2D* m_pxMetallicTex = nullptr; //#todo so should this
-		Texture2D* m_pxHeightmapTex = nullptr; //#todo so should this
+		
 
 		
 		uint32_t m_uNumBones = 0;
