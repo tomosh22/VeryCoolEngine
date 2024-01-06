@@ -49,7 +49,7 @@ namespace VeryCoolEngine {
 		void SetShader(Shader* shader) { m_pxShader = shader; }
 		Shader* GetShader() const { return m_pxShader; }
 
-#ifdef VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT
+#ifdef VCE_MATERIAL_TEXTURE_DESC_SET
 		void SetTexture(Texture2D* texture) { m_pxTexture = texture; }
 		void SetBumpMap(Texture2D* bumpMap) { m_pxBumpMap = bumpMap; }
 		void SetRoughnessTex(Texture2D* roughnessTex) { m_pxRoughnessTex = roughnessTex; }

@@ -111,20 +111,24 @@ void VulkanRenderer::InitVulkan() {
 		.WithSamplers(1)//normal
 		.WithSamplers(1)//roughness
 		.WithSamplers(1)//metallic
-		.WithSamplers(1)//height
+		.WithSamplers(1);//height
+
+	VulkanDescriptorSetLayoutBuilder xDescBuilder2 = VulkanDescriptorSetLayoutBuilder().WithBindlessAccess()
 		.WithUniformBuffers(1);//bones
 
 	vk::DescriptorSetLayout xLayout0 = xDescBuilder0.Build(m_device);
 	vk::DescriptorSetLayout xLayout1 = xDescBuilder1.Build(m_device);
+	vk::DescriptorSetLayout xLayout2 = xDescBuilder2.Build(m_device);
 
 	xPipelineBuilder = xPipelineBuilder.WithDescriptorSetLayout(0, xLayout0);
-	xPipelineBuilder = xPipelineBuilder.WithDescriptorSetLayout(1, xLayout1);
+	xPipelineBuilder = xPipelineBuilder.WithDescriptorSetLayout(VCE_MATERIAL_TEXTURE_DESC_SET, xLayout1);
+	xPipelineBuilder = xPipelineBuilder.WithDescriptorSetLayout(VCE_SKINNING_DESC_SET, xLayout2);
 
 	VulkanPipeline* pxSkinnedMesheshPipeline = xPipelineBuilder.Build();
 
 	pxSkinnedMesheshPipeline->m_axDescLayouts = { xLayout0, xLayout1 };
 	for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		pxSkinnedMesheshPipeline->m_axDescSets[i] = {CreateDescriptorSet(xLayout0, m_descriptorPool), CreateDescriptorSet(xLayout1, m_descriptorPool)};
+		pxSkinnedMesheshPipeline->m_axDescSets[i] = {CreateDescriptorSet(xLayout0, m_descriptorPool), CreateDescriptorSet(xLayout1, m_descriptorPool), CreateDescriptorSet(xLayout2, m_descriptorPool) };
 
 		vk::DescriptorBufferInfo xCamInfo = vk::DescriptorBufferInfo()
 			.setBuffer(dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO)->ppBuffers[i]->m_xBuffer)
@@ -350,7 +354,7 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 
 		VulkanMaterial* pxVkMaterial = dynamic_cast<VulkanMaterial*>(mesh->m_pxMaterial);
 
-		m_pxOpaqueMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxOpaqueMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT, 1, &pxVkMaterial->m_xDescSet, 0, nullptr);
+		m_pxOpaqueMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxOpaqueMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, VCE_MATERIAL_TEXTURE_DESC_SET, 1, &pxVkMaterial->m_xDescSet, 0, nullptr);
 
 
 
@@ -471,8 +475,8 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 
 		vk::WriteDescriptorSet xBufWrite = vk::WriteDescriptorSet()
 			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-			.setDstSet(m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_axDescSets[m_currentFrame][1])
-			.setDstBinding(5)
+			.setDstSet(m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_axDescSets[m_currentFrame][2])
+			.setDstBinding(0)
 			.setDescriptorCount(1)
 			.setPBufferInfo(&xBufInfo);
 
@@ -482,7 +486,7 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 
 
 
-
+		m_pxSkinnedMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, 2, 1, &m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_axDescSets[m_currentFrame][2], 0, nullptr);
 
 		
 

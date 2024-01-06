@@ -28,7 +28,7 @@ namespace VeryCoolEngine {
     {
 		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
 
-#ifndef VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT
+#ifndef VCE_MATERIAL_TEXTURE_DESC_SET
 		if(m_pxTexture != nullptr)m_pxTexture->PlatformInit();
 		if(m_pxBumpMap != nullptr)m_pxBumpMap->PlatformInit();
 		if(m_pxRoughnessTex != nullptr)m_pxRoughnessTex->PlatformInit();
@@ -91,7 +91,7 @@ namespace VeryCoolEngine {
 			m_xTexDescSetLayout = VulkanDescriptorSetLayoutBuilder::FromSpecification(m_xTexDescSpec);
 			m_xTexDescSet = pxRenderer->CreateDescriptorSet(m_xTexDescSetLayout, pxRenderer->GetDescriptorPool());
 
-#ifndef VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT
+#ifndef VCE_MATERIAL_TEXTURE_DESC_SET
 			if(m_pxTexture != nullptr) 
 				pxRenderer->UpdateImageDescriptor(m_xTexDescSet, 0, 0, dynamic_cast<VulkanTexture2D*>(m_pxTexture)->m_xImageView, dynamic_cast<VulkanTexture2D*>(m_pxTexture)->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
 			if (m_pxBumpMap != nullptr)
@@ -129,8 +129,7 @@ namespace VeryCoolEngine {
 
 			VulkanDescriptorSetLayoutBuilder xDescBuilder = VulkanDescriptorSetLayoutBuilder()
 				.WithBindlessAccess();
-			for (uint32_t i = 0; i < VCE_BONE_BUFFER_BIND_POINT + 1; i++)
-				xDescBuilder = xDescBuilder.WithUniformBuffers(1);
+			xDescBuilder = xDescBuilder.WithUniformBuffers(1);
 			m_xBoneDescSetLayout = xDescBuilder.Build(pxRenderer->GetDevice());
 			
 
@@ -145,7 +144,7 @@ namespace VeryCoolEngine {
 				vk::WriteDescriptorSet xWrite = vk::WriteDescriptorSet()
 					.setDescriptorType(vk::DescriptorType::eUniformBuffer)
 					.setDstSet(m_axBoneDescSet[i])
-					.setDstBinding(VCE_BONE_BUFFER_BIND_POINT)
+					.setDstBinding(0)
 					.setDescriptorCount(1)
 					.setPBufferInfo(&xInfo);
 

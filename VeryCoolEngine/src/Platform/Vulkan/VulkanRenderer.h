@@ -13,8 +13,8 @@
 #include "VeryCoolEngine/Renderer/Renderer.h"
 #include "VeryCoolEngine/Application.h"
 
-#define VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT 1
-#define VCE_BONE_BUFFER_BIND_POINT 5
+#define VCE_MATERIAL_TEXTURE_DESC_SET 1
+#define VCE_SKINNING_DESC_SET 2
 
 #define DEBUG 1
 

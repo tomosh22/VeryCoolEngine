@@ -18,7 +18,7 @@ layout(std140, set = 0, binding=0) uniform matrices{
 };
 
 
-layout(std140, set = 1, binding=5) uniform Bones{
+layout(std140, set = 2, binding=0) uniform Bones{
 	mat4 _uBones[128];
 };
 
