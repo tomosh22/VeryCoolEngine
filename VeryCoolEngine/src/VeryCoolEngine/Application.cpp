@@ -197,7 +197,7 @@ namespace VeryCoolEngine {
 					)
 			});
 
-		m_xPipelineSpecs.insert(
+		/*m_xPipelineSpecs.insert(
 			{ "SkinnedMeshes",
 					PipelineSpecification(
 					"SkinnedMeshes",
@@ -220,7 +220,7 @@ namespace VeryCoolEngine {
 					4,
 					5
 					)
-			});
+			});*/
 
 		m_xPipelineSpecs.insert(
 			{ "CopyToFramebuffer",

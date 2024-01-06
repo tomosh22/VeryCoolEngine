@@ -22,7 +22,6 @@ namespace VeryCoolEngine {
 		Texture2D* m_pxMetallicTex = nullptr;
 		Texture2D* m_pxHeightmapTex = nullptr;
 
-	protected:
 		bool m_bInitialised = false;
 		uint32_t m_uNumTextures = 0;
 	};

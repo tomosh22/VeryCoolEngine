@@ -75,8 +75,102 @@ void VulkanRenderer::InitVulkan() {
 	for (auto it = app->m_xPipelineSpecs.begin(); it != app->m_xPipelineSpecs.end(); it++) {
 		m_xPipelines.insert({ it->first,VulkanPipelineBuilder::FromSpecification(it->second) });
 	}
+
+#pragma region newpipelines
 	
-	
+	if (!app->m_pxSkinnedMeshShader->m_bInitialised)
+		app->m_pxSkinnedMeshShader->PlatformInit();
+	if (!app->m_pxExampleSkinnedMesh->m_bInitialised)
+		app->m_pxExampleSkinnedMesh->PlatformInit();
+
+	VulkanPipelineBuilder xPipelineBuilder = VulkanPipelineBuilder("SkinnedMeshes")
+		.WithVertexInputState(dynamic_cast<VulkanMesh*>(app->m_pxExampleSkinnedMesh)->m_xVertexInputState)
+		.WithTopology(vk::PrimitiveTopology::eTriangleList)
+		.WithShader(*dynamic_cast<VulkanShader*>(app->m_pxSkinnedMeshShader))
+		.WithBlendState(vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha)
+		.WithDepthState(vk::CompareOp::eGreaterOrEqual, true, true, false)
+		.WithColourFormats({ ColourFormat::BGRA8_sRGB })
+		.WithDepthFormat(vk::Format::eD32Sfloat)
+		.WithPass(dynamic_cast<VulkanRenderPass*>(app->m_pxRenderToTexturePass)->m_xRenderPass)
+		.WithPushConstant(vk::ShaderStageFlagBits::eAll, 0,
+			sizeof(glm::mat4) + //modelmat
+			sizeof(glm::vec3) + //overrideNormal
+			sizeof(uint32_t) +  //useBumpMap
+			sizeof(uint32_t) +	//usePhongTess
+			sizeof(float) +	//phongTessFactor
+			sizeof(uint32_t)	//tessLevel
+		);
+
+	VulkanDescriptorSetLayoutBuilder xDescBuilder0 = VulkanDescriptorSetLayoutBuilder().WithBindlessAccess()
+		.WithUniformBuffers(1)//camera
+		.WithUniformBuffers(1)//lights
+		.WithUniformBuffers(1);//misc
+
+	VulkanDescriptorSetLayoutBuilder xDescBuilder1 = VulkanDescriptorSetLayoutBuilder().WithBindlessAccess()
+		.WithSamplers(1)//diffuse
+		.WithSamplers(1)//normal
+		.WithSamplers(1)//roughness
+		.WithSamplers(1)//metallic
+		.WithSamplers(1)//height
+		.WithUniformBuffers(1);//bones
+
+	vk::DescriptorSetLayout xLayout0 = xDescBuilder0.Build(m_device);
+	vk::DescriptorSetLayout xLayout1 = xDescBuilder1.Build(m_device);
+
+	xPipelineBuilder = xPipelineBuilder.WithDescriptorSetLayout(0, xLayout0);
+	xPipelineBuilder = xPipelineBuilder.WithDescriptorSetLayout(1, xLayout1);
+
+	VulkanPipeline* pxSkinnedMesheshPipeline = xPipelineBuilder.Build();
+
+	pxSkinnedMesheshPipeline->m_axDescLayouts = { xLayout0, xLayout1 };
+	for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		pxSkinnedMesheshPipeline->m_axDescSets[i] = {CreateDescriptorSet(xLayout0, m_descriptorPool), CreateDescriptorSet(xLayout1, m_descriptorPool)};
+
+		vk::DescriptorBufferInfo xCamInfo = vk::DescriptorBufferInfo()
+			.setBuffer(dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO)->ppBuffers[i]->m_xBuffer)
+			.setOffset(0)
+			.setRange(dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO)->m_uSize);
+
+		vk::WriteDescriptorSet xCamWrite = vk::WriteDescriptorSet()
+			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+			.setDstSet(pxSkinnedMesheshPipeline->m_axDescSets[i][0])
+			.setDstBinding(0)
+			.setDescriptorCount(1)
+			.setPBufferInfo(&xCamInfo);
+
+		m_device.updateDescriptorSets(1, &xCamWrite, 0, nullptr);
+
+		vk::DescriptorBufferInfo xLightInfo = vk::DescriptorBufferInfo()
+			.setBuffer(dynamic_cast<VulkanManagedUniformBuffer*>(app->_pLightUBO)->ppBuffers[i]->m_xBuffer)
+			.setOffset(0)
+			.setRange(dynamic_cast<VulkanManagedUniformBuffer*>(app->_pLightUBO)->m_uSize);
+
+		vk::WriteDescriptorSet xLightWrite = vk::WriteDescriptorSet()
+			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+			.setDstSet(pxSkinnedMesheshPipeline->m_axDescSets[i][0])
+			.setDstBinding(1)
+			.setDescriptorCount(1)
+			.setPBufferInfo(&xLightInfo);
+
+		m_device.updateDescriptorSets(1, &xLightWrite, 0, nullptr);
+
+		vk::DescriptorBufferInfo xMiscInfo = vk::DescriptorBufferInfo()
+			.setBuffer(dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxMiscMeshRenderDataUBO)->ppBuffers[i]->m_xBuffer)
+			.setOffset(0)
+			.setRange(dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxMiscMeshRenderDataUBO)->m_uSize);
+
+		vk::WriteDescriptorSet xMiscWrite = vk::WriteDescriptorSet()
+			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+			.setDstSet(pxSkinnedMesheshPipeline->m_axDescSets[i][0])
+			.setDstBinding(2)
+			.setDescriptorCount(1)
+			.setPBufferInfo(&xMiscInfo);
+
+		m_device.updateDescriptorSets(1, &xMiscWrite, 0, nullptr);
+	}
+
+	m_xPipelines.insert({ "SkinnedMeshes",pxSkinnedMesheshPipeline});
+#pragma endregion
 
 	Application::GetInstance()->renderInitialised = true;
 }
@@ -258,13 +352,7 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 
 		m_pxOpaqueMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxOpaqueMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT, 1, &pxVkMaterial->m_xDescSet, 0, nullptr);
 
-#ifndef VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT
-		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetTexture(), 0);
-		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetBumpMap(), 1);
-		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetRoughnessTex(), 2);
-		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetMetallicTex(), 3);
-		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetHeightmapTex(), 4);
-#endif
+
 
 
 
@@ -312,6 +400,8 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 
 	app->m_pxMiscMeshRenderDataUBO->UploadData(&xMeshRenderData, sizeof(Application::MeshRenderData), m_currentFrame, 0);
 
+	m_pxSkinnedMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, 0, 1, &m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_axDescSets[m_currentFrame][0], 0, nullptr);
+
 	for (Mesh* mesh : app->scene->m_axPipelineMeshes.at("SkinnedMeshes")) {
 		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
 		m_pxSkinnedMeshesCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
@@ -319,32 +409,84 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 
 		VulkanMaterial* pxVkMaterial = dynamic_cast<VulkanMaterial*>(mesh->m_pxMaterial);
 
-		m_pxSkinnedMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT, 1, &pxVkMaterial->m_xDescSet, 0, nullptr);
+		std::vector<Texture2D*> xTextures;
+		if (pxVkMaterial->m_pxAlbedo != nullptr) {
+			pxVkMaterial->m_pxAlbedo->PlatformInit();
+			xTextures.push_back(pxVkMaterial->m_pxAlbedo);
+		}
+		if (pxVkMaterial->m_pxBumpMap != nullptr) {
+			pxVkMaterial->m_pxBumpMap->PlatformInit();
+			xTextures.push_back(pxVkMaterial->m_pxBumpMap);
+		}
+		if (pxVkMaterial->m_pxRoughnessTex != nullptr) {
+			pxVkMaterial->m_pxRoughnessTex->PlatformInit();
+			xTextures.push_back(pxVkMaterial->m_pxRoughnessTex);
+		}
+		if (pxVkMaterial->m_pxMetallicTex != nullptr) {
+			pxVkMaterial->m_pxMetallicTex->PlatformInit();
+			xTextures.push_back(pxVkMaterial->m_pxMetallicTex);
+		}
+		if (pxVkMaterial->m_pxHeightmapTex != nullptr) {
+			pxVkMaterial->m_pxHeightmapTex->PlatformInit();
+			xTextures.push_back(pxVkMaterial->m_pxHeightmapTex);
+		}
 
-#ifndef VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT
-		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetTexture(), 0);
-		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetBumpMap(), 1);
-		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetRoughnessTex(), 2);
-		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetMetallicTex(), 3);
-		m_pxOpaqueMeshesCommandBuffer->BindTexture(pxVulkanMesh->GetHeightmapTex(), 4);
-#endif
+		pxVkMaterial->m_uNumTextures = xTextures.size();
 
+		
 
+		std::vector<vk::DescriptorImageInfo> xInfos(pxVkMaterial->m_uNumTextures);
+		std::vector<vk::WriteDescriptorSet> xWrites(pxVkMaterial->m_uNumTextures);
+		uint32_t uCount = 0;
 
+		for (Texture2D* pxTex : xTextures) {
+			VulkanTexture2D* pxVkTex = dynamic_cast<VulkanTexture2D*>(pxTex);
 
-		VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
-		m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0);
+			vk::DescriptorImageInfo& xInfo = xInfos.at(uCount)
+				.setSampler(pxVkTex->m_xSampler)
+				.setImageView(pxVkTex->m_xImageView)
+				.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
 
-		VulkanManagedUniformBuffer* pxLightUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pLightUBO);
-		m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxLightUBO->ppBuffers[m_currentFrame], 1);
+			vk::WriteDescriptorSet& xWrite = xWrites.at(uCount)
+				.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+				.setDstSet(m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_axDescSets[m_currentFrame][1])
+				.setDstBinding(uCount)
+				.setDstArrayElement(0)
+				.setDescriptorCount(1)
+				.setPImageInfo(&xInfo);
+
+			uCount++;
+		}
+
+		m_device.updateDescriptorSets(xWrites.size(), xWrites.data(), 0, nullptr);
+
 
 		VulkanManagedUniformBuffer* pxBoneBuffer = pxVulkanMesh->m_pxBoneBuffer;
 		pxBoneBuffer->UploadData(pxVulkanMesh->m_xBoneMats.data(), pxVulkanMesh->m_xBoneMats.size() * sizeof(glm::mat4), m_currentFrame);
-		m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxBoneBuffer->ppBuffers[m_currentFrame], 3);
+
+		vk::DescriptorBufferInfo xBufInfo = vk::DescriptorBufferInfo()
+			.setBuffer(pxVulkanMesh->m_pxBoneBuffer->ppBuffers[m_currentFrame]->m_xBuffer)
+			.setOffset(0)
+			.setRange(pxVulkanMesh->m_pxBoneBuffer->m_uSize);
+
+		vk::WriteDescriptorSet xBufWrite = vk::WriteDescriptorSet()
+			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+			.setDstSet(m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_axDescSets[m_currentFrame][1])
+			.setDstBinding(5)
+			.setDescriptorCount(1)
+			.setPBufferInfo(&xBufInfo);
+
+		m_device.updateDescriptorSets(1, &xBufWrite, 0, nullptr);
+
+		m_pxSkinnedMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, 1, 1, &m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_axDescSets[m_currentFrame][1], 0, nullptr);
 
 
-		VulkanManagedUniformBuffer* pxPushConstantUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxMiscMeshRenderDataUBO);
-		m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxPushConstantUBO->ppBuffers[m_currentFrame], 2);
+
+
+
+		
+
+
 
 		void* pPushConstant = malloc(sizeof(glm::mat4) + sizeof(int) + sizeof(float));
 		int uAnimate = bAnimate ? 1 : 0;

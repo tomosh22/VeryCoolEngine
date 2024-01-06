@@ -60,7 +60,7 @@ namespace VeryCoolEngine {
 
 		
 		m_pxAnimatedMesh0 = AddTestMesh("ogre.fbx",
-			(char*)"crystal2k", Transform(
+			(char*)"rock2k", Transform(
 			{ 50,100,40 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(0.1f, 0.1f, 0.1f)
 		), 0);
 		m_pxAnimatedMesh1 = AddTestMesh("ogre.fbx",
@@ -97,13 +97,6 @@ namespace VeryCoolEngine {
 	{
 		Mesh* mesh = Mesh::FromFile(szFileName, uMeshIndex);
 		mesh->SetShader(m_pxMeshShader);
-#ifdef newmaterialstuff
-		mesh->SetTexture(Texture2D::Create("crystal2k/violet_crystal_43_04_diffuse.jpg", false));
-		mesh->SetBumpMap(Texture2D::Create("crystal2k/violet_crystal_43_04_normal.jpg", false));
-		mesh->SetRoughnessTex(Texture2D::Create("crystal2k/violet_crystal_43_04_roughness.jpg", false));
-		mesh->SetMetallicTex(Texture2D::Create("crystal2k/violet_crystal_43_04_metallic.jpg", false));
-		mesh->SetHeightmapTex(Texture2D::Create("crystal2k/violet_crystal_43_04_height.jpg", false));
-#endif
 		mesh->m_pxMaterial = Material::Create();
 		mesh->m_pxMaterial->SetAlbedo(Texture2D::Create((std::string(szMaterialName) + "/diffuse.jpg").c_str(), false));
 		mesh->m_pxMaterial->SetBumpMap(Texture2D::Create((std::string(szMaterialName) + "/normal.jpg").c_str(), false));
@@ -146,8 +139,8 @@ namespace VeryCoolEngine {
 		sceneMutex.lock();
 		scene->Reset();
 
-		//m_pxAnimation0->UpdateAnimation(0.01);
-		//m_pxAnimation1->UpdateAnimation(0.01);
+		m_pxAnimation0->UpdateAnimation(0.01);
+		m_pxAnimation1->UpdateAnimation(0.01);
 
 		scene->camera = &_Camera;
 		scene->skybox = _pCubemap;

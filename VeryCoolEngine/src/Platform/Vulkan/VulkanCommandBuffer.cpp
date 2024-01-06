@@ -276,14 +276,21 @@ namespace VeryCoolEngine {
 	{
 		VulkanPipeline* pxVkPipeline = reinterpret_cast<VulkanPipeline*>(pxPipeline);
 		m_xCurrentCmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxVkPipeline->m_xPipeline);
-		
 		std::vector<vk::DescriptorSet> axSets;
-		for (const vk::DescriptorSet set : pxVkPipeline->m_axBufferDescSets)
-			axSets.push_back(set);
-		for (const vk::DescriptorSet set : pxVkPipeline->m_axTexDescSets) {
-			axSets.push_back(set);
+		//new pipelines (skinned meshes)
+		if (pxVkPipeline->m_axDescLayouts.size()) {
+			for (const vk::DescriptorSet set : pxVkPipeline->m_axDescSets[0])
+				axSets.push_back(set);
 		}
-		m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pxVkPipeline->m_xPipelineLayout, 0, axSets.size(), axSets.data(), 0, nullptr);
+		else {
+			//TODO: delete me
+			for (const vk::DescriptorSet set : pxVkPipeline->m_axBufferDescSets)
+				axSets.push_back(set);
+			for (const vk::DescriptorSet set : pxVkPipeline->m_axTexDescSets) {
+				axSets.push_back(set);
+			}
+			m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pxVkPipeline->m_xPipelineLayout, 0, axSets.size(), axSets.data(), 0, nullptr);
+		}
 
 		m_uCurrentDescSetIndex = axSets.size();
 

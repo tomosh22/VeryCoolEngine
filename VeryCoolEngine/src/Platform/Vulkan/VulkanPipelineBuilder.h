@@ -7,6 +7,7 @@ License: MIT (see LICENSE file at the top of the source tree)
 *//////////////////////////////////////////////////////////////////////////////
 #pragma once
 #include "VeryCoolEngine/Renderer/PipelineSpecification.h"
+#include "VulkanRenderer.h"
 
 namespace VeryCoolEngine {
 	class VulkanShader;
@@ -16,13 +17,15 @@ namespace VeryCoolEngine {
 		vk::Pipeline m_xPipeline;
 		vk::PipelineLayout	m_xPipelineLayout;
 
+		//TODO: delete me
 		std::vector<vk::DescriptorSetLayout> m_axBufferDescLayouts;
 		std::vector<vk::DescriptorSet> m_axBufferDescSets;
 
 
+		std::vector<vk::DescriptorSetLayout> m_axDescLayouts;
+		std::vector<vk::DescriptorSet> m_axDescSets[MAX_FRAMES_IN_FLIGHT];
 
-
-
+		//TODO: delete me
 		std::vector<vk::DescriptorSetLayout> m_axTexDescLayouts;
 		std::vector<vk::DescriptorSet> m_axTexDescSets;
 

@@ -124,6 +124,34 @@ namespace VeryCoolEngine {
 			//TODO: get rid of last parameter
 			m_pxBoneBuffer = new VulkanManagedUniformBuffer(uSize, MAX_FRAMES_IN_FLIGHT, 0);
 
+			
+
+
+			VulkanDescriptorSetLayoutBuilder xDescBuilder = VulkanDescriptorSetLayoutBuilder()
+				.WithBindlessAccess();
+			for (uint32_t i = 0; i < VCE_BONE_BUFFER_BIND_POINT + 1; i++)
+				xDescBuilder = xDescBuilder.WithUniformBuffers(1);
+			m_xBoneDescSetLayout = xDescBuilder.Build(pxRenderer->GetDevice());
+			
+
+			for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+			{
+				m_axBoneDescSet[i] = pxRenderer->CreateDescriptorSet(m_xBoneDescSetLayout, pxRenderer->GetDescriptorPool());
+				vk::DescriptorBufferInfo xInfo = vk::DescriptorBufferInfo()
+					.setBuffer(m_pxBoneBuffer->ppBuffers[i]->m_xBuffer)
+					.setOffset(0)
+					.setRange(m_pxBoneBuffer->m_uSize);
+
+				vk::WriteDescriptorSet xWrite = vk::WriteDescriptorSet()
+					.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+					.setDstSet(m_axBoneDescSet[i])
+					.setDstBinding(VCE_BONE_BUFFER_BIND_POINT)
+					.setDescriptorCount(1)
+					.setPBufferInfo(&xInfo);
+
+				pxRenderer->GetDevice().updateDescriptorSets(1, &xWrite, 0, nullptr);
+			}
+
 		}
 
 		m_bInitialised = true;

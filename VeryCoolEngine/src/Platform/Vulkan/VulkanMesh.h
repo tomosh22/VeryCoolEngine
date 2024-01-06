@@ -30,6 +30,9 @@ namespace VeryCoolEngine {
 		
 		vk::DescriptorSet m_xTexDescSet;
 		vk::DescriptorSetLayout m_xTexDescSetLayout;
+
+		vk::DescriptorSet m_axBoneDescSet[MAX_FRAMES_IN_FLIGHT];
+		vk::DescriptorSetLayout m_xBoneDescSetLayout;
 	private:
 		
 	};

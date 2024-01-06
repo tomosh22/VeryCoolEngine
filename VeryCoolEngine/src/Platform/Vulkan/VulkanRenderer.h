@@ -14,6 +14,7 @@
 #include "VeryCoolEngine/Application.h"
 
 #define VCE_MATERIAL_TEXTURE_DESC_SET_BIND_POINT 1
+#define VCE_BONE_BUFFER_BIND_POINT 5
 
 #define DEBUG 1
 

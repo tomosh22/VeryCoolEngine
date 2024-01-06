@@ -174,6 +174,7 @@ namespace VeryCoolEngine {
 	}
 
 	void VulkanTexture2D::PlatformInit() {
+		if (m_bInitialised)return;
 		if (m_bHasFilePath)InitWithData();
 		else InitWithoutData();
 	}
