@@ -424,7 +424,7 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 
 		vk::WriteDescriptorSet xBufWrite = vk::WriteDescriptorSet()
 			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-			.setDstSet(m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_axDescSets[m_currentFrame][2])
+			.setDstSet(pxVulkanMesh->m_axBoneDescSet[m_currentFrame])
 			.setDstBinding(0)
 			.setDescriptorCount(1)
 			.setPBufferInfo(&xBufInfo);
@@ -435,7 +435,7 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 
 
 
-		m_pxSkinnedMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, 2, 1, &m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_axDescSets[m_currentFrame][2], 0, nullptr);
+		m_pxSkinnedMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, 2, 1, &pxVulkanMesh->m_axBoneDescSet[m_currentFrame], 0, nullptr);
 
 		
 
