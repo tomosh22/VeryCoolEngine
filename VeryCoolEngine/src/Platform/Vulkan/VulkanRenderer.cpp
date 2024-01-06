@@ -413,57 +413,6 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 
 		VulkanMaterial* pxVkMaterial = dynamic_cast<VulkanMaterial*>(mesh->m_pxMaterial);
 
-		std::vector<Texture2D*> xTextures;
-		if (pxVkMaterial->m_pxAlbedo != nullptr) {
-			pxVkMaterial->m_pxAlbedo->PlatformInit();
-			xTextures.push_back(pxVkMaterial->m_pxAlbedo);
-		}
-		if (pxVkMaterial->m_pxBumpMap != nullptr) {
-			pxVkMaterial->m_pxBumpMap->PlatformInit();
-			xTextures.push_back(pxVkMaterial->m_pxBumpMap);
-		}
-		if (pxVkMaterial->m_pxRoughnessTex != nullptr) {
-			pxVkMaterial->m_pxRoughnessTex->PlatformInit();
-			xTextures.push_back(pxVkMaterial->m_pxRoughnessTex);
-		}
-		if (pxVkMaterial->m_pxMetallicTex != nullptr) {
-			pxVkMaterial->m_pxMetallicTex->PlatformInit();
-			xTextures.push_back(pxVkMaterial->m_pxMetallicTex);
-		}
-		if (pxVkMaterial->m_pxHeightmapTex != nullptr) {
-			pxVkMaterial->m_pxHeightmapTex->PlatformInit();
-			xTextures.push_back(pxVkMaterial->m_pxHeightmapTex);
-		}
-
-		pxVkMaterial->m_uNumTextures = xTextures.size();
-
-		
-
-		std::vector<vk::DescriptorImageInfo> xInfos(pxVkMaterial->m_uNumTextures);
-		std::vector<vk::WriteDescriptorSet> xWrites(pxVkMaterial->m_uNumTextures);
-		uint32_t uCount = 0;
-
-		for (Texture2D* pxTex : xTextures) {
-			VulkanTexture2D* pxVkTex = dynamic_cast<VulkanTexture2D*>(pxTex);
-
-			vk::DescriptorImageInfo& xInfo = xInfos.at(uCount)
-				.setSampler(pxVkTex->m_xSampler)
-				.setImageView(pxVkTex->m_xImageView)
-				.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
-
-			vk::WriteDescriptorSet& xWrite = xWrites.at(uCount)
-				.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-				.setDstSet(m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_axDescSets[m_currentFrame][1])
-				.setDstBinding(uCount)
-				.setDstArrayElement(0)
-				.setDescriptorCount(1)
-				.setPImageInfo(&xInfo);
-
-			uCount++;
-		}
-
-		m_device.updateDescriptorSets(xWrites.size(), xWrites.data(), 0, nullptr);
-
 
 		VulkanManagedUniformBuffer* pxBoneBuffer = pxVulkanMesh->m_pxBoneBuffer;
 		pxBoneBuffer->UploadData(pxVulkanMesh->m_xBoneMats.data(), pxVulkanMesh->m_xBoneMats.size() * sizeof(glm::mat4), m_currentFrame);
@@ -482,7 +431,7 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 
 		m_device.updateDescriptorSets(1, &xBufWrite, 0, nullptr);
 
-		m_pxSkinnedMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, 1, 1, &m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_axDescSets[m_currentFrame][1], 0, nullptr);
+		m_pxSkinnedMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, VCE_MATERIAL_TEXTURE_DESC_SET, 1, &pxVkMaterial->m_xDescSet, 0, nullptr);
 
 
 
