@@ -22,6 +22,16 @@ namespace VeryCoolEngine {
 #endif
 	}
 
+	Texture2D* Texture2D::Create()
+	{
+#ifdef VCE_OPENGL
+		return new OpenGLTexture2D();
+#endif
+#ifdef VCE_VULKAN
+		return new VulkanTexture2D();
+#endif
+	}
+
 
 	TextureCube* TextureCube::Create(const std::string& path, bool srgb)
 	{

@@ -354,6 +354,11 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 
 		VulkanMaterial* pxVkMaterial = dynamic_cast<VulkanMaterial*>(mesh->m_pxMaterial);
 
+		if (pxVkMaterial == nullptr){
+			VCE_TRACE("mesh without material");
+			continue;
+		}
+
 		m_pxOpaqueMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxOpaqueMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, VCE_MATERIAL_TEXTURE_DESC_SET, 1, &pxVkMaterial->m_xDescSet, 0, nullptr);
 
 

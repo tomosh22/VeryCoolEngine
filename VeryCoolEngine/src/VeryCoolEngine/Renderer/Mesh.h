@@ -1,3 +1,4 @@
+//credit learnopengl.com
 #pragma once
 #include "VeryCoolEngine/Renderer/VertexArray.h"
 #include "VeryCoolEngine/Renderer/Buffer.h"
@@ -14,6 +15,8 @@ typedef float ai_real;
 template<typename TReal>
 class aiMatrix4x4t;
 typedef aiMatrix4x4t<ai_real> aiMatrix4x4;
+struct aiMesh;
+struct aiScene;
 namespace VeryCoolEngine {
 	enum class MeshTopolgy {
 		Triangles,
@@ -27,6 +30,34 @@ namespace VeryCoolEngine {
 		void* m_pData;
 		unsigned int m_uNumElements;
 	};
+
+	struct Vertex {
+		glm::vec3 pos;
+		glm::vec2 uv;
+		glm::vec3 normal;
+		glm::vec3 tangent;
+		glm::vec3 bitangent;
+		int m_BoneIDs[MAX_BONES_PER_VERTEX]{ 0 };
+		float m_Weights[MAX_BONES_PER_VERTEX]{ 0.0f };
+		uint32_t m_uNumBones = 0;
+
+		bool operator==(const Vertex& other) const {
+			return pos == other.pos && uv == other.uv && normal == other.normal
+
+				//just to be safe
+				&& m_BoneIDs[0] == other.m_BoneIDs[0];
+		}
+	};
+	struct VertexHash
+	{
+		size_t operator()(Vertex const& vertex) const {
+			size_t posHash = std::hash<int>()(vertex.pos.x) ^ std::hash<int>()(vertex.pos.y) ^ std::hash<int>()(vertex.pos.z);
+			size_t uvHash = std::hash<int>()(vertex.uv.x) ^ std::hash<int>()(vertex.uv.y);
+			size_t normalHash = std::hash<int>()(vertex.normal.x) ^ std::hash<int>()(vertex.normal.y) ^ std::hash<int>()(vertex.normal.z);
+			return posHash ^ uvHash ^ normalHash;
+		}
+	};
+
 	class Mesh
 	{
 	public:
@@ -38,9 +69,6 @@ namespace VeryCoolEngine {
 			delete[] m_pxBitangents;
 		};
 
-		//virtual void Bind() const = 0;
-		//virtual void Unbind() const = 0;
-
 		virtual void SetVertexArray(VertexArray* vertexArray) = 0;
 		virtual VertexBuffer* CreateInstancedVertexBuffer() = 0;
 
@@ -48,6 +76,10 @@ namespace VeryCoolEngine {
 
 		void SetShader(Shader* shader) { m_pxShader = shader; }
 		Shader* GetShader() const { return m_pxShader; }
+
+		static void ExtractBoneWeightForVertices(Mesh* pxMesh, std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene);
+
+		friend class VCEModel;
 
 #ifdef VCE_MATERIAL_TEXTURE_DESC_SET
 		void SetTexture(Texture2D* texture) { m_pxTexture = texture; }
@@ -86,32 +118,12 @@ namespace VeryCoolEngine {
 
 		TextureDescriptorSpecification m_xTexDescSpec;
 
-		struct Vertex {
-			glm::vec3 pos;
-			glm::vec2 uv;
-			glm::vec3 normal;
-			glm::vec3 tangent;
-			glm::vec3 bitangent;
-			int m_BoneIDs[MAX_BONES_PER_VERTEX]{0};
-			float m_Weights[MAX_BONES_PER_VERTEX]{0.0f};
-			uint32_t m_uNumBones = 0;
+		
 
-			bool operator==(const Vertex& other) const {
-				return pos == other.pos && uv == other.uv && normal == other.normal
 
-					//just to be safe
-					&& m_BoneIDs[0] == other.m_BoneIDs[0];
-			}
-		};
-		struct VertexHash
-		{
-			size_t operator()(Vertex const& vertex) const {
-				size_t posHash = std::hash<int>()(vertex.pos.x) ^ std::hash<int>()(vertex.pos.y) ^ std::hash<int>()(vertex.pos.z);
-				size_t uvHash = std::hash<int>()(vertex.uv.x) ^ std::hash<int>()(vertex.uv.y);
-				size_t normalHash = std::hash<int>()(vertex.normal.x) ^ std::hash<int>()(vertex.normal.y) ^ std::hash<int>()(vertex.normal.z);
-				return posHash ^ uvHash ^ normalHash;
-			}
-		};
+		std::vector<Vertex> m_axVertices;
+		std::vector<uint32_t> m_auIndices;
+		//std::vector<Texture*> m_apxTextures;
 
 		static glm::mat4 ConvertMatrixToGLMFormat(const aiMatrix4x4& from);
 
@@ -123,7 +135,7 @@ namespace VeryCoolEngine {
 			int id;
 			glm::mat4 offset;
 		};
-		std::map<std::string, BoneInfo> m_BoneInfoMap;
+
 		static void SetVertexBoneData(Vertex& vertex, int boneID, float weight)
 		{
 			vertex.m_BoneIDs[vertex.m_uNumBones] = boneID;

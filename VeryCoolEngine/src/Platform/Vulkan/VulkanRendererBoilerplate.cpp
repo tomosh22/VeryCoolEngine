@@ -63,7 +63,7 @@ namespace VeryCoolEngine {
 
 		m_xDefaultSampler = VulkanTexture2D::CreateSampler();
 
-		
+		app->m_pxBlankTexture2D->PlatformInit();
 		
 	}
 
@@ -662,6 +662,7 @@ namespace VeryCoolEngine {
 		uint32_t uHeight = Application::GetInstance()->GetWindow().GetHeight();
 
 		m_xDepthTexture = dynamic_cast<VulkanTexture2D*>(Texture2D::Create(uWidth, uHeight, TextureFormat::D));
+		m_xDepthTexture->m_bIsDepthTexture = true;
 		m_xDepthTexture->PlatformInit();
 	}
 

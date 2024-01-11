@@ -9,27 +9,51 @@ namespace VeryCoolEngine {
 	void VulkanMaterial::PlatformInit()
 	{
 		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+		Application* app = Application::GetInstance();
 		std::vector<Texture2D*> xTextures;
-		if (m_pxAlbedo != nullptr){
+
+		if (m_pxAlbedo != nullptr) {
 			m_pxAlbedo->PlatformInit();
-			xTextures.push_back(m_pxAlbedo);
 		}
+		else {
+			m_pxAlbedo = app->m_pxBlankTexture2D;
+		}
+		xTextures.push_back(m_pxAlbedo);
+
 		if (m_pxBumpMap != nullptr){
 			m_pxBumpMap->PlatformInit();
-			xTextures.push_back(m_pxBumpMap);
 		}
+		else {
+			m_pxBumpMap = app->m_pxBlankTexture2D;
+		}
+		xTextures.push_back(m_pxBumpMap);
+
 		if (m_pxRoughnessTex != nullptr){
 			m_pxRoughnessTex->PlatformInit();
 			xTextures.push_back(m_pxRoughnessTex);
 		}
+		else {
+			m_pxRoughnessTex = app->m_pxBlankTexture2D;
+		}
+		xTextures.push_back(m_pxRoughnessTex);
+
 		if (m_pxMetallicTex != nullptr){
 			m_pxMetallicTex->PlatformInit();
 			xTextures.push_back(m_pxMetallicTex);
 		}
+		else {
+			m_pxMetallicTex = app->m_pxBlankTexture2D;
+		}
+		xTextures.push_back(m_pxMetallicTex);
+
 		if (m_pxHeightmapTex != nullptr){
 			m_pxHeightmapTex->PlatformInit();
 			xTextures.push_back(m_pxHeightmapTex);
 		}
+		else {
+			m_pxHeightmapTex = app->m_pxBlankTexture2D;
+		}
+		xTextures.push_back(m_pxHeightmapTex);
 
 		m_uNumTextures = xTextures.size();
 
@@ -64,6 +88,8 @@ namespace VeryCoolEngine {
 		}
 
 		pxRenderer->GetDevice().updateDescriptorSets(xWrites.size(), xWrites.data(), 0, nullptr);
+
+		m_bInitialised = true;
 
 	}
 

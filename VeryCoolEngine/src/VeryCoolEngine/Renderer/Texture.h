@@ -24,6 +24,9 @@ namespace VeryCoolEngine {
 #ifdef VCE_DEBUG
 		bool m_bInitialised = false;
 #endif
+		void* m_pData = nullptr;
+		uint32_t m_uDataLength = 0;
+		bool m_bIsDepthTexture = false;
 		
 	private:
 	};
@@ -36,6 +39,8 @@ namespace VeryCoolEngine {
 		static Texture2D* Create(uint32_t width, uint32_t height, TextureFormat textureFormat = TextureFormat::RGBA, TextureWrapMode wrapMode = TextureWrapMode::Clamp);
 
 		static Texture2D* Create(const std::string& path, bool srgb);
+
+		static Texture2D* Create();
 
 		void PlatformInit() override {};
 

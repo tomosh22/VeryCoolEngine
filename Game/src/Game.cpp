@@ -25,50 +25,18 @@ namespace VeryCoolEngine {
 
 
 		//m_pxBlockWorld = new BlockWorld();
-		
-		
-
-		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmooth.obj",
-			(char*)"crystal2k", Transform(
-			{ 50, 80, 80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
-		)));
-		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmooth.obj",
-			(char*)"rock2k", Transform(
-				{ 50, 100, 80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
-			)));
-		m_apxGenericMeshes.push_back(AddTestMesh("sphereFlat.obj",
-			(char*)"crystal2k", Transform(
-			{ 80,80,80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
-		)));
-		m_apxGenericMeshes.push_back(AddTestMesh("cubeFlat.obj",
-			(char*)"crystal2k", Transform(
-			{ 80,80,10 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
-		)));
-		m_apxGenericMeshes.push_back(AddTestMesh("cubeSmooth.obj",
-			(char*)"crystal2k", Transform(
-			{ 20,80,10 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
-		)));
-		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmoothIco.obj",
-			(char*)"crystal2k", Transform(
-			{ 50,80,50 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
-		)));
-		m_apxGenericMeshes.push_back(AddTestMesh("sphereSmoothIcoLowPoly.obj",
-			(char*)"crystal2k", Transform(
-			{ 50,120,50 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(10, 10, 10)
-		)));
 
 
-		
-		m_pxAnimatedMesh0 = AddTestMesh("ogre.fbx",
-			(char*)"rock2k", Transform(
-			{ 50,100,40 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(0.1f, 0.1f, 0.1f)
-		), 0);
-		m_pxAnimatedMesh1 = AddTestMesh("ogre.fbx",
-			(char*)"crystal2k", Transform(
-			{ 50,100,80 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(0.1f, 0.1f, 0.1f)
-		), 1);
-		m_pxAnimation0 = new Animation(std::string("ogre.fbx"), m_pxAnimatedMesh0);
-		m_pxAnimation1 = new Animation(std::string("ogre.fbx"), m_pxAnimatedMesh1);
+		m_apxAnimatedModels.push_back(new VCEModel("ogre.fbx"));
+		for (Mesh* pxMesh : m_apxAnimatedModels.back()->meshes) {
+			_meshes.push_back(pxMesh);
+		}
+		m_pxAnimation0 = new Animation(std::string("ogre.fbx"), m_apxAnimatedModels.back());
+
+		m_apxGenericModels.push_back(new VCEModel("barrel.fbx"));
+		for (Mesh* pxMesh : m_apxGenericModels.back()->meshes) {
+			_meshes.push_back(pxMesh);
+		}
 
 		
 		_lights.push_back({
@@ -81,10 +49,7 @@ namespace VeryCoolEngine {
 				1,1,1,1
 			});
 
-		//#TODO let client set skybox texture
 
-		
-		
 		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, float(VCE_GAME_WIDTH) / float(VCE_GAME_HEIGHT));
 		
 
@@ -140,7 +105,7 @@ namespace VeryCoolEngine {
 		scene->Reset();
 
 		m_pxAnimation0->UpdateAnimation(0.01);
-		m_pxAnimation1->UpdateAnimation(0.01);
+		//m_pxAnimation1->UpdateAnimation(0.01);
 
 		scene->camera = &_Camera;
 		scene->skybox = _pCubemap;
@@ -160,28 +125,29 @@ namespace VeryCoolEngine {
 		scene->m_axPipelineMeshes.at("Blocks").push_back(game->m_pxInstanceMesh);
 
 		scene->m_axPipelineMeshes.insert({ "Meshes", std::vector<Mesh*>() });
-		
-
-		for(Mesh* mesh : game->m_apxGenericMeshes)
-			scene->m_axPipelineMeshes.at("Meshes").push_back(mesh);
+		for (VCEModel* pxModel : m_apxGenericModels)
+			for (Mesh* pxMesh : pxModel->meshes)
+				scene->m_axPipelineMeshes.at("Meshes").push_back(pxMesh);
 
 
 		std::vector<glm::mat4>& xAnimMats0 = m_pxAnimation0->GetFinalBoneMatrices();
-		for (uint32_t i = 0; i < m_pxAnimatedMesh0->m_xBoneMats.size(); i++) {
-			m_pxAnimatedMesh0->m_xBoneMats.at(i) = xAnimMats0.at(i);
-		}
-		std::vector<glm::mat4>& xAnimMats1 = m_pxAnimation1->GetFinalBoneMatrices();
-		for (uint32_t i = 0; i < m_pxAnimatedMesh1->m_xBoneMats.size(); i++) {
-			m_pxAnimatedMesh1->m_xBoneMats.at(i) = xAnimMats1.at(i);
+		for (Mesh* pxMesh : m_apxAnimatedModels.back()->meshes) {
+			for (uint32_t i = 0; i < pxMesh->m_xBoneMats.size(); i++) {
+				pxMesh->m_xBoneMats.at(i) = xAnimMats0.at(i);
+			}
 		}
 		scene->m_axPipelineMeshes.insert({ "SkinnedMeshes", std::vector<Mesh*>() });
-		scene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(m_pxAnimatedMesh0);
-		scene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(m_pxAnimatedMesh1);
+		for(VCEModel* pxModel : m_apxAnimatedModels)
+			for (Mesh* pxMesh : pxModel->meshes)
+				scene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(pxMesh);
+		//scene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(m_pxAnimatedMesh0);
+		//scene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(m_pxAnimatedMesh1);
 
 		scene->m_axPipelineMeshes.insert({ "GBuffer", std::vector<Mesh*>() });
 
-		for (Mesh* mesh : game->m_apxGenericMeshes)
-			scene->m_axPipelineMeshes.at("GBuffer").push_back(mesh);
+		for (VCEModel* model : game->m_apxAnimatedModels)
+			for(Mesh* pxMesh : model->meshes)
+			scene->m_axPipelineMeshes.at("GBuffer").push_back(pxMesh);
 
 		for (Renderer::Light& light : _lights) {
 			scene->lights[scene->numLights++] = light;

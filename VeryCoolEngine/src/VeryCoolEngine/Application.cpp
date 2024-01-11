@@ -52,6 +52,7 @@ namespace VeryCoolEngine {
 			_pRenderer->RenderThreadFunction();
 		});
 		
+		m_pxBlankTexture2D = Texture2D::Create(1, 1, TextureFormat::RGBA);
 		
 		scene = new Scene();
 		
@@ -295,7 +296,23 @@ namespace VeryCoolEngine {
 
 
 			_Camera.UpdateCamera(_DeltaTime);
-			for (Mesh* pxMesh : m_apxGenericMeshes) {
+			
+			for (VCEModel* pxModel : m_apxGenericModels) {
+				pxModel->m_xTransform.UpdateRotation();
+				pxModel->m_xTransform.UpdateMatrix();
+
+				//TODO: this is disgusting, shouldn't be copying transforms
+				for (Mesh* pxMesh : pxModel->meshes)
+					pxMesh->m_xTransform = pxModel->m_xTransform;
+			}
+			for (VCEModel* pxModel : m_apxAnimatedModels) {
+				pxModel->m_xTransform.UpdateRotation();
+				pxModel->m_xTransform.UpdateMatrix();
+				//TODO: this is disgusting, shouldn't be copying transforms
+				for (Mesh* pxMesh : pxModel->meshes)
+					pxMesh->m_xTransform = pxModel->m_xTransform;
+			}
+			for (Mesh* pxMesh : _meshes) {
 				pxMesh->m_xTransform.UpdateRotation();
 				pxMesh->m_xTransform.UpdateMatrix();
 			}

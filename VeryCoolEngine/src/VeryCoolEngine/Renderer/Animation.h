@@ -1,3 +1,4 @@
+//credit learnopengl.com
 #pragma once
 
 #include <glm/glm.hpp>
@@ -7,15 +8,19 @@
 #include "Bone.h"
 
 
+
+
 struct aiAnimation;
 class aiNode;
 
 namespace VeryCoolEngine {
+    class VCEModel;
+    struct BoneInfo;
     struct AssimpNodeData
     {
         glm::mat4 transformation;
         std::string name;
-        int childrenCount;
+        uint32_t childrenCount;
         std::vector<AssimpNodeData> children;
     };
 
@@ -24,7 +29,7 @@ namespace VeryCoolEngine {
     public:
         Animation() = default;
 
-        Animation(const std::string& animationPath, Mesh* model);
+        Animation(const std::string& animationPath, VCEModel* model);
 
         ~Animation()
         {
@@ -49,7 +54,7 @@ namespace VeryCoolEngine {
 
         inline const AssimpNodeData& GetRootNode() { return m_RootNode; }
 
-        inline const std::map<std::string, Mesh::BoneInfo>& GetBoneIDMap()
+        inline const std::map<std::string, BoneInfo>& GetBoneIDMap()
         {
             return m_BoneInfoMap;
         }
@@ -61,53 +66,26 @@ namespace VeryCoolEngine {
             m_DeltaTime = dt;
             m_CurrentTime += GetTicksPerSecond() * dt;
             m_CurrentTime = fmod(m_CurrentTime, GetDuration());
-                if (m_CurrentTime > GetDuration() - 10)
-                    m_CurrentTime = 0;
                 CalculateBoneTransform(&GetRootNode(), glm::mat4(1.0f));
             
         }
 
 
-        void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform)
-        {
-            std::string nodeName = node->name;
-            glm::mat4 nodeTransform = node->transformation;
-
-            Bone* Bone = FindBone(nodeName);
-
-            if (Bone)
-            {
-                Bone->Update(m_CurrentTime);
-                nodeTransform = Bone->GetLocalTransform();
-            }
-
-            glm::mat4 globalTransformation = parentTransform * nodeTransform;
-
-            auto boneInfoMap = GetBoneIDMap();
-            if (boneInfoMap.find(nodeName) != boneInfoMap.end())
-            {
-                int index = boneInfoMap[nodeName].id;
-                glm::mat4 offset = boneInfoMap[nodeName].offset;
-                m_FinalBoneMatrices[index] = globalTransformation * offset;
-            }
-
-            for (int i = 0; i < node->childrenCount; i++)
-                CalculateBoneTransform(&node->children[i], globalTransformation);
-        }
+        void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform);
 
         std::vector<glm::mat4>& GetFinalBoneMatrices()
         {
             return m_FinalBoneMatrices;
         }
     private:
-        void ReadMissingBones(const aiAnimation* animation, Mesh& model);
+        void ReadMissingBones(const aiAnimation* animation, VCEModel& model);
 
         void ReadHeirarchyData(AssimpNodeData& dest, const aiNode* src);
         float m_Duration;
-        int m_TicksPerSecond;
+        uint32_t m_TicksPerSecond;
         std::vector<Bone> m_Bones;
         AssimpNodeData m_RootNode;
-        std::map<std::string, Mesh::BoneInfo> m_BoneInfoMap;
+        std::map<std::string, BoneInfo> m_BoneInfoMap;
 
         std::vector<glm::mat4> m_FinalBoneMatrices;
         float m_CurrentTime;

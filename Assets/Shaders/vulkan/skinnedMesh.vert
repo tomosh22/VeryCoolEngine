@@ -35,23 +35,41 @@ layout(location = 3) out mat3 TBN;
 
 void main(){
 	mat4 bone = _uBones[0];
-	_oUV = _aUV * 5;
+	_oUV = _aUV;
 	_oNormal = _aNormal;
 	
 	
 	vec4 localPos = vec4(_aPosition,1);
 	vec4 skelPos = vec4(0,0,0,0);
 	if(animate > 0){
+	
+	/*
 		for(int i = 0; i < 4; i++){
 			uint boneIndex = _aBoneIndices0to4[i];
 			float boneWeight = _aBoneWeights0to4[i];
-			skelPos += inverse(_uBones[boneIndex]) * localPos * boneWeight;
+			if(boneWeight > 0.0001f){
+				skelPos += (_uBones[boneIndex]) * localPos * boneWeight;
+			}
+			
 		}
-		for(int i = 0; i < 4; i++){
+		for(int i = 0; i < 0; i++){
 			uint boneIndex = _aBoneIndices5to8[i];
 			float boneWeight = _aBoneWeights5to8[i];
-			skelPos += inverse(_uBones[boneIndex]) * localPos * boneWeight;
+			if(boneWeight > 0.0001f){
+				skelPos += (_uBones[boneIndex]) * localPos * boneWeight;
+			}
 		}
+		*/
+		
+    for(int i = 0 ; i < 4 ; i++)
+    {
+        if(_aBoneWeights0to4[i] < 0.0001f){
+            continue;
+		}
+		uint boneIndex = _aBoneIndices0to4[i];
+        vec4 localPosition = (_uBones[boneIndex]) * vec4(_aPosition,1.0f);
+        skelPos += localPosition * _aBoneWeights0to4[i];
+    }
 	}
 	else{
 		skelPos = vec4(_aPosition,1); 

@@ -13,8 +13,11 @@ namespace VeryCoolEngine {
 	
 		m_uWidth = width;
 		m_uHeight = height;
+		//TODO: switch case
 		if(format == TextureFormat::D)
-		m_xFormat = vk::Format::eD32Sfloat;
+			m_xFormat = vk::Format::eD32Sfloat;
+		if (format == TextureFormat::RGBA)
+			m_xFormat = vk::Format::eR8G8B8A8Unorm;
 	}
 
 	VulkanTexture2D::VulkanTexture2D(const std::string& path, bool srgb) {
@@ -32,7 +35,7 @@ namespace VeryCoolEngine {
 		xDevice.freeMemory(m_xDeviceMemory);
 	}
 
-	void VulkanTexture2D::InitWithData() {
+	void VulkanTexture2D::InitWithFileName() {
 		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
 		vk::Device xDevice = pxRenderer->GetDevice();
 		vk::PhysicalDevice xPhysDevice = pxRenderer->GetPhysicalDevice();
@@ -113,6 +116,93 @@ namespace VeryCoolEngine {
 #endif
 	}
 
+	void VulkanTexture2D::InitWithData() {
+		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+		vk::Device xDevice = pxRenderer->GetDevice();
+		vk::PhysicalDevice xPhysDevice = pxRenderer->GetPhysicalDevice();
+
+		vk::Format xFormat = vk::Format::eR8G8B8A8Srgb;//#todo handle different formats
+
+		int uWidth = 0, uHeight = 0, uNumChannels;
+
+		struct aiTexel {
+			unsigned char b, g, r, a;
+		} texel = *reinterpret_cast<aiTexel*>(m_pData);
+
+		stbi_uc* data = stbi_load_from_memory((stbi_uc*)m_pData, m_uDataLength,&uWidth,&uHeight,&uNumChannels, STBI_rgb_alpha);
+
+		VCE_ASSERT(uWidth != 0 && uHeight != 0, "width and height not set by stbi");
+
+		m_uWidth = uWidth; m_uHeight = uHeight;
+
+		vk::DeviceSize uSize = uWidth * uHeight * 4;
+
+		VulkanBuffer* pxStagingBuffer = new VulkanBuffer(uSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+
+		pxStagingBuffer->UploadData(data, uSize);
+
+		vk::ImageCreateInfo xImageInfo = vk::ImageCreateInfo()
+			.setImageType(vk::ImageType::e2D)
+			.setFormat(xFormat)
+			.setTiling(vk::ImageTiling::eOptimal)
+			.setExtent({ m_uWidth,m_uHeight,1 })
+			.setMipLevels(1)
+			.setArrayLayers(1)
+			.setInitialLayout(vk::ImageLayout::eUndefined)
+			.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled)
+			.setSharingMode(vk::SharingMode::eExclusive)
+			.setSamples(vk::SampleCountFlagBits::e1);
+
+		m_xImage = xDevice.createImage(xImageInfo);
+
+		vk::MemoryRequirements xMemRequirements = xDevice.getImageMemoryRequirements(m_xImage);
+
+		uint32_t memoryType = -1;
+		for (uint32_t i = 0; i < xPhysDevice.getMemoryProperties().memoryTypeCount; i++) {
+			if ((xMemRequirements.memoryTypeBits & (1 << i)) && (xPhysDevice.getMemoryProperties().memoryTypes[i].propertyFlags & vk::MemoryPropertyFlagBits::eDeviceLocal) == vk::MemoryPropertyFlagBits::eDeviceLocal) {
+				memoryType = i;
+				break;
+			}
+		}
+		VCE_ASSERT(memoryType != -1, "couldn't find physical memory type");
+
+		vk::MemoryAllocateInfo xAllocInfo = vk::MemoryAllocateInfo()
+			.setAllocationSize(xMemRequirements.size)
+			.setMemoryTypeIndex(memoryType);
+
+		m_xDeviceMemory = xDevice.allocateMemory(xAllocInfo);
+
+		xDevice.bindImageMemory(m_xImage, m_xDeviceMemory, 0);
+
+		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer);
+		VulkanBuffer::CopyBufferToImage(pxStagingBuffer, this, m_uWidth, m_uHeight);
+		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader);//todo will probably need to change this to vertex shader in the future
+
+		delete pxStagingBuffer;
+
+
+		vk::ImageSubresourceRange xSubresourceRange = vk::ImageSubresourceRange()
+			.setAspectMask(vk::ImageAspectFlagBits::eColor)
+			.setBaseMipLevel(0)
+			.setLevelCount(1)
+			.setBaseArrayLayer(0)
+			.setLayerCount(1);
+
+		vk::ImageViewCreateInfo xViewCreate = vk::ImageViewCreateInfo()
+			.setImage(m_xImage)
+			.setViewType(vk::ImageViewType::e2D)
+			.setFormat(xFormat)
+			.setSubresourceRange(xSubresourceRange);
+
+		m_xImageView = xDevice.createImageView(xViewCreate);
+
+		m_xSampler = CreateSampler();
+
+#ifdef VCE_DEBUG
+		m_bInitialised = true;
+#endif
+	}
+
 	//just used for depth texture for now
 	void VulkanTexture2D::InitWithoutData() {
 
@@ -126,7 +216,7 @@ namespace VeryCoolEngine {
 			.setMipLevels(1)
 			.setArrayLayers(1)
 			.setFormat(m_xFormat)
-			.setUsage(vk::ImageUsageFlagBits::eDepthStencilAttachment)
+			.setUsage(m_bIsDepthTexture ? vk::ImageUsageFlagBits::eDepthStencilAttachment : vk::ImageUsageFlagBits::eSampled)
 			.setTiling(vk::ImageTiling::eOptimal)
 			.setSamples(vk::SampleCountFlagBits::e1)
 			.setSharingMode(vk::SharingMode::eExclusive)
@@ -154,7 +244,7 @@ namespace VeryCoolEngine {
 		xDevice.bindImageMemory(m_xImage, m_xDeviceMemory,0);
 
 		vk::ImageSubresourceRange xSubresourceRange = vk::ImageSubresourceRange()
-			.setAspectMask(vk::ImageAspectFlagBits::eDepth)
+			.setAspectMask(m_bIsDepthTexture ? vk::ImageAspectFlagBits::eDepth : vk::ImageAspectFlagBits::eColor)
 			.setBaseMipLevel(0)
 			.setLevelCount(1)
 			.setBaseArrayLayer(0)
@@ -168,6 +258,8 @@ namespace VeryCoolEngine {
 
 		m_xImageView = xDevice.createImageView(xViewCreate);
 
+		if(!m_bIsDepthTexture) m_xSampler = CreateSampler();
+
 #ifdef VCE_DEBUG
 		m_bInitialised = true;
 #endif
@@ -175,7 +267,8 @@ namespace VeryCoolEngine {
 
 	void VulkanTexture2D::PlatformInit() {
 		if (m_bInitialised)return;
-		if (m_bHasFilePath)InitWithData();
+		if (m_bHasFilePath)InitWithFileName();
+		else if (m_pData)InitWithData();
 		else InitWithoutData();
 	}
 

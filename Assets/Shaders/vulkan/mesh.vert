@@ -26,7 +26,7 @@ layout(location = 4) out vec3 _oWorldPos;
 
 void main(){
 
-	_oUV = _aUV * 5;
+	_oUV = _aUV;
 	_oNormal = _aNormal;
 	_oTangent = _aTangent;
 	_oBitangent = _aBitangent;

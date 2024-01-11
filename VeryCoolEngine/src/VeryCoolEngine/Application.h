@@ -15,7 +15,7 @@
 #include "VeryCoolEngine/Renderer/RenderCommand.h"
 #include "VeryCoolEngine/Renderer/Camera.h"
 #include "VeryCoolEngine/Renderer/Mesh.h"
-#include "VeryCoolEngine/Renderer/Pipeline.h"
+#include "VeryCoolEngine/Renderer/Model.h"
 #include "VeryCoolEngine/Renderer/PipelineSpecification.h"
 #include "VeryCoolEngine/Renderer/Animation.h"
 
@@ -37,6 +37,7 @@ namespace VeryCoolEngine {
 		TextureCube* skybox = nullptr;
 
 		std::vector<Mesh*> meshes{};
+		std::vector<VCEModel*> models{};
 
 
 		std::vector<Renderer::Light> lights{};
@@ -95,6 +96,8 @@ namespace VeryCoolEngine {
 
 		Mesh* m_pxAnimationTestMesh;
 
+		Texture2D* m_pxBlankTexture2D;
+
 		
 		std::unordered_map<std::string, PipelineSpecification> m_xPipelineSpecs;
 		
@@ -129,7 +132,8 @@ namespace VeryCoolEngine {
 		//#TODO i really need a better way to do this, used to provide vertex input state to mesh pipeline
 		Mesh* m_pxExampleMesh;
 		Mesh* m_pxExampleSkinnedMesh;
-		std::vector<Mesh*> m_apxGenericMeshes;
+		std::vector<VCEModel*> m_apxGenericModels;
+		std::vector<VCEModel*> m_apxAnimatedModels;
 		std::vector<Mesh*> m_apxSkinnedMeshes;
 
 		Mesh* m_pxAnimatedMesh0;
@@ -167,11 +171,6 @@ namespace VeryCoolEngine {
 
 		
 
-		
-
-		//VertexArray* _pVertArray;
-		//VertexBuffer* _pVertBuffer;
-		//IndexBuffer* _pIndexBuffer;
 
 		std::chrono::high_resolution_clock::time_point _LastFrameTime = std::chrono::high_resolution_clock::now();
 		float _DeltaTime;

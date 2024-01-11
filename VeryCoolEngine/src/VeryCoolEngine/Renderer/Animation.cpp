@@ -1,3 +1,4 @@
+//credit learnopengl.com
 #include <vcepch.h>
 #include "Animation.h"
 #include <assimp/Importer.hpp>
@@ -5,6 +6,7 @@
 #include <assimp/postprocess.h>
 #include "VeryCoolEngine/AssetHandling/Assets.h"
 #include "Mesh.h"
+#include "Model.h"
 
 namespace VeryCoolEngine {
 
@@ -18,15 +20,15 @@ namespace VeryCoolEngine {
     }
 
 
-    Bone::Bone(const std::string& name, int ID, const aiNodeAnim* channel)
+    Bone::Bone(const std::string& name, uint32_t uID, const aiNodeAnim* channel)
         :
         m_Name(name),
-        m_ID(ID),
+        m_ID(uID),
         m_LocalTransform(1.0f)
     {
         m_NumPositions = channel->mNumPositionKeys;
 
-        for (int positionIndex = 0; positionIndex < m_NumPositions; ++positionIndex)
+        for (uint32_t positionIndex = 0; positionIndex < m_NumPositions; ++positionIndex)
         {
             aiVector3D aiPosition = channel->mPositionKeys[positionIndex].mValue;
             float timeStamp = channel->mPositionKeys[positionIndex].mTime;
@@ -37,7 +39,7 @@ namespace VeryCoolEngine {
         }
 
         m_NumRotations = channel->mNumRotationKeys;
-        for (int rotationIndex = 0; rotationIndex < m_NumRotations; ++rotationIndex)
+        for (uint32_t rotationIndex = 0; rotationIndex < m_NumRotations; ++rotationIndex)
         {
             aiQuaternion aiOrientation = channel->mRotationKeys[rotationIndex].mValue;
             float timeStamp = channel->mRotationKeys[rotationIndex].mTime;
@@ -48,7 +50,7 @@ namespace VeryCoolEngine {
         }
 
         m_NumScalings = channel->mNumScalingKeys;
-        for (int keyIndex = 0; keyIndex < m_NumScalings; ++keyIndex)
+        for (uint32_t keyIndex = 0; keyIndex < m_NumScalings; ++keyIndex)
         {
             aiVector3D scale = channel->mScalingKeys[keyIndex].mValue;
             float timeStamp = channel->mScalingKeys[keyIndex].mTime;
@@ -59,7 +61,7 @@ namespace VeryCoolEngine {
         }
     }
 
-	Animation::Animation(const std::string& animationPath, Mesh* model) {
+	Animation::Animation(const std::string& animationPath, VCEModel* model) {
         std::string strPath(MESHDIR);
         strPath += animationPath;
         Assimp::Importer importer;
@@ -72,21 +74,20 @@ namespace VeryCoolEngine {
         ReadMissingBones(animation, *model);
 
         m_CurrentTime = 0.0;
-        m_FinalBoneMatrices.reserve(100);
+        m_FinalBoneMatrices.reserve(1000);
 
-        for (int i = 0; i < 100; i++)
+        for (uint32_t i = 0; i < 1000; i++)
             m_FinalBoneMatrices.push_back(glm::mat4(1.0f));
 	}
 
-    void Animation::ReadMissingBones(const aiAnimation* animation, Mesh& model)
+    void Animation::ReadMissingBones(const aiAnimation* animation, VCEModel& model)
     {
-        int size = animation->mNumChannels;
+        uint32_t size = animation->mNumChannels;
 
-        auto& boneInfoMap = model.m_BoneInfoMap;//getting m_BoneInfoMap from Model class
-        int& boneCount = model.m_BoneCounter; //getting the m_BoneCounter from Model class
+        auto& boneInfoMap = model.m_xBoneInfoMap;
+        uint32_t& boneCount = model.m_uBoneCounter;
 
-        //reading channels(bones engaged in an animation and their keyframes)
-        for (int i = 0; i < size; i++)
+        for (uint32_t i = 0; i < size; i++)
         {
             auto channel = animation->mChannels[i];
             std::string boneName = channel->mNodeName.data;
@@ -103,15 +104,39 @@ namespace VeryCoolEngine {
         m_BoneInfoMap = boneInfoMap;
     }
 
+    void Animation::CalculateBoneTransform(const AssimpNodeData* pxNode, glm::mat4 parentTransform)
+    {
+        std::string nodeName = pxNode->name;
+        glm::mat4 nodeTransform = pxNode->transformation;
+
+        Bone* pxBone = FindBone(nodeName);
+
+        if (pxBone)
+        {
+            pxBone->Update(m_CurrentTime);
+            nodeTransform = pxBone->GetLocalTransform();
+        }
+
+        glm::mat4 globalTransformation = parentTransform * nodeTransform;
+
+        const std::map<std::string, BoneInfo>& xBoneInfoMap = GetBoneIDMap();
+        if (xBoneInfoMap.find(nodeName) != xBoneInfoMap.end())
+        {
+            uint32_t index = xBoneInfoMap.at(nodeName).id;
+            glm::mat4 offset = xBoneInfoMap.at(nodeName).offset;
+            m_FinalBoneMatrices[index] = globalTransformation * offset;
+        }
+
+        for (uint32_t i = 0; i < pxNode->childrenCount; i++)
+            CalculateBoneTransform(&pxNode->children[i], globalTransformation);
+    }
     void Animation::ReadHeirarchyData(AssimpNodeData& dest, const aiNode* src)
     {
-        assert(src);
-
         dest.name = src->mName.data;
         dest.transformation = Mesh::ConvertMatrixToGLMFormat(src->mTransformation);
         dest.childrenCount = src->mNumChildren;
 
-        for (int i = 0; i < src->mNumChildren; i++)
+        for (uint32_t i = 0; i < src->mNumChildren; i++)
         {
             AssimpNodeData newData;
             ReadHeirarchyData(newData, src->mChildren[i]);

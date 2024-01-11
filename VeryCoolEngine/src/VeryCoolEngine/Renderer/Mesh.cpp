@@ -1,3 +1,4 @@
+//credit learnopengl.com
 #include "vcepch.h"
 #include "Mesh.h"
 #include "Platform/Vulkan/VulkanMesh.h"
@@ -349,8 +350,9 @@ namespace VeryCoolEngine {
 		return to;
 	}
 
-	void ExtractBoneWeightForVertices(Mesh* pxMesh, std::vector<Mesh::Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
+	void Mesh::ExtractBoneWeightForVertices(Mesh* pxMesh, std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene)
 	{
+#if 0
 		for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
 		{
 			int boneID = -1;
@@ -381,6 +383,7 @@ namespace VeryCoolEngine {
 				Mesh::SetVertexBoneData(vertices[vertexId], boneID, weight);
 			}
 		}
+#endif
 	}
 
 	
@@ -483,8 +486,6 @@ namespace VeryCoolEngine {
 		for (auto& xMat : mesh->m_xBoneMats)
 			xMat = glm::identity<glm::mat4>();
 
-		std::vector<Vertex> axVertices;
-		std::vector<uint32_t> auIndices;
 
 		for (uint32_t i = 0; i < pxMesh->mNumVertices; i++) {
 			const aiVector3D* pxPos = &(pxMesh->mVertices[i]);
@@ -501,15 +502,15 @@ namespace VeryCoolEngine {
 			v.bitangent = glm::vec3(pxBitangent->x, pxBitangent->y, pxBitangent->z);
 			//if (mesh->m_uNumBones)
 				//v.m_xBoneData = mesh->m_xBoneData[i];
-			axVertices.push_back(v);
+			mesh->m_axVertices.push_back(v);
 		}
-		ExtractBoneWeightForVertices(mesh,axVertices, pxMesh, pxScene);
+		ExtractBoneWeightForVertices(mesh, mesh->m_axVertices, pxMesh, pxScene);
 
 		for (uint32_t i = 0; i < pxMesh->mNumFaces; i++) {
 			VCE_ASSERT(pxMesh->mFaces[i].mNumIndices == 3, "Face isn't a triangle");
-			auIndices.push_back(pxMesh->mFaces[i].mIndices[0]);
-			auIndices.push_back(pxMesh->mFaces[i].mIndices[1]);
-			auIndices.push_back(pxMesh->mFaces[i].mIndices[2]);
+			mesh->m_auIndices.push_back(pxMesh->mFaces[i].mIndices[0]);
+			mesh->m_auIndices.push_back(pxMesh->mFaces[i].mIndices[1]);
+			mesh->m_auIndices.push_back(pxMesh->mFaces[i].mIndices[2]);
 		}
 
 
@@ -517,7 +518,7 @@ namespace VeryCoolEngine {
 		mesh->m_pxBufferLayout = new BufferLayout();
 
 		
-		mesh->m_uNumIndices = auIndices.size();
+		mesh->m_uNumIndices = mesh->m_auIndices.size();
 
 		mesh->m_puIndices = new unsigned int[mesh->m_uNumIndices];
 		mesh->m_pxVertexPositions = new glm::vec3[mesh->m_uNumVerts];
@@ -529,18 +530,18 @@ namespace VeryCoolEngine {
 			mesh->m_pxBoneDatas = new BoneData[mesh->m_uNumVerts];
 
 
-		for (size_t i = 0; i < auIndices.size(); i++)mesh->m_puIndices[i] = auIndices[i];
-		for (size_t i = 0; i < axVertices.size(); i++) {
-			mesh->m_pxVertexPositions[i] = axVertices[i].pos;
-			mesh->m_pxUVs[i] = axVertices[i].uv;
-			mesh->m_pxNormals[i] = axVertices[i].normal;
-			mesh->m_pxTangents[i] = axVertices[i].tangent;
-			mesh->m_pxBitangents[i] = axVertices[i].bitangent;
+		for (size_t i = 0; i < mesh->m_auIndices.size(); i++)mesh->m_puIndices[i] = mesh->m_auIndices[i];
+		for (size_t i = 0; i < mesh->m_axVertices.size(); i++) {
+			mesh->m_pxVertexPositions[i] = mesh->m_axVertices[i].pos;
+			mesh->m_pxUVs[i] = mesh->m_axVertices[i].uv;
+			mesh->m_pxNormals[i] = mesh->m_axVertices[i].normal;
+			mesh->m_pxTangents[i] = mesh->m_axVertices[i].tangent;
+			mesh->m_pxBitangents[i] = mesh->m_axVertices[i].bitangent;
 			if (mesh->m_uNumBones) {
 				BoneData xData;
 				for (uint32_t j = 0; j < MAX_BONES_PER_VERTEX; j++) {
-					xData.m_auIDs[j] = axVertices[i].m_BoneIDs[j];
-					xData.m_afWeights[j] = axVertices[i].m_Weights[j];
+					xData.m_auIDs[j] = mesh->m_axVertices[i].m_BoneIDs[j];
+					xData.m_afWeights[j] = mesh->m_axVertices[i].m_Weights[j];
 				}
 				mesh->m_pxBoneDatas[i] = xData;
 			}

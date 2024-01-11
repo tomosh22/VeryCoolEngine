@@ -22,6 +22,7 @@ namespace VeryCoolEngine {
 		uint32_t GetWidth() const override;
 		uint32_t GetHeight() const override;
 
+		void InitWithFileName();
 		void InitWithData();
 		void InitWithoutData();
 
@@ -39,9 +40,6 @@ namespace VeryCoolEngine {
 		uint32_t m_uWidth;
 		uint32_t m_uHeight;
 		uint32_t m_uNumChannels;
-
-		char* m_pData = nullptr;
-		size_t m_uDataLength;
 	};
 }
 
