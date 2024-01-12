@@ -611,7 +611,7 @@ namespace VeryCoolEngine {
 		return std::move(VulkanRenderer::GetInstance()->GetDevice().allocateDescriptorSets(xInfo)[0]);
 	}
 
-	void VulkanRenderer::UpdateBufferDescriptor(const vk::DescriptorSet& xSet, const VulkanBuffer* pxData, uint32_t uBinding, vk::DescriptorType eBufferType, size_t uOffset) {
+	void VulkanRenderer::UpdateBufferDescriptor(const vk::DescriptorSet& xSet, const VulkanBuffer* pxData, uint32_t uBinding, vk::DescriptorType eBufferType, size_t uOffset /* = 0*/) {
 		vk::DescriptorBufferInfo xInfo = vk::DescriptorBufferInfo()
 			.setBuffer(pxData->m_xBuffer)
 			.setOffset(uOffset)

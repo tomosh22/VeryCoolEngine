@@ -6,6 +6,7 @@
 #include "VulkanIndexBuffer.h"
 #include "VulkanPipelineBuilder.h"
 #include "VulkanManagedUniformBuffer.h"
+#include "VulkanMaterial.h"
 
 namespace VeryCoolEngine {
 	VulkanCommandBuffer::VulkanCommandBuffer()
@@ -344,6 +345,12 @@ namespace VeryCoolEngine {
 	void VulkanCommandBuffer::UploadUniformData(void* pData, size_t uSize)
 	{
 		m_pxUniformBuffer->UploadData(pData, uSize, m_pxRenderer->m_currentFrame);
+	}
+	void VulkanCommandBuffer::BindMaterial(Material* pxMaterial)
+	{
+		VulkanMaterial* pxVkMaterial = dynamic_cast<VulkanMaterial*>(pxMaterial);
+
+		m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxCurrentPipeline->m_xPipelineLayout, VCE_MATERIAL_TEXTURE_DESC_SET, 1, &pxVkMaterial->m_xDescSet, 0, nullptr);
 	}
 }
 

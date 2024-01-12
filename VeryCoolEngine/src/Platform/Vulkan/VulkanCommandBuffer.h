@@ -19,6 +19,8 @@ namespace VeryCoolEngine {
 		void PushConstant(void* pData, size_t uSize) override;
 		void UploadUniformData(void* pData, size_t uSize) override;
 
+		void BindMaterial(Material* pxMaterial) override;
+
 		vk::CommandBuffer& GetCurrentCmdBuffer() { return m_xCurrentCmdBuffer; }
 		void* Platform_GetCurrentCmdBuffer() const override { return (void*) & m_xCurrentCmdBuffer; }
 

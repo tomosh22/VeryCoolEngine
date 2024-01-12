@@ -35,7 +35,7 @@ namespace VeryCoolEngine {
 		
 		_renderThread = std::thread([&]() {
 			while (true) {
-				printf("implement mutex\n");
+				std::this_thread::yield();
 				if (_renderThreadCanStart)break;//#todo implement mutex here
 			}
 #ifdef VCE_OPENGL

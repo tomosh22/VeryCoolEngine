@@ -30,7 +30,6 @@ namespace VeryCoolEngine {
 
 		if (m_pxRoughnessTex != nullptr){
 			m_pxRoughnessTex->PlatformInit();
-			xTextures.push_back(m_pxRoughnessTex);
 		}
 		else {
 			m_pxRoughnessTex = app->m_pxBlankTexture2D;
@@ -39,7 +38,6 @@ namespace VeryCoolEngine {
 
 		if (m_pxMetallicTex != nullptr){
 			m_pxMetallicTex->PlatformInit();
-			xTextures.push_back(m_pxMetallicTex);
 		}
 		else {
 			m_pxMetallicTex = app->m_pxBlankTexture2D;
@@ -48,7 +46,6 @@ namespace VeryCoolEngine {
 
 		if (m_pxHeightmapTex != nullptr){
 			m_pxHeightmapTex->PlatformInit();
-			xTextures.push_back(m_pxHeightmapTex);
 		}
 		else {
 			m_pxHeightmapTex = app->m_pxBlankTexture2D;

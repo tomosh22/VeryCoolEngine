@@ -86,7 +86,7 @@ namespace VeryCoolEngine {
 			vk::Format& const GetSwapchainFormat() { return m_swapChainImageFormat; }
 
 			vk::DescriptorSet CreateDescriptorSet(const vk::DescriptorSetLayout& xLayout, const vk::DescriptorPool& xPool);
-			void UpdateBufferDescriptor(const vk::DescriptorSet& xSet, const VulkanBuffer* pxData, uint32_t uBinding, vk::DescriptorType eBufferType, size_t uOffset);
+			void UpdateBufferDescriptor(const vk::DescriptorSet& xSet, const VulkanBuffer* pxData, uint32_t uBinding, vk::DescriptorType eBufferType, size_t uOffset = 0);
 			void UpdateImageDescriptor(const vk::DescriptorSet& xSet, uint32_t uBinding, uint32_t uSubIndex, const vk::ImageView& xView, vk::Sampler& xSampler, vk::ImageLayout eLayout);
 
 			vk::CommandBuffer BeginSingleUseCmdBuffer(vk::CommandBufferLevel eLevel = vk::CommandBufferLevel::ePrimary);

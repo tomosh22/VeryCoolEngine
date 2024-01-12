@@ -30,6 +30,7 @@ namespace VeryCoolEngine {
 
     VCEModel::VCEModel(std::string const& path)
     {
+        m_strDirectory = path;
         LoadModel(path);
     }
 
@@ -121,7 +122,9 @@ namespace VeryCoolEngine {
                 indices.push_back(face.mIndices[j]);
         }
         aiMaterial* material = m_pxScene->mMaterials[mesh->mMaterialIndex];
-
+        VCE_TRACE("Model {} material:", m_strDirectory.c_str());
+        for (uint32_t i = aiTextureType_NONE + 1; i < AI_TEXTURE_TYPE_MAX; i++)
+            VCE_TRACE("Type {}, count {}", i,material->GetTextureCount((aiTextureType)i));
 #if 1
         pxMesh->m_pxMaterial = Material::Create();
         if (material->GetTextureCount(aiTextureType_DIFFUSE)){
@@ -155,6 +158,24 @@ namespace VeryCoolEngine {
                 pxMesh->m_pxMaterial->SetBumpMap(pxVceTex);
             }
         }
+
+        if (material->GetTextureCount(aiTextureType_SHININESS)) {
+            VCE_ASSERT(material->GetTextureCount(aiTextureType_SHININESS) == 1, "Too many gloss maps");
+            aiString str;
+            material->GetTexture(aiTextureType_SHININESS, 0, &str);
+            const aiTexture* pxTex = m_pxScene->GetEmbeddedTexture(str.C_Str());
+            if (pxTex != nullptr) {
+                VCE_ASSERT(pxTex->mHeight == 0, "need to add support for non compressed textures");
+                Texture2D* pxVceTex = Texture2D::Create();
+                pxVceTex->m_pData = malloc(pxTex->mWidth);
+                memcpy(pxVceTex->m_pData, pxTex->pcData, pxTex->mWidth);
+                pxVceTex->m_uDataLength = pxTex->mWidth;
+                VCE_ASSERT(pxVceTex->m_uDataLength > 0, "Incorrect texture data length");
+                //im treating the gloss map as a metallic map which isn't really right
+                pxMesh->m_pxMaterial->SetMetallic(pxVceTex);
+            }
+        }
+
 #endif
 
         pxMesh->m_axVertices = vertices;

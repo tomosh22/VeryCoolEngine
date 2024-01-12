@@ -352,14 +352,7 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 		m_pxOpaqueMeshesCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
 		m_pxOpaqueMeshesCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
 
-		VulkanMaterial* pxVkMaterial = dynamic_cast<VulkanMaterial*>(mesh->m_pxMaterial);
-
-		if (pxVkMaterial == nullptr){
-			VCE_TRACE("mesh without material");
-			continue;
-		}
-
-		m_pxOpaqueMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxOpaqueMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, VCE_MATERIAL_TEXTURE_DESC_SET, 1, &pxVkMaterial->m_xDescSet, 0, nullptr);
+		m_pxOpaqueMeshesCommandBuffer->BindMaterial(mesh->m_pxMaterial);
 
 
 
@@ -416,27 +409,11 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 		m_pxSkinnedMeshesCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
 		m_pxSkinnedMeshesCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
 
-		VulkanMaterial* pxVkMaterial = dynamic_cast<VulkanMaterial*>(mesh->m_pxMaterial);
+		pxVulkanMesh->m_pxBoneBuffer->UploadData(pxVulkanMesh->m_xBoneMats.data(), pxVulkanMesh->m_xBoneMats.size() * sizeof(glm::mat4), m_currentFrame);
 
+		UpdateBufferDescriptor(pxVulkanMesh->m_axBoneDescSet[m_currentFrame], pxVulkanMesh->m_pxBoneBuffer->ppBuffers[m_currentFrame], 0, vk::DescriptorType::eUniformBuffer);
 
-		VulkanManagedUniformBuffer* pxBoneBuffer = pxVulkanMesh->m_pxBoneBuffer;
-		pxBoneBuffer->UploadData(pxVulkanMesh->m_xBoneMats.data(), pxVulkanMesh->m_xBoneMats.size() * sizeof(glm::mat4), m_currentFrame);
-
-		vk::DescriptorBufferInfo xBufInfo = vk::DescriptorBufferInfo()
-			.setBuffer(pxVulkanMesh->m_pxBoneBuffer->ppBuffers[m_currentFrame]->m_xBuffer)
-			.setOffset(0)
-			.setRange(pxVulkanMesh->m_pxBoneBuffer->m_uSize);
-
-		vk::WriteDescriptorSet xBufWrite = vk::WriteDescriptorSet()
-			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-			.setDstSet(pxVulkanMesh->m_axBoneDescSet[m_currentFrame])
-			.setDstBinding(0)
-			.setDescriptorCount(1)
-			.setPBufferInfo(&xBufInfo);
-
-		m_device.updateDescriptorSets(1, &xBufWrite, 0, nullptr);
-
-		m_pxSkinnedMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, VCE_MATERIAL_TEXTURE_DESC_SET, 1, &pxVkMaterial->m_xDescSet, 0, nullptr);
+		m_pxSkinnedMeshesCommandBuffer->BindMaterial(mesh->m_pxMaterial);
 
 
 
