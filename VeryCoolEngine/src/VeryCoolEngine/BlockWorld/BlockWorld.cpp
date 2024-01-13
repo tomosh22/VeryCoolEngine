@@ -48,8 +48,6 @@ namespace VeryCoolEngine {
 					DepthCompareFunc::GreaterOrEqual,
 					{ColourFormat::BGRA8_sRGB},
 					DepthFormat::D32_SFloat,
-					{ xCamSpec},
-					{xBlockTexSpec},
 					&app->m_pxRenderToTexturePass,
 					false,
 					false

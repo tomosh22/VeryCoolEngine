@@ -332,7 +332,8 @@ namespace VeryCoolEngine {
 			std::vector<vk::Semaphore> m_renderFinishedSemaphores;
 			std::vector<vk::Fence> m_inFlightFences;
 
-			
+			vk::DescriptorSetLayout m_xPerFrameDescLayout;
+			vk::DescriptorSet m_axPerFrameDescSet[MAX_FRAMES_IN_FLIGHT];
 
 			bool m_framebufferResized = false;
 

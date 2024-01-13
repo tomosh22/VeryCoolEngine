@@ -173,7 +173,7 @@ void VulkanRenderer::InitVulkan() {
 		m_device.updateDescriptorSets(1, &xMiscWrite, 0, nullptr);
 	}
 
-	m_xPipelines.insert({ "SkinnedMeshes",pxSkinnedMesheshPipeline});
+	//m_xPipelines.insert({ "SkinnedMeshes",pxSkinnedMesheshPipeline});
 #pragma endregion
 
 	Application::GetInstance()->renderInitialised = true;
@@ -283,7 +283,7 @@ void VulkanRenderer::CopyToFramebuffer() {
 	m_pxCopyToFramebufferCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
 	m_pxCopyToFramebufferCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
 
-	m_pxCopyToFramebufferCommandBuffer->BindTexture(m_apxEditorSceneTexs[m_currentFrame], 0);
+	m_pxCopyToFramebufferCommandBuffer->BindTexture(m_apxEditorSceneTexs[m_currentFrame], 0, 0);
 	
 	m_pxCopyToFramebufferCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
 	m_pxCopyToFramebufferCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
@@ -315,7 +315,7 @@ void VulkanRenderer::DrawSkybox() {
 	m_pxSkyboxCommandBuffer->SetPipeline(&pxSkyboxPipeline->m_xPipeline);
 
 	VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
-	m_pxSkyboxCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0);
+	m_pxSkyboxCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0, 0);
 
 	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh);
 	m_pxSkyboxCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
@@ -347,30 +347,24 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 
 	app->m_pxMiscMeshRenderDataUBO->UploadData(&xMeshRenderData, sizeof(Application::MeshRenderData), m_currentFrame, 0);
 
+	VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
+	m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0, 0);
+
+	VulkanManagedUniformBuffer* pxLightUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pLightUBO);
+	m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxLightUBO->ppBuffers[m_currentFrame], 1, 0);
+
+
+	VulkanManagedUniformBuffer* pxMiscMeshRenderDataUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxMiscMeshRenderDataUBO);
+	m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxMiscMeshRenderDataUBO->ppBuffers[m_currentFrame], 2, 0);
+
+
 	for (Mesh* mesh : app->scene->m_axPipelineMeshes.at("Meshes")) {
 		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
 		m_pxOpaqueMeshesCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
 		m_pxOpaqueMeshesCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
 
-		m_pxOpaqueMeshesCommandBuffer->BindMaterial(mesh->m_pxMaterial);
+		m_pxOpaqueMeshesCommandBuffer->BindMaterial(mesh->m_pxMaterial,1);
 
-
-
-
-
-
-
-		VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
-		m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0);
-
-		VulkanManagedUniformBuffer* pxLightUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pLightUBO);
-		m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxLightUBO->ppBuffers[m_currentFrame], 1);
-
-
-
-
-		VulkanManagedUniformBuffer* pxPushConstantUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxMiscMeshRenderDataUBO);
-		m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxPushConstantUBO->ppBuffers[m_currentFrame], 2);
 
 		m_pxOpaqueMeshesCommandBuffer->PushConstant(&mesh->m_xTransform._matrix, sizeof(glm::mat4));
 
@@ -402,7 +396,18 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 
 	app->m_pxMiscMeshRenderDataUBO->UploadData(&xMeshRenderData, sizeof(Application::MeshRenderData), m_currentFrame, 0);
 
-	m_pxSkinnedMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, 0, 1, &m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_axDescSets[m_currentFrame][0], 0, nullptr);
+
+	VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
+	m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0, 0);
+
+	VulkanManagedUniformBuffer* pxLightUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pLightUBO);
+	m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxLightUBO->ppBuffers[m_currentFrame], 1, 0);
+
+
+
+
+	VulkanManagedUniformBuffer* pxMiscMeshRenderDataUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxMiscMeshRenderDataUBO);
+	m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxMiscMeshRenderDataUBO->ppBuffers[m_currentFrame], 2, 0);
 
 	for (Mesh* mesh : app->scene->m_axPipelineMeshes.at("SkinnedMeshes")) {
 		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
@@ -411,27 +416,17 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 
 		pxVulkanMesh->m_pxBoneBuffer->UploadData(pxVulkanMesh->m_xBoneMats.data(), pxVulkanMesh->m_xBoneMats.size() * sizeof(glm::mat4), m_currentFrame);
 
-		UpdateBufferDescriptor(pxVulkanMesh->m_axBoneDescSet[m_currentFrame], pxVulkanMesh->m_pxBoneBuffer->ppBuffers[m_currentFrame], 0, vk::DescriptorType::eUniformBuffer);
+		m_pxSkinnedMeshesCommandBuffer->BindMaterial(mesh->m_pxMaterial,1);
 
-		m_pxSkinnedMeshesCommandBuffer->BindMaterial(mesh->m_pxMaterial);
+		m_pxSkinnedMeshesCommandBuffer->BindAnimation(mesh,2);
 
+		RendererAPI::MeshPushConstantData xPushConstants;
+		xPushConstants.m_xModelMat = mesh->m_xTransform._matrix;
+		xPushConstants.m_uAnimate = bAnimate ? 1 : 0;
+		xPushConstants.m_fAlpha = fAnimAlpha;
 
+		m_pxSkinnedMeshesCommandBuffer->PushConstant(&xPushConstants, sizeof(RendererAPI::MeshPushConstantData));
 
-		m_pxSkinnedMeshesCommandBuffer->GetCurrentCmdBuffer().bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxSkinnedMeshesCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, 2, 1, &pxVulkanMesh->m_axBoneDescSet[m_currentFrame], 0, nullptr);
-
-		
-
-
-
-		void* pPushConstant = malloc(sizeof(glm::mat4) + sizeof(int) + sizeof(float));
-		int uAnimate = bAnimate ? 1 : 0;
-		memcpy(pPushConstant, &mesh->m_xTransform._matrix, sizeof(glm::mat4));
-		memcpy((char*)pPushConstant + sizeof(glm::mat4), &uAnimate, sizeof(int));
-		memcpy((char*)pPushConstant + sizeof(glm::mat4) + sizeof(int), &fAnimAlpha, sizeof(float));
-
-		m_pxSkinnedMeshesCommandBuffer->PushConstant(pPushConstant, sizeof(glm::mat4) + sizeof(int) + sizeof(float));
-
-		free(pPushConstant);
 
 		m_pxSkinnedMeshesCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
 	}
@@ -472,20 +467,19 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 void VeryCoolEngine::VulkanRenderer::BeginScene(Scene* scene)
 {
 	Application* app = Application::GetInstance();
-	const uint32_t camDataSize = sizeof(glm::mat4) * 3 + sizeof(glm::vec4);//4 bytes of padding
-	glm::mat4 viewMat = scene->camera->BuildViewMatrix();
-	glm::mat4 projMat = scene->camera->BuildProjectionMatrix();
-	glm::mat4 viewProjMat = projMat * viewMat;
-	glm::vec3 tempCamPos = scene->camera->GetPosition();
-	glm::vec4 camPos = { tempCamPos.x, tempCamPos.y, tempCamPos.z,0 };//4 bytes of padding
-	char* camData = new char[camDataSize];
-	memcpy(camData + sizeof(glm::mat4) * 0, &viewMat[0][0], sizeof(glm::mat4));
-	memcpy(camData + sizeof(glm::mat4) * 1, &projMat[0][0], sizeof(glm::mat4));
-	memcpy(camData + sizeof(glm::mat4) * 2, &viewProjMat[0][0], sizeof(glm::mat4));
-	memcpy(camData + sizeof(glm::mat4) * 3, &camPos[0], sizeof(glm::vec4));
-	app->_pCameraUBO->UploadData(camData, camDataSize, m_currentFrame, 0);
-	delete[] camData;
 
+	RendererAPI::FrameConstants xFrameConstants;
+	xFrameConstants.m_xViewMat = scene->camera->BuildViewMatrix();
+	xFrameConstants.m_xProjMat = scene->camera->BuildProjectionMatrix();
+	xFrameConstants.m_xViewProjMat = xFrameConstants.m_xProjMat * xFrameConstants.m_xViewMat;
+	glm::vec3 tempCamPos = scene->camera->GetPosition();
+	xFrameConstants.m_xCamPos = { tempCamPos.x, tempCamPos.y, tempCamPos.z,0 };
+	app->_pCameraUBO->UploadData(&xFrameConstants, sizeof(RendererAPI::FrameConstants), m_currentFrame, 0);
+
+
+	//RendererAPI::LightData xLightData;
+	//xLightData.m_xNumLights.x = scene->lights.size();
+	//memcpy(xLightData.m_axLights, scene->lights.data(), sizeof(Light) * scene->lights.size());
 
 	const uint32_t dataSize = (sizeof(unsigned int) * 4) + (sizeof(Light) * scene->lights.size());
 	char* data = new char[dataSize];

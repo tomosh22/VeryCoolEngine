@@ -259,65 +259,36 @@ namespace VeryCoolEngine {
 		}
 	}
 
-	VulkanPipelineBuilder::DescriptorThings VulkanPipelineBuilder::HandleDescriptorsOld(const PipelineSpecification& spec, VulkanPipelineBuilder& xBuilder) {
-		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
-
-		std::vector<vk::DescriptorSetLayout> axBufferLayouts;
-		std::vector<vk::DescriptorSet> axBufferSets;
-		for (BufferDescriptorSpecification spec : spec.m_axBufferDescriptors) {
-			axBufferLayouts.emplace_back(VulkanDescriptorSetLayoutBuilder::FromSpecification(spec));
-			axBufferSets.emplace_back(pxRenderer->CreateDescriptorSet(axBufferLayouts.back(), pxRenderer->GetDescriptorPool()));
-
-
-			for (auto& [ppxUBO, eStage] : spec.m_aeUniformBufferStages) {
-				for (uint8_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-				{
-					pxRenderer->UpdateBufferDescriptor(axBufferSets.back(), dynamic_cast<VulkanManagedUniformBuffer*>(*ppxUBO)->ppBuffers[i], 0, vk::DescriptorType::eUniformBuffer, 0);
-				}
-			}
-		}
-
-		std::vector<vk::DescriptorSetLayout> axTexLayouts;
-		std::vector<vk::DescriptorSet> axTexSets;
-		for (TextureDescriptorSpecification spec : spec.m_axTextureDescriptors) {
-			axTexLayouts.emplace_back(VulkanDescriptorSetLayoutBuilder::FromSpecification(spec));
-			axTexSets.emplace_back(pxRenderer->CreateDescriptorSet(axTexLayouts.back(), pxRenderer->GetDescriptorPool()));
-
-		}
-
-		uint32_t uLayoutIndex = 0;
-		for (uint32_t i = 0; i < axBufferLayouts.size(); i++) {
-			xBuilder = xBuilder.WithDescriptorSetLayout(uLayoutIndex++, axBufferLayouts.at(i));
-		}
-		for (uint32_t i = 0; i < axTexLayouts.size(); i++) {
-			xBuilder = xBuilder.WithDescriptorSetLayout(uLayoutIndex++, axTexLayouts.at(i));
-		}
-
-		return { axBufferLayouts, axBufferSets, axTexLayouts, axTexSets };
-	}
 
 	VulkanPipelineBuilder::DescriptorThings VulkanPipelineBuilder::HandleDescriptorsNew(const PipelineSpecification& spec, VulkanPipelineBuilder& xBuilder)
 	{
 		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
 
-		//TODO: what happens if number of buffer and tex bindings is zero?
+		uint32_t uSetIndex = 0;
+		std::vector<vk::DescriptorSetLayout> xLayouts;
+		std::vector<vk::DescriptorSet> xSets;
 
-		VulkanDescriptorSetLayoutBuilder xBufferDescBuilder = VulkanDescriptorSetLayoutBuilder();
-		VulkanDescriptorSetLayoutBuilder xTexDescBuilder = VulkanDescriptorSetLayoutBuilder();
-		xBufferDescBuilder = xBufferDescBuilder.WithBindlessAccess();
-		xTexDescBuilder = xTexDescBuilder.WithBindlessAccess();
+		//			  buffers    textures
+		for (std::pair<uint32_t, uint32_t> xSetDesc : spec.m_xDescSetBindings) {
+			VulkanDescriptorSetLayoutBuilder xDescBuilder = VulkanDescriptorSetLayoutBuilder().WithBindlessAccess();
 
-		for (uint32_t i = 0; i < spec.uNumBufferBindings; i++)
-			xBufferDescBuilder = xBufferDescBuilder.WithUniformBuffers(1);
-		for (uint32_t i = 0; i < spec.uNumTexBindings; i++)
-			xTexDescBuilder = xTexDescBuilder.WithSamplers(1);
+			for (uint32_t i = 0; i < xSetDesc.first; i++)
+				xDescBuilder = xDescBuilder.WithUniformBuffers(1);
+			for (uint32_t i = 0; i < xSetDesc.second; i++)
+				xDescBuilder = xDescBuilder.WithSamplers(1);
 
-		vk::DescriptorSetLayout xBufferLayout = xBufferDescBuilder.Build(pxRenderer->GetDevice());
-		vk::DescriptorSetLayout xTexLayout = xTexDescBuilder.Build(pxRenderer->GetDevice());
+			vk::DescriptorSetLayout xLayout = xDescBuilder.Build(pxRenderer->GetDevice());
 
-		xBuilder = xBuilder.WithDescriptorSetLayout(0, xBufferLayout);
-		xBuilder = xBuilder.WithDescriptorSetLayout(1, xTexLayout);
-		return { {xBufferLayout}, {pxRenderer->CreateDescriptorSet(xBufferLayout, pxRenderer->GetDescriptorPool())},{xTexLayout}, {pxRenderer->CreateDescriptorSet(xTexLayout, pxRenderer->GetDescriptorPool())} };
+			xBuilder = xBuilder.WithDescriptorSetLayout(uSetIndex, xLayout);
+
+			xLayouts.push_back(xLayout);
+
+			xSets.push_back(pxRenderer->CreateDescriptorSet(xLayout, pxRenderer->GetDescriptorPool()));
+
+			uSetIndex++;
+		}
+
+		return { xLayouts, xSets };
 		
 	}
 
@@ -354,11 +325,7 @@ namespace VeryCoolEngine {
 		xBuilder = xBuilder.WithDepthFormat(vk::Format::eD32Sfloat);
 		xBuilder = xBuilder.WithPass(dynamic_cast<VulkanRenderPass*>(*spec.m_pxRenderPass)->m_xRenderPass);
 
-		DescriptorThings xDescThings;
-		if (!spec.m_bNewVersion)
-			xDescThings = HandleDescriptorsOld(spec, xBuilder);
-		else
-			xDescThings = HandleDescriptorsNew(spec, xBuilder);
+		DescriptorThings xDescThings = HandleDescriptorsNew(spec, xBuilder);
 
 		if (spec.m_bUsePushConstants) {
 			xBuilder = xBuilder.WithPushConstant(vk::ShaderStageFlagBits::eAll, 0, 
@@ -375,14 +342,12 @@ namespace VeryCoolEngine {
 			xBuilder = xBuilder.WithTesselation();
 
 		VulkanPipeline* xPipeline = xBuilder.Build();
-		if (!spec.m_bNewVersion || true) {
-			xPipeline->m_axBufferDescLayouts = xDescThings.xBufferLayouts;
-			xPipeline->m_axBufferDescSets = xDescThings.xBufferSets;
-			xPipeline->m_axTexDescLayouts = xDescThings.xTexLayouts;
-			xPipeline->m_axTexDescSets = xDescThings.xTexSets;
-			xPipeline->m_strName = spec.m_strName;
-			xPipeline->bUsePushConstants = spec.m_bUsePushConstants;
-		}
+		xPipeline->m_axDescLayouts = xDescThings.xLayouts;
+		for(uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+			xPipeline->m_axDescSets[i] = xDescThings.xSets;
+		xPipeline->m_strName = spec.m_strName;
+		xPipeline->bUsePushConstants = spec.m_bUsePushConstants;
+		
 
 		return xPipeline;
 	}

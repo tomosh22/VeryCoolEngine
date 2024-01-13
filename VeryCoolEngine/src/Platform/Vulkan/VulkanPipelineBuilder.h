@@ -17,17 +17,11 @@ namespace VeryCoolEngine {
 		vk::Pipeline m_xPipeline;
 		vk::PipelineLayout	m_xPipelineLayout;
 
-		//TODO: delete me
-		std::vector<vk::DescriptorSetLayout> m_axBufferDescLayouts;
-		std::vector<vk::DescriptorSet> m_axBufferDescSets;
 
 
 		std::vector<vk::DescriptorSetLayout> m_axDescLayouts;
 		std::vector<vk::DescriptorSet> m_axDescSets[MAX_FRAMES_IN_FLIGHT];
 
-		//TODO: delete me
-		std::vector<vk::DescriptorSetLayout> m_axTexDescLayouts;
-		std::vector<vk::DescriptorSet> m_axTexDescSets;
 
 		bool bUsePushConstants = false;//#TODO expand on this, currently just use model matrix
 
@@ -74,12 +68,9 @@ namespace VeryCoolEngine {
 
 	protected:
 		struct DescriptorThings {
-			std::vector<vk::DescriptorSetLayout> xBufferLayouts;
-			std::vector<vk::DescriptorSet> xBufferSets;
-			std::vector<vk::DescriptorSetLayout> xTexLayouts;
-			std::vector<vk::DescriptorSet> xTexSets;
+			std::vector<vk::DescriptorSetLayout> xLayouts;
+			std::vector<vk::DescriptorSet> xSets;
 		};
-		static DescriptorThings HandleDescriptorsOld(const PipelineSpecification& spec, VulkanPipelineBuilder& xBuilder);
 		static DescriptorThings HandleDescriptorsNew(const PipelineSpecification& spec, VulkanPipelineBuilder& xBuilder);
 
 		vk::GraphicsPipelineCreateInfo				pipelineCreate;

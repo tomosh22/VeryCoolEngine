@@ -14,12 +14,13 @@ namespace VeryCoolEngine {
 		void Draw(uint32_t uNumIndices, uint32_t uNumInstances = 1, uint32_t uVertexOffset = 0, uint32_t uIndexOffset = 0, uint32_t uInstanceOffset = 0) override;
 		void SubmitTargetSetup(const RendererAPI::TargetSetup& xTargetSetup, bool bClear) override;
 		void SetPipeline(void* pxPipeline) override;
-		void BindTexture(void* pxTexture, uint32_t uBindPoint) override;
-		void BindBuffer(void* pxBuffer, uint32_t uBindPoint) override;
+		void BindTexture(void* pxTexture, uint32_t uBindPoint, uint32_t uSet) override;
+		void BindBuffer(void* pxBuffer, uint32_t uBindPoint, uint32_t uSet) override;
 		void PushConstant(void* pData, size_t uSize) override;
 		void UploadUniformData(void* pData, size_t uSize) override;
 
-		void BindMaterial(Material* pxMaterial) override;
+		void BindMaterial(Material* pxMaterial, uint32_t uSet) override;
+		void BindAnimation(Mesh* pxMesh, uint32_t uSet) override;
 
 		vk::CommandBuffer& GetCurrentCmdBuffer() { return m_xCurrentCmdBuffer; }
 		void* Platform_GetCurrentCmdBuffer() const override { return (void*) & m_xCurrentCmdBuffer; }

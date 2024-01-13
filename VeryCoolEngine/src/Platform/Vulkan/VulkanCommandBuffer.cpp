@@ -7,6 +7,7 @@
 #include "VulkanPipelineBuilder.h"
 #include "VulkanManagedUniformBuffer.h"
 #include "VulkanMaterial.h"
+#include "VulkanMesh.h"
 
 namespace VeryCoolEngine {
 	VulkanCommandBuffer::VulkanCommandBuffer()
@@ -280,25 +281,18 @@ namespace VeryCoolEngine {
 		std::vector<vk::DescriptorSet> axSets;
 		//new pipelines (skinned meshes)
 		if (pxVkPipeline->m_axDescLayouts.size()) {
-			for (const vk::DescriptorSet set : pxVkPipeline->m_axDescSets[0])
+			for (const vk::DescriptorSet set : pxVkPipeline->m_axDescSets[m_pxRenderer->m_currentFrame])
 				axSets.push_back(set);
 		}
-		else {
-			//TODO: delete me
-			for (const vk::DescriptorSet set : pxVkPipeline->m_axBufferDescSets)
-				axSets.push_back(set);
-			for (const vk::DescriptorSet set : pxVkPipeline->m_axTexDescSets) {
-				axSets.push_back(set);
-			}
-			m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pxVkPipeline->m_xPipelineLayout, 0, axSets.size(), axSets.data(), 0, nullptr);
-		}
+		m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pxVkPipeline->m_xPipelineLayout, 0, axSets.size(), axSets.data(), 0, nullptr);
+		
 
 		m_uCurrentDescSetIndex = axSets.size();
 
 		m_pxCurrentPipeline = pxVkPipeline;
 	}
 
-	void VulkanCommandBuffer::BindTexture(void* pxTexture, uint32_t uBindPoint) {
+	void VulkanCommandBuffer::BindTexture(void* pxTexture, uint32_t uBindPoint, uint32_t uSet) {
 		VulkanTexture2D* pxTex = reinterpret_cast<VulkanTexture2D*>(pxTexture);
 
 		vk::DescriptorImageInfo xInfo = vk::DescriptorImageInfo()
@@ -308,17 +302,17 @@ namespace VeryCoolEngine {
 
 		vk::WriteDescriptorSet xWrite = vk::WriteDescriptorSet()
 			.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-			.setDstSet(m_pxCurrentPipeline->m_axTexDescSets[0])
+			.setDstSet(m_pxCurrentPipeline->m_axDescSets[m_pxRenderer->m_currentFrame][uSet])
 			.setDstBinding(uBindPoint)
 			.setDstArrayElement(0)
 			.setDescriptorCount(1)
 			.setPImageInfo(&xInfo);
 
 		m_pxRenderer->GetDevice().updateDescriptorSets(1, &xWrite, 0, nullptr);
-
 	}
 
-	void VulkanCommandBuffer::BindBuffer(void* pxBuffer, uint32_t uBindPoint) {
+	void VulkanCommandBuffer::BindBuffer(void* pxBuffer, uint32_t uBindPoint, uint32_t uSet) {
+
 		VulkanBuffer* pxBuf = reinterpret_cast<VulkanBuffer*>(pxBuffer);
 
 		vk::DescriptorBufferInfo xInfo = vk::DescriptorBufferInfo()
@@ -328,7 +322,7 @@ namespace VeryCoolEngine {
 
 		vk::WriteDescriptorSet xWrite = vk::WriteDescriptorSet()
 			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-			.setDstSet(m_pxCurrentPipeline->m_axBufferDescSets[0])
+			.setDstSet(m_pxCurrentPipeline->m_axDescSets[m_pxRenderer->m_currentFrame][uSet])
 			.setDstBinding(uBindPoint)
 			.setDescriptorCount(1)
 			.setPBufferInfo(&xInfo);
@@ -346,11 +340,20 @@ namespace VeryCoolEngine {
 	{
 		m_pxUniformBuffer->UploadData(pData, uSize, m_pxRenderer->m_currentFrame);
 	}
-	void VulkanCommandBuffer::BindMaterial(Material* pxMaterial)
+
+
+	void VulkanCommandBuffer::BindMaterial(Material* pxMaterial, uint32_t uSet)
 	{
 		VulkanMaterial* pxVkMaterial = dynamic_cast<VulkanMaterial*>(pxMaterial);
 
-		m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxCurrentPipeline->m_xPipelineLayout, VCE_MATERIAL_TEXTURE_DESC_SET, 1, &pxVkMaterial->m_xDescSet, 0, nullptr);
+		m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxCurrentPipeline->m_xPipelineLayout, uSet, 1, &pxVkMaterial->m_xDescSet, 0, nullptr);
+	}
+
+	void VulkanCommandBuffer::BindAnimation(Mesh* pxMesh, uint32_t uSet)
+	{
+		VulkanMesh* pxVkMesh = dynamic_cast<VulkanMesh*>(pxMesh);
+
+		m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxCurrentPipeline->m_xPipelineLayout, uSet, 1, &pxVkMesh->m_axBoneDescSet[m_pxRenderer->m_currentFrame], 0, nullptr);
 	}
 }
 

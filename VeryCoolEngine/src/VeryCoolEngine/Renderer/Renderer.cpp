@@ -6,7 +6,6 @@
 #include "VeryCoolEngine/ImGui/ImGuiLayer.h"
 
 namespace VeryCoolEngine {
-	uint32_t Renderer::_sMAXLIGHTS = 100;
 	//void Renderer::RenderThreadFunction()
 	//{
 #ifdef VCE_OPENGL

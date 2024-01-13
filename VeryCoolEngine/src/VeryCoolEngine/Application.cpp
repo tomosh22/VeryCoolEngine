@@ -159,14 +159,10 @@ namespace VeryCoolEngine {
 					DepthCompareFunc::GreaterOrEqual,
 					{ColourFormat::BGRA8_sRGB},
 					DepthFormat::D32_SFloat,
-					{},
-					{},
 					&m_pxRenderToTexturePass,
 					false,
 					false,
-					true,
-					1,
-					0
+					{{3,0}}
 					)
 			});
 
@@ -187,18 +183,17 @@ namespace VeryCoolEngine {
 					DepthCompareFunc::GreaterOrEqual,
 					{ColourFormat::BGRA8_sRGB},
 					DepthFormat::D32_SFloat,
-					{},
-					{},
 					&m_pxRenderToTexturePass,
 					true,
 					true,
-					true,
-					3,
-					5
+					{
+						{3,0},
+						{0,5}
+					}
 					)
 			});
 
-		/*m_xPipelineSpecs.insert(
+		m_xPipelineSpecs.insert(
 			{ "SkinnedMeshes",
 					PipelineSpecification(
 					"SkinnedMeshes",
@@ -212,16 +207,16 @@ namespace VeryCoolEngine {
 					DepthCompareFunc::GreaterOrEqual,
 					{ColourFormat::BGRA8_sRGB},
 					DepthFormat::D32_SFloat,
-					{},
-					{},
 					&m_pxRenderToTexturePass,
 					true,
 					false,
-					true,
-					4,
-					5
+					{
+						{3,0},
+						{0,5},
+						{1,0}
+					}
 					)
-			});*/
+			});
 
 		m_xPipelineSpecs.insert(
 			{ "CopyToFramebuffer",
@@ -237,14 +232,12 @@ namespace VeryCoolEngine {
 					DepthCompareFunc::GreaterOrEqual,
 					{ColourFormat::BGRA8_sRGB},
 					DepthFormat::D32_SFloat,
-					{},
-					{xFramebufferTexSpec},
 					&m_pxCopyToFramebufferPass,
 					false,
 					false,
-					true,
-					0,
-					1
+					{
+						{0,1}
+					}
 					)
 			});
 

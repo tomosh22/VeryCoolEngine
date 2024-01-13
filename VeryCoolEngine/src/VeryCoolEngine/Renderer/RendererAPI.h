@@ -1,5 +1,6 @@
 #pragma once
 
+#include <glm/glm.hpp>
 static constexpr const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
 namespace VeryCoolEngine {
@@ -7,9 +8,26 @@ namespace VeryCoolEngine {
 	class IndexBuffer;
 	class ManagedUniformBuffer;
 	class Material;
+	class Mesh;
 	class RendererAPI
 	{
 	public:
+		struct FrameConstants {
+			glm::mat4 m_xViewMat;
+			glm::mat4 m_xProjMat;
+			glm::mat4 m_xViewProjMat;
+			glm::vec4 m_xCamPos;//4 bytes of padding
+		};
+
+		struct LightData {
+			glm::vec4 m_xNumLights;//only first component used, rest is padding
+
+		};
+		struct MeshPushConstantData {
+			glm::mat4 m_xModelMat;
+			uint32_t m_uAnimate;
+			float m_fAlpha;
+		};
 		struct RenderTarget {
 			enum class Format : uint32_t {
 				None,
@@ -53,12 +71,16 @@ namespace VeryCoolEngine {
 			virtual void Draw(uint32_t uNumIndices, uint32_t uNumInstances = 1, uint32_t uVertexOffset = 0, uint32_t uIndexOffset = 0, uint32_t uInstanceOffset = 0) = 0;
 			virtual void SubmitTargetSetup(const TargetSetup& xTargetSetup, bool bClear) = 0;
 			virtual void SetPipeline(void* pxPipeline) = 0;
-			virtual void BindTexture(void* pxTexture, uint32_t uBindPoint) = 0;
-			virtual void BindBuffer(void* pxBuffer, uint32_t uBindPoint) = 0;
+			virtual void BindTexture(void* pxTexture, uint32_t uBindPoint, uint32_t uSet) = 0;
+			virtual void BindBuffer(void* pxBuffer, uint32_t uBindPoint, uint32_t uSet) = 0;
+
 			virtual void PushConstant(void* pData, size_t uSize) = 0;
+
 			virtual void UploadUniformData(void* pData, size_t uSize) = 0;
 
-			virtual void BindMaterial(Material* pxMaterial) = 0;
+			virtual void BindMaterial(Material* pxMaterial, uint32_t uSet) = 0;
+			//TODO: this will be a model when i stop duplicating animation data
+			virtual void BindAnimation(Mesh* pxModel, uint32_t uSet) = 0;
 
 			virtual void* Platform_GetCurrentCmdBuffer() const = 0;
 

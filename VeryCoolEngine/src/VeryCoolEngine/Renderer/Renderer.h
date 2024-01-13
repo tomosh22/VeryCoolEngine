@@ -15,7 +15,7 @@ namespace VeryCoolEngine {
 	class Renderer
 	{
 	public:
-		static uint32_t _sMAXLIGHTS;
+		constexpr static uint32_t _sMAXLIGHTS = 100;
 		struct Light {
 			//glm::vec4 positionAndRadius;
 			//glm::vec4 color;

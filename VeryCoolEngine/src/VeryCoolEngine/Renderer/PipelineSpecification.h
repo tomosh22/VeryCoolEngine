@@ -59,16 +59,16 @@ namespace VeryCoolEngine {
 		DepthCompareFunc m_eDepthCompareFunc;
 		std::vector<ColourFormat> m_aeColourFormats;
 		DepthFormat m_eDepthFormat;
-		std::vector<BufferDescriptorSpecification> m_axBufferDescriptors;
-		std::vector<TextureDescriptorSpecification> m_axTextureDescriptors;
 		RenderPass** m_pxRenderPass;
 		bool m_bUsePushConstants;//#TODO expand on this, currently just use model matrix
 		bool m_bUseTesselation;
 
 
-		bool m_bNewVersion = false;
-		uint32_t uNumBufferBindings = 0;
-		uint32_t uNumTexBindings = 0;
+		//uint32_t uNumBufferBindings = 0;
+		//uint32_t uNumTexBindings = 0;
+
+		//					  buffers    textures
+		std::vector<std::pair<uint32_t, uint32_t>> m_xDescSetBindings;
 	};
 	
 	
