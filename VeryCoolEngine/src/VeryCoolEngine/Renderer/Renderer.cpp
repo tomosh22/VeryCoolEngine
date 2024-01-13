@@ -90,33 +90,6 @@ namespace VeryCoolEngine {
 	}
 	void Renderer::GenericInit()
 	{
-		Application* app = Application::GetInstance();
-#ifndef VCE_VULKAN
-		app->_pImGuiLayer = new ImGuiLayer();
-		app->PushOverlay(app->_pImGuiLayer);
-
-		//app->_pMesh = Mesh::GenerateHeightmap(100, 100);
-		for (Shader* shader : app->_shaders) shader->ReloadShader();
-		app->_pMesh->PlatformInit();
-		app->_pMesh->GetTexture()->PlatformInit();
-		for (Mesh* mesh : app->_meshes) {
-			mesh->PlatformInit();
-
-			mesh->GetTexture()->PlatformInit();
-			//mesh->GetBumpMap()->PlatformInit();
-		}
-
-		
-		app->_pFullscreenShader->ReloadShader();
-
-		app->_pDebugTexture = Texture2D::Create(app->_window->GetWidth(), app->_window->GetHeight());
-
-		app->_pCubemap->PlatformInit();
-#endif
-		app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT,0);//#todo frames in flight
-		app->_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * RendererAPI::g_uMaxLights,MAX_FRAMES_IN_FLIGHT,1);//#todo frames in flight
-
-
 	}
 
 	

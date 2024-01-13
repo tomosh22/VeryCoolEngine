@@ -67,7 +67,7 @@ void VulkanRenderer::InitVulkan() {
 	}
 	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
 	app->_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * RendererAPI::g_uMaxLights, MAX_FRAMES_IN_FLIGHT, 1);
-	app->m_pxMiscMeshRenderDataUBO = ManagedUniformBuffer::Create(sizeof(Light) * RendererAPI::g_uMaxLights, MAX_FRAMES_IN_FLIGHT, 2);
+	app->m_pxMiscMeshRenderDataUBO = ManagedUniformBuffer::Create(sizeof(Application::MeshRenderData), MAX_FRAMES_IN_FLIGHT, 2);
 
 	for (Shader* pxShader : app->_shaders) pxShader->PlatformInit();
 	//for (Texture* pxTex : app->_textures) pxTex->PlatformInit();
