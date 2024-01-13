@@ -50,7 +50,7 @@ namespace VeryCoolEngine {
 			meshes.clear();
 			meshes = std::vector<Mesh*>();
 			lights.clear();
-			lights.resize(Renderer::_sMAXLIGHTS);
+			lights.resize(RendererAPI::g_uMaxLights);
 			m_axPipelineMeshes.clear();
 			m_axPipelineMeshes = std::unordered_map<std::string, std::vector<Mesh*>>();
 			numLights = 0;

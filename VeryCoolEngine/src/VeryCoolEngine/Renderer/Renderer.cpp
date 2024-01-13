@@ -114,7 +114,7 @@ namespace VeryCoolEngine {
 		app->_pCubemap->PlatformInit();
 #endif
 		app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT,0);//#todo frames in flight
-		app->_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * _sMAXLIGHTS,MAX_FRAMES_IN_FLIGHT,1);//#todo frames in flight
+		app->_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * RendererAPI::g_uMaxLights,MAX_FRAMES_IN_FLIGHT,1);//#todo frames in flight
 
 
 	}

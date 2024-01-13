@@ -12,6 +12,8 @@ namespace VeryCoolEngine {
 	class RendererAPI
 	{
 	public:
+		constexpr static uint32_t g_uMaxLights = 100;
+
 		struct FrameConstants {
 			glm::mat4 m_xViewMat;
 			glm::mat4 m_xProjMat;
