@@ -272,6 +272,13 @@ namespace VeryCoolEngine {
 			m_swapChainFramebuffers[swapchainIndex++] = m_device.createFramebuffer(framebufferInfo);
 
 
+			TextureDescriptorSpecification xTexSpec;
+			xTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
+			xTexSpec.m_bJustFragment = true;
+			xTexSpec.m_bBindless = false;
+			vk::DescriptorSetLayout xLayout = VulkanDescriptorSetLayoutBuilder::FromSpecification(xTexSpec);
+			m_axFramebufferTexDescSet.emplace_back(CreateDescriptorSet(xLayout, m_descriptorPool));
+
 		}
 	}
 

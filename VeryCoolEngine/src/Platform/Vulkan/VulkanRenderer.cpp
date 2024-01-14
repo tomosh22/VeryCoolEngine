@@ -185,8 +185,12 @@ void VulkanRenderer::CopyToFramebuffer() {
 	m_pxCopyToFramebufferCommandBuffer->BindTexture(m_apxEditorSceneTexs[m_currentFrame], 0, 0);
 	
 	m_pxCopyToFramebufferCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
+
+	
 	
 #ifdef VCE_USE_EDITOR
+
+	m_pxCopyToFramebufferCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
 
 	UpdateImageDescriptor(m_axFramebufferTexDescSet[m_currentFrame], 0, 0, m_apxEditorSceneTexs[m_currentFrame]->m_xImageView, m_xDefaultSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
 
@@ -194,7 +198,6 @@ void VulkanRenderer::CopyToFramebuffer() {
 	
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_pxCopyToFramebufferCommandBuffer->GetCurrentCmdBuffer());
 	app->_pImGuiLayer->End();
-	m_pxCopyToFramebufferCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
 #endif
 
 	

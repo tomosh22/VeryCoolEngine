@@ -93,5 +93,15 @@ namespace VeryCoolEngine {
 		}
 	}
 
-	
+	vk::DescriptorSetLayout VulkanDescriptorSetLayoutBuilder::FromSpecification(const TextureDescriptorSpecification spec)
+	{
+		VulkanDescriptorSetLayoutBuilder xBuilder = VulkanDescriptorSetLayoutBuilder();
+		if (spec.m_aeSamplerStages.size()) {
+			for (auto& [ppxTexture, eStage] : spec.m_aeSamplerStages) {
+				xBuilder = xBuilder.WithSamplers(1, spec.m_bJustFragment ? vk::ShaderStageFlagBits::eFragment : vk::ShaderStageFlagBits::eAll);//#TODO stop passing all
+			}
+		}
+		xBuilder.usingBindless = spec.m_bBindless;
+		return std::move(xBuilder.Build(VulkanRenderer::GetInstance()->GetDevice()));
+	}
 }

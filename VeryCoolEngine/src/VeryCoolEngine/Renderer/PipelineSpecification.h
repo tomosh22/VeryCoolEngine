@@ -33,6 +33,11 @@ namespace VeryCoolEngine {
 		ShaderStageNone = 0, ShaderStageVertex = 1, ShaderStageFragment = 2, ShaderStageVertexAndFragment = 3 //#TODO how do you do bitwise operations on an enum?????
 	};
 	
+	struct TextureDescriptorSpecification {
+		std::vector<std::pair<Texture**, ShaderStage>> m_aeSamplerStages;
+		bool m_bJustFragment = false;
+		bool m_bBindless = true;
+	};
 
 	struct PipelineSpecification {
 		std::string m_strName;
