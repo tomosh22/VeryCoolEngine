@@ -123,57 +123,6 @@ void VulkanRenderer::InitVulkan() {
 	xPipelineBuilder = xPipelineBuilder.WithDescriptorSetLayout(0, xLayout0);
 	xPipelineBuilder = xPipelineBuilder.WithDescriptorSetLayout(VCE_MATERIAL_TEXTURE_DESC_SET, xLayout1);
 	xPipelineBuilder = xPipelineBuilder.WithDescriptorSetLayout(VCE_SKINNING_DESC_SET, xLayout2);
-
-	VulkanPipeline* pxSkinnedMesheshPipeline = xPipelineBuilder.Build();
-
-	pxSkinnedMesheshPipeline->m_axDescLayouts = { xLayout0, xLayout1 };
-	for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		pxSkinnedMesheshPipeline->m_axDescSets[i] = {CreateDescriptorSet(xLayout0, m_descriptorPool), CreateDescriptorSet(xLayout1, m_descriptorPool), CreateDescriptorSet(xLayout2, m_descriptorPool) };
-
-		vk::DescriptorBufferInfo xCamInfo = vk::DescriptorBufferInfo()
-			.setBuffer(dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO)->ppBuffers[i]->m_xBuffer)
-			.setOffset(0)
-			.setRange(dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO)->m_uSize);
-
-		vk::WriteDescriptorSet xCamWrite = vk::WriteDescriptorSet()
-			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-			.setDstSet(pxSkinnedMesheshPipeline->m_axDescSets[i][0])
-			.setDstBinding(0)
-			.setDescriptorCount(1)
-			.setPBufferInfo(&xCamInfo);
-
-		m_device.updateDescriptorSets(1, &xCamWrite, 0, nullptr);
-
-		vk::DescriptorBufferInfo xLightInfo = vk::DescriptorBufferInfo()
-			.setBuffer(dynamic_cast<VulkanManagedUniformBuffer*>(app->_pLightUBO)->ppBuffers[i]->m_xBuffer)
-			.setOffset(0)
-			.setRange(dynamic_cast<VulkanManagedUniformBuffer*>(app->_pLightUBO)->m_uSize);
-
-		vk::WriteDescriptorSet xLightWrite = vk::WriteDescriptorSet()
-			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-			.setDstSet(pxSkinnedMesheshPipeline->m_axDescSets[i][0])
-			.setDstBinding(1)
-			.setDescriptorCount(1)
-			.setPBufferInfo(&xLightInfo);
-
-		m_device.updateDescriptorSets(1, &xLightWrite, 0, nullptr);
-
-		vk::DescriptorBufferInfo xMiscInfo = vk::DescriptorBufferInfo()
-			.setBuffer(dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxMiscMeshRenderDataUBO)->ppBuffers[i]->m_xBuffer)
-			.setOffset(0)
-			.setRange(dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxMiscMeshRenderDataUBO)->m_uSize);
-
-		vk::WriteDescriptorSet xMiscWrite = vk::WriteDescriptorSet()
-			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-			.setDstSet(pxSkinnedMesheshPipeline->m_axDescSets[i][0])
-			.setDstBinding(2)
-			.setDescriptorCount(1)
-			.setPBufferInfo(&xMiscInfo);
-
-		m_device.updateDescriptorSets(1, &xMiscWrite, 0, nullptr);
-	}
-
-	//m_xPipelines.insert({ "SkinnedMeshes",pxSkinnedMesheshPipeline});
 #pragma endregion
 
 	Application::GetInstance()->renderInitialised = true;
