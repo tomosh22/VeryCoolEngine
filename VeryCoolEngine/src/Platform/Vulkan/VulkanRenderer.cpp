@@ -235,7 +235,6 @@ void VulkanRenderer::CopyToFramebuffer() {
 	m_pxCopyToFramebufferCommandBuffer->BindTexture(m_apxEditorSceneTexs[m_currentFrame], 0, 0);
 	
 	m_pxCopyToFramebufferCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
-	m_pxCopyToFramebufferCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
 	
 #ifdef VCE_USE_EDITOR
 
@@ -271,7 +270,6 @@ void VulkanRenderer::DrawSkybox() {
 	m_pxSkyboxCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
 	m_pxSkyboxCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
 
-	m_pxSkyboxCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
 
 	m_pxSkyboxCommandBuffer->EndRecording();
 }
@@ -320,7 +318,6 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 		m_pxOpaqueMeshesCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
 	}
 
-	m_pxOpaqueMeshesCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
 
 	m_pxOpaqueMeshesCommandBuffer->EndRecording();
 }
@@ -379,8 +376,6 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 
 		m_pxSkinnedMeshesCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
 	}
-
-	m_pxSkinnedMeshesCommandBuffer->GetCurrentCmdBuffer().endRenderPass();
 
 	m_pxSkinnedMeshesCommandBuffer->EndRecording();
 }
