@@ -70,60 +70,10 @@ void VulkanRenderer::InitVulkan() {
 	app->m_pxMiscMeshRenderDataUBO = ManagedUniformBuffer::Create(sizeof(Application::MeshRenderData), MAX_FRAMES_IN_FLIGHT, 2);
 
 	for (Shader* pxShader : app->_shaders) pxShader->PlatformInit();
-	//for (Texture* pxTex : app->_textures) pxTex->PlatformInit();
 
 	for (auto it = app->m_xPipelineSpecs.begin(); it != app->m_xPipelineSpecs.end(); it++) {
 		m_xPipelines.insert({ it->first,VulkanPipelineBuilder::FromSpecification(it->second) });
 	}
-
-#pragma region newpipelines
-	
-	if (!app->m_pxSkinnedMeshShader->m_bInitialised)
-		app->m_pxSkinnedMeshShader->PlatformInit();
-	if (!app->m_pxExampleSkinnedMesh->m_bInitialised)
-		app->m_pxExampleSkinnedMesh->PlatformInit();
-
-	VulkanPipelineBuilder xPipelineBuilder = VulkanPipelineBuilder("SkinnedMeshes")
-		.WithVertexInputState(dynamic_cast<VulkanMesh*>(app->m_pxExampleSkinnedMesh)->m_xVertexInputState)
-		.WithTopology(vk::PrimitiveTopology::eTriangleList)
-		.WithShader(*dynamic_cast<VulkanShader*>(app->m_pxSkinnedMeshShader))
-		.WithBlendState(vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha)
-		.WithDepthState(vk::CompareOp::eGreaterOrEqual, true, true, false)
-		.WithColourFormats({ ColourFormat::BGRA8_sRGB })
-		.WithDepthFormat(vk::Format::eD32Sfloat)
-		.WithPass(dynamic_cast<VulkanRenderPass*>(app->m_pxRenderToTexturePass)->m_xRenderPass)
-		.WithPushConstant(vk::ShaderStageFlagBits::eAll, 0,
-			sizeof(glm::mat4) + //modelmat
-			sizeof(glm::vec3) + //overrideNormal
-			sizeof(uint32_t) +  //useBumpMap
-			sizeof(uint32_t) +	//usePhongTess
-			sizeof(float) +	//phongTessFactor
-			sizeof(uint32_t)	//tessLevel
-		);
-
-	VulkanDescriptorSetLayoutBuilder xDescBuilder0 = VulkanDescriptorSetLayoutBuilder().WithBindlessAccess()
-		.WithUniformBuffers(1)//camera
-		.WithUniformBuffers(1)//lights
-		.WithUniformBuffers(1);//misc
-
-	VulkanDescriptorSetLayoutBuilder xDescBuilder1 = VulkanDescriptorSetLayoutBuilder().WithBindlessAccess()
-		.WithSamplers(1)//diffuse
-		.WithSamplers(1)//normal
-		.WithSamplers(1)//roughness
-		.WithSamplers(1)//metallic
-		.WithSamplers(1);//height
-
-	VulkanDescriptorSetLayoutBuilder xDescBuilder2 = VulkanDescriptorSetLayoutBuilder().WithBindlessAccess()
-		.WithUniformBuffers(1);//bones
-
-	vk::DescriptorSetLayout xLayout0 = xDescBuilder0.Build(m_device);
-	vk::DescriptorSetLayout xLayout1 = xDescBuilder1.Build(m_device);
-	vk::DescriptorSetLayout xLayout2 = xDescBuilder2.Build(m_device);
-
-	xPipelineBuilder = xPipelineBuilder.WithDescriptorSetLayout(0, xLayout0);
-	xPipelineBuilder = xPipelineBuilder.WithDescriptorSetLayout(VCE_MATERIAL_TEXTURE_DESC_SET, xLayout1);
-	xPipelineBuilder = xPipelineBuilder.WithDescriptorSetLayout(VCE_SKINNING_DESC_SET, xLayout2);
-#pragma endregion
 
 	Application::GetInstance()->renderInitialised = true;
 }
@@ -149,7 +99,7 @@ void VulkanRenderer::MainLoop() {
 	Scene* scene = app->scene;
 	while (true) {
 		std::this_thread::yield();
-		if (scene->ready)break;//#todo implement mutex here
+		if (scene->ready)break;
 	}
 	app->sceneMutex.lock();
 
@@ -393,14 +343,9 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 
 	DrawSkybox();
 
-	
-
-	
-
 	CopyToFramebuffer();
 	
 	m_pxRendererAPI->Platform_SubmitCmdBuffers();
-	
 
 	Present(iImageIndex, &m_renderFinishedSemaphores[m_currentFrame], 1);
 

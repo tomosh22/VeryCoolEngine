@@ -49,7 +49,7 @@ namespace VeryCoolEngine {
 
 		VulkanPipelineBuilder& WithLayout(vk::PipelineLayout layout);
 
-		VulkanPipelineBuilder& WithPushConstant(vk::ShaderStageFlags flags, uint32_t offset, uint32_t size);
+		VulkanPipelineBuilder& WithPushConstant(vk::ShaderStageFlags flags, uint32_t offset);
 
 		VulkanPipelineBuilder& WithDescriptorSetLayout(uint32_t slot, vk::DescriptorSetLayout layout);
 

@@ -20,7 +20,6 @@ namespace VeryCoolEngine {
 		CreateCommandPool();
 		CreateDepthTexture();
 		CreateDescriptorPool();
-		//app->m_pxBackbufferRenderPass = new VulkanRenderPass();
 
 		//#TODO do this properly, I'm too lazy to move the above to a VulkanRenderPass::BackbufferRenderPass
 		app->m_pxGBufferRenderPass = new VulkanRenderPass();
@@ -48,7 +47,9 @@ namespace VeryCoolEngine {
 		}
 
 		CreateFrameBuffers();
+#ifdef VCE_USE_EDITOR
 		CreateImguiFrameBuffers();//imgui doesn't use depth
+#endif
 		CreateRenderToTextureFrameBuffers();
 		CreateRenderToTextureFrameBuffersNoClear();
 
@@ -68,8 +69,6 @@ namespace VeryCoolEngine {
 	}
 
 	void VulkanRenderer::Cleanup() {
-
-		
 
 		CleanupSwapChain();
 		m_device.destroyDescriptorPool(m_descriptorPool, nullptr);
@@ -272,13 +271,6 @@ namespace VeryCoolEngine {
 			framebufferInfo.layers = 1;
 			m_swapChainFramebuffers[swapchainIndex++] = m_device.createFramebuffer(framebufferInfo);
 
-
-			TextureDescriptorSpecification xTexSpec;
-			xTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
-			xTexSpec.m_bJustFragment = true;
-			xTexSpec.m_bBindless = false;
-			vk::DescriptorSetLayout xLayout = VulkanDescriptorSetLayoutBuilder::FromSpecification(xTexSpec);
-			m_axFramebufferTexDescSet.emplace_back(CreateDescriptorSet(xLayout, m_descriptorPool));
 
 		}
 	}
@@ -919,30 +911,17 @@ namespace VeryCoolEngine {
 		Application* app = Application::GetInstance();
 		vk::RenderPassBeginInfo renderPassInfo{};
 		renderPassInfo.renderPass = m_xTargetSetupPasses.at("CopyToFramebuffer");
-#if 1
 		renderPassInfo.framebuffer = m_xTargetSetupFramebuffers.at("CopyToFramebuffer").at(m_currentFrame);
-#else
-		renderPassInfo.framebuffer = m_swapChainFramebuffers[uImageIndex];
-#endif
 		renderPassInfo.renderArea.offset = vk::Offset2D(0, 0);
 		renderPassInfo.renderArea.extent = m_swapChainExtent;
 
-#if 0
-		vk::ClearValue clearColor[3];
-		std::array<float, 4> tempColor{ 0.f,0.f,0.f,1.f };
-		clearColor[0].color = { vk::ClearColorValue(tempColor) };
-		clearColor[1].depthStencil = vk::ClearDepthStencilValue(0, 0);
-		clearColor[2].color = { vk::ClearColorValue(tempColor) };
-		renderPassInfo.clearValueCount = 3;
-		renderPassInfo.pClearValues = clearColor;
-#else
+
 		vk::ClearValue clearColor[2];
 		std::array<float, 4> tempColor{ 0.f,0.f,0.f,1.f };
 		clearColor[0].color = { vk::ClearColorValue(tempColor) };
 		clearColor[1].depthStencil = vk::ClearDepthStencilValue(0, 0);
 		renderPassInfo.clearValueCount = 2;
 		renderPassInfo.pClearValues = clearColor;
-#endif
 		
 
 		xCmdBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);

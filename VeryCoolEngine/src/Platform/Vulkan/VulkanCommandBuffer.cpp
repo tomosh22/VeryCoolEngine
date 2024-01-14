@@ -21,7 +21,7 @@ namespace VeryCoolEngine {
 
 		m_xCompleteSems.resize(MAX_FRAMES_IN_FLIGHT);
 		vk::SemaphoreCreateInfo semaphoreInfo;
-		for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
 		{
 			m_xCompleteSems[i] = m_pxRenderer->m_device.createSemaphore(semaphoreInfo);
 		}

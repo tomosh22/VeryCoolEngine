@@ -69,13 +69,6 @@ namespace VeryCoolEngine {
 		mesh->m_pxMaterial->SetMetallic(Texture2D::Create((std::string(szMaterialName) + "/metallic.jpg").c_str(), false));
 		mesh->m_pxMaterial->SetHeightmap(Texture2D::Create((std::string(szMaterialName) + "/height.jpg").c_str(), false));
 
-		TextureDescriptorSpecification xMeshTexSpec;
-		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
-		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
-		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
-		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
-		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
-		mesh->m_xTexDescSpec = xMeshTexSpec;
 		
 		mesh->m_xTransform = xTrans;
 		mesh->m_xTransform.UpdateRotation();

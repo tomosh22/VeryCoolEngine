@@ -34,16 +34,6 @@ namespace VeryCoolEngine {
 	};
 	
 
-	struct BufferDescriptorSpecification {
-		std::vector<std::pair<class ManagedUniformBuffer**, ShaderStage>> m_aeUniformBufferStages;
-	};
-
-	struct TextureDescriptorSpecification {
-		std::vector<std::pair<Texture**, ShaderStage>> m_aeSamplerStages;
-		bool m_bJustFragment = false;
-		bool m_bBindless = true;
-	};
-
 	struct PipelineSpecification {
 		std::string m_strName;
 		Mesh* m_pxExampleMesh;
@@ -60,12 +50,8 @@ namespace VeryCoolEngine {
 		std::vector<ColourFormat> m_aeColourFormats;
 		DepthFormat m_eDepthFormat;
 		RenderPass** m_pxRenderPass;
-		bool m_bUsePushConstants;//#TODO expand on this, currently just use model matrix
+		bool m_bUsePushConstants;
 		bool m_bUseTesselation;
-
-
-		//uint32_t uNumBufferBindings = 0;
-		//uint32_t uNumTexBindings = 0;
 
 		//					  buffers    textures
 		std::vector<std::pair<uint32_t, uint32_t>> m_xDescSetBindings;

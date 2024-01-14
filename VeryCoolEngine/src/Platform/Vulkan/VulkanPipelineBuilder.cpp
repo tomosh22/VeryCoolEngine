@@ -108,8 +108,8 @@ namespace VeryCoolEngine {
 		return *this;
 	}
 
-	VulkanPipelineBuilder& VulkanPipelineBuilder::WithPushConstant(vk::ShaderStageFlags flags, uint32_t offset, uint32_t size) {
-		allPushConstants.emplace_back(vk::PushConstantRange(flags, offset, size));
+	VulkanPipelineBuilder& VulkanPipelineBuilder::WithPushConstant(vk::ShaderStageFlags flags, uint32_t offset) {
+		allPushConstants.emplace_back(vk::PushConstantRange(flags, offset, VulkanRenderer::GetInstance()->GetPhysicalDevice().getProperties().limits.maxPushConstantsSize));
 		return *this;
 	}
 
@@ -328,14 +328,7 @@ namespace VeryCoolEngine {
 		DescriptorThings xDescThings = HandleDescriptorsNew(spec, xBuilder);
 
 		if (spec.m_bUsePushConstants) {
-			xBuilder = xBuilder.WithPushConstant(vk::ShaderStageFlagBits::eAll, 0, 
-				sizeof(glm::mat4) + //modelmat
-				sizeof(glm::vec3) + //overrideNormal
-				sizeof(uint32_t) +  //useBumpMap
-				sizeof(uint32_t) +	//usePhongTess
-				sizeof(float)	 +	//phongTessFactor
-				sizeof(uint32_t)	//tessLevel
-			);  
+			xBuilder = xBuilder.WithPushConstant(vk::ShaderStageFlagBits::eAll, 0);
 		}
 
 		if (spec.m_bUseTesselation)

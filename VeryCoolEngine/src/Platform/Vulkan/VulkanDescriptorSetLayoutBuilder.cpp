@@ -93,26 +93,5 @@ namespace VeryCoolEngine {
 		}
 	}
 
-	vk::DescriptorSetLayout VulkanDescriptorSetLayoutBuilder::FromSpecification(const BufferDescriptorSpecification spec)
-	{
-		VulkanDescriptorSetLayoutBuilder xBuilder = VulkanDescriptorSetLayoutBuilder();
-		if (spec.m_aeUniformBufferStages.size()) {
-			for (auto& [ppxUBO, eStage] : spec.m_aeUniformBufferStages) {
-				xBuilder = xBuilder.WithUniformBuffers(1, vk::ShaderStageFlagBits::eAll);//#TODO stop passing all
-			}
-		}
-		return std::move(xBuilder.Build(VulkanRenderer::GetInstance()->GetDevice()));
-	}
-
-	vk::DescriptorSetLayout VulkanDescriptorSetLayoutBuilder::FromSpecification(const TextureDescriptorSpecification spec)
-	{
-		VulkanDescriptorSetLayoutBuilder xBuilder = VulkanDescriptorSetLayoutBuilder();
-		if (spec.m_aeSamplerStages.size()) {
-			for (auto& [ppxTexture, eStage] : spec.m_aeSamplerStages) {
-				xBuilder = xBuilder.WithSamplers(1, spec.m_bJustFragment ? vk::ShaderStageFlagBits::eFragment : vk::ShaderStageFlagBits::eAll);//#TODO stop passing all
-			}
-		}
-		xBuilder.usingBindless = spec.m_bBindless;
-		return std::move(xBuilder.Build(VulkanRenderer::GetInstance()->GetDevice()));
-	}
+	
 }

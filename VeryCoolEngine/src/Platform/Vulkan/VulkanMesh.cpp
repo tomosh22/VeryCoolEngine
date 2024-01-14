@@ -87,24 +87,6 @@ namespace VeryCoolEngine {
 			.setVertexAttributeDescriptionCount(m_axAttrDescs.size())
 			.setPVertexAttributeDescriptions(m_axAttrDescs.data());
 
-		if (m_xTexDescSpec.m_aeSamplerStages.size()) {
-			m_xTexDescSetLayout = VulkanDescriptorSetLayoutBuilder::FromSpecification(m_xTexDescSpec);
-			m_xTexDescSet = pxRenderer->CreateDescriptorSet(m_xTexDescSetLayout, pxRenderer->GetDescriptorPool());
-
-#ifndef VCE_MATERIAL_TEXTURE_DESC_SET
-			if(m_pxTexture != nullptr) 
-				pxRenderer->UpdateImageDescriptor(m_xTexDescSet, 0, 0, dynamic_cast<VulkanTexture2D*>(m_pxTexture)->m_xImageView, dynamic_cast<VulkanTexture2D*>(m_pxTexture)->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
-			if (m_pxBumpMap != nullptr)
-				pxRenderer->UpdateImageDescriptor(m_xTexDescSet, 1, 0, dynamic_cast<VulkanTexture2D*>(m_pxBumpMap)->m_xImageView, dynamic_cast<VulkanTexture2D*>(m_pxBumpMap)->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
-			if (m_pxRoughnessTex != nullptr)
-				pxRenderer->UpdateImageDescriptor(m_xTexDescSet, 2, 0, dynamic_cast<VulkanTexture2D*>(m_pxRoughnessTex)->m_xImageView, dynamic_cast<VulkanTexture2D*>(m_pxRoughnessTex)->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
-			if (m_pxMetallicTex != nullptr)
-				pxRenderer->UpdateImageDescriptor(m_xTexDescSet, 3, 0, dynamic_cast<VulkanTexture2D*>(m_pxMetallicTex)->m_xImageView, dynamic_cast<VulkanTexture2D*>(m_pxMetallicTex)->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
-			if (m_pxHeightmapTex != nullptr)
-				pxRenderer->UpdateImageDescriptor(m_xTexDescSet, 4, 0, dynamic_cast<VulkanTexture2D*>(m_pxHeightmapTex)->m_xImageView, dynamic_cast<VulkanTexture2D*>(m_pxHeightmapTex)->m_xSampler, vk::ImageLayout::eShaderReadOnlyOptimal);
-#endif
-		}
-
 		if (m_uNumBones) {
 			uint64_t uSize = m_xBoneMats.size() * sizeof(glm::mat4);
 			//TODO: does this want to be device local?

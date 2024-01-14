@@ -20,14 +20,7 @@ namespace VeryCoolEngine {
 	Application::Application() {
 		srand(time(0));
 		_spInstance = this;
-#ifdef VCE_OPENGL
-		_window = Window::Create();
-		std::function callback = [this](Event&& e) {OnEvent(e); };
-		_window->SetEventCallback(callback);
-		_window->SetVSync(true);
 
-		//_window->SetVSync(true);
-#endif
 		m_pxExampleSkinnedMesh = Mesh::FromFile("ogre.fbx");
 		m_pxExampleMesh = Mesh::FromFile("cubeFlat.obj");
 		SetupPipelines();
@@ -38,9 +31,7 @@ namespace VeryCoolEngine {
 				std::this_thread::yield();
 				if (_renderThreadCanStart)break;//#todo implement mutex here
 			}
-#ifdef VCE_OPENGL
-			_pRenderer->InitWindow();
-#endif
+
 #ifdef VCE_VULKAN
 			_window = Window::Create();
 			std::function callback = [this](Event&& e) {OnEvent(e); };
@@ -55,8 +46,6 @@ namespace VeryCoolEngine {
 		m_pxBlankTexture2D = Texture2D::Create(1, 1, TextureFormat::RGBA);
 		
 		scene = new Scene();
-		
-		bool a = false;
 	}
 
 	
@@ -80,7 +69,6 @@ namespace VeryCoolEngine {
 		}
 
 		for (auto it = _layerStack.end(); it != _layerStack.begin();) {
-			//#todo can be changed
 			(*--it)->OnEvent(e);
 			if (e.GetHandled()) break;
 		}
@@ -110,28 +98,6 @@ namespace VeryCoolEngine {
 
 	
 	void Application::SetupPipelines() {
-
-		BufferDescriptorSpecification xCamSpec;
-		xCamSpec.m_aeUniformBufferStages.push_back({ &_pCameraUBO, ShaderStageVertexAndFragment });
-
-		BufferDescriptorSpecification xLightSpec;
-		xLightSpec.m_aeUniformBufferStages.push_back({ &_pLightUBO, ShaderStageVertexAndFragment });
-
-		TextureDescriptorSpecification xBlockTexSpec;
-		xBlockTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
-
-		TextureDescriptorSpecification xFramebufferTexSpec;
-		xFramebufferTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
-		xFramebufferTexSpec.m_bJustFragment = true;
-		xFramebufferTexSpec.m_bBindless = false;
-
-		TextureDescriptorSpecification xMeshTexSpec;
-		//currently overriding stage to all
-		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
-		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
-		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
-		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
-		xMeshTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
 
 		m_pxMeshShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
 		m_pxGBufferShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshGBufferFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");

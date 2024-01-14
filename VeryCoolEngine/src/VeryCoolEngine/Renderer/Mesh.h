@@ -116,8 +116,6 @@ namespace VeryCoolEngine {
 
 		MeshTopolgy m_eTopolgy = MeshTopolgy::Triangles;
 
-		TextureDescriptorSpecification m_xTexDescSpec;
-
 		
 
 
