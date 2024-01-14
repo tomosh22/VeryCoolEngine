@@ -114,7 +114,7 @@ namespace VeryCoolEngine {
 			scene->meshes.push_back(mesh);
 		}
 
-		for (Renderer::Light& light : _lights) {
+		for (RendererAPI::Light& light : _lights) {
 			scene->lights[scene->numLights++] = light;
 		}
 
@@ -149,11 +149,11 @@ namespace VeryCoolEngine {
 			for(Mesh* pxMesh : model->meshes)
 			scene->m_axPipelineMeshes.at("GBuffer").push_back(pxMesh);
 
-		for (Renderer::Light& light : _lights) {
+		for (RendererAPI::Light& light : _lights) {
 			scene->lights[scene->numLights++] = light;
 		}
 
-		Renderer::Light camLight{
+		RendererAPI::Light camLight{
 				_Camera.GetPosition().x,_Camera.GetPosition().y,_Camera.GetPosition().z,100,
 				1,1,1,1
 		};

@@ -21,9 +21,44 @@ namespace VeryCoolEngine {
 			glm::vec4 m_xCamPos;//4 bytes of padding
 		};
 
-		struct LightData {
-			glm::vec4 m_xNumLights;//only first component used, rest is padding
+		struct Light {
+			float x;
+			float y;
+			float z;
+			float radius = 0;
+			float r;
+			float g;
+			float b;
+			float a;
+		};
 
+		//TODO: don't like that I'm creating g_uMaxLights lights every time I create one of these
+		struct LightData {
+		public:
+			Light* GetLightsPtr() { return &m_axLights[0]; }
+			uint32_t GetNumLights() {
+				if (!m_bCalculatedNumLights) CalculateNumLights();
+				return m_uNumLights;
+			}
+			
+			size_t GetUploadSize() {
+				if (!m_bCalculatedNumLights) CalculateNumLights();
+				return sizeof(m_uNumLights) + sizeof(m_Pad) + sizeof(Light) * m_uNumLights;
+			}
+			void CalculateNumLights() {
+				m_uNumLights = 0;
+				for (uint32_t i = 0; i < g_uMaxLights; i++)
+					if (m_axLights[i].radius != 0)
+						m_uNumLights++;
+					else
+						break;
+				m_bCalculatedNumLights = true;
+			}
+		private:
+			uint32_t m_uNumLights;
+			uint32_t m_Pad[3];
+			Light m_axLights[g_uMaxLights];
+			bool m_bCalculatedNumLights = false;
 		};
 		struct MeshPushConstantData {
 			glm::mat4 m_xModelMat;

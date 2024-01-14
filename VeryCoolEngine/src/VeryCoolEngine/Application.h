@@ -40,7 +40,7 @@ namespace VeryCoolEngine {
 		std::vector<VCEModel*> models{};
 
 
-		std::vector<Renderer::Light> lights{};
+		std::vector<RendererAPI::Light> lights{};
 		unsigned int numLights = 0;
 
 		bool ready = false;
@@ -148,7 +148,7 @@ namespace VeryCoolEngine {
 		Shader* m_pxCopyToFramebufferShader;
 
 		Mesh* _pHeightmap;
-		std::vector<Renderer::Light> _lights{};
+		std::vector<RendererAPI::Light> _lights{};
 		Texture2D* _pDebugTexture;
 		TextureCube* _pCubemap;
 		ImGuiLayer* _pImGuiLayer;

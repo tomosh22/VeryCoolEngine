@@ -66,7 +66,7 @@ void VulkanRenderer::InitVulkan() {
 			pMesh->m_pxMaterial->PlatformInit();
 	}
 	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
-	app->_pLightUBO = ManagedUniformBuffer::Create(sizeof(Light) * RendererAPI::g_uMaxLights, MAX_FRAMES_IN_FLIGHT, 1);
+	app->_pLightUBO = ManagedUniformBuffer::Create(sizeof(RendererAPI::Light) * RendererAPI::g_uMaxLights, MAX_FRAMES_IN_FLIGHT, 1);
 	app->m_pxMiscMeshRenderDataUBO = ManagedUniformBuffer::Create(sizeof(Application::MeshRenderData), MAX_FRAMES_IN_FLIGHT, 2);
 
 	for (Shader* pxShader : app->_shaders) pxShader->PlatformInit();
@@ -477,19 +477,11 @@ void VeryCoolEngine::VulkanRenderer::BeginScene(Scene* scene)
 	app->_pCameraUBO->UploadData(&xFrameConstants, sizeof(RendererAPI::FrameConstants), m_currentFrame, 0);
 
 
-	//RendererAPI::LightData xLightData;
-	//xLightData.m_xNumLights.x = scene->lights.size();
-	//memcpy(xLightData.m_axLights, scene->lights.data(), sizeof(Light) * scene->lights.size());
+	RendererAPI::LightData xLightData;
+	memcpy(xLightData.GetLightsPtr(), scene->lights.data(), sizeof(RendererAPI::Light) * scene->lights.size());
+	xLightData.CalculateNumLights();
 
-	const uint32_t dataSize = (sizeof(unsigned int) * 4) + (sizeof(Light) * scene->lights.size());
-	char* data = new char[dataSize];
-	unsigned int numLightsWithPadding[4] = { scene->numLights,0,0,0 };//12 bytes of padding
-
-	memcpy(data, numLightsWithPadding, sizeof(unsigned int) * 4);
-
-	memcpy(data + sizeof(unsigned int) * 4, scene->lights.data(), sizeof(Light) * scene->lights.size());
-	app->_pLightUBO->UploadData(data, dataSize, m_currentFrame, 0);
-	delete[] data;
+	app->_pLightUBO->UploadData(&xLightData, xLightData.GetUploadSize(), m_currentFrame, 0);
 
 }
 

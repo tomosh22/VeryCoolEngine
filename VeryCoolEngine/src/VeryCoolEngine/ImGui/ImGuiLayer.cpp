@@ -192,7 +192,7 @@ namespace VeryCoolEngine {
 
 		if (ImGui::TreeNode("Point Lights")) {
 			int lightIndex = 0;
-			for (Renderer::Light& light : app->_lights)
+			for (RendererAPI::Light& light : app->_lights)
 			{
 				std::string labelPos = "Light" + std::to_string(lightIndex) + " Position";
 				ImGui::DragFloat3(labelPos.c_str(), &light.x);

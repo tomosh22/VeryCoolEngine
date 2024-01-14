@@ -15,18 +15,6 @@ namespace VeryCoolEngine {
 	class Renderer
 	{
 	public:
-		struct Light {
-			//glm::vec4 positionAndRadius;
-			//glm::vec4 color;
-			float x;
-			float y;
-			float z;
-			float radius;
-			float r;
-			float g;
-			float b;
-			float a;
-		};
 
 		virtual void MainLoop() = 0;
 
