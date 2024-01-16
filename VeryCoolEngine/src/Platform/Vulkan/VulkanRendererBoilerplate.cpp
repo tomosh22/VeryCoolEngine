@@ -42,9 +42,7 @@ namespace VeryCoolEngine {
 		m_device.destroyRenderPass(dynamic_cast<VulkanRenderPass*>(app->m_pxCopyToFramebufferPass)->m_xRenderPass);
 		dynamic_cast<VulkanRenderPass*>(app->m_pxCopyToFramebufferPass)->m_xRenderPass = VulkanRenderPass::CopyToFramebufferPass();
 
-		for (uint32_t i = 0; i < m_swapChainImages.size(); i++) {
-			m_apxEditorSceneTexs.emplace_back(VulkanTexture2D::CreateColourAttachment(m_width, m_height, 1, vk::Format::eB8G8R8A8Srgb));
-		}
+		CreateEditorSceneTextures();
 
 		CreateFrameBuffers();
 #ifdef VCE_USE_EDITOR
@@ -96,7 +94,14 @@ namespace VeryCoolEngine {
 	}
 
 	void VulkanRenderer::CleanupSwapChain() {
+		//TODO: handle properly
 		for (vk::Framebuffer framebuffer : m_swapChainFramebuffers) m_device.destroyFramebuffer(framebuffer, nullptr);
+		for (vk::Framebuffer framebuffer : m_axImguiFramebuffers) m_device.destroyFramebuffer(framebuffer, nullptr);
+#ifdef VCE_DEFERRED_SHADING
+		for (vk::Framebuffer framebuffer : m_axGBufferFramebuffers) m_device.destroyFramebuffer(framebuffer, nullptr);
+#endif
+		for (vk::Framebuffer framebuffer : m_axRenderToTextureFramebuffers) m_device.destroyFramebuffer(framebuffer, nullptr);
+		for (vk::Framebuffer framebuffer : m_axRenderToTextureFramebuffersNoClear) m_device.destroyFramebuffer(framebuffer, nullptr);
 
 		for (vk::ImageView imageView : m_swapChainImageViews) m_device.destroyImageView(imageView, nullptr);
 
@@ -254,6 +259,12 @@ namespace VeryCoolEngine {
 		return details;
 	}
 
+	void VulkanRenderer::CreateEditorSceneTextures() {
+		for (uint32_t i = 0; i < m_swapChainImages.size(); i++) {
+			m_apxEditorSceneTexs.emplace_back(VulkanTexture2D::CreateColourAttachment(m_swapChainExtent.width, m_swapChainExtent.height, 1, vk::Format::eB8G8R8A8Srgb));
+		}
+	}
+
 	void VulkanRenderer::CreateFrameBuffers() {
 		Application* app = Application::GetInstance();
 		m_swapChainFramebuffers.resize(m_swapChainImageViews.size());
@@ -287,6 +298,13 @@ namespace VeryCoolEngine {
 		m_axRenderToTextureFramebuffers.resize(m_swapChainImageViews.size());
 		int swapchainIndex = 0;
 		for (vk::ImageView imageView : m_swapChainImageViews) {
+
+#ifdef VCE_DEBUG
+			uint32_t uTexWidth = m_apxEditorSceneTexs[swapchainIndex]->GetWidth();
+			uint32_t uTexHeight = m_apxEditorSceneTexs[swapchainIndex]->GetHeight();
+			VCE_ASSERT(uTexWidth == m_swapChainExtent.width && uTexHeight == m_swapChainExtent.height, "Mismatching framebuffer/swapchain dimensions");
+#endif
+
 			vk::FramebufferCreateInfo framebufferInfo{};
 			vk::ImageView axAttachments[]{
 				m_apxEditorSceneTexs[swapchainIndex]->m_xImageView,
@@ -861,7 +879,28 @@ namespace VeryCoolEngine {
 		CreateSwapChain();
 		CreateDepthTexture();
 		CreateImageViews();
+
+		for (VulkanTexture2D* pxTex : m_apxEditorSceneTexs) {
+			delete pxTex;
+		}
+		m_apxEditorSceneTexs.clear();
+		CreateEditorSceneTextures();
+
 		CreateFrameBuffers();
+
+		CreateRenderToTextureFrameBuffers();
+		CreateRenderToTextureFrameBuffersNoClear();
+		CreateImguiFrameBuffers();
+
+		m_xTargetSetupFramebuffers.clear();
+		m_xTargetSetupPasses.clear();
+		CreateFramebufferTarget();
+		CreateRenderToTextureTarget();
+
+		
+#ifdef VCE_DEFERRED_SHADING
+		CreateGBufferFrameBuffers();
+#endif
 	}
 
 	int8_t VulkanRenderer::AcquireSwapchainImage() {
@@ -950,6 +989,7 @@ namespace VeryCoolEngine {
 		xCmdBuffer.setScissor(0, 1, &scissor);
 	}
 
+#ifdef VCE_DEFERRED_SHADING
 	void VulkanRenderer::BeginGBufferRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex) {
 		Application* app = Application::GetInstance();
 		vk::RenderPassBeginInfo renderPassInfo{};
@@ -985,6 +1025,7 @@ namespace VeryCoolEngine {
 		xCmdBuffer.setViewport(0, 1, &viewport);
 		xCmdBuffer.setScissor(0, 1, &scissor);
 	}
+#endif
 
 	void VulkanRenderer::BeginImguiRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex) {
 		Application* app = Application::GetInstance();

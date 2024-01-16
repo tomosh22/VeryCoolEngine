@@ -323,7 +323,9 @@ namespace VeryCoolEngine {
 		return m_uHeight;
 	}
 	
-	VulkanTexture2D* VulkanTexture2D::CreateVulkanTexture2D(uint32_t uWidth, uint32_t uHeight, uint32_t uMipCount, vk::Format eFormat, vk::ImageAspectFlags eAspect, vk::ImageUsageFlags eUsage, vk::ImageLayout eLayout, vk::PipelineStageFlags ePipeType) {
+	VulkanTexture2D* VulkanTexture2D::CreateVulkanTexture2D(uint32_t uWidth, uint32_t uHeight, uint32_t uMipCount, vk::Format eFormat, vk::ImageAspectFlags eAspect, vk::ImageUsageFlags eUsage, vk::ImageLayout eLayout, vk::PipelineStageFlags ePipeType){
+
+
 		VulkanTexture2D* pxTex = new VulkanTexture2D();
 		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
 		vk::Device xDevice = pxRenderer->GetDevice();
@@ -372,6 +374,9 @@ namespace VeryCoolEngine {
 		vk::CommandBuffer xCmd = pxRenderer->BeginSingleUseCmdBuffer();
 
 		pxRenderer->ImageTransitionBarrier(pxTex->m_xImage, vk::ImageLayout::eUndefined, eLayout, eAspect, vk::PipelineStageFlagBits::eTopOfPipe, ePipeType);
+
+		pxTex->m_uWidth = uWidth;
+		pxTex->m_uHeight = uHeight;
 
 		return pxTex;
 	}

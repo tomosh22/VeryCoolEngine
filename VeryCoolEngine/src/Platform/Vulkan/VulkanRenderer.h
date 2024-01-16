@@ -204,6 +204,8 @@ namespace VeryCoolEngine {
 			void CreateRenderToTextureFrameBuffers();
 			void CreateRenderToTextureFrameBuffersNoClear();
 
+			void CreateEditorSceneTextures();
+
 			void CreateCommandPool();
 
 			void CreateCommandBuffers();
@@ -315,7 +317,9 @@ namespace VeryCoolEngine {
 
 			std::vector<vk::Framebuffer> m_swapChainFramebuffers;
 			std::vector<vk::Framebuffer> m_axImguiFramebuffers;
+#ifdef VCE_DEFERRED_SHADING
 			std::vector<vk::Framebuffer> m_axGBufferFramebuffers;
+#endif
 			std::vector<vk::Framebuffer> m_axRenderToTextureFramebuffers;
 			std::vector<vk::Framebuffer> m_axRenderToTextureFramebuffersNoClear;
 

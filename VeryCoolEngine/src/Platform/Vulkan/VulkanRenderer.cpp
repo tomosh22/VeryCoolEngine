@@ -334,6 +334,12 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 }
 
 void VulkanRenderer::DrawFrame(Scene* scene) {
+	if (m_bShouldResize) {
+		RecreateSwapChain();
+		m_bShouldResize = false;
+		m_currentFrame = 0;
+		return;
+	}
 	uint32_t iImageIndex = AcquireSwapchainImage();
 	if (iImageIndex == -1) {
 		RecreateSwapChain();
