@@ -89,6 +89,8 @@ namespace VeryCoolEngine {
 
 		if (m_uNumBones) {
 			uint64_t uSize = m_xBoneMats.size() * sizeof(glm::mat4);
+
+			VCE_ASSERT(uSize > 0, "Mesh has bones but no bone matrices");
 			//TODO: does this want to be device local?
 #if 0
 			VulkanBuffer pxStagingBuffer = VulkanBuffer(uSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);

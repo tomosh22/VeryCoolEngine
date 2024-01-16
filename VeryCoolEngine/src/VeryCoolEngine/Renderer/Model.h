@@ -38,9 +38,17 @@ namespace VeryCoolEngine {
 
         VCEModel(std::string const& path);
 
+        ~VCEModel() {
+            delete m_pxAnimation;
+            meshes.clear();
+
+            //TODO: is this necessary? these might get cleaned up by the renderer
+            m_apxTextures.clear();
+        }
+
         void Draw(Shader& shader);
 
-        
+        class Animation* m_pxAnimation;
 
         std::map<std::string, BoneInfo> m_xBoneInfoMap;
         uint32_t m_uBoneCounter = 0;
@@ -50,7 +58,6 @@ namespace VeryCoolEngine {
         
         const aiScene* m_pxScene;
 
-        void LoadModel(std::string const& path);
 
         void ProcessNode(aiNode* node);
 

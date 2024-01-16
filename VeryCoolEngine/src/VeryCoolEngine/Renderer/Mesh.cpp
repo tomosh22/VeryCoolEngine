@@ -403,6 +403,8 @@ namespace VeryCoolEngine {
 			aiProcess_JoinIdenticalVertices |
 			aiProcess_SortByPType);
 
+		VCE_ASSERT(pxScene != nullptr, "null scene");
+
 #if 0
 		if (pxScene->mNumAnimations) {
 			std::vector<aiMesh*> xMeshes;

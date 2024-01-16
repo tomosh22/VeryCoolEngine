@@ -65,7 +65,7 @@ namespace VeryCoolEngine {
 		Application();
 		virtual ~Application();
 		void Run();
-		void GameLoop();
+		void GameLoop(float fDt);
 		void OnEvent(Event& e);
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* layer);
@@ -132,15 +132,12 @@ namespace VeryCoolEngine {
 		//#TODO i really need a better way to do this, used to provide vertex input state to mesh pipeline
 		Mesh* m_pxExampleMesh;
 		Mesh* m_pxExampleSkinnedMesh;
+		std::vector<Mesh*> m_apxGenericMeshes;
 		std::vector<VCEModel*> m_apxGenericModels;
 		std::vector<VCEModel*> m_apxAnimatedModels;
 		std::vector<Mesh*> m_apxSkinnedMeshes;
 
-		Mesh* m_pxAnimatedMesh0;
-		Mesh* m_pxAnimatedMesh1;
-		Animation* m_pxAnimation0;
-		Animation* m_pxAnimation1;
-
+		std::unordered_map<std::string, Material*> m_xMaterialMap;
 
 		Shader* m_pxMeshShader;
 		Shader* m_pxSkinnedMeshShader;

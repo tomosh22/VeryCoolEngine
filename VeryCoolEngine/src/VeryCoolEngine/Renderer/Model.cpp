@@ -31,7 +31,15 @@ namespace VeryCoolEngine {
     VCEModel::VCEModel(std::string const& path)
     {
         m_strDirectory = path;
-        LoadModel(path);
+        Assimp::Importer importer;
+        m_pxScene = importer.ReadFile(MESHDIR + path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+
+        VCE_ASSERT(!(m_pxScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE), "Assimp scene failed to load");
+
+        ProcessNode(m_pxScene->mRootNode);
+
+        if (m_pxScene->HasAnimations())
+            m_pxAnimation = new Animation(path, this);
     }
 
     void VCEModel::Draw(Shader& shader)
@@ -40,16 +48,6 @@ namespace VeryCoolEngine {
             //meshes[i].Draw(shader);
     }
 
-    
-    void VCEModel::LoadModel(std::string const& path)
-    {
-        Assimp::Importer importer;
-        m_pxScene = importer.ReadFile(MESHDIR+path, aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
-
-        VCE_ASSERT(!(m_pxScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE), "Assimp scene failed to load");
-
-        ProcessNode(m_pxScene->mRootNode);
-    }
 
     
     void VCEModel::ProcessNode(aiNode* node)

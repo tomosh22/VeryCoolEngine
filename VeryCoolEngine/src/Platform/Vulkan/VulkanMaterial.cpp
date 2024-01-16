@@ -5,7 +5,15 @@
 #include "VulkanTexture.h"
 
 namespace VeryCoolEngine {
-
+	VulkanMaterial::VulkanMaterial(const char* szName)
+	{
+		//TODO: don't make so many std::strings
+		SetAlbedo(Texture2D::Create((std::string(szName) + "/diffuse.jpg").c_str(), false));
+		SetBumpMap(Texture2D::Create((std::string(szName) + "/normal.jpg").c_str(), false));
+		SetRoughness(Texture2D::Create((std::string(szName) + "/roughness.jpg").c_str(), false));
+		SetMetallic(Texture2D::Create((std::string(szName) + "/metallic.jpg").c_str(), false));
+		SetHeightmap(Texture2D::Create((std::string(szName) + "/height.jpg").c_str(), false));
+	}
 	void VulkanMaterial::PlatformInit()
 	{
 		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();

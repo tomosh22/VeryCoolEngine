@@ -202,6 +202,21 @@ namespace VeryCoolEngine {
 			ImGui::TreePop();
 		}
 
+
+		if (ImGui::TreeNode("Static Meshes")) {
+			int meshIndex = 0;
+			for (Mesh* mesh : app->m_apxGenericMeshes)
+			{
+				std::string labelPos = "Mesh" + std::to_string(meshIndex) + " Position";
+				ImGui::DragFloat3(labelPos.c_str(), &mesh->m_xTransform._position.x);
+				std::string labelRot = "Mesh" + std::to_string(meshIndex) + " Rotation";
+				ImGui::DragFloat3(labelRot.c_str(), &mesh->m_xTransform._roll);
+				std::string labelScale = "Mesh" + std::to_string(meshIndex++) + " Scale";
+				ImGui::DragFloat3(labelScale.c_str(), &mesh->m_xTransform._scale.x);
+			}
+			ImGui::TreePop();
+		}
+
 		if (ImGui::TreeNode("Static Models")) {
 			int meshIndex = 0;
 			for (VCEModel* mesh : app->m_apxGenericModels)

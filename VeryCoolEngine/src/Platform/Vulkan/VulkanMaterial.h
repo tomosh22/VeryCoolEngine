@@ -9,6 +9,7 @@ namespace VeryCoolEngine {
 	{
 	public:
 		VulkanMaterial() {};
+		VulkanMaterial(const char* szName);
 		~VulkanMaterial() override {
 			VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
 			pxRenderer->GetDevice().destroyDescriptorSetLayout(m_xDescSetLayout);

@@ -11,6 +11,12 @@ namespace VeryCoolEngine {
 #endif
 	}
 
+	Material* Material::Create(const char* szName) {
+#ifdef VCE_VULKAN
+		return new VulkanMaterial(szName);
+#endif
+	}
+
 	void Material::SetAlbedo(Texture2D* pxTex)
 	{
 		m_pxAlbedo = pxTex;

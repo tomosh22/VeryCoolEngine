@@ -7,6 +7,7 @@ namespace VeryCoolEngine {
 		virtual ~Material() {}
 
 		static Material* Create();
+		static Material* Create(const char* szName);
 
 		void SetAlbedo(Texture2D* pxTex);
 		void SetBumpMap(Texture2D* pxTex);

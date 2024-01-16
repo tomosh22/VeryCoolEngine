@@ -275,7 +275,7 @@ namespace VeryCoolEngine {
 				pxMesh->m_xTransform.UpdateRotation();
 				pxMesh->m_xTransform.UpdateMatrix();
 			}
-			GameLoop();
+			GameLoop(_DeltaTime);
 			
 
 			

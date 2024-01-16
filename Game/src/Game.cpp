@@ -26,18 +26,19 @@ namespace VeryCoolEngine {
 
 		//m_pxBlockWorld = new BlockWorld();
 
+		m_xMaterialMap.insert({ "rock2k", Material::Create("rock2k") });
 
-		m_apxAnimatedModels.push_back(new VCEModel("ogre.fbx"));
-		for (Mesh* pxMesh : m_apxAnimatedModels.back()->meshes) {
-			_meshes.push_back(pxMesh);
-		}
-		m_pxAnimation0 = new Animation(std::string("ogre.fbx"), m_apxAnimatedModels.back());
+		AddAnimatedModel("ogre.fbx", Transform({ 0,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
+		));
 
-		m_apxGenericModels.push_back(new VCEModel("barrel.fbx"));
-		for (Mesh* pxMesh : m_apxGenericModels.back()->meshes) {
-			_meshes.push_back(pxMesh);
-		}
+		AddAnimatedModel("otherOgre.fbx", Transform({ 20,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
+		));
 
+		AddStaticModel("barrel.fbx", Transform({ 0,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
+		));
+
+		AddTestMesh("sphereSmooth.obj", m_xMaterialMap.at("rock2k"), Transform({0,0,0}, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
+		));
 		
 		_lights.push_back({
 				50,200,50,100,
@@ -58,16 +59,11 @@ namespace VeryCoolEngine {
 		return;
 	}
 
-	Mesh* Game::AddTestMesh(const char* szFileName, char* szMaterialName, const Transform& xTrans, uint32_t uMeshIndex /*= 0*/)
+	Mesh* Game::AddTestMesh(const char* szFileName, Material* pxMaterial, const Transform& xTrans, uint32_t uMeshIndex /*= 0*/)
 	{
 		Mesh* mesh = Mesh::FromFile(szFileName, uMeshIndex);
 		mesh->SetShader(m_pxMeshShader);
-		mesh->m_pxMaterial = Material::Create();
-		mesh->m_pxMaterial->SetAlbedo(Texture2D::Create((std::string(szMaterialName) + "/diffuse.jpg").c_str(), false));
-		mesh->m_pxMaterial->SetBumpMap(Texture2D::Create((std::string(szMaterialName) + "/normal.jpg").c_str(), false));
-		mesh->m_pxMaterial->SetRoughness(Texture2D::Create((std::string(szMaterialName) + "/roughness.jpg").c_str(), false));
-		mesh->m_pxMaterial->SetMetallic(Texture2D::Create((std::string(szMaterialName) + "/metallic.jpg").c_str(), false));
-		mesh->m_pxMaterial->SetHeightmap(Texture2D::Create((std::string(szMaterialName) + "/height.jpg").c_str(), false));
+		mesh->m_pxMaterial = pxMaterial;
 
 		
 		mesh->m_xTransform = xTrans;
@@ -75,9 +71,34 @@ namespace VeryCoolEngine {
 		mesh->m_xTransform.UpdateMatrix();
 
 		_meshes.push_back(mesh);
+
+		m_apxGenericMeshes.push_back(mesh);
 		return mesh;
 	}
 
+	VCEModel* Game::AddAnimatedModel(const char* szFileName, const Transform& xTrans)
+	{
+		m_apxAnimatedModels.push_back(new VCEModel(szFileName));
+		for (Mesh* pxMesh : m_apxAnimatedModels.back()->meshes) {
+			_meshes.push_back(pxMesh);
+		}
+		VCE_ASSERT(m_apxAnimatedModels.back()->m_pxAnimation != nullptr, "This model doesn't have an animation");
+
+		m_apxAnimatedModels.back()->m_xTransform = xTrans;
+
+		return m_apxAnimatedModels.back();
+	}
+
+	VCEModel* Game::AddStaticModel(const char* szFileName, const Transform& xTrans)
+	{
+		m_apxGenericModels.push_back(new VCEModel(szFileName));
+		for (Mesh* pxMesh : m_apxGenericModels.back()->meshes) {
+			_meshes.push_back(pxMesh);
+		}
+		m_apxGenericModels.back()->m_xTransform = xTrans;
+
+		return m_apxGenericModels.back();
+	}
 	
 
 	
@@ -89,16 +110,13 @@ namespace VeryCoolEngine {
 	
 
 	//declared in Application.h, defined by game
-	void Application::GameLoop() {
+	void Application::GameLoop(float fDt) {
 		Game* game = (Game*)Application::GetInstance();
 
 		
 
 		sceneMutex.lock();
 		scene->Reset();
-
-		m_pxAnimation0->UpdateAnimation(0.01);
-		//m_pxAnimation1->UpdateAnimation(0.01);
 
 		scene->camera = &_Camera;
 		scene->skybox = _pCubemap;
@@ -114,30 +132,30 @@ namespace VeryCoolEngine {
 		scene->m_axPipelineMeshes.insert({ "Skybox", std::vector<Mesh*>() });
 		scene->m_axPipelineMeshes.at("Skybox").push_back(game->m_pxQuadMesh);
 
-		scene->m_axPipelineMeshes.insert({ "Blocks", std::vector<Mesh*>() });
-		scene->m_axPipelineMeshes.at("Blocks").push_back(game->m_pxInstanceMesh);
 
 		scene->m_axPipelineMeshes.insert({ "Meshes", std::vector<Mesh*>() });
-		for (VCEModel* pxModel : m_apxGenericModels)
-			for (Mesh* pxMesh : pxModel->meshes)
+		for (VCEModel* pxModel : m_apxGenericModels) {
+			for (Mesh* pxMesh : pxModel->meshes) {
 				scene->m_axPipelineMeshes.at("Meshes").push_back(pxMesh);
-
-
-		std::vector<glm::mat4>& xAnimMats0 = m_pxAnimation0->GetFinalBoneMatrices();
-		for (Mesh* pxMesh : m_apxAnimatedModels.back()->meshes) {
-			for (uint32_t i = 0; i < pxMesh->m_xBoneMats.size(); i++) {
-				pxMesh->m_xBoneMats.at(i) = xAnimMats0.at(i);
 			}
 		}
+		for (Mesh* pxMesh : m_apxGenericMeshes) {
+			scene->m_axPipelineMeshes.at("Meshes").push_back(pxMesh);
+		}
+		
 		scene->m_axPipelineMeshes.insert({ "SkinnedMeshes", std::vector<Mesh*>() });
-		for(VCEModel* pxModel : m_apxAnimatedModels)
-			for (Mesh* pxMesh : pxModel->meshes)
+		for (VCEModel* pxModel : m_apxAnimatedModels) {
+			pxModel->m_pxAnimation->UpdateAnimation(fDt / 1000.f);
+			std::vector<glm::mat4>& xAnimMats = pxModel->m_pxAnimation->GetFinalBoneMatrices();
+			for (Mesh* pxMesh : pxModel->meshes) {
+				for (uint32_t i = 0; i < pxMesh->m_xBoneMats.size(); i++) {
+					pxMesh->m_xBoneMats.at(i) = xAnimMats.at(i);
+				}
 				scene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(pxMesh);
-		//scene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(m_pxAnimatedMesh0);
-		//scene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(m_pxAnimatedMesh1);
+			}
+		}
 
 		scene->m_axPipelineMeshes.insert({ "GBuffer", std::vector<Mesh*>() });
-
 		for (VCEModel* model : game->m_apxAnimatedModels)
 			for(Mesh* pxMesh : model->meshes)
 			scene->m_axPipelineMeshes.at("GBuffer").push_back(pxMesh);
