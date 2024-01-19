@@ -31,13 +31,17 @@ namespace VeryCoolEngine {
 		AddAnimatedModel("ogre.fbx", Transform({ 0,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
 		));
 
-		AddAnimatedModel("otherOgre.fbx", Transform({ 20,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
+		AddAnimatedModel("otherFish.fbx", Transform({ 20,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
 		));
+
 
 		AddStaticModel("barrel.fbx", Transform({ 0,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
 		));
 
 		AddTestMesh("sphereSmooth.obj", m_xMaterialMap.at("rock2k"), Transform({0,0,0}, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
+		));
+
+		AddTestMesh("plane.obj", m_xMaterialMap.at("rock2k"), Transform({ 0,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(100, 1, 100)
 		));
 		
 		_lights.push_back({

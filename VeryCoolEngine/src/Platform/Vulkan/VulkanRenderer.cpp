@@ -61,7 +61,7 @@ void VulkanRenderer::InitVulkan() {
 	
 	for (Mesh* pMesh : app->_meshes) {
 		pMesh->PlatformInit();
-		pMesh->GetShader()->PlatformInit();
+		//pMesh->GetShader()->PlatformInit();
 		if(pMesh->m_pxMaterial != nullptr)
 			pMesh->m_pxMaterial->PlatformInit();
 	}

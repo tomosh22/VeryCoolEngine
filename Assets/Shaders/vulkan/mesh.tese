@@ -114,7 +114,7 @@ void main(){
 	vec4 worldPos =  vec4(combinedPos , 1);
 	
 	float height = texture(heightMap , _oUV ).x;
-	//worldPos.xyz += _oNormal * height;
+	worldPos.xyz += _oNormal * height * 10;
 	
 	
 	gl_Position = _uViewProjMat * worldPos;
