@@ -26,66 +26,12 @@ namespace VeryCoolEngine {
 #ifdef VCE_DEFERRED_SHADING
 		RendererAPI::s_xGBufferTargetSetup = CreateGBufferTarget();
 #endif
-		m_xTargetSetups.insert({ "RenderToTextureClear", CreateRenderToTextureTargetClear() });
-		m_xTargetSetupPasses.insert({ "RenderToTextureClear" ,TargetSetupToRenderPass(m_xTargetSetups.at("RenderToTextureClear")) });
-		m_xTargetSetupFramebuffers.insert({ "RenderToTextureClear" ,{} });
-		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			m_xTargetSetupFramebuffers.at("RenderToTextureClear").push_back(TargetSetupToFramebuffer(m_xTargetSetups.at("RenderToTextureClear"), m_xTargetSetupPasses.at("RenderToTextureClear"),i));
-		}
 
 
-
-
-		m_xTargetSetups.insert({ "RenderToTextureNoClear", CreateRenderToTextureTargetNoClear() });
-		m_xTargetSetupPasses.insert({ "RenderToTextureNoClear" ,TargetSetupToRenderPass(m_xTargetSetups.at("RenderToTextureNoClear")) });
-		m_xTargetSetupFramebuffers.insert({ "RenderToTextureNoClear" ,{} });
-		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			m_xTargetSetupFramebuffers.at("RenderToTextureNoClear").push_back(TargetSetupToFramebuffer(m_xTargetSetups.at("RenderToTextureNoClear"), m_xTargetSetupPasses.at("RenderToTextureNoClear"), i));
-		}
-
-
-
-
-		m_xTargetSetups.insert({ "CopyToFramebuffer", CreateFramebufferTarget() });
-		m_xTargetSetupPasses.insert({ "CopyToFramebuffer" ,TargetSetupToRenderPass(m_xTargetSetups.at("CopyToFramebuffer")) });
-		m_xTargetSetupFramebuffers.insert({ "CopyToFramebuffer" ,{} });
-		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			m_xTargetSetupFramebuffers.at("CopyToFramebuffer").push_back(TargetSetupToFramebuffer(m_xTargetSetups.at("CopyToFramebuffer"), m_xTargetSetupPasses.at("CopyToFramebuffer"), i));
-		}
-
-
-
-
-
-#ifdef imreworkingrenderpasses
-		//#TODO do this properly, I'm too lazy to move the above to a VulkanRenderPass::BackbufferRenderPass
-		app->m_pxGBufferRenderPass = new VulkanRenderPass();
-		m_device.destroyRenderPass(dynamic_cast<VulkanRenderPass*>(app->m_pxGBufferRenderPass)->m_xRenderPass);
-		dynamic_cast<VulkanRenderPass*>(app->m_pxGBufferRenderPass)->m_xRenderPass = VulkanRenderPass::GBufferRenderPass();
-
-		app->m_pxImguiRenderPass = new VulkanRenderPass();
-		m_device.destroyRenderPass(dynamic_cast<VulkanRenderPass*>(app->m_pxImguiRenderPass)->m_xRenderPass);
-		dynamic_cast<VulkanRenderPass*>(app->m_pxImguiRenderPass)->m_xRenderPass = VulkanRenderPass::ImguiRenderPass();
-
+		InitialiseTargetSetup("RenderToTextureClear", CreateRenderToTextureTargetClear());
+		InitialiseTargetSetup("RenderToTextureNoClear", CreateRenderToTextureTargetNoClear());
+		InitialiseTargetSetup("CopyToFramebuffer", CreateFramebufferTarget());
 		
-
-		
-
-		app->m_pxRenderToTexturePassNoClear = new VulkanRenderPass();
-		m_device.destroyRenderPass(dynamic_cast<VulkanRenderPass*>(app->m_pxRenderToTexturePassNoClear)->m_xRenderPass);
-		dynamic_cast<VulkanRenderPass*>(app->m_pxRenderToTexturePassNoClear)->m_xRenderPass = VulkanRenderPass::RenderToTexturePassNoClear();
-
-		app->m_pxCopyToFramebufferPass = new VulkanRenderPass();
-		m_device.destroyRenderPass(dynamic_cast<VulkanRenderPass*>(app->m_pxCopyToFramebufferPass)->m_xRenderPass);
-		dynamic_cast<VulkanRenderPass*>(app->m_pxCopyToFramebufferPass)->m_xRenderPass = VulkanRenderPass::CopyToFramebufferPass();
-#endif
-
-		
-
-		CreateFrameBuffers();
 #ifdef VCE_USE_EDITOR
 		CreateImguiFrameBuffers();//imgui doesn't use depth
 #endif
@@ -498,6 +444,17 @@ namespace VeryCoolEngine {
 	}
 
 	
+
+	void VulkanRenderer::InitialiseTargetSetup(const char* szName, const RendererAPI::TargetSetup& xTargetSetup)
+	{
+		m_xTargetSetups.insert({ szName,xTargetSetup });
+		m_xTargetSetupPasses.insert({ szName ,TargetSetupToRenderPass(m_xTargetSetups.at(szName)) });
+		m_xTargetSetupFramebuffers.insert({ szName ,{} });
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			m_xTargetSetupFramebuffers.at(szName).push_back(TargetSetupToFramebuffer(m_xTargetSetups.at(szName), m_xTargetSetupPasses.at(szName), i));
+		}
+	}
 
 	RendererAPI::TargetSetup VulkanRenderer::CreateRenderToTextureTargetClear() {
 		Application* app = Application::GetInstance();

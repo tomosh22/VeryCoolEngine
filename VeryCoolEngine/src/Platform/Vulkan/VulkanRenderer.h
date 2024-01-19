@@ -277,6 +277,7 @@ namespace VeryCoolEngine {
 
 			std::unordered_map<std::string, class VulkanPipeline*> m_xPipelines;
 
+			void InitialiseTargetSetup(const char* szName, const RendererAPI::TargetSetup& xTargetSetup);
 
 			std::unordered_map<std::string, RendererAPI::TargetSetup> m_xTargetSetups;
 			std::unordered_map<std::string, VulkanRenderPass*> m_xTargetSetupPasses;
