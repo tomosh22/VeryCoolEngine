@@ -90,7 +90,7 @@ namespace VeryCoolEngine {
 			Usage m_eUsage = Usage::RenderTarget;
 			uint32_t m_uWidth = 0;
 			uint32_t m_uHeight = 0;
-			void* m_pPlatformImageView;
+			std::vector<void*> m_axPlatformTargets;
 		};
 		struct TargetSetup {
 			std::vector<RenderTarget> m_xColourAttachments;
@@ -106,7 +106,7 @@ namespace VeryCoolEngine {
 			virtual void SetVertexBuffer(VertexBuffer* xVertexBuffer, uint32_t uBindPoint = 0) = 0;
 			virtual void SetIndexBuffer(IndexBuffer* xIndexBuffer) = 0;
 			virtual void Draw(uint32_t uNumIndices, uint32_t uNumInstances = 1, uint32_t uVertexOffset = 0, uint32_t uIndexOffset = 0, uint32_t uInstanceOffset = 0) = 0;
-			virtual void SubmitTargetSetup(const TargetSetup& xTargetSetup, bool bClear) = 0;
+			virtual void SubmitTargetSetup(const TargetSetup& xTargetSetup) = 0;
 			virtual void SetPipeline(void* pxPipeline) = 0;
 			virtual void BindTexture(void* pxTexture, uint32_t uBindPoint, uint32_t uSet) = 0;
 			virtual void BindBuffer(void* pxBuffer, uint32_t uBindPoint, uint32_t uSet) = 0;

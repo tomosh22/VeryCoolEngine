@@ -21,6 +21,46 @@ namespace VeryCoolEngine {
 		CreateDepthTexture();
 		CreateDescriptorPool();
 
+		CreateEditorSceneTextures();
+
+#ifdef VCE_DEFERRED_SHADING
+		RendererAPI::s_xGBufferTargetSetup = CreateGBufferTarget();
+#endif
+		m_xTargetSetups.insert({ "RenderToTextureClear", CreateRenderToTextureTargetClear() });
+		m_xTargetSetupPasses.insert({ "RenderToTextureClear" ,TargetSetupToRenderPass(m_xTargetSetups.at("RenderToTextureClear")) });
+		m_xTargetSetupFramebuffers.insert({ "RenderToTextureClear" ,{} });
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			m_xTargetSetupFramebuffers.at("RenderToTextureClear").push_back(TargetSetupToFramebuffer(m_xTargetSetups.at("RenderToTextureClear"), m_xTargetSetupPasses.at("RenderToTextureClear"),i));
+		}
+
+
+
+
+		m_xTargetSetups.insert({ "RenderToTextureNoClear", CreateRenderToTextureTargetNoClear() });
+		m_xTargetSetupPasses.insert({ "RenderToTextureNoClear" ,TargetSetupToRenderPass(m_xTargetSetups.at("RenderToTextureNoClear")) });
+		m_xTargetSetupFramebuffers.insert({ "RenderToTextureNoClear" ,{} });
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			m_xTargetSetupFramebuffers.at("RenderToTextureNoClear").push_back(TargetSetupToFramebuffer(m_xTargetSetups.at("RenderToTextureNoClear"), m_xTargetSetupPasses.at("RenderToTextureNoClear"), i));
+		}
+
+
+
+
+		m_xTargetSetups.insert({ "CopyToFramebuffer", CreateFramebufferTarget() });
+		m_xTargetSetupPasses.insert({ "CopyToFramebuffer" ,TargetSetupToRenderPass(m_xTargetSetups.at("CopyToFramebuffer")) });
+		m_xTargetSetupFramebuffers.insert({ "CopyToFramebuffer" ,{} });
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			m_xTargetSetupFramebuffers.at("CopyToFramebuffer").push_back(TargetSetupToFramebuffer(m_xTargetSetups.at("CopyToFramebuffer"), m_xTargetSetupPasses.at("CopyToFramebuffer"), i));
+		}
+
+
+
+
+
+#ifdef imreworkingrenderpasses
 		//#TODO do this properly, I'm too lazy to move the above to a VulkanRenderPass::BackbufferRenderPass
 		app->m_pxGBufferRenderPass = new VulkanRenderPass();
 		m_device.destroyRenderPass(dynamic_cast<VulkanRenderPass*>(app->m_pxGBufferRenderPass)->m_xRenderPass);
@@ -30,9 +70,9 @@ namespace VeryCoolEngine {
 		m_device.destroyRenderPass(dynamic_cast<VulkanRenderPass*>(app->m_pxImguiRenderPass)->m_xRenderPass);
 		dynamic_cast<VulkanRenderPass*>(app->m_pxImguiRenderPass)->m_xRenderPass = VulkanRenderPass::ImguiRenderPass();
 
-		app->m_pxRenderToTexturePass = new VulkanRenderPass();
-		m_device.destroyRenderPass(dynamic_cast<VulkanRenderPass*>(app->m_pxRenderToTexturePass)->m_xRenderPass);
-		dynamic_cast<VulkanRenderPass*>(app->m_pxRenderToTexturePass)->m_xRenderPass = VulkanRenderPass::RenderToTexturePass();
+		
+
+		
 
 		app->m_pxRenderToTexturePassNoClear = new VulkanRenderPass();
 		m_device.destroyRenderPass(dynamic_cast<VulkanRenderPass*>(app->m_pxRenderToTexturePassNoClear)->m_xRenderPass);
@@ -41,15 +81,14 @@ namespace VeryCoolEngine {
 		app->m_pxCopyToFramebufferPass = new VulkanRenderPass();
 		m_device.destroyRenderPass(dynamic_cast<VulkanRenderPass*>(app->m_pxCopyToFramebufferPass)->m_xRenderPass);
 		dynamic_cast<VulkanRenderPass*>(app->m_pxCopyToFramebufferPass)->m_xRenderPass = VulkanRenderPass::CopyToFramebufferPass();
+#endif
 
-		CreateEditorSceneTextures();
+		
 
 		CreateFrameBuffers();
 #ifdef VCE_USE_EDITOR
 		CreateImguiFrameBuffers();//imgui doesn't use depth
 #endif
-		CreateRenderToTextureFrameBuffers();
-		CreateRenderToTextureFrameBuffersNoClear();
 
 #ifdef VCE_DEFERRED_SHADING
 		SetupDeferredShading();
@@ -274,7 +313,7 @@ namespace VeryCoolEngine {
 			vk::ImageView axAttachments[]{
 				imageView,
 			};
-			framebufferInfo.renderPass = dynamic_cast<VulkanRenderPass*>(app->m_pxCopyToFramebufferPass)->m_xRenderPass;
+			framebufferInfo.renderPass = m_xTargetSetupPasses.at("CopyToFramebuffer")->m_xRenderPass;
 			framebufferInfo.attachmentCount = 1;
 			framebufferInfo.pAttachments = axAttachments;
 			framebufferInfo.width = m_swapChainExtent.width;
@@ -433,22 +472,25 @@ namespace VeryCoolEngine {
 		xColourTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
 		xColourTarget.m_uHeight = m_height;
 		xColourTarget.m_uWidth = m_width;
-		
 		xColourTarget.m_eUsage = RendererAPI::RenderTarget::Usage::Present;
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			xColourTarget.m_axPlatformTargets.push_back(&m_swapChainImageViews[i]);
+		}
 
 		xDepthStencilTarget.m_eFormat = RendererAPI::RenderTarget::Format::D32Sfloat;
 		xDepthStencilTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Clear;
 		xDepthStencilTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
 		xDepthStencilTarget.m_uHeight = m_height;
 		xDepthStencilTarget.m_uWidth = m_width;
-		xDepthStencilTarget.m_pPlatformImageView = &m_xDepthTexture->m_xImageView;
+		xDepthStencilTarget.m_axPlatformTargets = { &m_xDepthTexture->m_xImageView };
 
 		xTargetSetup.m_xColourAttachments.push_back(xColourTarget);
-		xTargetSetup.m_xDepthStencil = xDepthStencilTarget;
+		//xTargetSetup.m_xDepthStencil = xDepthStencilTarget;
 
 		xTargetSetup.m_strName = "CopyToFramebuffer";
 
-		m_xTargetSetupPasses.insert({ "CopyToFramebuffer" ,dynamic_cast<VulkanRenderPass*>(app->m_pxCopyToFramebufferPass)->m_xRenderPass });
+		m_xTargetSetupPasses.insert({ "CopyToFramebuffer" ,TargetSetupToRenderPass(xTargetSetup) });
 
 		m_xTargetSetupFramebuffers.insert({ "CopyToFramebuffer" ,m_swapChainFramebuffers });
 
@@ -457,7 +499,7 @@ namespace VeryCoolEngine {
 
 	
 
-	RendererAPI::TargetSetup VulkanRenderer::CreateRenderToTextureTarget() {
+	RendererAPI::TargetSetup VulkanRenderer::CreateRenderToTextureTargetClear() {
 		Application* app = Application::GetInstance();
 		RendererAPI::TargetSetup xTargetSetup;
 		RendererAPI::RenderTarget xColourTarget;
@@ -468,26 +510,59 @@ namespace VeryCoolEngine {
 		xColourTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
 		xColourTarget.m_uHeight = m_height;
 		xColourTarget.m_uWidth = m_width;
-
 		xColourTarget.m_eUsage = RendererAPI::RenderTarget::Usage::ShaderRead;
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			xColourTarget.m_axPlatformTargets.push_back(&m_apxEditorSceneTexs[i]->m_xImageView);
+		}
 
 		xDepthStencilTarget.m_eFormat = RendererAPI::RenderTarget::Format::D32Sfloat;
 		xDepthStencilTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Clear;
 		xDepthStencilTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
 		xDepthStencilTarget.m_uHeight = m_height;
 		xDepthStencilTarget.m_uWidth = m_width;
-		xDepthStencilTarget.m_pPlatformImageView = &m_xDepthTexture->m_xImageView;
+		xDepthStencilTarget.m_axPlatformTargets = { &m_xDepthTexture->m_xImageView };
 
 		xTargetSetup.m_xColourAttachments.push_back(xColourTarget);
 		xTargetSetup.m_xDepthStencil = xDepthStencilTarget;
 
-		xTargetSetup.m_strName = "RenderToTexture";
+		xTargetSetup.m_strName = "RenderToTextureClear";
 
-		m_xTargetSetupPasses.insert({ "RenderToTexture" ,dynamic_cast<VulkanRenderPass*>(app->m_pxRenderToTexturePass)->m_xRenderPass });
-		m_xTargetSetupPasses.insert({ "RenderToTextureNoClear" ,dynamic_cast<VulkanRenderPass*>(app->m_pxRenderToTexturePassNoClear)->m_xRenderPass });
+		
 
-		m_xTargetSetupFramebuffers.insert({ "RenderToTexture" ,m_axRenderToTextureFramebuffers });
-		m_xTargetSetupFramebuffers.insert({ "RenderToTextureNoClear" ,m_axRenderToTextureFramebuffersNoClear });
+		return xTargetSetup;
+	}
+
+	RendererAPI::TargetSetup VulkanRenderer::CreateRenderToTextureTargetNoClear() {
+		Application* app = Application::GetInstance();
+		RendererAPI::TargetSetup xTargetSetup;
+		RendererAPI::RenderTarget xColourTarget;
+		RendererAPI::RenderTarget xDepthStencilTarget;
+
+		xColourTarget.m_eFormat = RendererAPI::RenderTarget::Format::B8G8R8A8Srgb;
+		xColourTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Load;
+		xColourTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
+		xColourTarget.m_uHeight = m_height;
+		xColourTarget.m_uWidth = m_width;
+		xColourTarget.m_eUsage = RendererAPI::RenderTarget::Usage::ShaderRead;
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			xColourTarget.m_axPlatformTargets.push_back(&m_apxEditorSceneTexs[i]->m_xImageView);
+		}
+
+		xDepthStencilTarget.m_eFormat = RendererAPI::RenderTarget::Format::D32Sfloat;
+		xDepthStencilTarget.m_eLoadAction = RendererAPI::RenderTarget::LoadAction::Load;
+		xDepthStencilTarget.m_eStoreAction = RendererAPI::RenderTarget::StoreAction::Store;
+		xDepthStencilTarget.m_uHeight = m_height;
+		xDepthStencilTarget.m_uWidth = m_width;
+		xDepthStencilTarget.m_axPlatformTargets = { &m_xDepthTexture->m_xImageView };
+
+		xTargetSetup.m_xColourAttachments.push_back(xColourTarget);
+		xTargetSetup.m_xDepthStencil = xDepthStencilTarget;
+
+		xTargetSetup.m_strName = "RenderToTextureNoClear";
+
+
 
 		return xTargetSetup;
 	}
@@ -895,7 +970,6 @@ namespace VeryCoolEngine {
 		m_xTargetSetupFramebuffers.clear();
 		m_xTargetSetupPasses.clear();
 		CreateFramebufferTarget();
-		CreateRenderToTextureTarget();
 
 		
 #ifdef VCE_DEFERRED_SHADING
@@ -956,7 +1030,7 @@ namespace VeryCoolEngine {
 	void VulkanRenderer::BeginBackbufferRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex) {
 		Application* app = Application::GetInstance();
 		vk::RenderPassBeginInfo renderPassInfo{};
-		renderPassInfo.renderPass = m_xTargetSetupPasses.at("CopyToFramebuffer");
+		renderPassInfo.renderPass = m_xTargetSetupPasses.at("CopyToFramebuffer")->m_xRenderPass;
 		renderPassInfo.framebuffer = m_xTargetSetupFramebuffers.at("CopyToFramebuffer").at(m_currentFrame);
 		renderPassInfo.renderArea.offset = vk::Offset2D(0, 0);
 		renderPassInfo.renderArea.extent = m_swapChainExtent;
@@ -1087,5 +1161,161 @@ namespace VeryCoolEngine {
 
 		xCmdBuffer.setViewport(0, 1, &viewport);
 		xCmdBuffer.setScissor(0, 1, &scissor);
+	}
+
+	vk::Format ConvertToVkFormat(RendererAPI::RenderTarget::Format eFormat) {
+		switch (eFormat) {
+		case RendererAPI::RenderTarget::Format::B8G8R8A8Srgb:
+			return vk::Format::eB8G8R8A8Srgb;
+		case RendererAPI::RenderTarget::Format::B8G8R8A8Unorm:
+			return vk::Format::eB8G8R8A8Unorm;
+		case RendererAPI::RenderTarget::Format::D32Sfloat:
+			return vk::Format::eD32Sfloat;
+		default:
+			VCE_ASSERT(false, "Invalid format");
+		}
+	}
+
+	vk::AttachmentLoadOp ConvertToVkLoadAction(RendererAPI::RenderTarget::LoadAction eAction) {
+		switch (eAction) {
+		case RendererAPI::RenderTarget::LoadAction::DontCare:
+			return vk::AttachmentLoadOp::eDontCare;
+		case RendererAPI::RenderTarget::LoadAction::Clear:
+			return vk::AttachmentLoadOp::eClear;
+		case RendererAPI::RenderTarget::LoadAction::Load:
+			return vk::AttachmentLoadOp::eLoad;
+		default:
+			VCE_ASSERT(false, "Invalid action");
+		}
+	}
+
+	vk::AttachmentStoreOp ConvertToVkStoreAction(RendererAPI::RenderTarget::StoreAction eAction) {
+		switch (eAction) {
+		case RendererAPI::RenderTarget::StoreAction::DontCare:
+			return vk::AttachmentStoreOp::eDontCare;
+		case RendererAPI::RenderTarget::StoreAction::Store:
+			return vk::AttachmentStoreOp::eStore;
+		default:
+			VCE_ASSERT(false, "Invalid action");
+		}
+	}
+
+	vk::ImageLayout ConvertToVkTargetUsage(RendererAPI::RenderTarget::Usage eUsage) {
+		switch (eUsage) {
+		case RendererAPI::RenderTarget::Usage::RenderTarget:
+			return vk::ImageLayout::eColorAttachmentOptimal;
+		case RendererAPI::RenderTarget::Usage::ShaderRead:
+			return vk::ImageLayout::eShaderReadOnlyOptimal;
+		case RendererAPI::RenderTarget::Usage::Present:
+			return vk::ImageLayout::ePresentSrcKHR;
+		default:
+			VCE_ASSERT(false, "Invalid usage");
+		}
+	}
+
+	VulkanRenderPass* VulkanRenderer::TargetSetupToRenderPass(const RendererAPI::TargetSetup& xTargetSetup)
+	{
+		const uint32_t uNumColourAttachments = xTargetSetup.m_xColourAttachments.size();
+		std::vector<vk::AttachmentDescription> xAttachmentDescs(uNumColourAttachments);
+		std::vector<vk::AttachmentReference> xAttachmentRefs(uNumColourAttachments);
+		for (uint32_t i = 0; i < uNumColourAttachments; i++)
+		{
+			const RendererAPI::RenderTarget& xTarget = xTargetSetup.m_xColourAttachments.at(i);
+			xAttachmentDescs.at(i)
+				.setFormat(ConvertToVkFormat(xTarget.m_eFormat))
+				.setSamples(vk::SampleCountFlagBits::e1)
+				.setLoadOp(ConvertToVkLoadAction(xTarget.m_eLoadAction))
+				.setStoreOp(ConvertToVkStoreAction(xTarget.m_eStoreAction))
+				.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+				.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+				.setInitialLayout(xTarget.m_eLoadAction == RendererAPI::RenderTarget::LoadAction::Load ? vk::ImageLayout::eShaderReadOnlyOptimal : vk::ImageLayout::eUndefined) //TODO: make this a parameter
+				.setFinalLayout(ConvertToVkTargetUsage(xTarget.m_eUsage));
+
+			xAttachmentRefs.at(i)
+				.setAttachment(i)
+				.setLayout(vk::ImageLayout::eColorAttachmentOptimal);
+		}
+
+		//should probably have a better way of checking for existence of depth/stencil target
+		bool bHasDepth = xTargetSetup.m_xDepthStencil.m_eFormat != RendererAPI::RenderTarget::Format::None;
+		vk::AttachmentDescription xDepthStencilAttachment;
+		vk::AttachmentReference xDepthStencilAttachmentRef;
+		if (bHasDepth) {
+			xDepthStencilAttachment = vk::AttachmentDescription()
+				.setFormat(ConvertToVkFormat(xTargetSetup.m_xDepthStencil.m_eFormat))
+				.setSamples(vk::SampleCountFlagBits::e1)
+				.setLoadOp(ConvertToVkLoadAction(xTargetSetup.m_xDepthStencil.m_eLoadAction))
+				.setStoreOp(ConvertToVkStoreAction(xTargetSetup.m_xDepthStencil.m_eStoreAction))
+				.setStencilLoadOp(ConvertToVkLoadAction(xTargetSetup.m_xDepthStencil.m_eLoadAction))
+				.setStencilStoreOp(ConvertToVkStoreAction(xTargetSetup.m_xDepthStencil.m_eStoreAction))
+				.setInitialLayout(xTargetSetup.m_xDepthStencil.m_eLoadAction == RendererAPI::RenderTarget::LoadAction::Load ? vk::ImageLayout::eDepthStencilAttachmentOptimal : vk::ImageLayout::eUndefined)
+				.setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+			xDepthStencilAttachmentRef = vk::AttachmentReference()
+				.setAttachment(uNumColourAttachments)
+				.setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+			xAttachmentDescs.push_back(xDepthStencilAttachment);
+			xAttachmentRefs.push_back(xDepthStencilAttachmentRef);
+		}
+
+		vk::SubpassDescription xSubpass = vk::SubpassDescription()
+			.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+			.setColorAttachmentCount(uNumColourAttachments)
+			.setPColorAttachments(xAttachmentRefs.data());
+		if (bHasDepth)
+			xSubpass.setPDepthStencilAttachment(&xDepthStencilAttachmentRef);
+
+		vk::SubpassDependency xDependency = vk::SubpassDependency()
+			.setSrcSubpass(VK_SUBPASS_EXTERNAL)
+			.setDstSubpass(0)
+			.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests)
+			.setSrcAccessMask(vk::AccessFlagBits::eNone)
+			.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests)
+			.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite);
+
+		vk::RenderPassCreateInfo xRenderPassInfo = vk::RenderPassCreateInfo()
+			.setAttachmentCount(xAttachmentDescs.size())
+			.setPAttachments(xAttachmentDescs.data())
+			.setSubpassCount(1)
+			.setPSubpasses(&xSubpass)
+			.setDependencyCount(1)
+			.setPDependencies(&xDependency);
+
+		VulkanRenderPass* pxRet = new VulkanRenderPass;
+		pxRet->m_xRenderPass = m_device.createRenderPass(xRenderPassInfo);
+
+		return pxRet;
+	}
+
+	vk::Framebuffer VulkanRenderer::TargetSetupToFramebuffer(const RendererAPI::TargetSetup& xTargetSetup, VulkanRenderPass* pxPass, uint32_t uFrameIndex)
+	{
+		bool bHasDepth = xTargetSetup.m_xDepthStencil.m_eFormat != RendererAPI::RenderTarget::Format::None;
+		const uint32_t uNumColourAttachments = xTargetSetup.m_xColourAttachments.size();
+		const uint32_t uNumAttachments = bHasDepth ? uNumColourAttachments + 1 : uNumColourAttachments;
+
+		vk::FramebufferCreateInfo framebufferInfo{};
+
+		vk::ImageView* axAttachments = new vk::ImageView[uNumAttachments];
+		for (uint32_t i = 0; i < uNumColourAttachments; i++) {
+			axAttachments[i] = *reinterpret_cast<vk::ImageView*>(xTargetSetup.m_xColourAttachments[i].m_axPlatformTargets[uFrameIndex]);
+		}
+		if (bHasDepth)
+			axAttachments[uNumAttachments - 1] = *reinterpret_cast<vk::ImageView*>(xTargetSetup.m_xDepthStencil.m_axPlatformTargets[0]);
+
+		framebufferInfo.renderPass = pxPass->m_xRenderPass;
+		framebufferInfo.attachmentCount = uNumAttachments;
+		framebufferInfo.pAttachments = axAttachments;
+
+		//assuming all targets are same resolution
+		framebufferInfo.width = xTargetSetup.m_xColourAttachments[0].m_uWidth;
+		framebufferInfo.height = xTargetSetup.m_xColourAttachments[0].m_uHeight;
+
+		framebufferInfo.layers = 1;
+
+		//is this how std::move works?
+		vk::Framebuffer xFrameBuffer = std::move(m_device.createFramebuffer(framebufferInfo));
+		delete[] axAttachments;
+		return xFrameBuffer;
 	}
 }

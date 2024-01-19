@@ -32,7 +32,7 @@ namespace VeryCoolEngine {
 					DepthCompareFunc::GreaterOrEqual,
 					{ColourFormat::BGRA8_sRGB},
 					DepthFormat::D32_SFloat,
-					&app->m_pxRenderToTexturePass,
+					"Blocks",//just a placeholder, i dont really care about this anymore
 					false,
 					false
 					)

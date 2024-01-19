@@ -125,7 +125,7 @@ namespace VeryCoolEngine {
 					DepthCompareFunc::GreaterOrEqual,
 					{ColourFormat::BGRA8_sRGB},
 					DepthFormat::D32_SFloat,
-					&m_pxRenderToTexturePass,
+					"RenderToTextureClear",
 					false,
 					false,
 					{{3,0}}
@@ -149,7 +149,7 @@ namespace VeryCoolEngine {
 					DepthCompareFunc::GreaterOrEqual,
 					{ColourFormat::BGRA8_sRGB},
 					DepthFormat::D32_SFloat,
-					&m_pxRenderToTexturePass,
+					"RenderToTextureNoClear",
 					true,
 					true,
 					{
@@ -173,7 +173,7 @@ namespace VeryCoolEngine {
 					DepthCompareFunc::GreaterOrEqual,
 					{ColourFormat::BGRA8_sRGB},
 					DepthFormat::D32_SFloat,
-					&m_pxRenderToTexturePass,
+					"RenderToTextureNoClear",
 					true,
 					false,
 					{
@@ -198,7 +198,7 @@ namespace VeryCoolEngine {
 					DepthCompareFunc::GreaterOrEqual,
 					{ColourFormat::BGRA8_sRGB},
 					DepthFormat::D32_SFloat,
-					&m_pxCopyToFramebufferPass,
+					"CopyToFramebuffer",
 					false,
 					false,
 					{

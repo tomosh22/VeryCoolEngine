@@ -39,11 +39,7 @@ VulkanRenderer::VulkanRenderer() {
 
 
 
-#ifdef VCE_DEFERRED_SHADING
-	RendererAPI::s_xGBufferTargetSetup = CreateGBufferTarget();
-#endif
-	m_xTargetSetups.insert({ "RenderToTexture", CreateRenderToTextureTarget() });
-	m_xTargetSetups.insert({ "CopyToFramebuffer", CreateFramebufferTarget() });
+
 }
 
 void VulkanRenderer::InitWindow() {
@@ -174,7 +170,7 @@ void VulkanRenderer::CopyToFramebuffer() {
 
 	m_pxCopyToFramebufferCommandBuffer->BeginRecording();
 
-	m_pxCopyToFramebufferCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("CopyToFramebuffer"), true);
+	m_pxCopyToFramebufferCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("CopyToFramebuffer"));
 
 	m_pxCopyToFramebufferCommandBuffer->SetPipeline(m_xPipelines.at("CopyToFramebuffer"));
 
@@ -210,7 +206,7 @@ void VulkanRenderer::DrawSkybox() {
 
 	m_pxSkyboxCommandBuffer->BeginRecording();
 
-	m_pxSkyboxCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTexture"), false);
+	m_pxSkyboxCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTextureClear"));
 
 	VulkanPipeline* pxSkyboxPipeline = m_xPipelines.at("Skybox");
 	m_pxSkyboxCommandBuffer->SetPipeline(&pxSkyboxPipeline->m_xPipeline);
@@ -232,7 +228,7 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 
 	m_pxOpaqueMeshesCommandBuffer->BeginRecording();
 
-	m_pxOpaqueMeshesCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTexture"), true);
+	m_pxOpaqueMeshesCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTextureNoClear"));
 
 
 	m_pxOpaqueMeshesCommandBuffer->SetPipeline(&m_xPipelines.at("Meshes")->m_xPipeline);
@@ -280,7 +276,7 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 
 	m_pxSkinnedMeshesCommandBuffer->BeginRecording();
 
-	m_pxSkinnedMeshesCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTexture"), false);
+	m_pxSkinnedMeshesCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTextureNoClear"));
 
 
 	m_pxSkinnedMeshesCommandBuffer->SetPipeline(&m_xPipelines.at("SkinnedMeshes")->m_xPipeline);
@@ -346,11 +342,13 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 		return;
 	}
 
+	DrawSkybox();
+
 	DrawOpaqueMeshes();
 
 	DrawSkinnedMeshes();
 
-	DrawSkybox();
+	
 
 	CopyToFramebuffer();
 	

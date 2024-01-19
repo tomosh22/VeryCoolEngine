@@ -43,6 +43,7 @@ namespace VeryCoolEngine {
 			
 			friend class ImGuiLayer;
 			friend class VulkanCommandBuffer;
+			friend class VulkanPipelineBuilder;
 
 			VulkanRenderer();
 
@@ -237,6 +238,10 @@ namespace VeryCoolEngine {
 			void BeginImguiRenderPass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex);//imgui doesn't use depth
 			void BeginRenderToTexturePass(vk::CommandBuffer& xCmdBuffer, uint32_t uImageIndex);
 
+
+			VulkanRenderPass* TargetSetupToRenderPass(const RendererAPI::TargetSetup& xTargetSetup);
+			vk::Framebuffer TargetSetupToFramebuffer(const RendererAPI::TargetSetup& xTargetSetup, VulkanRenderPass* pxPass, uint32_t uFrameIndex);
+
 #if DEBUG
 			bool CheckValidationLayerSupport();
 #endif
@@ -274,10 +279,12 @@ namespace VeryCoolEngine {
 
 
 			std::unordered_map<std::string, RendererAPI::TargetSetup> m_xTargetSetups;
-			std::unordered_map<std::string, vk::RenderPass> m_xTargetSetupPasses;
+			std::unordered_map<std::string, VulkanRenderPass*> m_xTargetSetupPasses;
 			std::unordered_map<std::string, std::vector<vk::Framebuffer>> m_xTargetSetupFramebuffers;
 			
-			RendererAPI::TargetSetup CreateRenderToTextureTarget();
+			RendererAPI::TargetSetup CreateRenderToTextureTargetClear();
+			RendererAPI::TargetSetup CreateRenderToTextureTargetNoClear();
+
 			RendererAPI::TargetSetup CreateFramebufferTarget();
 
 #ifdef VCE_DEFERRED_SHADING

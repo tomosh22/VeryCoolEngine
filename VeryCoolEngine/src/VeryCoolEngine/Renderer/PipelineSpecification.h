@@ -54,7 +54,7 @@ namespace VeryCoolEngine {
 		DepthCompareFunc m_eDepthCompareFunc;
 		std::vector<ColourFormat> m_aeColourFormats;
 		DepthFormat m_eDepthFormat;
-		RenderPass** m_pxRenderPass;
+		std::string m_strRenderPassName;
 		bool m_bUsePushConstants;
 		bool m_bUseTesselation;
 

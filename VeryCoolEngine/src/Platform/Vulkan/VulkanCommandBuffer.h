@@ -12,7 +12,7 @@ namespace VeryCoolEngine {
 		void SetVertexBuffer(VertexBuffer* xVertexBuffer, uint32_t uBindPoint = 0) override;
 		void SetIndexBuffer(IndexBuffer* xIndexBuffer) override;
 		void Draw(uint32_t uNumIndices, uint32_t uNumInstances = 1, uint32_t uVertexOffset = 0, uint32_t uIndexOffset = 0, uint32_t uInstanceOffset = 0) override;
-		void SubmitTargetSetup(const RendererAPI::TargetSetup& xTargetSetup, bool bClear) override;
+		void SubmitTargetSetup(const RendererAPI::TargetSetup& xTargetSetup) override;
 		void SetPipeline(void* pxPipeline) override;
 		void BindTexture(void* pxTexture, uint32_t uBindPoint, uint32_t uSet) override;
 		void BindBuffer(void* pxBuffer, uint32_t uBindPoint, uint32_t uSet) override;

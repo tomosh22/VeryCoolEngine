@@ -323,7 +323,7 @@ namespace VeryCoolEngine {
 		xBuilder = xBuilder.WithDepthState(VceCompareFuncToVkCompareFunc(spec.m_eDepthCompareFunc), spec.m_bDepthTestEnabled, spec.m_bDepthWriteEnabled, false);
 		xBuilder = xBuilder.WithColourFormats(spec.m_aeColourFormats);
 		xBuilder = xBuilder.WithDepthFormat(vk::Format::eD32Sfloat);
-		xBuilder = xBuilder.WithPass(dynamic_cast<VulkanRenderPass*>(*spec.m_pxRenderPass)->m_xRenderPass);
+		xBuilder = xBuilder.WithPass(pxRenderer->m_xTargetSetupPasses.at(spec.m_strRenderPassName.c_str())->m_xRenderPass);
 
 		DescriptorThings xDescThings = HandleDescriptorsNew(spec, xBuilder);
 
