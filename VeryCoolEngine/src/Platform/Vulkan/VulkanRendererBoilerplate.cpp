@@ -31,6 +31,8 @@ namespace VeryCoolEngine {
 		InitialiseTargetSetup("RenderToTextureClear", CreateRenderToTextureTargetClear());
 		InitialiseTargetSetup("RenderToTextureNoClear", CreateRenderToTextureTargetNoClear());
 		InitialiseTargetSetup("CopyToFramebuffer", CreateFramebufferTarget());
+
+		app->m_pxImguiRenderPass = VulkanRenderPass::ImguiRenderPass();
 		
 #ifdef VCE_USE_EDITOR
 		CreateImguiFrameBuffers();//imgui doesn't use depth
@@ -250,33 +252,6 @@ namespace VeryCoolEngine {
 		}
 	}
 
-	void VulkanRenderer::CreateFrameBuffers() {
-		Application* app = Application::GetInstance();
-		m_swapChainFramebuffers.resize(m_swapChainImageViews.size());
-		int swapchainIndex = 0;
-		for (vk::ImageView imageView : m_swapChainImageViews) {
-			vk::FramebufferCreateInfo framebufferInfo{};
-			vk::ImageView axAttachments[]{
-				imageView,
-			};
-			framebufferInfo.renderPass = m_xTargetSetupPasses.at("CopyToFramebuffer")->m_xRenderPass;
-			framebufferInfo.attachmentCount = 1;
-			framebufferInfo.pAttachments = axAttachments;
-			framebufferInfo.width = m_swapChainExtent.width;
-			framebufferInfo.height = m_swapChainExtent.height;
-			framebufferInfo.layers = 1;
-			m_swapChainFramebuffers[swapchainIndex++] = m_device.createFramebuffer(framebufferInfo);
-
-
-			TextureDescriptorSpecification xTexSpec;
-			xTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
-			xTexSpec.m_bJustFragment = true;
-			xTexSpec.m_bBindless = false;
-			vk::DescriptorSetLayout xLayout = VulkanDescriptorSetLayoutBuilder::FromSpecification(xTexSpec);
-			m_axFramebufferTexDescSet.emplace_back(CreateDescriptorSet(xLayout, m_descriptorPool));
-
-		}
-	}
 
 	void VulkanRenderer::CreateRenderToTextureFrameBuffers() {
 		Application* app = Application::GetInstance();
@@ -328,9 +303,35 @@ namespace VeryCoolEngine {
 	}
 
 	void VulkanRenderer::CreateImguiFrameBuffers() {
+
 		Application* app = Application::GetInstance();
-		m_axImguiFramebuffers.resize(m_swapChainImageViews.size());
+		m_swapChainFramebuffers.resize(m_swapChainImageViews.size());
 		int swapchainIndex = 0;
+		for (vk::ImageView imageView : m_swapChainImageViews) {
+			vk::FramebufferCreateInfo framebufferInfo{};
+			vk::ImageView axAttachments[]{
+				imageView,
+			};
+			framebufferInfo.renderPass = m_xTargetSetupPasses.at("CopyToFramebuffer")->m_xRenderPass;
+			framebufferInfo.attachmentCount = 1;
+			framebufferInfo.pAttachments = axAttachments;
+			framebufferInfo.width = m_swapChainExtent.width;
+			framebufferInfo.height = m_swapChainExtent.height;
+			framebufferInfo.layers = 1;
+			m_swapChainFramebuffers[swapchainIndex++] = m_device.createFramebuffer(framebufferInfo);
+
+
+			TextureDescriptorSpecification xTexSpec;
+			xTexSpec.m_aeSamplerStages.push_back({ nullptr, ShaderStageFragment });
+			xTexSpec.m_bJustFragment = true;
+			xTexSpec.m_bBindless = false;
+			vk::DescriptorSetLayout xLayout = VulkanDescriptorSetLayoutBuilder::FromSpecification(xTexSpec);
+			m_axFramebufferTexDescSet.emplace_back(CreateDescriptorSet(xLayout, m_descriptorPool));
+
+		}
+
+		m_axImguiFramebuffers.resize(m_swapChainImageViews.size());
+		swapchainIndex = 0;
 		for (vk::ImageView imageView : m_swapChainImageViews) {
 			vk::FramebufferCreateInfo framebufferInfo{};
 			vk::ImageView axAttachments[1]{ imageView };
@@ -918,11 +919,12 @@ namespace VeryCoolEngine {
 		m_apxEditorSceneTexs.clear();
 		CreateEditorSceneTextures();
 
-		CreateFrameBuffers();
-
 		CreateRenderToTextureFrameBuffers();
 		CreateRenderToTextureFrameBuffersNoClear();
+
+#ifdef VCE_USE_EDITOR
 		CreateImguiFrameBuffers();
+#endif
 
 		m_xTargetSetupFramebuffers.clear();
 		m_xTargetSetupPasses.clear();

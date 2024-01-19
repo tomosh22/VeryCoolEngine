@@ -199,7 +199,6 @@ namespace VeryCoolEngine {
 			void CreateDepthTexture();
 
 
-			void CreateFrameBuffers();
 			void CreateImguiFrameBuffers();//imgui doesn't use depth buffer
 			void CreateGBufferFrameBuffers();
 			void CreateRenderToTextureFrameBuffers();

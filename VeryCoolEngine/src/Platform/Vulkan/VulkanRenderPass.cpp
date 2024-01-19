@@ -95,7 +95,7 @@ namespace VeryCoolEngine {
 		return xDevice.createRenderPass(renderPassInfo);
 	}
 
-	vk::RenderPass VulkanRenderPass::ImguiRenderPass()
+	VulkanRenderPass* VulkanRenderPass::ImguiRenderPass()
 	{
 		vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
 
@@ -138,7 +138,11 @@ namespace VeryCoolEngine {
 			.setPSubpasses(&subpass)
 			.setDependencyCount(1)
 			.setPDependencies(&dependency);
-		return xDevice.createRenderPass(renderPassInfo);
+
+		VulkanRenderPass* pxRet = new VulkanRenderPass;
+		pxRet->m_xRenderPass = xDevice.createRenderPass(renderPassInfo);
+
+		return pxRet;
 	}
 
 	vk::RenderPass VulkanRenderPass::RenderToTexturePass()

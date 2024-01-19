@@ -172,7 +172,8 @@ namespace VeryCoolEngine {
 		}
 
 		ImGui::Begin("Image");
-		vk::DescriptorSet xSet = VulkanRenderer::GetInstance()->m_axFramebufferTexDescSet[VulkanRenderer::GetInstance()->m_currentFrame];
+		std::vector<vk::DescriptorSet>& xSets = VulkanRenderer::GetInstance()->m_axFramebufferTexDescSet;
+		vk::DescriptorSet xSet = xSets[VulkanRenderer::GetInstance()->m_currentFrame];
 		ImGui::Image(xSet, ImVec2(VCE_GAME_WIDTH, VCE_GAME_HEIGHT));
 		ImGui::End();
 
