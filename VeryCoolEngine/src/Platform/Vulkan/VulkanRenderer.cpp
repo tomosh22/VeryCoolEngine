@@ -376,6 +376,7 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 		return;
 	}
 
+
 	DrawSkybox();
 
 	DrawOpaqueMeshes();
@@ -383,6 +384,15 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 	DrawSkinnedMeshes();
 
 	DrawFoliage();
+
+#ifdef VCE_USE_EDITOR
+	//TODO: I'm guessing the editor scene textures are being initalised in the wrong format
+	static uint32_t uNumFramesPassed = 0;
+	if (uNumFramesPassed < MAX_FRAMES_IN_FLIGHT) {
+		ImageTransitionBarrier(m_apxEditorSceneTexs[m_currentFrame]->m_xImage, vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eFragmentShader);
+		uNumFramesPassed++;
+	}
+#endif
 
 	CopyToFramebuffer();
 	
