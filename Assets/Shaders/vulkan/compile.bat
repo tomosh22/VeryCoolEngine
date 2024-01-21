@@ -8,6 +8,8 @@
 %VULKAN_SDK%\Bin\glslc.exe meshGBuffer.frag -o meshGBufferFrag.spv
 %VULKAN_SDK%\Bin\glslc.exe mesh.tesc -o meshTesc.spv
 %VULKAN_SDK%\Bin\glslc.exe mesh.tese -o meshTese.spv
+%VULKAN_SDK%\Bin\glslc.exe foliage.vert -o foliageVert.spv
+%VULKAN_SDK%\Bin\glslc.exe foliage.frag -o foliageFrag.spv
 
 
 %VULKAN_SDK%\Bin\glslc.exe copyToFrameBuffer.vert -o copyToFrameBufferVert.spv

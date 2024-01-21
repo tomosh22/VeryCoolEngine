@@ -98,7 +98,7 @@ namespace VeryCoolEngine {
 
 		static Mesh* Create();
 		static Mesh* GenerateGenericHeightmap(uint32_t width, uint32_t height);
-		static Mesh* GenerateQuad();
+		static Mesh* GenerateQuad(float fScale = 1.0f);
 		static Mesh* GenerateVulkanTest();
 
 		static Mesh* FromFile(const std::string& path, uint32_t uMeshIndex = 0, bool swapYZ = false);

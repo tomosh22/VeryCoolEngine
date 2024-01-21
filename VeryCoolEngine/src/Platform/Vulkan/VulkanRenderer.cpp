@@ -35,9 +35,11 @@ VulkanRenderer::VulkanRenderer() {
 	m_pxSkyboxCommandBuffer = new VulkanCommandBuffer;
 	m_pxOpaqueMeshesCommandBuffer = new VulkanCommandBuffer;
 	m_pxSkinnedMeshesCommandBuffer = new VulkanCommandBuffer;
+	m_pxFoliageCommandBuffer = new VulkanCommandBuffer;
 
 
-
+	//TODO: delete me
+	Application::GetInstance()->m_pxFoliageMaterial->PlatformInit();
 
 
 }
@@ -329,6 +331,38 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 	m_pxSkinnedMeshesCommandBuffer->EndRecording();
 }
 
+void VulkanRenderer::DrawFoliage() {
+	Application* app = Application::GetInstance();
+
+	m_pxFoliageCommandBuffer->BeginRecording();
+
+	m_pxFoliageCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTextureNoClear"));
+
+
+	m_pxFoliageCommandBuffer->SetPipeline(&m_xPipelines.at("Foliage")->m_xPipeline);
+
+
+
+	VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
+	m_pxFoliageCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0, 0);
+
+	
+	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(app->m_pxFoliageQuad);
+	m_pxFoliageCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer,0);
+	m_pxFoliageCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxInstanceBuffer,1);
+	m_pxFoliageCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
+
+	VulkanFoliageMaterial* pxVkMaterial = dynamic_cast<VulkanFoliageMaterial*>(app->m_pxFoliageMaterial);
+
+	m_pxFoliageCommandBuffer->m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxFoliageCommandBuffer->m_pxCurrentPipeline->m_xPipelineLayout, 1, 1, &pxVkMaterial->m_xDescSet, 0, nullptr);
+
+	m_pxFoliageCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
+	
+	
+
+	m_pxFoliageCommandBuffer->EndRecording();
+}
+
 void VulkanRenderer::DrawFrame(Scene* scene) {
 	if (m_bShouldResize) {
 		RecreateSwapChain();
@@ -348,7 +382,7 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 
 	DrawSkinnedMeshes();
 
-	
+	DrawFoliage();
 
 	CopyToFramebuffer();
 	

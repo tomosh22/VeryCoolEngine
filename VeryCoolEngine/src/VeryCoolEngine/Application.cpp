@@ -23,6 +23,35 @@ namespace VeryCoolEngine {
 
 		m_pxExampleSkinnedMesh = Mesh::FromFile("ogre.fbx");
 		m_pxExampleMesh = Mesh::FromFile("cubeFlat.obj");
+		m_pxFoliageQuad = Mesh::GenerateQuad(10);
+		m_pxFoliageMaterial = FoliageMaterial::Create("foliage1k");
+
+		m_xTestFoliagePositions = {
+			{40.1,70,0},
+			{39.9,70.25,0.01},
+			{40.1,70.5,0.02},
+			{39.9,70.75,0.03},
+			{40.1,71,0.04},
+			{39.9,71.25,0.05},
+			{40.1,71.5,0.06},
+			{39.9,71.75,0.07}
+		};
+
+
+		m_pxFoliageQuad->m_axInstanceData.push_back(BufferElement(
+			ShaderDataType::Float3,
+			"_aInstancePosition",
+			false,
+			true,
+			1,
+			m_xTestFoliagePositions.data(),
+			m_xTestFoliagePositions.size()
+		));
+
+		m_pxFoliageQuad->m_uNumInstances = m_xTestFoliagePositions.size();
+
+		_meshes.push_back(m_pxFoliageQuad);
+
 		SetupPipelines();
 		
 		
@@ -103,6 +132,7 @@ namespace VeryCoolEngine {
 		m_pxGBufferShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshGBufferFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
 		m_pxCopyToFramebufferShader = Shader::Create("vulkan/copyToFrameBufferVert.spv", "vulkan/copyToFrameBufferFrag.spv");
 		m_pxSkinnedMeshShader = Shader::Create("vulkan/skinnedMeshVert.spv", "vulkan/meshFrag.spv");
+		m_pxFoliageShader = Shader::Create("vulkan/foliageVert.spv", "vulkan/foliageFrag.spv");
 
 		m_pxQuadMesh = Mesh::GenerateQuad();
 		m_pxQuadMesh->SetShader(Shader::Create("vulkan/fullscreenVert.spv", "vulkan/fullscreenFrag.spv"));
@@ -203,6 +233,30 @@ namespace VeryCoolEngine {
 					false,
 					{
 						{0,1}
+					}
+					)
+			});
+
+		m_xPipelineSpecs.insert(
+			{ "Foliage",
+					PipelineSpecification(
+					"Foliage",
+					m_pxFoliageQuad,
+					m_pxFoliageShader,
+					{BlendFactor::SrcAlpha},
+					{BlendFactor::OneMinusSrcAlpha},
+					{true},
+					true,
+					true,
+					DepthCompareFunc::GreaterOrEqual,
+					{ColourFormat::BGRA8_sRGB},
+					DepthFormat::D32_SFloat,
+					"RenderToTextureNoClear",
+					false,
+					false,
+					{
+						{1,0},
+						{0,6}
 					}
 					)
 			});

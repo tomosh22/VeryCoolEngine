@@ -94,9 +94,11 @@ namespace VeryCoolEngine {
 		RenderPass* m_pxCopyToFramebufferPass;
 
 
-		Mesh* m_pxAnimationTestMesh;
-
 		Texture2D* m_pxBlankTexture2D;
+
+		Mesh* m_pxFoliageQuad;
+		std::vector<glm::vec3> m_xTestFoliagePositions;
+		FoliageMaterial* m_pxFoliageMaterial;
 
 		
 		std::unordered_map<std::string, PipelineSpecification> m_xPipelineSpecs;
@@ -143,6 +145,7 @@ namespace VeryCoolEngine {
 		Shader* m_pxSkinnedMeshShader;
 		Shader* m_pxGBufferShader;
 		Shader* m_pxCopyToFramebufferShader;
+		Shader* m_pxFoliageShader;
 
 		Mesh* _pHeightmap;
 		std::vector<RendererAPI::Light> _lights{};

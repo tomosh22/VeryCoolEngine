@@ -127,7 +127,7 @@ namespace VeryCoolEngine {
 		return mesh;
 	}
 	
-	Mesh* Mesh::GenerateQuad() {
+	Mesh* Mesh::GenerateQuad(float fScale /*= 1.0f*/) {
 		Mesh* mesh = Mesh::Create();
 		mesh->m_pxBufferLayout = new BufferLayout();
 		mesh->m_uNumVerts = 4;
@@ -141,6 +141,11 @@ namespace VeryCoolEngine {
 		mesh->m_pxVertexPositions[1] = { 0.5,-0.5,1 };
 		mesh->m_pxVertexPositions[2] = { -0.5,0.5,1 };
 		mesh->m_pxVertexPositions[3] = { -0.5,-0.5,1 };
+
+		mesh->m_pxVertexPositions[0] *= fScale;
+		mesh->m_pxVertexPositions[1] *= fScale;
+		mesh->m_pxVertexPositions[2] *= fScale;
+		mesh->m_pxVertexPositions[3] *= fScale;
 
 		mesh->m_pxUVs[0] = { 1,0 };
 		mesh->m_pxUVs[1] = { 1,1 };

@@ -43,4 +43,46 @@ namespace VeryCoolEngine {
 	}
 
 
+
+	FoliageMaterial* FoliageMaterial::Create() {
+#ifdef VCE_VULKAN
+		return new VulkanFoliageMaterial();
+#endif
+	}
+
+	FoliageMaterial* FoliageMaterial::Create(const char* szName) {
+#ifdef VCE_VULKAN
+		return new VulkanFoliageMaterial(szName);
+#endif
+	}
+
+	void FoliageMaterial::SetAlbedo(Texture2D* pxTex)
+	{
+		m_pxAlbedo = pxTex;
+	}
+
+	void FoliageMaterial::SetBumpMap(Texture2D* pxTex)
+	{
+		m_pxBumpMap = pxTex;
+	}
+
+	void FoliageMaterial::SetHeightmap(Texture2D* pxTex)
+	{
+		m_pxHeightmapTex = pxTex;
+	}
+
+	void FoliageMaterial::SetRoughness(Texture2D* pxTex)
+	{
+		m_pxRoughnessTex = pxTex;
+	}
+
+	void FoliageMaterial::SetAlpha(Texture2D* pxTex)
+	{
+		m_pxAlphaTex = pxTex;
+	}
+
+	void FoliageMaterial::SetTranslucency(Texture2D* pxTex)
+	{
+		m_pxTranslucencyTex = pxTex;
+	}
 }
