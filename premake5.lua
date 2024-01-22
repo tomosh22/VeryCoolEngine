@@ -13,6 +13,7 @@ outputDir = "%{cfg.buildcfg}-%{cfg.cystem}-%{cfg.architecture}"
 include "VeryCoolEngine/vendor/GLFW"
 include "VeryCoolEngine/vendor/imgui"
 include "VeryCoolEngine/vendor/assimp"
+include "VeryCoolEngine/vendor/reactphysics3d"
 
 project "VeryCoolEngine"
 	location"VeryCoolEngine"
