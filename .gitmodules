@@ -13,3 +13,6 @@
 [submodule "VeryCoolEngine/vendor/assimp"]
 	path = VeryCoolEngine/vendor/assimp
 	url = https://github.com/tomosh22/assimpPremake
+[submodule "verycoolengine/vendor/reactphysics3d"]
+	path = verycoolengine/vendor/reactphysics3d
+	url = https://github.com/tomosh22/reactphysics3dpremake
