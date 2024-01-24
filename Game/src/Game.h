@@ -21,10 +21,9 @@ namespace VeryCoolEngine {
 		
 
 
-		Mesh* AddTestMesh(const char* szFileName, Material* pxMaterial, const Transform& xTrans, uint32_t uMeshIndex = 0);
+		VCEModel* AddModel(const char* szFileName, Material* pxMaterial, const Transform& xTrans, uint32_t uMeshIndex = 0);
 		
-		VCEModel* AddAnimatedModel(const char* szFileName, const Transform& xTrans);
-		VCEModel* AddStaticModel(const char* szFileName, const Transform& xTrans);
+		VCEModel* AddModel(const char* szFileName, const Transform& xTrans);
 		
 	};
 

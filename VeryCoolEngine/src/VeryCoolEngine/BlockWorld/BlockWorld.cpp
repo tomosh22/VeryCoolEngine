@@ -9,10 +9,6 @@ namespace VeryCoolEngine {
 	BlockWorld::BlockWorld() {
 		Application* app = Application::GetInstance();
 
-		app->m_pxInstanceMesh = Mesh::GenerateQuad();
-		app->m_pxInstanceMesh->SetShader(Shader::Create("vulkan/blockVert.spv", "vulkan/blockFrag.spv"));
-		app->_meshes.push_back(app->m_pxInstanceMesh);
-
 		Chunk::seed = rand();
 		GenerateChunks();
 
@@ -22,7 +18,7 @@ namespace VeryCoolEngine {
 			{ "Blocks",
 					PipelineSpecification(
 					"Blocks",
-					app->m_pxInstanceMesh,
+					nullptr,/*app->m_pxInstanceMesh,*///TODO: fix
 					Shader::Create("vulkan/blockVert.spv", "vulkan/blockFrag.spv"),
 					{BlendFactor::SrcAlpha},
 					{BlendFactor::OneMinusSrcAlpha},

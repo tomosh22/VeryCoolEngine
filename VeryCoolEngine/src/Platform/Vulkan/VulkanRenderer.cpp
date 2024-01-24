@@ -56,12 +56,13 @@ void VulkanRenderer::InitVulkan() {
 	BoilerplateInit();
 
 
-	
-	for (Mesh* pMesh : app->_meshes) {
-		pMesh->PlatformInit();
-		//pMesh->GetShader()->PlatformInit();
-		if(pMesh->m_pxMaterial != nullptr)
-			pMesh->m_pxMaterial->PlatformInit();
+	for (VCEModel* pxModel : app->m_apxModels) {
+		for (Mesh* pMesh : pxModel->m_apxMeshes) {
+			pMesh->PlatformInit();
+			//pMesh->GetShader()->PlatformInit();
+			if (pMesh->m_pxMaterial != nullptr)
+				pMesh->m_pxMaterial->PlatformInit();
+		}
 	}
 	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
 	app->_pLightUBO = ManagedUniformBuffer::Create(sizeof(RendererAPI::Light) * RendererAPI::g_uMaxLights, MAX_FRAMES_IN_FLIGHT, 1);
@@ -176,7 +177,7 @@ void VulkanRenderer::CopyToFramebuffer() {
 
 	m_pxCopyToFramebufferCommandBuffer->SetPipeline(m_xPipelines.at("CopyToFramebuffer"));
 
-	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh);
+	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(app->m_pxQuadModel->m_apxMeshes.back());
 	m_pxCopyToFramebufferCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
 	m_pxCopyToFramebufferCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
 
@@ -216,7 +217,7 @@ void VulkanRenderer::DrawSkybox() {
 	VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
 	m_pxSkyboxCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0, 0);
 
-	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(app->m_pxQuadMesh);
+	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(app->m_pxQuadModel->m_apxMeshes.back());
 	m_pxSkyboxCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
 	m_pxSkyboxCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
 	m_pxSkyboxCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
@@ -347,7 +348,7 @@ void VulkanRenderer::DrawFoliage() {
 	m_pxFoliageCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0, 0);
 
 	
-	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(app->m_pxFoliageQuad);
+	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(app->m_pxFoliageModel->m_apxMeshes.back());
 	m_pxFoliageCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer,0);
 	m_pxFoliageCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxInstanceBuffer,1);
 	m_pxFoliageCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);

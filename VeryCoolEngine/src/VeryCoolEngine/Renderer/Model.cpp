@@ -54,7 +54,7 @@ namespace VeryCoolEngine {
     {
         for (uint32_t i = 0; i < node->mNumMeshes; i++)
         {
-            meshes.push_back(ProcessMesh(m_pxScene->mMeshes[node->mMeshes[i]]));
+            m_apxMeshes.push_back(ProcessMesh(m_pxScene->mMeshes[node->mMeshes[i]]));
         }
         
         for (uint32_t i = 0; i < node->mNumChildren; i++)

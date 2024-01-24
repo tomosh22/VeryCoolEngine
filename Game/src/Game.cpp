@@ -28,20 +28,20 @@ namespace VeryCoolEngine {
 
 		m_xMaterialMap.insert({ "rock2k", Material::Create("rock2k") });
 
-		AddAnimatedModel("ogre.fbx", Transform({ 0,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
+		AddModel("ogre.fbx", Transform({ 0,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
 		));
 
-		AddAnimatedModel("otherFish.fbx", Transform({ 20,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
+		AddModel("otherFish.fbx", Transform({ 20,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
 		));
 
 
-		AddStaticModel("barrel.fbx", Transform({ 0,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
+		AddModel("barrel.fbx", Transform({ 0,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
 		));
 
-		AddTestMesh("sphereSmooth.obj", m_xMaterialMap.at("rock2k"), Transform({0,0,0}, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
+		AddModel("sphereSmooth.obj", m_xMaterialMap.at("rock2k"), Transform({0,0,0}, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
 		));
 
-		AddTestMesh("plane.obj", m_xMaterialMap.at("rock2k"), Transform({ 0,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(100, 1, 100)
+		AddModel("plane.obj", m_xMaterialMap.at("rock2k"), Transform({ 0,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(100, 1, 100)
 		));
 		
 		_lights.push_back({
@@ -63,7 +63,8 @@ namespace VeryCoolEngine {
 		return;
 	}
 
-	Mesh* Game::AddTestMesh(const char* szFileName, Material* pxMaterial, const Transform& xTrans, uint32_t uMeshIndex /*= 0*/)
+	//a little bit hacky
+	VCEModel* Game::AddModel(const char* szFileName, Material* pxMaterial, const Transform& xTrans, uint32_t uMeshIndex /*= 0*/)
 	{
 		Mesh* mesh = Mesh::FromFile(szFileName, uMeshIndex);
 		mesh->SetShader(m_pxMeshShader);
@@ -74,35 +75,25 @@ namespace VeryCoolEngine {
 		mesh->m_xTransform.UpdateRotation();
 		mesh->m_xTransform.UpdateMatrix();
 
-		_meshes.push_back(mesh);
 
-		m_apxGenericMeshes.push_back(mesh);
-		return mesh;
+		m_apxModels.push_back(new VCEModel());
+
+		m_apxModels.back()->m_xTransform = xTrans;
+
+		m_apxModels.back()->m_apxMeshes.push_back(mesh);
+
+		return m_apxModels.back();
 	}
 
-	VCEModel* Game::AddAnimatedModel(const char* szFileName, const Transform& xTrans)
+	VCEModel* Game::AddModel(const char* szFileName, const Transform& xTrans)
 	{
-		m_apxAnimatedModels.push_back(new VCEModel(szFileName));
-		for (Mesh* pxMesh : m_apxAnimatedModels.back()->meshes) {
-			_meshes.push_back(pxMesh);
-		}
-		VCE_ASSERT(m_apxAnimatedModels.back()->m_pxAnimation != nullptr, "This model doesn't have an animation");
+		m_apxModels.push_back(new VCEModel(szFileName));
 
-		m_apxAnimatedModels.back()->m_xTransform = xTrans;
+		m_apxModels.back()->m_xTransform = xTrans;
 
-		return m_apxAnimatedModels.back();
+		return m_apxModels.back();
 	}
 
-	VCEModel* Game::AddStaticModel(const char* szFileName, const Transform& xTrans)
-	{
-		m_apxGenericModels.push_back(new VCEModel(szFileName));
-		for (Mesh* pxMesh : m_apxGenericModels.back()->meshes) {
-			_meshes.push_back(pxMesh);
-		}
-		m_apxGenericModels.back()->m_xTransform = xTrans;
-
-		return m_apxGenericModels.back();
-	}
 	
 
 	
@@ -125,43 +116,42 @@ namespace VeryCoolEngine {
 		scene->camera = &_Camera;
 		scene->skybox = _pCubemap;
 
-		for (Mesh* mesh : _meshes) {
-			scene->meshes.push_back(mesh);
-		}
-
 		for (RendererAPI::Light& light : _lights) {
 			scene->lights[scene->numLights++] = light;
 		}
 
 		scene->m_axPipelineMeshes.insert({ "Skybox", std::vector<Mesh*>() });
-		scene->m_axPipelineMeshes.at("Skybox").push_back(game->m_pxQuadMesh);
+		scene->m_axPipelineMeshes.at("Skybox").push_back(game->m_pxQuadModel->m_apxMeshes.back());
 
 
 		scene->m_axPipelineMeshes.insert({ "Meshes", std::vector<Mesh*>() });
-		for (VCEModel* pxModel : m_apxGenericModels) {
-			for (Mesh* pxMesh : pxModel->meshes) {
-				scene->m_axPipelineMeshes.at("Meshes").push_back(pxMesh);
-			}
-		}
-		for (Mesh* pxMesh : m_apxGenericMeshes) {
-			scene->m_axPipelineMeshes.at("Meshes").push_back(pxMesh);
-		}
 		
 		scene->m_axPipelineMeshes.insert({ "SkinnedMeshes", std::vector<Mesh*>() });
-		for (VCEModel* pxModel : m_apxAnimatedModels) {
-			pxModel->m_pxAnimation->UpdateAnimation(fDt / 1000.f);
-			std::vector<glm::mat4>& xAnimMats = pxModel->m_pxAnimation->GetFinalBoneMatrices();
-			for (Mesh* pxMesh : pxModel->meshes) {
-				for (uint32_t i = 0; i < pxMesh->m_xBoneMats.size(); i++) {
-					pxMesh->m_xBoneMats.at(i) = xAnimMats.at(i);
+		for (VCEModel* pxModel : m_apxModels) {
+			if (pxModel->m_pxAnimation != nullptr) {
+				//has an animation
+				pxModel->m_pxAnimation->UpdateAnimation(fDt / 1000.f);
+				std::vector<glm::mat4>& xAnimMats = pxModel->m_pxAnimation->GetFinalBoneMatrices();
+				for (Mesh* pxMesh : pxModel->m_apxMeshes) {
+					for (uint32_t i = 0; i < pxMesh->m_xBoneMats.size(); i++) {
+						pxMesh->m_xBoneMats.at(i) = xAnimMats.at(i);
+					}
+					scene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(pxMesh);
 				}
-				scene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(pxMesh);
+			}
+			else {
+				//does not have an animation
+				for (Mesh* pxMesh : pxModel->m_apxMeshes) {
+					//hacky way to make sure this mesh belongs in this pipeline
+					if(pxMesh->m_pxMaterial != nullptr)
+						scene->m_axPipelineMeshes.at("Meshes").push_back(pxMesh);
+				}
 			}
 		}
 
 		scene->m_axPipelineMeshes.insert({ "GBuffer", std::vector<Mesh*>() });
-		for (VCEModel* model : game->m_apxAnimatedModels)
-			for(Mesh* pxMesh : model->meshes)
+		for (VCEModel* model : game->m_apxModels)
+			for(Mesh* pxMesh : model->m_apxMeshes)
 			scene->m_axPipelineMeshes.at("GBuffer").push_back(pxMesh);
 
 		for (RendererAPI::Light& light : _lights) {

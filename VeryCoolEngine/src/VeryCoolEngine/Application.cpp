@@ -21,9 +21,10 @@ namespace VeryCoolEngine {
 		srand(time(0));
 		_spInstance = this;
 
+		m_pxFoliageModel = new VCEModel();
 		m_pxExampleSkinnedMesh = Mesh::FromFile("ogre.fbx");
 		m_pxExampleMesh = Mesh::FromFile("cubeFlat.obj");
-		m_pxFoliageQuad = Mesh::GenerateQuad(10);
+		m_pxFoliageModel->m_apxMeshes.emplace_back(Mesh::GenerateQuad(10));
 		m_pxFoliageMaterial = FoliageMaterial::Create("foliage1k");
 
 		m_xTestFoliagePositions = {
@@ -38,7 +39,7 @@ namespace VeryCoolEngine {
 		};
 
 
-		m_pxFoliageQuad->m_axInstanceData.push_back(BufferElement(
+		m_pxFoliageModel->m_apxMeshes.back()->m_axInstanceData.push_back(BufferElement(
 			ShaderDataType::Float3,
 			"_aInstancePosition",
 			false,
@@ -48,9 +49,9 @@ namespace VeryCoolEngine {
 			m_xTestFoliagePositions.size()
 		));
 
-		m_pxFoliageQuad->m_uNumInstances = m_xTestFoliagePositions.size();
+		m_pxFoliageModel->m_apxMeshes.back()->m_uNumInstances = m_xTestFoliagePositions.size();
 
-		_meshes.push_back(m_pxFoliageQuad);
+		m_apxModels.push_back(m_pxFoliageModel);
 
 		SetupPipelines();
 		
@@ -134,9 +135,10 @@ namespace VeryCoolEngine {
 		m_pxSkinnedMeshShader = Shader::Create("vulkan/skinnedMeshVert.spv", "vulkan/meshFrag.spv");
 		m_pxFoliageShader = Shader::Create("vulkan/foliageVert.spv", "vulkan/foliageFrag.spv");
 
-		m_pxQuadMesh = Mesh::GenerateQuad();
-		m_pxQuadMesh->SetShader(Shader::Create("vulkan/fullscreenVert.spv", "vulkan/fullscreenFrag.spv"));
-		_meshes.push_back(m_pxQuadMesh);
+		m_pxQuadModel = new VCEModel();
+		m_pxQuadModel->m_apxMeshes.emplace_back(Mesh::GenerateQuad());
+		m_pxQuadModel->m_apxMeshes.back()->SetShader(Shader::Create("vulkan/fullscreenVert.spv", "vulkan/fullscreenFrag.spv"));
+		m_apxModels.push_back(m_pxQuadModel);
 
 		
 
@@ -145,8 +147,8 @@ namespace VeryCoolEngine {
 			{ "Skybox",
 					PipelineSpecification(
 					"Skybox",
-					m_pxQuadMesh,
-					m_pxQuadMesh->GetShader(),
+					m_pxQuadModel->m_apxMeshes.back(),
+					m_pxQuadModel->m_apxMeshes.back()->GetShader(),
 					{BlendFactor::SrcAlpha},
 					{BlendFactor::OneMinusSrcAlpha},
 					{true},
@@ -218,7 +220,7 @@ namespace VeryCoolEngine {
 			{ "CopyToFramebuffer",
 					PipelineSpecification(
 					"CopyToFramebuffer",
-					m_pxQuadMesh,
+					m_pxQuadModel->m_apxMeshes.back(),
 					m_pxCopyToFramebufferShader,
 					{BlendFactor::SrcAlpha},
 					{BlendFactor::OneMinusSrcAlpha},
@@ -241,7 +243,7 @@ namespace VeryCoolEngine {
 			{ "Foliage",
 					PipelineSpecification(
 					"Foliage",
-					m_pxFoliageQuad,
+					m_pxFoliageModel->m_apxMeshes.back(),
 					m_pxFoliageShader,
 					{BlendFactor::SrcAlpha},
 					{BlendFactor::OneMinusSrcAlpha},
@@ -310,24 +312,13 @@ namespace VeryCoolEngine {
 
 			_Camera.UpdateCamera(_DeltaTime);
 			
-			for (VCEModel* pxModel : m_apxGenericModels) {
+			for (VCEModel* pxModel : m_apxModels) {
 				pxModel->m_xTransform.UpdateRotation();
 				pxModel->m_xTransform.UpdateMatrix();
 
 				//TODO: this is disgusting, shouldn't be copying transforms
-				for (Mesh* pxMesh : pxModel->meshes)
+				for (Mesh* pxMesh : pxModel->m_apxMeshes)
 					pxMesh->m_xTransform = pxModel->m_xTransform;
-			}
-			for (VCEModel* pxModel : m_apxAnimatedModels) {
-				pxModel->m_xTransform.UpdateRotation();
-				pxModel->m_xTransform.UpdateMatrix();
-				//TODO: this is disgusting, shouldn't be copying transforms
-				for (Mesh* pxMesh : pxModel->meshes)
-					pxMesh->m_xTransform = pxModel->m_xTransform;
-			}
-			for (Mesh* pxMesh : _meshes) {
-				pxMesh->m_xTransform.UpdateRotation();
-				pxMesh->m_xTransform.UpdateMatrix();
 			}
 			GameLoop(_DeltaTime);
 			

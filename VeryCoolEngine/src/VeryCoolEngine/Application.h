@@ -96,7 +96,7 @@ namespace VeryCoolEngine {
 
 		Texture2D* m_pxBlankTexture2D;
 
-		Mesh* m_pxFoliageQuad;
+		VCEModel* m_pxFoliageModel;
 		std::vector<glm::vec3> m_xTestFoliagePositions;
 		FoliageMaterial* m_pxFoliageMaterial;
 
@@ -120,24 +120,18 @@ namespace VeryCoolEngine {
 		Camera _Camera;
 
 		class BlockWorld* m_pxBlockWorld = nullptr;
-
-		std::vector<Mesh*> _meshes;
-		std::vector<Mesh*> _instanceMeshes;
 		std::vector<Shader*> _shaders;
 		//std::vector<Texture*> _textures;
 
 		//for fullscreen pass
-		Mesh* m_pxQuadMesh;
+		VCEModel* m_pxQuadModel;
 
 		Mesh* m_pxInstanceMesh;
 
 		//#TODO i really need a better way to do this, used to provide vertex input state to mesh pipeline
 		Mesh* m_pxExampleMesh;
 		Mesh* m_pxExampleSkinnedMesh;
-		std::vector<Mesh*> m_apxGenericMeshes;
-		std::vector<VCEModel*> m_apxGenericModels;
-		std::vector<VCEModel*> m_apxAnimatedModels;
-		std::vector<Mesh*> m_apxSkinnedMeshes;
+		std::vector<VCEModel*> m_apxModels;
 
 		std::unordered_map<std::string, Material*> m_xMaterialMap;
 

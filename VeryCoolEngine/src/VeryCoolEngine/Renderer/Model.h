@@ -31,16 +31,18 @@ namespace VeryCoolEngine {
     {
     public:
         std::vector<Texture2D*> m_apxTextures;
-        std::vector<Mesh*> meshes;
+        std::vector<Mesh*> m_apxMeshes;
         std::string m_strDirectory;
 
         Transform m_xTransform;
+
+        VCEModel() = default;
 
         VCEModel(std::string const& path);
 
         ~VCEModel() {
             delete m_pxAnimation;
-            meshes.clear();
+            m_apxMeshes.clear();
 
             //TODO: is this necessary? these might get cleaned up by the renderer
             m_apxTextures.clear();
@@ -48,7 +50,7 @@ namespace VeryCoolEngine {
 
         void Draw(Shader& shader);
 
-        class Animation* m_pxAnimation;
+        class Animation* m_pxAnimation = nullptr;
 
         std::map<std::string, BoneInfo> m_xBoneInfoMap;
         uint32_t m_uBoneCounter = 0;
