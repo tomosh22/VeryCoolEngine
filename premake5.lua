@@ -31,7 +31,8 @@ project "VeryCoolEngine"
 	assetPath = "/Assets/"
 	defines{
 		"ASSETROOTLOCATION=" .. '\"' .. _WORKING_DIR .. assetPath .. '\"',
-		"VCE_VULKAN"
+		"VCE_VULKAN",
+		"NOMINMAX"
 	}
 
 	files{
@@ -53,6 +54,7 @@ project "VeryCoolEngine"
 		"%{prj.name}/vendor/tinyobj",
 		"%{prj.name}/vendor/PerlinNoise",
 		"%{prj.name}/src",
+		"%{prj.name}/vendor/reactphysics3d/include",
 		"$(VULKAN_SDK)/include",
 	}
 	libdirs {
@@ -113,12 +115,13 @@ project "Game"
 		"VeryCoolEngine/vendor/imgui",
 		"VeryCoolEngine/vendor/glm",
 		"VeryCoolEngine/vendor/Glad/include",
+		"VeryCoolEngine/vendor/reactphysics3d/include",
 		"%{prj.name}/vendor/stb",
 		"$(VULKAN_SDK)/include",
 
 	}
 
-	links{"VeryCoolEngine"}
+	links{"VeryCoolEngine", "reactphysics3d"}
 
 	filter "system:windows"
 		systemversion "latest"

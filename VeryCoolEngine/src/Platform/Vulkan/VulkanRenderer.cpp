@@ -20,6 +20,8 @@
 
 #include "VulkanMaterial.h"
 
+#include "reactphysics3d/reactphysics3d.h"
+
 
 using namespace VeryCoolEngine;
 
@@ -257,17 +259,22 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 	m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxMiscMeshRenderDataUBO->ppBuffers[m_currentFrame], 2, 0);
 
 
-	for (Mesh* mesh : app->scene->m_axPipelineMeshes.at("Meshes")) {
-		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
-		m_pxOpaqueMeshesCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
-		m_pxOpaqueMeshesCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
+	for (VCEModel* pxModel : app->scene->m_axPipelineMeshes.at("Meshes")) {
+		glm::mat4 xMatrix;
+		pxModel->m_pxTransform->getOpenGLMatrix(&xMatrix[0][0]);
+		for (Mesh* pxMesh : pxModel->m_apxMeshes) {
+			VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(pxMesh);
+			m_pxOpaqueMeshesCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
+			m_pxOpaqueMeshesCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
 
-		m_pxOpaqueMeshesCommandBuffer->BindMaterial(mesh->m_pxMaterial,1);
+			m_pxOpaqueMeshesCommandBuffer->BindMaterial(pxMesh->m_pxMaterial, 1);
 
 
-		m_pxOpaqueMeshesCommandBuffer->PushConstant(&mesh->m_xTransform._matrix, sizeof(glm::mat4));
 
-		m_pxOpaqueMeshesCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
+			m_pxOpaqueMeshesCommandBuffer->PushConstant(&xMatrix, sizeof(glm::mat4));
+
+			m_pxOpaqueMeshesCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
+		}
 	}
 
 
@@ -307,26 +314,28 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 	VulkanManagedUniformBuffer* pxMiscMeshRenderDataUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxMiscMeshRenderDataUBO);
 	m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxMiscMeshRenderDataUBO->ppBuffers[m_currentFrame], 2, 0);
 
-	for (Mesh* mesh : app->scene->m_axPipelineMeshes.at("SkinnedMeshes")) {
-		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(mesh);
-		m_pxSkinnedMeshesCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
-		m_pxSkinnedMeshesCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
+	for (VCEModel* pxModel : app->scene->m_axPipelineMeshes.at("SkinnedMeshes")) {
+		for (Mesh* pxMesh : pxModel->m_apxMeshes) {
+			VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(pxMesh);
+			m_pxSkinnedMeshesCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
+			m_pxSkinnedMeshesCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
 
-		pxVulkanMesh->m_pxBoneBuffer->UploadData(pxVulkanMesh->m_xBoneMats.data(), pxVulkanMesh->m_xBoneMats.size() * sizeof(glm::mat4), m_currentFrame);
+			pxVulkanMesh->m_pxBoneBuffer->UploadData(pxVulkanMesh->m_xBoneMats.data(), pxVulkanMesh->m_xBoneMats.size() * sizeof(glm::mat4), m_currentFrame);
 
-		m_pxSkinnedMeshesCommandBuffer->BindMaterial(mesh->m_pxMaterial,1);
+			m_pxSkinnedMeshesCommandBuffer->BindMaterial(pxMesh->m_pxMaterial, 1);
 
-		m_pxSkinnedMeshesCommandBuffer->BindAnimation(mesh,2);
+			m_pxSkinnedMeshesCommandBuffer->BindAnimation(pxMesh, 2);
 
-		RendererAPI::MeshPushConstantData xPushConstants;
-		xPushConstants.m_xModelMat = mesh->m_xTransform._matrix;
-		xPushConstants.m_uAnimate = bAnimate ? 1 : 0;
-		xPushConstants.m_fAlpha = fAnimAlpha;
+			RendererAPI::MeshPushConstantData xPushConstants;
+			pxModel->m_pxTransform->getOpenGLMatrix(&xPushConstants.m_xModelMat[0][0]);;
+			xPushConstants.m_uAnimate = bAnimate ? 1 : 0;
+			xPushConstants.m_fAlpha = fAnimAlpha;
 
-		m_pxSkinnedMeshesCommandBuffer->PushConstant(&xPushConstants, sizeof(RendererAPI::MeshPushConstantData));
+			m_pxSkinnedMeshesCommandBuffer->PushConstant(&xPushConstants, sizeof(RendererAPI::MeshPushConstantData));
 
 
-		m_pxSkinnedMeshesCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
+			m_pxSkinnedMeshesCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
+		}
 	}
 
 	m_pxSkinnedMeshesCommandBuffer->EndRecording();

@@ -8,6 +8,11 @@
 
 #include <glm/glm.hpp>
 
+namespace reactphysics3d {
+    class Transform;
+    class RigidBody;
+}
+
 struct aiNode;
 struct aiMesh;
 struct aiScene;
@@ -34,7 +39,9 @@ namespace VeryCoolEngine {
         std::vector<Mesh*> m_apxMeshes;
         std::string m_strDirectory;
 
-        Transform m_xTransform;
+        reactphysics3d::Transform* m_pxTransform;
+        reactphysics3d::RigidBody* m_pxRigidBody;
+        //Transform m_xTransform;
 
         VCEModel() = default;
 
@@ -56,6 +63,10 @@ namespace VeryCoolEngine {
         uint32_t m_uBoneCounter = 0;
 
         void ExtractBoneWeightForVertices(std::vector<Vertex>& vertices, aiMesh* mesh);
+
+        bool m_bShowInEditor = true;
+
+        bool m_bUsePhysics = false;
     private:
         
         const aiScene* m_pxScene;

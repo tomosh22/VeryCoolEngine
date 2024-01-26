@@ -20,6 +20,7 @@
 #include "backends/imgui_impl_vulkan.h"
 #endif
 
+#include "reactphysics3d/reactphysics3d.h"
 
 namespace VeryCoolEngine {
 
@@ -208,12 +209,16 @@ namespace VeryCoolEngine {
 			int meshIndex = 0;
 			for (VCEModel* mesh : app->m_apxModels)
 			{
+				break;
+				if (!mesh->m_bShowInEditor) continue;
 				std::string labelPos = "Mesh" + std::to_string(meshIndex) + " Position";
-				ImGui::DragFloat3(labelPos.c_str(), &mesh->m_xTransform._position.x);
+				ImGui::DragFloat3(labelPos.c_str(), (float*)&mesh->m_pxTransform->getPosition().x);
 				std::string labelRot = "Mesh" + std::to_string(meshIndex) + " Rotation";
-				ImGui::DragFloat3(labelRot.c_str(), &mesh->m_xTransform._roll);
-				std::string labelScale = "Mesh" + std::to_string(meshIndex++) + " Scale";
-				ImGui::DragFloat3(labelScale.c_str(), &mesh->m_xTransform._scale.x);
+				ImGui::DragFloat3(labelRot.c_str(), (float*)&mesh->m_pxTransform->getOrientation().x);//TODO: is this right?
+
+				//TODO
+				//std::string labelScale = "Mesh" + std::to_string(meshIndex++) + " Scale";
+				//ImGui::DragFloat3(labelScale.c_str(), &mesh->m_xTransform._scale.x);
 			}
 			ImGui::TreePop();
 		}

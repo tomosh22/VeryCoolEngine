@@ -17,6 +17,7 @@ class aiMatrix4x4t;
 typedef aiMatrix4x4t<ai_real> aiMatrix4x4;
 struct aiMesh;
 struct aiScene;
+
 namespace VeryCoolEngine {
 	enum class MeshTopolgy {
 		Triangles,
@@ -102,8 +103,6 @@ namespace VeryCoolEngine {
 		static Mesh* GenerateVulkanTest();
 
 		static Mesh* FromFile(const std::string& path, uint32_t uMeshIndex = 0, bool swapYZ = false);
-
-		Transform m_xTransform;
 
 
 		std::vector<BufferElement> m_axInstanceData;

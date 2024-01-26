@@ -31,13 +31,10 @@ namespace VeryCoolEngine {
 		std::vector<std::function<void(void)>> _functionsToRun;
 		Camera* camera = nullptr;
 
-		std::unordered_map<std::string, std::vector<Mesh*>> m_axPipelineMeshes;
+		std::unordered_map<std::string, std::vector<VCEModel*>> m_axPipelineMeshes;
 
 		Shader* skyboxShader = nullptr;
 		TextureCube* skybox = nullptr;
-
-		std::vector<Mesh*> meshes{};
-		std::vector<VCEModel*> models{};
 
 
 		std::vector<RendererAPI::Light> lights{};
@@ -47,12 +44,10 @@ namespace VeryCoolEngine {
 
 		void Reset() {
 			ready = false;
-			meshes.clear();
-			meshes = std::vector<Mesh*>();
 			lights.clear();
 			lights.resize(RendererAPI::g_uMaxLights);
 			m_axPipelineMeshes.clear();
-			m_axPipelineMeshes = std::unordered_map<std::string, std::vector<Mesh*>>();
+			m_axPipelineMeshes = std::unordered_map<std::string, std::vector<VCEModel*>>();
 			numLights = 0;
 
 		};
@@ -155,6 +150,8 @@ namespace VeryCoolEngine {
 		bool _aoEnabled = true;
 
 		bool prevRState = false;
+
+		float m_fDeltaTime;
 
 	private:
 		std::thread _renderThread;

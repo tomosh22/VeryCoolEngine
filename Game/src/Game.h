@@ -20,10 +20,11 @@ namespace VeryCoolEngine {
 
 		
 
+		//TODO: make xTrans a reference
+		VCEModel* AddModel(const char* szFileName, Material* pxMaterial, Transform xTrans, bool bPhysics, uint32_t uMeshIndex = 0);
 
-		VCEModel* AddModel(const char* szFileName, Material* pxMaterial, const Transform& xTrans, uint32_t uMeshIndex = 0);
-		
-		VCEModel* AddModel(const char* szFileName, const Transform& xTrans);
+		//TODO: make xTrans a reference
+		VCEModel* AddModel(const char* szFileName, Transform xTrans, bool bPhysics);
 		
 	};
 

@@ -7,6 +7,8 @@
 
 #include "VeryCoolEngine/BlockWorld/BlockWorld.h"
 
+#include "VeryCoolEngine/Physics/Physics.h"
+
 namespace VeryCoolEngine {
 
 	const std::unordered_map<Block::FaceType, glm::ivec2> Block::atlasOffsets = {
@@ -28,21 +30,16 @@ namespace VeryCoolEngine {
 
 		m_xMaterialMap.insert({ "rock2k", Material::Create("rock2k") });
 
-		AddModel("ogre.fbx", Transform({ 0,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
-		));
+		AddModel("ogre.fbx", Transform({ 0,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)), true);
 
-		AddModel("otherFish.fbx", Transform({ 20,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
-		));
+		AddModel("otherFish.fbx", Transform({ 20,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)), true);
 
 
-		AddModel("barrel.fbx", Transform({ 0,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
-		));
+		AddModel("barrel.fbx", Transform({ 0,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)), true);
 
-		AddModel("sphereSmooth.obj", m_xMaterialMap.at("rock2k"), Transform({0,0,0}, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)
-		));
+		AddModel("sphereSmooth.obj", m_xMaterialMap.at("rock2k"), Transform({0,0,0}, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)), true);
 
-		AddModel("plane.obj", m_xMaterialMap.at("rock2k"), Transform({ 0,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(100, 1, 100)
-		));
+		AddModel("plane.obj", m_xMaterialMap.at("rock2k"), Transform({ 0,0,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)), true);
 		
 		_lights.push_back({
 				50,200,50,100,
@@ -64,32 +61,49 @@ namespace VeryCoolEngine {
 	}
 
 	//a little bit hacky
-	VCEModel* Game::AddModel(const char* szFileName, Material* pxMaterial, const Transform& xTrans, uint32_t uMeshIndex /*= 0*/)
+	VCEModel* Game::AddModel(const char* szFileName, Material* pxMaterial, Transform xTrans, bool bPhysics, uint32_t uMeshIndex /*= 0*/)
 	{
 		Mesh* mesh = Mesh::FromFile(szFileName, uMeshIndex);
 		mesh->SetShader(m_pxMeshShader);
 		mesh->m_pxMaterial = pxMaterial;
 
-		
-		mesh->m_xTransform = xTrans;
-		mesh->m_xTransform.UpdateRotation();
-		mesh->m_xTransform.UpdateMatrix();
-
-
 		m_apxModels.push_back(new VCEModel());
 
-		m_apxModels.back()->m_xTransform = xTrans;
+		xTrans.UpdateMatrix();
+		m_apxModels.back()->m_pxTransform = new reactphysics3d::Transform;
+		m_apxModels.back()->m_pxTransform->setFromOpenGL((reactphysics3d::decimal*)&xTrans._matrix[0][0]);
+
+		m_apxModels.back()->m_bUsePhysics = bPhysics;
+		if(bPhysics)
+			m_apxModels.back()->m_pxRigidBody = Physics::s_pxPhysicsWorld->createRigidBody(*m_apxModels.back()->m_pxTransform);
+
+		//mesh->m_xTransform = xTrans;
+		//mesh->m_xTransform.UpdateRotation();
+		//mesh->m_xTransform.UpdateMatrix();
+
+
+		
 
 		m_apxModels.back()->m_apxMeshes.push_back(mesh);
+		m_apxModels.back()->m_strDirectory = szFileName;
 
 		return m_apxModels.back();
 	}
 
-	VCEModel* Game::AddModel(const char* szFileName, const Transform& xTrans)
+	VCEModel* Game::AddModel(const char* szFileName, Transform xTrans, bool bPhysics)
 	{
 		m_apxModels.push_back(new VCEModel(szFileName));
 
-		m_apxModels.back()->m_xTransform = xTrans;
+
+		xTrans.UpdateMatrix();
+		m_apxModels.back()->m_pxTransform = new reactphysics3d::Transform;
+		if (m_apxModels.back()->m_pxTransform == nullptr)
+			m_apxModels.back()->m_pxTransform = new reactphysics3d::Transform;
+		m_apxModels.back()->m_pxTransform->setFromOpenGL((reactphysics3d::decimal*)&xTrans._matrix[0][0]);
+
+		m_apxModels.back()->m_bUsePhysics = bPhysics;
+		if (bPhysics)
+			m_apxModels.back()->m_pxRigidBody = Physics::s_pxPhysicsWorld->createRigidBody(*m_apxModels.back()->m_pxTransform);
 
 		return m_apxModels.back();
 	}
@@ -120,13 +134,13 @@ namespace VeryCoolEngine {
 			scene->lights[scene->numLights++] = light;
 		}
 
-		scene->m_axPipelineMeshes.insert({ "Skybox", std::vector<Mesh*>() });
-		scene->m_axPipelineMeshes.at("Skybox").push_back(game->m_pxQuadModel->m_apxMeshes.back());
+		scene->m_axPipelineMeshes.insert({ "Skybox", std::vector<VCEModel*>() });
+		scene->m_axPipelineMeshes.at("Skybox").push_back(game->m_pxQuadModel);
 
 
-		scene->m_axPipelineMeshes.insert({ "Meshes", std::vector<Mesh*>() });
+		scene->m_axPipelineMeshes.insert({ "Meshes", std::vector<VCEModel*>() });
 		
-		scene->m_axPipelineMeshes.insert({ "SkinnedMeshes", std::vector<Mesh*>() });
+		scene->m_axPipelineMeshes.insert({ "SkinnedMeshes", std::vector<VCEModel*>() });
 		for (VCEModel* pxModel : m_apxModels) {
 			if (pxModel->m_pxAnimation != nullptr) {
 				//has an animation
@@ -136,23 +150,23 @@ namespace VeryCoolEngine {
 					for (uint32_t i = 0; i < pxMesh->m_xBoneMats.size(); i++) {
 						pxMesh->m_xBoneMats.at(i) = xAnimMats.at(i);
 					}
-					scene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(pxMesh);
 				}
+				scene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(pxModel);
 			}
 			else {
+				//TODO: check this properly
+				if (pxModel == m_pxQuadModel || pxModel == m_pxFoliageModel) continue;
 				//does not have an animation
-				for (Mesh* pxMesh : pxModel->m_apxMeshes) {
-					//hacky way to make sure this mesh belongs in this pipeline
-					if(pxMesh->m_pxMaterial != nullptr)
-						scene->m_axPipelineMeshes.at("Meshes").push_back(pxMesh);
-				}
+				//hacky way to make sure this mesh belongs in this pipeline
+				if(pxModel->m_apxMeshes.back()->m_pxMaterial != nullptr)
+					scene->m_axPipelineMeshes.at("Meshes").push_back(pxModel);
+				
 			}
 		}
 
-		scene->m_axPipelineMeshes.insert({ "GBuffer", std::vector<Mesh*>() });
+		scene->m_axPipelineMeshes.insert({ "GBuffer", std::vector<VCEModel*>() });
 		for (VCEModel* model : game->m_apxModels)
-			for(Mesh* pxMesh : model->m_apxMeshes)
-			scene->m_axPipelineMeshes.at("GBuffer").push_back(pxMesh);
+			scene->m_axPipelineMeshes.at("GBuffer").push_back(model);
 
 		for (RendererAPI::Light& light : _lights) {
 			scene->lights[scene->numLights++] = light;

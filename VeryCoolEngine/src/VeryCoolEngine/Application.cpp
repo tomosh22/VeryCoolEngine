@@ -5,6 +5,7 @@
 #include "Input.h"
 #include <glm/glm.hpp>
 #include <glm/mat4x4.hpp>
+#include "Physics/Physics.h"
 
 
 
@@ -22,10 +23,12 @@ namespace VeryCoolEngine {
 		_spInstance = this;
 
 		m_pxFoliageModel = new VCEModel();
+		m_pxFoliageModel->m_pxTransform = new reactphysics3d::Transform;
 		m_pxExampleSkinnedMesh = Mesh::FromFile("ogre.fbx");
 		m_pxExampleMesh = Mesh::FromFile("cubeFlat.obj");
 		m_pxFoliageModel->m_apxMeshes.emplace_back(Mesh::GenerateQuad(10));
 		m_pxFoliageMaterial = FoliageMaterial::Create("foliage1k");
+		m_pxFoliageModel->m_strDirectory = "FoliageModel";
 
 		m_xTestFoliagePositions = {
 			{40.1,70,0},
@@ -55,6 +58,7 @@ namespace VeryCoolEngine {
 
 		SetupPipelines();
 		
+		Physics::InitPhysics();
 		
 		_renderThread = std::thread([&]() {
 			while (true) {
@@ -136,8 +140,10 @@ namespace VeryCoolEngine {
 		m_pxFoliageShader = Shader::Create("vulkan/foliageVert.spv", "vulkan/foliageFrag.spv");
 
 		m_pxQuadModel = new VCEModel();
+		m_pxQuadModel->m_bShowInEditor = false;
 		m_pxQuadModel->m_apxMeshes.emplace_back(Mesh::GenerateQuad());
 		m_pxQuadModel->m_apxMeshes.back()->SetShader(Shader::Create("vulkan/fullscreenVert.spv", "vulkan/fullscreenFrag.spv"));
+		m_pxQuadModel->m_strDirectory = "QuadModel";
 		m_apxModels.push_back(m_pxQuadModel);
 
 		
@@ -306,21 +312,18 @@ namespace VeryCoolEngine {
 			mainThreadReady = true;
 			std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
 			std::chrono::duration duration = std::chrono::duration_cast<std::chrono::microseconds>(now - _LastFrameTime);
-			_DeltaTime = duration.count()/1000.;
+			m_fDeltaTime = duration.count()/1000.;
 			_LastFrameTime = now;
 
 
-			_Camera.UpdateCamera(_DeltaTime);
-			
-			for (VCEModel* pxModel : m_apxModels) {
-				pxModel->m_xTransform.UpdateRotation();
-				pxModel->m_xTransform.UpdateMatrix();
+			_Camera.UpdateCamera(m_fDeltaTime);
 
-				//TODO: this is disgusting, shouldn't be copying transforms
-				for (Mesh* pxMesh : pxModel->m_apxMeshes)
-					pxMesh->m_xTransform = pxModel->m_xTransform;
-			}
-			GameLoop(_DeltaTime);
+			Physics::UpdatePhysics();
+			for (VCEModel* pxModel : m_apxModels)
+				if(pxModel->m_bUsePhysics)
+					pxModel->m_pxTransform = (reactphysics3d::Transform*)&pxModel->m_pxRigidBody->getTransform();
+			
+			GameLoop(m_fDeltaTime);
 			
 
 			
