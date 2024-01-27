@@ -1,5 +1,7 @@
 #version 450 core
 
+#include "Mesh_NoSkin_Common.h"
+
 layout(vertices = 3) out;
 
 
@@ -14,10 +16,6 @@ layout(location = 1) out vec3 _oNormal[];
 layout(location = 2) out vec3 _oTangent[];
 layout(location = 3) out vec3 _oBitangent[];
 layout(location = 4) out vec3 _oWorldPos[];
-
-layout(push_constant) uniform ModelMatrix{
-	mat4 modelMatrix;
-};
 
 layout(std140, set = 0, binding = 2) uniform Misc{
 	vec3 overrideNormal;

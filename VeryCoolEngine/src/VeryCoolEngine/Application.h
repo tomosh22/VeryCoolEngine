@@ -153,6 +153,8 @@ namespace VeryCoolEngine {
 
 		float m_fDeltaTime;
 
+		VCEModel* m_pxSelectedModel = nullptr;
+
 	private:
 		std::thread _renderThread;
 		

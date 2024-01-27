@@ -207,14 +207,12 @@ namespace VeryCoolEngine {
 
 		if (ImGui::TreeNode("Models")) {
 			int meshIndex = 0;
-			for (VCEModel* mesh : app->m_apxModels)
+			if(app->m_pxSelectedModel != nullptr)
 			{
-				break;
-				if (!mesh->m_bShowInEditor) continue;
-				std::string labelPos = "Mesh" + std::to_string(meshIndex) + " Position";
-				ImGui::DragFloat3(labelPos.c_str(), (float*)&mesh->m_pxTransform->getPosition().x);
-				std::string labelRot = "Mesh" + std::to_string(meshIndex) + " Rotation";
-				ImGui::DragFloat3(labelRot.c_str(), (float*)&mesh->m_pxTransform->getOrientation().x);//TODO: is this right?
+				std::string labelPos = "Model" + std::to_string(meshIndex) + " Position";
+				ImGui::DragFloat3(labelPos.c_str(), (float*)&app->m_pxSelectedModel->m_pxTransform->getPosition().x);
+				std::string labelRot = "Model" + std::to_string(meshIndex) + " Rotation";
+				ImGui::DragFloat3(labelRot.c_str(), (float*)&app->m_pxSelectedModel->m_pxTransform->getOrientation().x);//TODO: is this right?
 
 				//TODO
 				//std::string labelScale = "Mesh" + std::to_string(meshIndex++) + " Scale";

@@ -260,9 +260,14 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 
 
 	for (VCEModel* pxModel : app->scene->m_axPipelineMeshes.at("Meshes")) {
-		glm::mat4 xMatrix;
-		pxModel->m_pxTransform->getOpenGLMatrix(&xMatrix[0][0]);
-		xMatrix *= glm::scale(glm::identity<glm::mat4>(), pxModel->m_xScale);
+		struct OpaqueMeshPushConstant {
+			glm::mat4 xMatrix;
+			int bSelected;
+		} xPushConstant;
+		pxModel->m_pxTransform->getOpenGLMatrix(&xPushConstant.xMatrix[0][0]);
+		xPushConstant.xMatrix *= glm::scale(glm::identity<glm::mat4>(), pxModel->m_xScale);
+		xPushConstant.bSelected = pxModel == app->m_pxSelectedModel ? 1 : 0;
+
 		for (Mesh* pxMesh : pxModel->m_apxMeshes) {
 			VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(pxMesh);
 			m_pxOpaqueMeshesCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
@@ -272,7 +277,7 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 
 
 
-			m_pxOpaqueMeshesCommandBuffer->PushConstant(&xMatrix, sizeof(glm::mat4));
+			m_pxOpaqueMeshesCommandBuffer->PushConstant(&xPushConstant, sizeof(OpaqueMeshPushConstant));
 
 			m_pxOpaqueMeshesCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
 		}

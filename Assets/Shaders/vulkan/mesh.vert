@@ -1,14 +1,12 @@
 #version 450 core
 
+#include "Mesh_NoSkin_Common.h"
+
 layout(location = 0) in vec3 _aPosition;
 layout(location = 1) in vec2 _aUV;
 layout(location = 2) in vec3 _aNormal;
 layout(location = 3) in vec3 _aTangent;
 layout(location = 4) in vec3 _aBitangent;
-
-layout(push_constant) uniform ModelMatrix{
-	mat4 modelMatrix;
-};
 
 layout(std140, set = 0, binding = 2) uniform Misc{
 	vec3 overrideNormal;

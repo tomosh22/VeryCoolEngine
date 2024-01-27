@@ -80,6 +80,8 @@ namespace VeryCoolEngine {
 			return *this;
 		}
 
+		bool IsCursorInRendererViewport();
+
 		glm::vec3 ScreenSpaceToWorldSpace(glm::vec3 xScreenSpace);
 
 		//Builds a view matrix for the current camera variables, suitable for sending straight

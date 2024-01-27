@@ -317,26 +317,32 @@ namespace VeryCoolEngine {
 
 
 			_Camera.UpdateCamera(m_fDeltaTime);
-			reactphysics3d::Ray xCursorRay = Physics::BuildRayFromMouse(&_Camera);
 
-			VCEModel* pxHitModel = nullptr;
-			float fHitDistance = FLT_MAX;
-			for (VCEModel* pxModel : m_apxModels) {
-				if (!pxModel->m_bUsePhysics) continue;
+			if (_Camera.IsCursorInRendererViewport()) {
+				reactphysics3d::Ray xCursorRay = Physics::BuildRayFromMouse(&_Camera);
 
-				reactphysics3d::RaycastInfo xRayCastInfo;
-				if (pxModel->m_pxRigidBody->raycast(xCursorRay, xRayCastInfo)) {
-					float fNewDistance = reactphysics3d::Vector3(xRayCastInfo.worldPoint - xCursorRay.point1).length();
-					if (fNewDistance < fHitDistance) {
-						pxHitModel = pxModel;
-						fHitDistance = fNewDistance;
+				VCEModel* pxHitModel = nullptr;
+				float fHitDistance = FLT_MAX;
+				for (VCEModel* pxModel : m_apxModels) {
+					if (!pxModel->m_bUsePhysics) continue;
+
+					reactphysics3d::RaycastInfo xRayCastInfo;
+					if (pxModel->m_pxRigidBody->raycast(xCursorRay, xRayCastInfo)) {
+						float fNewDistance = reactphysics3d::Vector3(xRayCastInfo.worldPoint - xCursorRay.point1).length();
+						if (fNewDistance < fHitDistance) {
+							pxHitModel = pxModel;
+							fHitDistance = fNewDistance;
+						}
 					}
 				}
+				if (pxHitModel != nullptr)
+					VCE_TRACE("Hit {}", pxHitModel->m_strDirectory);
+				else
+					VCE_TRACE("Hit nothing");
+
+				if (Input::IsMouseButtonPressed(VCE_MOUSE_BUTTON_LEFT))
+					m_pxSelectedModel = pxHitModel;
 			}
-			if (pxHitModel != nullptr)
-				VCE_TRACE("Hit {}", pxHitModel->m_strDirectory);
-			else
-				VCE_TRACE("Hit nothing");
 			/*
 			VCE_TRACE("Cursor Ray Direction: {} {} {}",
 				xCursorRay.point2.x - xCursorRay.point1.x,

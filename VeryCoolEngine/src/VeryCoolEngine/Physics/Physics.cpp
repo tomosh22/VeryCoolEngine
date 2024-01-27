@@ -26,8 +26,21 @@ namespace VeryCoolEngine {
 
 		std::pair<double, double> xCurrentMousePos = pxCam->prevMousePos;
 
-		glm::vec3 xNearPos = { xCurrentMousePos.first, xCurrentMousePos.second, 0.0f };
-		glm::vec3 xFarPos = { xCurrentMousePos.first, xCurrentMousePos.second, 1.0f };
+		double fX = xCurrentMousePos.first;
+		double fY = xCurrentMousePos.second;
+
+#ifdef VCE_USE_EDITOR
+		//accounting for extra padding from imgui border
+		fX -= 10;
+		fY -= 45;
+
+		//#TO_TODO: what happens on window resize?
+		fX /= (float)VCE_GAME_WIDTH / float(VCE_GAME_WIDTH + VCE_EDITOR_ADDITIONAL_WIDTH);
+		fY /= (float)VCE_GAME_HEIGHT / float(VCE_GAME_HEIGHT + VCE_EDITOR_ADDITIONAL_HEIGHT);
+#endif
+
+		glm::vec3 xNearPos = { fX, fY, 0.0f };
+		glm::vec3 xFarPos = { fX, fY, 1.0f };
 
 		glm::vec3 xOrigin = pxCam->ScreenSpaceToWorldSpace(xNearPos);
 		glm::vec3 xDest = pxCam->ScreenSpaceToWorldSpace(xFarPos);

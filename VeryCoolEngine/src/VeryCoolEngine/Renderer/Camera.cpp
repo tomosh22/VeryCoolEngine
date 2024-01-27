@@ -104,6 +104,16 @@ namespace VeryCoolEngine {
 		}
 	}
 
+	bool Camera::IsCursorInRendererViewport()
+	{
+#ifdef VCE_USE_EDITOR
+		//#TO_TODO: what happens on window resize? and what about padding from ImGui elements
+		return prevMousePos.first < VCE_GAME_WIDTH && prevMousePos.second < VCE_GAME_HEIGHT;
+#else
+		return true;
+#endif
+	}
+
 	glm::vec3 Camera::ScreenSpaceToWorldSpace(glm::vec3 xScreenSpace)
 	{
 		Application* pxApp = Application::GetInstance();

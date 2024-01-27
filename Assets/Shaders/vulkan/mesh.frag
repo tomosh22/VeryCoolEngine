@@ -1,5 +1,7 @@
 #version 450 core
 
+#include "Mesh_NoSkin_Common.h"
+
 layout(location = 0) out vec4 _oColor;
 
 layout(location = 0) in vec2 UV;
@@ -13,9 +15,6 @@ struct Light{
 	vec4 color;
 };
 
-layout(push_constant) uniform ModelMatrix{
-	mat4 modelMatrix;
-};
 
 layout(std140, set = 0, binding=0) uniform matrices{
 	mat4 _uViewMat;
@@ -107,4 +106,7 @@ void main(){
 	}
 	_oColor.rgb += diffuse.rgb * 0.5f;
 	_oColor.a = 1.f;
+	
+	if(bSelected > 0)
+		_oColor.rgb *= vec3(1,0,0);
 }
