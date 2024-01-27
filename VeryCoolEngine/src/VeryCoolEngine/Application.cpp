@@ -301,6 +301,66 @@ namespace VeryCoolEngine {
 
 	}
 
+	void Application::ConstructScene(float fDt)
+	{
+		sceneMutex.lock();
+		scene->Reset();
+
+		scene->camera = &_Camera;
+		scene->skybox = _pCubemap;
+
+		for (RendererAPI::Light& light : _lights) {
+			scene->lights[scene->numLights++] = light;
+		}
+
+		scene->m_axPipelineMeshes.insert({ "Skybox", std::vector<VCEModel*>() });
+		scene->m_axPipelineMeshes.at("Skybox").push_back(m_pxQuadModel);
+
+
+		scene->m_axPipelineMeshes.insert({ "Meshes", std::vector<VCEModel*>() });
+
+		scene->m_axPipelineMeshes.insert({ "SkinnedMeshes", std::vector<VCEModel*>() });
+		for (VCEModel* pxModel : m_apxModels) {
+			if (pxModel->m_pxAnimation != nullptr) {
+				//has an animation
+				pxModel->m_pxAnimation->UpdateAnimation(fDt / 1000.f);
+				std::vector<glm::mat4>& xAnimMats = pxModel->m_pxAnimation->GetFinalBoneMatrices();
+				for (Mesh* pxMesh : pxModel->m_apxMeshes) {
+					for (uint32_t i = 0; i < pxMesh->m_xBoneMats.size(); i++) {
+						pxMesh->m_xBoneMats.at(i) = xAnimMats.at(i);
+					}
+				}
+				scene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(pxModel);
+			}
+			else {
+				//TODO: check this properly
+				if (pxModel == m_pxQuadModel || pxModel == m_pxFoliageModel) continue;
+				//does not have an animation
+				//hacky way to make sure this mesh belongs in this pipeline
+				if (pxModel->m_apxMeshes.back()->m_pxMaterial != nullptr)
+					scene->m_axPipelineMeshes.at("Meshes").push_back(pxModel);
+
+			}
+		}
+
+		scene->m_axPipelineMeshes.insert({ "GBuffer", std::vector<VCEModel*>() });
+		for (VCEModel* model : m_apxModels)
+			scene->m_axPipelineMeshes.at("GBuffer").push_back(model);
+
+		for (RendererAPI::Light& light : _lights) {
+			scene->lights[scene->numLights++] = light;
+		}
+
+		RendererAPI::Light camLight{
+				_Camera.GetPosition().x,_Camera.GetPosition().y,_Camera.GetPosition().z,100,
+				1,1,1,1
+		};
+		scene->lights[scene->numLights++] = camLight;
+
+		scene->ready = true;
+		sceneMutex.unlock();
+	}
+
 
 	void Application::Run() {
 		while (true) { 
@@ -318,45 +378,47 @@ namespace VeryCoolEngine {
 
 			_Camera.UpdateCamera(m_fDeltaTime);
 
-			if (_Camera.IsCursorInRendererViewport()) {
-				reactphysics3d::Ray xCursorRay = Physics::BuildRayFromMouse(&_Camera);
 
-				VCEModel* pxHitModel = nullptr;
-				float fHitDistance = FLT_MAX;
-				for (VCEModel* pxModel : m_apxModels) {
-					if (!pxModel->m_bUsePhysics) continue;
+			switch (m_eCurrentState) {
+			case VCE_GAMESTATE_EDITOR:
+				if (_Camera.IsCursorInRendererViewport() && Input::IsMouseButtonPressed(VCE_MOUSE_BUTTON_LEFT)) {
+					reactphysics3d::Ray xCursorRay = Physics::BuildRayFromMouse(&_Camera);
 
-					reactphysics3d::RaycastInfo xRayCastInfo;
-					if (pxModel->m_pxRigidBody->raycast(xCursorRay, xRayCastInfo)) {
-						float fNewDistance = reactphysics3d::Vector3(xRayCastInfo.worldPoint - xCursorRay.point1).length();
-						if (fNewDistance < fHitDistance) {
-							pxHitModel = pxModel;
-							fHitDistance = fNewDistance;
+					VCEModel* pxHitModel = nullptr;
+					float fHitDistance = FLT_MAX;
+					for (VCEModel* pxModel : m_apxModels) {
+						if (!pxModel->m_bUsePhysics) continue;
+
+						reactphysics3d::RaycastInfo xRayCastInfo;
+						if (pxModel->m_pxRigidBody->raycast(xCursorRay, xRayCastInfo)) {
+							float fNewDistance = reactphysics3d::Vector3(xRayCastInfo.worldPoint - xCursorRay.point1).length();
+							if (fNewDistance < fHitDistance) {
+								pxHitModel = pxModel;
+								fHitDistance = fNewDistance;
+							}
 						}
 					}
-				}
-				if (pxHitModel != nullptr)
-					VCE_TRACE("Hit {}", pxHitModel->m_strDirectory);
-				else
-					VCE_TRACE("Hit nothing");
+					if (pxHitModel != nullptr)
+						VCE_TRACE("Hit {}", pxHitModel->m_strDirectory);
+					else
+						VCE_TRACE("Hit nothing");
 
-				if (Input::IsMouseButtonPressed(VCE_MOUSE_BUTTON_LEFT))
 					m_pxSelectedModel = pxHitModel;
+				}
+				break;
+			case VCE_GAMESTATE_PLAYING:
+				Physics::UpdatePhysics();
+				m_pxSelectedModel = nullptr;
+				break;
+				VCE_ASSERT(false, "Invalid game state");
 			}
-			/*
-			VCE_TRACE("Cursor Ray Direction: {} {} {}",
-				xCursorRay.point2.x - xCursorRay.point1.x,
-				xCursorRay.point2.y - xCursorRay.point1.y,
-				xCursorRay.point2.z - xCursorRay.point1.z
-				);*/
 
-			Physics::UpdatePhysics();
 			for (VCEModel* pxModel : m_apxModels)
 				if(pxModel->m_bUsePhysics)
 					pxModel->m_pxTransform = (reactphysics3d::Transform*)&pxModel->m_pxRigidBody->getTransform();
 			
 			GameLoop(m_fDeltaTime);
-			
+			ConstructScene(m_fDeltaTime);
 
 			
 			

@@ -47,6 +47,7 @@ namespace VeryCoolEngine {
 		//blender doesn't UV map capsules so just using a stretched sphere instead
 		VCEModel* pxCapsule = AddModel("sphereSmooth.obj", m_xMaterialMap.at("rock2k"), Transform({ 10,50,-10 }, glm::vec3(5, 10, 5)));
 		AddCapsuleCollisionVolumeToModel(pxCapsule, 5,10);
+		pxCapsule->m_pxRigidBody->setAngularLockAxisFactor(reactphysics3d::Vector3(0, 0, 0));
 
 		VCEModel* pxPlane = AddModel("plane.obj", m_xMaterialMap.at("crystal2k"), Transform({ 0,0,0 }, glm::vec3(1000, 0.1, 1000)));
 		AddBoxCollisionVolumeToModel(pxPlane, pxPlane->m_xScale);
@@ -166,65 +167,7 @@ namespace VeryCoolEngine {
 	//declared in Application.h, defined by game
 	void Application::GameLoop(float fDt) {
 		Game* game = (Game*)Application::GetInstance();
-
 		
-
-		sceneMutex.lock();
-		scene->Reset();
-
-		scene->camera = &_Camera;
-		scene->skybox = _pCubemap;
-
-		for (RendererAPI::Light& light : _lights) {
-			scene->lights[scene->numLights++] = light;
-		}
-
-		scene->m_axPipelineMeshes.insert({ "Skybox", std::vector<VCEModel*>() });
-		scene->m_axPipelineMeshes.at("Skybox").push_back(game->m_pxQuadModel);
-
-
-		scene->m_axPipelineMeshes.insert({ "Meshes", std::vector<VCEModel*>() });
-		
-		scene->m_axPipelineMeshes.insert({ "SkinnedMeshes", std::vector<VCEModel*>() });
-		for (VCEModel* pxModel : m_apxModels) {
-			if (pxModel->m_pxAnimation != nullptr) {
-				//has an animation
-				pxModel->m_pxAnimation->UpdateAnimation(fDt / 1000.f);
-				std::vector<glm::mat4>& xAnimMats = pxModel->m_pxAnimation->GetFinalBoneMatrices();
-				for (Mesh* pxMesh : pxModel->m_apxMeshes) {
-					for (uint32_t i = 0; i < pxMesh->m_xBoneMats.size(); i++) {
-						pxMesh->m_xBoneMats.at(i) = xAnimMats.at(i);
-					}
-				}
-				scene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(pxModel);
-			}
-			else {
-				//TODO: check this properly
-				if (pxModel == m_pxQuadModel || pxModel == m_pxFoliageModel) continue;
-				//does not have an animation
-				//hacky way to make sure this mesh belongs in this pipeline
-				if(pxModel->m_apxMeshes.back()->m_pxMaterial != nullptr)
-					scene->m_axPipelineMeshes.at("Meshes").push_back(pxModel);
-				
-			}
-		}
-
-		scene->m_axPipelineMeshes.insert({ "GBuffer", std::vector<VCEModel*>() });
-		for (VCEModel* model : game->m_apxModels)
-			scene->m_axPipelineMeshes.at("GBuffer").push_back(model);
-
-		for (RendererAPI::Light& light : _lights) {
-			scene->lights[scene->numLights++] = light;
-		}
-
-		RendererAPI::Light camLight{
-				_Camera.GetPosition().x,_Camera.GetPosition().y,_Camera.GetPosition().z,100,
-				1,1,1,1
-		};
-		scene->lights[scene->numLights++] = camLight;
-
-		scene->ready = true;
-		sceneMutex.unlock();
 
 
 

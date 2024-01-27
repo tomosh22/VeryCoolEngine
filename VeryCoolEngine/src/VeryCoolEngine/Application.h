@@ -70,6 +70,15 @@ namespace VeryCoolEngine {
 
 		static Application* GetInstance() { return _spInstance; }
 
+		void ConstructScene(float fDt);
+
+		//don't like that I can't use uint32_t, blame imgui
+		enum GameState : int {
+			VCE_GAMESTATE_EDITOR,
+			VCE_GAMESTATE_PLAYING
+		};
+		int m_eCurrentState = VCE_GAMESTATE_EDITOR;
+
 		Window* _window;
 
 		bool _renderThreadCanStart = false;

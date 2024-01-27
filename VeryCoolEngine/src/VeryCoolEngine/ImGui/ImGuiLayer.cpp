@@ -230,7 +230,8 @@ namespace VeryCoolEngine {
 		ImGui::Checkbox("Animate", &app->_pRenderer->bAnimate);
 		ImGui::SliderFloat("Animation Alpha", &app->_pRenderer->fAnimAlpha, 0,1);
 
-
+		const char* aszItems[] = { "Editor", "Playing" };
+		ImGui::Combo("combo", &app->m_eCurrentState, aszItems, IM_ARRAYSIZE(aszItems));
 
 		ImGui::End();
 
