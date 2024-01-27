@@ -9,24 +9,24 @@ namespace VeryCoolEngine {
 
 		static std::vector<glm::quat> uniqueQuats; //TEST
 		Transform() {};
-		Transform(glm::vec3 xPos, glm::quat xRot, glm::vec3 xScale) : _position(xPos), _rotationQuat(xRot), _scale(xScale) {}
+		Transform(glm::vec3 xPos, glm::vec3 xScale, glm::quat xRot = glm::quat_identity<float, glm::packed_highp>()) : m_xPosition(xPos), m_xScale(xScale), m_xRotationQuat(xRot) {}
 
 		void SetPosition(const glm::vec3& pos);
 		void SetRotationQuat(const glm::quat& rot);
 		inline void UpdateMatrix();
 		void UpdateRotation();
-		glm::mat4 _matrix;
+		glm::mat4 m_xMatrix;
 
-		glm::quat _rotationQuat = glm::quat_identity<float, glm::packed_highp>();
-		float _roll = 0, _yaw = 0, _pitch = 0;
-		glm::vec3 _position = { 0,0,0 };
-		glm::vec3 _scale = { 1,1,1 };
+		glm::quat m_xRotationQuat = glm::quat_identity<float, glm::packed_highp>();
+		float m_fRoll = 0, m_fYaw = 0, m_fPitch = 0;
+		glm::vec3 m_xPosition = { 0,0,0 };
+		glm::vec3 m_xScale = { 1,1,1 };
 
 		static glm::mat4 RotationMatFromQuat(const glm::quat& quat);
 		static glm::mat4 RotationMatFromVec3(float degrees, const glm::vec3& axis);
 		static glm::quat EulerAnglesToQuat(float roll, float yaw, float pitch);
 	private:
-		float _prevRoll = 0, _prevYaw = 0, _prevPitch = 0;
+		float m_fPrevRoll = 0, m_fPrevYaw = 0, m_fPrevPitch = 0;
 	};
 
 }

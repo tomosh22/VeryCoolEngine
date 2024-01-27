@@ -393,7 +393,7 @@ namespace VeryCoolEngine {
 
 	
 
-	Mesh* Mesh::FromFile(const std::string& path, uint32_t uMeshIndex /*= 0*/, bool swapYZ /* = false*/)
+	Mesh* Mesh::FromFile(const std::string& path, bool swapYZ /* = false*/)
 	{
 		Mesh* mesh = Mesh::Create();
 
@@ -482,8 +482,8 @@ namespace VeryCoolEngine {
 #endif
 
 		
-
-		aiMesh* pxMesh = pxScene->mMeshes[uMeshIndex];
+		//#TO_TODO: do i care about any other meshes?
+		aiMesh* pxMesh = pxScene->mMeshes[0];
 
 		mesh->m_uNumBones = pxMesh->mNumBones;
 

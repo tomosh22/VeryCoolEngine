@@ -21,10 +21,13 @@ namespace VeryCoolEngine {
 		
 
 		//TODO: make xTrans a reference
-		VCEModel* AddModel(const char* szFileName, Material* pxMaterial, Transform xTrans, bool bPhysics, uint32_t uMeshIndex = 0);
+		VCEModel* AddModel(const char* szFileName, Material* pxMaterial, Transform xTrans);
 
 		//TODO: make xTrans a reference
-		VCEModel* AddModel(const char* szFileName, Transform xTrans, bool bPhysics);
+		VCEModel* AddModel(const char* szFileName, Transform xTrans);
+
+		void AddBoxCollisionVolumeToModel(VCEModel* pxModel, glm::vec3 xHalfExtents);
+		void AddSphereCollisionVolumeToModel(VCEModel* pxModel, float fRadius);
 		
 	};
 

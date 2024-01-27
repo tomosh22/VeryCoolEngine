@@ -99,30 +99,30 @@ namespace VeryCoolEngine {
 
 	Transform Chunk::GetTransformForSide(Block::Side side, const glm::ivec3& position) {
 		Transform trans;
-		trans._position = position;
+		trans.m_xPosition = position;
 		switch (side) {
 		case Block::Side::Right:
-			trans._yaw = 90;
-			trans._position.x -= 0.5;
+			trans.m_fYaw = 90;
+			trans.m_xPosition.x -= 0.5;
 			break;
 		case Block::Side::Left:
-			trans._yaw = 270;
-			trans._position.x += 0.5;
+			trans.m_fYaw = 270;
+			trans.m_xPosition.x += 0.5;
 			break;
 		case Block::Side::Top:
-			trans._pitch = 270;
-			trans._position.y -= 0.5;
+			trans.m_fPitch = 270;
+			trans.m_xPosition.y -= 0.5;
 			break;
 		case Block::Side::Bottom:
-			trans._pitch = 90;
-			trans._position.y += 0.5;
+			trans.m_fPitch = 90;
+			trans.m_xPosition.y += 0.5;
 			break;
 		case Block::Side::Front:
-			trans._position.z -= 0.5;
+			trans.m_xPosition.z -= 0.5;
 			break;
 		case Block::Side::Back:
-			trans._yaw = 180;
-			trans._position.z += 0.5;
+			trans.m_fYaw = 180;
+			trans.m_xPosition.z += 0.5;
 			break;
 		}
 		trans.UpdateRotation();
@@ -133,9 +133,9 @@ namespace VeryCoolEngine {
 
 		Transform trans = GetTransformForSide(side, block._position);
 
-		m_pxParentWorld->_instanceQuats.push_back(trans._rotationQuat);
-		m_pxParentWorld->_instanceMats.push_back(Transform::RotationMatFromQuat(trans._rotationQuat));
-		m_pxParentWorld->_instancePositions.push_back(trans._position);
+		m_pxParentWorld->_instanceQuats.push_back(trans.m_xRotationQuat);
+		m_pxParentWorld->_instanceMats.push_back(Transform::RotationMatFromQuat(trans.m_xRotationQuat));
+		m_pxParentWorld->_instancePositions.push_back(trans.m_xPosition);
 
 		Block::FaceType faceType = Block::BlockToFace(block._blockType, side);
 

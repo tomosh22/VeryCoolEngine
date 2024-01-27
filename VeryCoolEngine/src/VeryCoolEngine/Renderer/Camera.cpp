@@ -5,6 +5,11 @@
 
 #include <algorithm>
 
+//#TO_TODO make this platform agnostic
+#ifdef VCE_VULKAN
+#include "Platform/Vulkan/VulkanRenderer.h"
+#endif
+
 /*
 Part of Newcastle University's Game Engineering source code.
 
@@ -97,6 +102,38 @@ namespace VeryCoolEngine {
 		if (Input::IsKeyPressed(VCE_KEY_SPACE)) {
 			position.y += frameSpeed;
 		}
+	}
+
+	glm::vec3 Camera::ScreenSpaceToWorldSpace(glm::vec3 xScreenSpace)
+	{
+		Application* pxApp = Application::GetInstance();
+		//#TO_TODO make this platform agnostic
+#ifdef VCE_VULKAN
+		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+		xScreenSpace.y = pxRenderer->m_height - xScreenSpace.y;
+#endif
+
+		//#TO_TODO: adjust for viewport not taking up whole window in editor mode
+		glm::vec2 xScreenSize = { pxRenderer->m_width, pxRenderer->m_height };
+
+		glm::mat4 xInvViewProj = glm::inverse(BuildViewMatrix()) * glm::inverse(BuildProjectionMatrix());
+
+		glm::vec4 xClipSpace = {
+			(xScreenSpace.x / xScreenSize.x) * 2.0f - 1.0f,
+			(xScreenSpace.y / xScreenSize.y) * 2.0f - 1.0f,
+			(xScreenSpace.z),
+			1.0f
+		};
+
+		glm::vec4 xWorldSpacePreDivide = xInvViewProj * xClipSpace;
+
+		glm::vec3 xWorldSpace = {
+			xWorldSpacePreDivide.x / xWorldSpacePreDivide.w,
+			xWorldSpacePreDivide.y / xWorldSpacePreDivide.w,
+			xWorldSpacePreDivide.z / xWorldSpacePreDivide.w
+		};
+
+		return xWorldSpace;
 	}
 
 	/*

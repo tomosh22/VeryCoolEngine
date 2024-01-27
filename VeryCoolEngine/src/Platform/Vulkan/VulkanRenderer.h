@@ -253,11 +253,7 @@ namespace VeryCoolEngine {
 				const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData,
 				void* pUserData);
 
-#ifdef VCE_USE_EDITOR
-			int m_width = VCE_GAME_WIDTH + VCE_EDITOR_ADDITIONAL_WIDTH, m_height = VCE_GAME_HEIGHT + VCE_EDITOR_ADDITIONAL_HEIGHT;
-#else
-			int m_width = VCE_GAME_WIDTH, m_height = VCE_GAME_HEIGHT;
-#endif
+
 			vk::Instance m_instance;
 			vk::DebugUtilsMessengerEXT m_debugMessenger;
 			

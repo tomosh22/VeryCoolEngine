@@ -6,29 +6,27 @@ namespace VeryCoolEngine {
 	std::vector<glm::quat> Transform::uniqueQuats;
 
 	inline void Transform::UpdateMatrix() {
-		glm::mat4 trans = glm::translate(glm::identity<glm::mat4>(), _position);
-		glm::mat4 rotation = RotationMatFromQuat(_rotationQuat);
-		glm::mat4 scale = glm::scale(glm::identity<glm::mat4>(), _scale);
-		_matrix = trans * rotation * scale;
-		//__debugbreak();
+		glm::mat4 xTrans = glm::translate(glm::identity<glm::mat4>(), m_xPosition);
+		glm::mat4 xRotation = RotationMatFromQuat(m_xRotationQuat);
+		m_xMatrix = xTrans * xRotation;
 	}
 	void Transform::UpdateRotation()
 	{
 		//#todo remove or true
-		if (_prevRoll != _roll || _prevYaw != _yaw || _prevPitch != _pitch || true) _rotationQuat = EulerAnglesToQuat(_roll, _yaw, _pitch);
-		_prevRoll = _roll;
-		_prevYaw = _yaw;
-		_prevPitch = _pitch;
+		if (m_fPrevRoll != m_fRoll || m_fPrevYaw != m_fYaw || m_fPrevPitch != m_fPitch || true) m_xRotationQuat = EulerAnglesToQuat(m_fRoll, m_fYaw, m_fPitch);
+		m_fPrevRoll = m_fRoll;
+		m_fPrevYaw = m_fYaw;
+		m_fPrevPitch = m_fPitch;
 	}
 	void Transform::SetPosition(const glm::vec3& pos)
 	{
-		_position = pos;
+		m_xPosition = pos;
 		UpdateMatrix();
 	}
 
 	void Transform::SetRotationQuat(const glm::quat& rot)
 	{
-		_rotationQuat = rot;
+		m_xRotationQuat = rot;
 		UpdateMatrix();
 	}
 

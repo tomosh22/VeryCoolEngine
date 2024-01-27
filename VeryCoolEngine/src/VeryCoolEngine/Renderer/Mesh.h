@@ -102,7 +102,7 @@ namespace VeryCoolEngine {
 		static Mesh* GenerateQuad(float fScale = 1.0f);
 		static Mesh* GenerateVulkanTest();
 
-		static Mesh* FromFile(const std::string& path, uint32_t uMeshIndex = 0, bool swapYZ = false);
+		static Mesh* FromFile(const std::string& path, bool swapYZ = false);
 
 
 		std::vector<BufferElement> m_axInstanceData;

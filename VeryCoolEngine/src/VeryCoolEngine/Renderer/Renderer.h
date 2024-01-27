@@ -16,6 +16,12 @@ namespace VeryCoolEngine {
 	{
 	public:
 
+#ifdef VCE_USE_EDITOR
+		int m_width = VCE_GAME_WIDTH + VCE_EDITOR_ADDITIONAL_WIDTH, m_height = VCE_GAME_HEIGHT + VCE_EDITOR_ADDITIONAL_HEIGHT;
+#else
+		int m_width = VCE_GAME_WIDTH, m_height = VCE_GAME_HEIGHT;
+#endif
+
 		virtual void MainLoop() = 0;
 
 		virtual void InitWindow() = 0;

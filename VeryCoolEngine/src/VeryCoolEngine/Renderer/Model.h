@@ -41,7 +41,7 @@ namespace VeryCoolEngine {
 
         reactphysics3d::Transform* m_pxTransform;
         reactphysics3d::RigidBody* m_pxRigidBody;
-        //Transform m_xTransform;
+        glm::vec3 m_xScale;
 
         VCEModel() = default;
 

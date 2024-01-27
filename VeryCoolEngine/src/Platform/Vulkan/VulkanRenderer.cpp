@@ -262,6 +262,7 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 	for (VCEModel* pxModel : app->scene->m_axPipelineMeshes.at("Meshes")) {
 		glm::mat4 xMatrix;
 		pxModel->m_pxTransform->getOpenGLMatrix(&xMatrix[0][0]);
+		xMatrix *= glm::scale(glm::identity<glm::mat4>(), pxModel->m_xScale);
 		for (Mesh* pxMesh : pxModel->m_apxMeshes) {
 			VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(pxMesh);
 			m_pxOpaqueMeshesCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);

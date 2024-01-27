@@ -80,6 +80,8 @@ namespace VeryCoolEngine {
 			return *this;
 		}
 
+		glm::vec3 ScreenSpaceToWorldSpace(glm::vec3 xScreenSpace);
+
 		//Builds a view matrix for the current camera variables, suitable for sending straight
 		//to a vertex shader (i.e it's already an 'inverse camera matrix').
 		glm::mat4 BuildViewMatrix() const;
@@ -105,6 +107,8 @@ namespace VeryCoolEngine {
 
 		static Camera BuildPerspectiveCamera(const glm::vec3& pos, float pitch, float yaw, float fov, float near, float far, float aspectRatio);
 		static Camera BuildOrthoCamera(const glm::vec3& pos, float pitch, float yaw, float left, float right, float top, float bottom, float near, float far);
+
+		std::pair<double, double> prevMousePos = { FLT_MAX,0 };
 	protected:
 		CameraType camType;
 
@@ -123,6 +127,6 @@ namespace VeryCoolEngine {
 
 		glm::vec3 position;
 
-		std::pair<double, double> prevMousePos = { FLT_MAX,0};
+		
 	};
 }
