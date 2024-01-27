@@ -28,6 +28,7 @@ namespace VeryCoolEngine {
 
 		void AddBoxCollisionVolumeToModel(VCEModel* pxModel, glm::vec3 xHalfExtents);
 		void AddSphereCollisionVolumeToModel(VCEModel* pxModel, float fRadius);
+		void AddCapsuleCollisionVolumeToModel(VCEModel* pxModel, float fRadius, float fHeight);
 		
 	};
 

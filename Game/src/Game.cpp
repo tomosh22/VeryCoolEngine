@@ -44,6 +44,10 @@ namespace VeryCoolEngine {
 		VCEModel* pxCube = AddModel("cubeFlat.obj", m_xMaterialMap.at("rock2k"), Transform({ -10,50,-10 }, glm::vec3(10, 10, 10)));
 		AddBoxCollisionVolumeToModel(pxCube, pxCube->m_xScale);
 
+		//blender doesn't UV map capsules so just using a stretched sphere instead
+		VCEModel* pxCapsule = AddModel("sphereSmooth.obj", m_xMaterialMap.at("rock2k"), Transform({ 10,50,-10 }, glm::vec3(5, 10, 5)));
+		AddCapsuleCollisionVolumeToModel(pxCapsule, 5,10);
+
 		VCEModel* pxPlane = AddModel("plane.obj", m_xMaterialMap.at("crystal2k"), Transform({ 0,0,0 }, glm::vec3(1000, 0.1, 1000)));
 		AddBoxCollisionVolumeToModel(pxPlane, pxPlane->m_xScale);
 		pxPlane->m_pxRigidBody->setType(reactphysics3d::BodyType::STATIC);
@@ -139,6 +143,16 @@ namespace VeryCoolEngine {
 		pxModel->m_pxRigidBody->setType(reactphysics3d::BodyType::DYNAMIC);
 	}
 
+	void Game::AddCapsuleCollisionVolumeToModel(VCEModel* pxModel, float fRadius, float fHeight)
+	{
+		pxModel->m_bUsePhysics = true;
+
+		pxModel->m_pxRigidBody = Physics::s_pxPhysicsWorld->createRigidBody(*pxModel->m_pxTransform);
+
+		reactphysics3d::CapsuleShape* pxShape = Physics::s_xPhysicsCommon.createCapsuleShape(fRadius, fHeight);
+		reactphysics3d::Collider* pxCollider = pxModel->m_pxRigidBody->addCollider(pxShape, reactphysics3d::Transform::identity());
+		pxModel->m_pxRigidBody->setType(reactphysics3d::BodyType::DYNAMIC);
+	}
 	
 
 	
