@@ -80,6 +80,8 @@ namespace VeryCoolEngine {
 		m_pxBlankTexture2D = Texture2D::Create(1, 1, TextureFormat::RGBA);
 		
 		scene = new Scene();
+
+		m_xEditorCamera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, float(VCE_GAME_WIDTH) / float(VCE_GAME_HEIGHT));
 	}
 
 	
@@ -306,7 +308,8 @@ namespace VeryCoolEngine {
 		sceneMutex.lock();
 		scene->Reset();
 
-		scene->camera = &_Camera;
+		scene->camera = m_eCurrentState == VCE_GAMESTATE_EDITOR ? &m_xEditorCamera : &m_xGameCamera;
+
 		scene->skybox = _pCubemap;
 
 		for (RendererAPI::Light& light : _lights) {
@@ -352,7 +355,7 @@ namespace VeryCoolEngine {
 		}
 
 		RendererAPI::Light camLight{
-				_Camera.GetPosition().x,_Camera.GetPosition().y,_Camera.GetPosition().z,100,
+				m_xEditorCamera.GetPosition().x,m_xEditorCamera.GetPosition().y,m_xEditorCamera.GetPosition().z,100,
 				1,1,1,1
 		};
 		scene->lights[scene->numLights++] = camLight;
@@ -375,14 +378,14 @@ namespace VeryCoolEngine {
 			m_fDeltaTime = duration.count()/1000.;
 			_LastFrameTime = now;
 
-
-			_Camera.UpdateCamera(m_fDeltaTime);
+			if(m_eCurrentState == VCE_GAMESTATE_EDITOR)
+				m_xEditorCamera.UpdateCamera(m_fDeltaTime);
 
 
 			switch (m_eCurrentState) {
 			case VCE_GAMESTATE_EDITOR:
-				if (_Camera.IsCursorInRendererViewport() && Input::IsMouseButtonPressed(VCE_MOUSE_BUTTON_LEFT)) {
-					reactphysics3d::Ray xCursorRay = Physics::BuildRayFromMouse(&_Camera);
+				if (m_xEditorCamera.IsCursorInRendererViewport() && Input::IsMouseButtonPressed(VCE_MOUSE_BUTTON_LEFT)) {
+					reactphysics3d::Ray xCursorRay = Physics::BuildRayFromMouse(&m_xEditorCamera);
 
 					VCEModel* pxHitModel = nullptr;
 					float fHitDistance = FLT_MAX;
@@ -408,6 +411,7 @@ namespace VeryCoolEngine {
 				break;
 			case VCE_GAMESTATE_PLAYING:
 				Physics::UpdatePhysics();
+				GameLoop(m_fDeltaTime);
 				m_pxSelectedModel = nullptr;
 				break;
 				VCE_ASSERT(false, "Invalid game state");
@@ -417,7 +421,7 @@ namespace VeryCoolEngine {
 				if(pxModel->m_bUsePhysics)
 					pxModel->m_pxTransform = (reactphysics3d::Transform*)&pxModel->m_pxRigidBody->getTransform();
 			
-			GameLoop(m_fDeltaTime);
+
 			ConstructScene(m_fDeltaTime);
 
 			

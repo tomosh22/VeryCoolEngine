@@ -11,7 +11,7 @@ namespace VeryCoolEngine {
 	void Physics::InitPhysics()
 	{
 		s_pxPhysicsWorld = s_xPhysicsCommon.createPhysicsWorld();
-		s_pxPhysicsWorld->setGravity({ 0,-1,0 });
+		s_pxPhysicsWorld->setGravity({ 0,-9.81,0 });
 
 	}
 

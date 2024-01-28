@@ -7,7 +7,10 @@
 
 #include "VeryCoolEngine/BlockWorld/BlockWorld.h"
 
-#include "VeryCoolEngine/Physics/Physics.h"
+#include <glm/gtx/transform.hpp>
+#include <glm/mat4x4.hpp>
+
+
 
 namespace VeryCoolEngine {
 
@@ -25,7 +28,8 @@ namespace VeryCoolEngine {
 
 	Game::Game() {
 
-
+		m_xPhysicsEventListener = PhysicsEventListener(this);
+		Physics::s_pxPhysicsWorld->setEventListener(&m_xPhysicsEventListener);
 		//m_pxBlockWorld = new BlockWorld();
 
 		m_xMaterialMap.insert({ "rock2k", Material::Create("rock2k") });
@@ -45,13 +49,13 @@ namespace VeryCoolEngine {
 		AddBoxCollisionVolumeToModel(pxCube, pxCube->m_xScale);
 
 		//blender doesn't UV map capsules so just using a stretched sphere instead
-		VCEModel* pxCapsule = AddModel("sphereSmooth.obj", m_xMaterialMap.at("rock2k"), Transform({ 10,50,-10 }, glm::vec3(5, 10, 5)));
-		AddCapsuleCollisionVolumeToModel(pxCapsule, 5,10);
-		pxCapsule->m_pxRigidBody->setAngularLockAxisFactor(reactphysics3d::Vector3(0, 0, 0));
+		m_pxPlayerModel = AddModel("sphereSmooth.obj", m_xMaterialMap.at("rock2k"), Transform({ 10,50,-10 }, glm::vec3(5, 10, 5)));
+		AddCapsuleCollisionVolumeToModel(m_pxPlayerModel, 5,10);
+		m_pxPlayerModel->m_pxRigidBody->setAngularLockAxisFactor(reactphysics3d::Vector3(0, 0, 0));
 
-		VCEModel* pxPlane = AddModel("plane.obj", m_xMaterialMap.at("crystal2k"), Transform({ 0,0,0 }, glm::vec3(1000, 0.1, 1000)));
-		AddBoxCollisionVolumeToModel(pxPlane, pxPlane->m_xScale);
-		pxPlane->m_pxRigidBody->setType(reactphysics3d::BodyType::STATIC);
+		m_pxGroundPlane = AddModel("plane.obj", m_xMaterialMap.at("crystal2k"), Transform({ 0,0,0 }, glm::vec3(1000, 0.1, 1000)));
+		AddBoxCollisionVolumeToModel(m_pxGroundPlane, m_pxGroundPlane->m_xScale);
+		m_pxGroundPlane->m_pxRigidBody->setType(reactphysics3d::BodyType::STATIC);
 		
 		_lights.push_back({
 				50,200,50,100,
@@ -64,7 +68,7 @@ namespace VeryCoolEngine {
 			});
 
 
-		_Camera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, float(VCE_GAME_WIDTH) / float(VCE_GAME_HEIGHT));
+		m_xGameCamera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, float(VCE_GAME_WIDTH) / float(VCE_GAME_HEIGHT));
 		
 
 		_renderThreadCanStart = true;
@@ -168,7 +172,44 @@ namespace VeryCoolEngine {
 	void Application::GameLoop(float fDt) {
 		Game* game = (Game*)Application::GetInstance();
 		
+		glm::vec3 xCamPos = { game->m_pxPlayerModel->m_pxTransform->getPosition().x, game->m_pxPlayerModel->m_pxTransform->getPosition().y + 15, game->m_pxPlayerModel->m_pxTransform->getPosition().z };
+		m_xGameCamera.SetPosition(xCamPos);
+		m_xGameCamera.UpdateRotation();
 
+		constexpr const float fMoveSpeed = 20;
+		if (game->m_bPlayerIsOnFloor) {
+			reactphysics3d::Vector3 xFinalVelocity(0, 0, 0);
+			if (Input::IsKeyPressed(VCE_KEY_SPACE)) {
+				xFinalVelocity += reactphysics3d::Vector3(0, 10, 0);
+			}
+			if (Input::IsKeyPressed(VCE_KEY_W)) {
+				glm::mat4 rotation = glm::rotate(m_xGameCamera.GetYaw(), glm::vec3(0, 1, 0));
+				glm::vec4 result = rotation * glm::vec4(0, 0, -1, 1) * fDt;
+				glm::vec3 xVelocity = glm::vec3(result.x, result.y, result.z) * fMoveSpeed;
+				xFinalVelocity += reactphysics3d::Vector3(xVelocity.x, xVelocity.y, xVelocity.z);
+			}
+			if (Input::IsKeyPressed(VCE_KEY_S)) {
+				glm::mat4 rotation = glm::rotate(m_xGameCamera.GetYaw(), glm::vec3(0, 1, 0));
+				glm::vec4 result = rotation * glm::vec4(0, 0, -1, 1) * fDt;
+				result *= -1;
+				glm::vec3 xVelocity = glm::vec3(result.x, result.y, result.z) * fMoveSpeed;
+				xFinalVelocity += reactphysics3d::Vector3(xVelocity.x, xVelocity.y, xVelocity.z);
+			}
+			if (Input::IsKeyPressed(VCE_KEY_A)) {
+				glm::mat4 rotation = glm::rotate(m_xGameCamera.GetYaw(), glm::vec3(0, 1, 0));
+				glm::vec4 result = rotation * glm::vec4(-1, 0, 0, 1) * fDt;
+				glm::vec3 xVelocity = glm::vec3(result.x, result.y, result.z) * fMoveSpeed;
+				xFinalVelocity += reactphysics3d::Vector3(xVelocity.x, xVelocity.y, xVelocity.z);
+			}
+			if (Input::IsKeyPressed(VCE_KEY_D)) {
+				glm::mat4 rotation = glm::rotate(m_xGameCamera.GetYaw(), glm::vec3(0, 1, 0));
+				glm::vec4 result = rotation * glm::vec4(-1, 0, 0, 1) * fDt;
+				result *= -1;
+				glm::vec3 xVelocity = glm::vec3(result.x, result.y, result.z) * fMoveSpeed;
+				xFinalVelocity += reactphysics3d::Vector3(xVelocity.x, xVelocity.y, xVelocity.z);
+			}
+			game->m_pxPlayerModel->m_pxRigidBody->setLinearVelocity(xFinalVelocity);
+		}
 
 
 		//#TODO reimplement this

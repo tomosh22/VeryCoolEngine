@@ -121,7 +121,8 @@ namespace VeryCoolEngine {
 		};
 		ManagedUniformBuffer* m_pxMiscMeshRenderDataUBO = nullptr;
 
-		Camera _Camera;
+		Camera m_xEditorCamera;
+		Camera m_xGameCamera;
 
 		class BlockWorld* m_pxBlockWorld = nullptr;
 		std::vector<Shader*> _shaders;

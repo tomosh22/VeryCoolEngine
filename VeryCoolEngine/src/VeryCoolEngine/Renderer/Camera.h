@@ -57,6 +57,7 @@ namespace VeryCoolEngine {
 		~Camera(void) = default;
 
 		void UpdateCamera(float dt);
+		void UpdateRotation();
 
 		float GetFieldOfVision() const {
 			return fov;

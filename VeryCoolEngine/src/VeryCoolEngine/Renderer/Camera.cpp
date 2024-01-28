@@ -32,41 +32,8 @@ namespace VeryCoolEngine {
 		//Update the mouse by how much
 		double frameSpeed = dt / 50;
 
-		std::pair<double, double> currentMousePos = Input::GetMousePos();
-		if (prevMousePos.first == std::numeric_limits<float>::max()) {
-			prevMousePos = currentMousePos;
-			return;
-		}
-		if (Application::GetInstance()->_mouseEnabled) {
-			
-
-			//std::cout << currentMousePos.first << " " << currentMousePos.second << std::endl;
-
-
-
-			double deltaPitch = (currentMousePos.second - prevMousePos.second) / 1000.;
-			pitch -= deltaPitch;
-			double deltaYaw = (currentMousePos.first - prevMousePos.first) / 1000.;
-			yaw -= deltaYaw;
-
-			//if(deltaPitch != 0) std::cout << "pitch " << deltaPitch << std::endl;
-			//if (deltaYaw != 0)std::cout << "yaw " << deltaYaw << std::endl;
-			
-
-			//Bounds check the pitch, to be between straight up and straight down ;)
-			pitch = std::min(pitch, glm::pi<double>() / 2);
-			pitch = std::max(pitch, -glm::pi<double>() / 2);
-
-
-			if (yaw < 0) {
-				yaw += glm::pi<double>() * 2;
-			}
-			if (yaw > glm::pi<double>() * 2) {
-				yaw -= glm::pi<double>() * 2;
-			}
-		}
 		
-		prevMousePos = currentMousePos;
+		UpdateRotation();
 
 		//std::cout << yaw << std::endl;
 
@@ -102,6 +69,36 @@ namespace VeryCoolEngine {
 		if (Input::IsKeyPressed(VCE_KEY_SPACE)) {
 			position.y += frameSpeed;
 		}
+	}
+
+	void Camera::UpdateRotation() {
+
+		std::pair<double, double> currentMousePos = Input::GetMousePos();
+		if (prevMousePos.first == std::numeric_limits<float>::max()) {
+			prevMousePos = currentMousePos;
+			return;
+		}
+
+		if (Application::GetInstance()->_mouseEnabled) {
+
+			double deltaPitch = (currentMousePos.second - prevMousePos.second) / 1000.;
+			pitch -= deltaPitch;
+			double deltaYaw = (currentMousePos.first - prevMousePos.first) / 1000.;
+			yaw -= deltaYaw;
+
+			pitch = std::min(pitch, glm::pi<double>() / 2);
+			pitch = std::max(pitch, -glm::pi<double>() / 2);
+
+
+			if (yaw < 0) {
+				yaw += glm::pi<double>() * 2;
+			}
+			if (yaw > glm::pi<double>() * 2) {
+				yaw -= glm::pi<double>() * 2;
+			}
+		}
+
+		prevMousePos = currentMousePos;
 	}
 
 	bool Camera::IsCursorInRendererViewport()
