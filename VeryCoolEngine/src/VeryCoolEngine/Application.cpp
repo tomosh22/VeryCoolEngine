@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/mat4x4.hpp>
 #include "Physics/Physics.h"
+#include "GLFW/glfw3.h"
 
 
 
@@ -371,12 +372,14 @@ namespace VeryCoolEngine {
 			if (renderInitialised)break;//#todo implement mutex here
 		}
 		while (_running) {
-			std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
 			mainThreadReady = true;
-			std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
-			std::chrono::duration duration = std::chrono::duration_cast<std::chrono::microseconds>(now - _LastFrameTime);
-			m_fDeltaTime = duration.count()/1000.;
-			_LastFrameTime = now;
+
+			double fCurrentTime = glfwGetTime();
+			m_fDeltaTime = fCurrentTime - m_fLastFrameTime;
+			m_fLastFrameTime = fCurrentTime;
+
+			if (m_eCurrentState == VCE_GAMESTATE_PLAYING)
+				Physics::s_fTimestepAccumulator += m_fDeltaTime;
 
 			if(m_eCurrentState == VCE_GAMESTATE_EDITOR)
 				m_xEditorCamera.UpdateCamera(m_fDeltaTime);
@@ -429,12 +432,6 @@ namespace VeryCoolEngine {
 			for (Layer* layer : _layerStack)
 				layer->OnUpdate();
 
-			
-
-			
-
-			std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
-			std::chrono::duration frameDuration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
 		}
 		_renderThread.join();

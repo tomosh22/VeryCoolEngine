@@ -161,7 +161,8 @@ namespace VeryCoolEngine {
 
 		bool prevRState = false;
 
-		float m_fDeltaTime;
+		double m_fDeltaTime;
+		double m_fLastFrameTime;
 
 		VCEModel* m_pxSelectedModel = nullptr;
 
@@ -171,12 +172,6 @@ namespace VeryCoolEngine {
 		
 		
 		static Application* _spInstance;
-
-		
-
-
-		std::chrono::high_resolution_clock::time_point _LastFrameTime = std::chrono::high_resolution_clock::now();
-		float _DeltaTime;
 	};
 	Application* CreateApplication();
 

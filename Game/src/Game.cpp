@@ -184,26 +184,26 @@ namespace VeryCoolEngine {
 			}
 			if (Input::IsKeyPressed(VCE_KEY_W)) {
 				glm::mat4 rotation = glm::rotate(m_xGameCamera.GetYaw(), glm::vec3(0, 1, 0));
-				glm::vec4 result = rotation * glm::vec4(0, 0, -1, 1) * fDt;
+				glm::vec4 result = rotation * glm::vec4(0, 0, -1, 1);
 				glm::vec3 xVelocity = glm::vec3(result.x, result.y, result.z) * fMoveSpeed;
 				xFinalVelocity += reactphysics3d::Vector3(xVelocity.x, xVelocity.y, xVelocity.z);
 			}
 			if (Input::IsKeyPressed(VCE_KEY_S)) {
 				glm::mat4 rotation = glm::rotate(m_xGameCamera.GetYaw(), glm::vec3(0, 1, 0));
-				glm::vec4 result = rotation * glm::vec4(0, 0, -1, 1) * fDt;
+				glm::vec4 result = rotation * glm::vec4(0, 0, -1, 1);
 				result *= -1;
 				glm::vec3 xVelocity = glm::vec3(result.x, result.y, result.z) * fMoveSpeed;
 				xFinalVelocity += reactphysics3d::Vector3(xVelocity.x, xVelocity.y, xVelocity.z);
 			}
 			if (Input::IsKeyPressed(VCE_KEY_A)) {
 				glm::mat4 rotation = glm::rotate(m_xGameCamera.GetYaw(), glm::vec3(0, 1, 0));
-				glm::vec4 result = rotation * glm::vec4(-1, 0, 0, 1) * fDt;
+				glm::vec4 result = rotation * glm::vec4(-1, 0, 0, 1);
 				glm::vec3 xVelocity = glm::vec3(result.x, result.y, result.z) * fMoveSpeed;
 				xFinalVelocity += reactphysics3d::Vector3(xVelocity.x, xVelocity.y, xVelocity.z);
 			}
 			if (Input::IsKeyPressed(VCE_KEY_D)) {
 				glm::mat4 rotation = glm::rotate(m_xGameCamera.GetYaw(), glm::vec3(0, 1, 0));
-				glm::vec4 result = rotation * glm::vec4(-1, 0, 0, 1) * fDt;
+				glm::vec4 result = rotation * glm::vec4(-1, 0, 0, 1);
 				result *= -1;
 				glm::vec3 xVelocity = glm::vec3(result.x, result.y, result.z) * fMoveSpeed;
 				xFinalVelocity += reactphysics3d::Vector3(xVelocity.x, xVelocity.y, xVelocity.z);

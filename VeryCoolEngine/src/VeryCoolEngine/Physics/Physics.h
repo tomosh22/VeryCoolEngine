@@ -22,6 +22,10 @@ namespace VeryCoolEngine {
 		static void UpdatePhysics();
 
 		static reactphysics3d::Ray BuildRayFromMouse(Camera* pxCam);
+
+		static double s_fTimestepAccumulator;
+		//#TO_TODO: make this a define
+		static constexpr double s_fDesiredFramerate = 1./60.;
 	};
 
 }
