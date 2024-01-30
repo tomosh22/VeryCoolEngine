@@ -1,11 +1,12 @@
 #pragma once
 #include "reactphysics3d/reactphysics3d.h"
+#include "glm/glm.hpp"
 
 namespace VeryCoolEngine {
+	class VCEModel;
 	class Camera;
-	class Physics
+	namespace Physics
 	{
-	public:
 
 		enum class CollisionVolumeTYpe : uint32_t {
 			AABB,
@@ -14,18 +15,22 @@ namespace VeryCoolEngine {
 			Capsule
 		};
 
-		static reactphysics3d::PhysicsCommon s_xPhysicsCommon;
-		static reactphysics3d::PhysicsWorld* s_pxPhysicsWorld;
+		extern reactphysics3d::PhysicsCommon s_xPhysicsCommon;
+		extern reactphysics3d::PhysicsWorld* s_pxPhysicsWorld;
 
 
-		static void InitPhysics();
-		static void UpdatePhysics();
+		void InitPhysics();
+		void UpdatePhysics();
 
-		static reactphysics3d::Ray BuildRayFromMouse(Camera* pxCam);
+		void AddBoxCollisionVolumeToModel(VCEModel* pxModel, glm::vec3 xHalfExtents);
+		void AddSphereCollisionVolumeToModel(VCEModel* pxModel, float fRadius);
+		void AddCapsuleCollisionVolumeToModel(VCEModel* pxModel, float fRadius, float fHeight);
 
-		static double s_fTimestepAccumulator;
+		reactphysics3d::Ray BuildRayFromMouse(Camera* pxCam);
+
+		extern double s_fTimestepAccumulator;
 		//#TO_TODO: make this a define
-		static constexpr double s_fDesiredFramerate = 1./60.;
+		constexpr double s_fDesiredFramerate = 1./60.;
 	};
 
 }

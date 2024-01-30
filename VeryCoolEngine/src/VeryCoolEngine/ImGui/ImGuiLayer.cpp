@@ -180,6 +180,8 @@ namespace VeryCoolEngine {
 
 		ImGui::Begin("ImGui");
 
+		float fFrameRate = 1. / app->m_fDeltaTime;
+		ImGui::Text(std::to_string(fFrameRate).c_str());
 
 		std::string cameraText = std::string("Camera ") + (app->_mouseEnabled ? "enabled" : "disabled") + ". Q to toggle.";
 		ImGui::Text(cameraText.c_str());

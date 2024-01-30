@@ -309,6 +309,8 @@ namespace VeryCoolEngine {
 		sceneMutex.lock();
 		scene->Reset();
 
+		Physics::UpdatePhysics();
+
 		scene->camera = m_eCurrentState == VCE_GAMESTATE_EDITOR ? &m_xEditorCamera : &m_xGameCamera;
 
 		scene->skybox = _pCubemap;
@@ -374,8 +376,9 @@ namespace VeryCoolEngine {
 		while (_running) {
 			mainThreadReady = true;
 
-			double fCurrentTime = glfwGetTime();
-			m_fDeltaTime = fCurrentTime - m_fLastFrameTime;
+			std::chrono::high_resolution_clock::time_point fCurrentTime = std::chrono::high_resolution_clock::now();
+
+			m_fDeltaTime = std::chrono::duration_cast<std::chrono::nanoseconds>(fCurrentTime - m_fLastFrameTime).count() / 1.e9;
 			m_fLastFrameTime = fCurrentTime;
 
 			if (m_eCurrentState == VCE_GAMESTATE_PLAYING)
@@ -413,7 +416,6 @@ namespace VeryCoolEngine {
 				}
 				break;
 			case VCE_GAMESTATE_PLAYING:
-				Physics::UpdatePhysics();
 				GameLoop(m_fDeltaTime);
 				m_pxSelectedModel = nullptr;
 				break;

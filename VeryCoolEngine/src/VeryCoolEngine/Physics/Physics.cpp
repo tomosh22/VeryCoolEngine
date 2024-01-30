@@ -2,13 +2,15 @@
 #include "Physics.h"
 #include "VeryCoolEngine/Application.h"
 #include "VeryCoolEngine/Renderer/Camera.h"
+#include "VeryCoolEngine/Renderer/Model.h"
 
 namespace VeryCoolEngine {
 
-	reactphysics3d::PhysicsCommon Physics::s_xPhysicsCommon;
-	reactphysics3d::PhysicsWorld* Physics::s_pxPhysicsWorld;
-
-	double Physics::s_fTimestepAccumulator = 0;
+	namespace Physics {
+		reactphysics3d::PhysicsCommon s_xPhysicsCommon;
+		reactphysics3d::PhysicsWorld* s_pxPhysicsWorld;
+		double s_fTimestepAccumulator = 0;
+	}
 
 	void Physics::InitPhysics()
 	{
@@ -58,4 +60,37 @@ namespace VeryCoolEngine {
 		return xRet;
 	}
 
+
+	void Physics::AddBoxCollisionVolumeToModel(VCEModel* pxModel, glm::vec3 xHalfExtents)
+	{
+		pxModel->m_bUsePhysics = true;
+
+		pxModel->m_pxRigidBody = Physics::s_pxPhysicsWorld->createRigidBody(*pxModel->m_pxTransform);
+
+		reactphysics3d::BoxShape* pxShape = Physics::s_xPhysicsCommon.createBoxShape(reactphysics3d::Vector3(xHalfExtents.x, xHalfExtents.y, xHalfExtents.z));
+		reactphysics3d::Collider* pxCollider = pxModel->m_pxRigidBody->addCollider(pxShape, reactphysics3d::Transform::identity());
+		pxModel->m_pxRigidBody->setType(reactphysics3d::BodyType::DYNAMIC);
+	}
+
+	void Physics::AddSphereCollisionVolumeToModel(VCEModel* pxModel, float fRadius)
+	{
+		pxModel->m_bUsePhysics = true;
+
+		pxModel->m_pxRigidBody = Physics::s_pxPhysicsWorld->createRigidBody(*pxModel->m_pxTransform);
+
+		reactphysics3d::SphereShape* pxShape = Physics::s_xPhysicsCommon.createSphereShape(fRadius);
+		reactphysics3d::Collider* pxCollider = pxModel->m_pxRigidBody->addCollider(pxShape, reactphysics3d::Transform::identity());
+		pxModel->m_pxRigidBody->setType(reactphysics3d::BodyType::DYNAMIC);
+	}
+
+	void Physics::AddCapsuleCollisionVolumeToModel(VCEModel* pxModel, float fRadius, float fHeight)
+	{
+		pxModel->m_bUsePhysics = true;
+
+		pxModel->m_pxRigidBody = Physics::s_pxPhysicsWorld->createRigidBody(*pxModel->m_pxTransform);
+
+		reactphysics3d::CapsuleShape* pxShape = Physics::s_xPhysicsCommon.createCapsuleShape(fRadius, fHeight);
+		reactphysics3d::Collider* pxCollider = pxModel->m_pxRigidBody->addCollider(pxShape, reactphysics3d::Transform::identity());
+		pxModel->m_pxRigidBody->setType(reactphysics3d::BodyType::DYNAMIC);
+	}
 }

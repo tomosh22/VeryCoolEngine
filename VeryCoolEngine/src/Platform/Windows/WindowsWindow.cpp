@@ -92,8 +92,6 @@ namespace VeryCoolEngine {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			data._eventCallback(MouseMovedEvent((float)xPos, (float)yPos));
 		});
-
-
 	}
 
 	void WindowsWindow::SetVSync(bool enabled) {

@@ -162,7 +162,7 @@ namespace VeryCoolEngine {
 		bool prevRState = false;
 
 		double m_fDeltaTime;
-		double m_fLastFrameTime;
+		std::chrono::high_resolution_clock::time_point m_fLastFrameTime;
 
 		VCEModel* m_pxSelectedModel = nullptr;
 

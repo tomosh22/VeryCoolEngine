@@ -54,9 +54,6 @@ namespace VeryCoolEngine {
 		//TODO: make xTrans a reference
 		VCEModel* AddModel(const char* szFileName, Transform xTrans);
 
-		void AddBoxCollisionVolumeToModel(VCEModel* pxModel, glm::vec3 xHalfExtents);
-		void AddSphereCollisionVolumeToModel(VCEModel* pxModel, float fRadius);
-		void AddCapsuleCollisionVolumeToModel(VCEModel* pxModel, float fRadius, float fHeight);
 		
 
 		VCEModel* m_pxPlayerModel;
