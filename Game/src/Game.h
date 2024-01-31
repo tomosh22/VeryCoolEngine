@@ -21,9 +21,9 @@ namespace VeryCoolEngine {
 				for (uint32_t i = 0; i < xCallbackData.getNbContactPairs(); i++) {
 					CollisionCallback::ContactPair xContactPair = xCallbackData.getContactPair(i);
 
-					reactphysics3d::RigidBody* pxPlayerBody = m_pxGame->m_pxPlayerModel->m_pxRigidBody;
-					reactphysics3d::RigidBody* pxGroundBody = m_pxGame->m_pxGroundPlane->m_pxRigidBody;
-					if ((xContactPair.getBody1() == pxPlayerBody && xContactPair.getBody2() == pxGroundBody) || (xContactPair.getBody2() == pxPlayerBody && xContactPair.getBody1() == pxGroundBody)) {
+					VCEModel* pxModel1 = reinterpret_cast<VCEModel*>(xContactPair.getBody1()->getUserData());
+					VCEModel* pxModel2 = reinterpret_cast<VCEModel*>(xContactPair.getBody2()->getUserData());
+					if ((pxModel1 == m_pxGame->m_pxPlayerModel && pxModel2 == m_pxGame->m_pxGroundPlane) || (pxModel2 == m_pxGame->m_pxPlayerModel && pxModel1 == m_pxGame->m_pxGroundPlane)) {
 						reactphysics3d::CollisionCallback::ContactPair::EventType eContactType = xContactPair.getEventType();
 
 						if (eContactType == reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStart)
