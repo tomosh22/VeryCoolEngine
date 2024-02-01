@@ -18,6 +18,7 @@
 #include "VeryCoolEngine/Renderer/Model.h"
 #include "VeryCoolEngine/Renderer/PipelineSpecification.h"
 #include "VeryCoolEngine/Renderer/Animation.h"
+#include "Physics/Physics.h"
 
 //#define VCE_DEFERRED_SHADING
 
@@ -71,6 +72,8 @@ namespace VeryCoolEngine {
 		static Application* GetInstance() { return _spInstance; }
 
 		void ConstructScene(float fDt);
+
+		void CollisionCallback(VCEModel* pxModel1, VCEModel* pxModel2, Physics::CollisionEventType eType);
 
 		//don't like that I can't use uint32_t, blame imgui
 		enum GameState : int {

@@ -16,9 +16,6 @@ namespace VeryCoolEngine {
 	
 	Game::Game() {
 
-		m_xPhysicsEventListener = PhysicsEventListener(this);
-		Physics::s_pxPhysicsWorld->setEventListener(&m_xPhysicsEventListener);
-
 		m_xMaterialMap.insert({ "rock2k", Material::Create("rock2k") });
 		m_xMaterialMap.insert({ "crystal2k", Material::Create("crystal2k") });
 
@@ -161,6 +158,17 @@ namespace VeryCoolEngine {
 			}
 			game->m_pxPlayerModel->m_pxRigidBody->setLinearVelocity(xFinalVelocity);
 		}
+	}
+
+	void Application::CollisionCallback(VCEModel* pxModel1, VCEModel* pxModel2, Physics::CollisionEventType eType) {
+		Game* pxGame = (Game*)Application::GetInstance();
+		if ((pxModel1 == pxGame->m_pxPlayerModel && pxModel2 == pxGame->m_pxGroundPlane) || (pxModel2 == pxGame->m_pxPlayerModel && pxModel1 == pxGame->m_pxGroundPlane)) {
+			if(eType == Physics::CollisionEventType::Start)
+				pxGame->m_bPlayerIsOnFloor = true;
+			else if (eType == Physics::CollisionEventType::Exit)
+				pxGame->m_bPlayerIsOnFloor = false;
+		}
+			
 	}
 
 	//extern definition (EntryPoint.h)

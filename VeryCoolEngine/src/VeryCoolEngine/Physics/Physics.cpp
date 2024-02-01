@@ -10,13 +10,15 @@ namespace VeryCoolEngine {
 		reactphysics3d::PhysicsCommon s_xPhysicsCommon;
 		reactphysics3d::PhysicsWorld* s_pxPhysicsWorld;
 		double s_fTimestepAccumulator = 0;
+		PhysicsEventListener s_xEventListener;
 	}
 
 	void Physics::InitPhysics()
 	{
 		s_pxPhysicsWorld = s_xPhysicsCommon.createPhysicsWorld();
 		s_pxPhysicsWorld->setGravity({ 0,-9.81,0 });
-
+		s_xEventListener = PhysicsEventListener(Application::GetInstance());
+		s_pxPhysicsWorld->setEventListener(&s_xEventListener);
 	}
 
 	void Physics::UpdatePhysics() {
@@ -101,5 +103,29 @@ namespace VeryCoolEngine {
 
 		//#TO: so I can access model from within collision callback
 		pxModel->m_pxRigidBody->setUserData(pxModel);
+	}
+
+
+	Physics::PhysicsEventListener::PhysicsEventListener(VeryCoolEngine::Application* pxApp) : m_pxApp(pxApp) {}
+
+	void Physics::PhysicsEventListener::onContact(const CollisionCallback::CallbackData& xCallbackData) {
+		for (uint32_t i = 0; i < xCallbackData.getNbContactPairs(); i++) {
+			CollisionCallback::ContactPair xContactPair = xCallbackData.getContactPair(i);
+
+			VCEModel* pxModel1 = reinterpret_cast<VCEModel*>(xContactPair.getBody1()->getUserData());
+			VCEModel* pxModel2 = reinterpret_cast<VCEModel*>(xContactPair.getBody2()->getUserData());
+			switch (xContactPair.getEventType()) {
+			case reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStart:
+				m_pxApp->CollisionCallback(pxModel1, pxModel2, CollisionEventType::Start);
+				break;
+			case reactphysics3d::CollisionCallback::ContactPair::EventType::ContactExit:
+				m_pxApp->CollisionCallback(pxModel1, pxModel2, CollisionEventType::Exit);
+				break;
+			case reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStay:
+				m_pxApp->CollisionCallback(pxModel1, pxModel2, CollisionEventType::Stay);
+				break;
+			}
+
+		}
 	}
 }

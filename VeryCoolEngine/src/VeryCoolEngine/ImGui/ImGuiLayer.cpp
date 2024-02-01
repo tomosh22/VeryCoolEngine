@@ -237,6 +237,8 @@ namespace VeryCoolEngine {
 
 		ImGui::End();
 
+		ImGui::ShowDemoWindow();
+
 		/*if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("Options"))
