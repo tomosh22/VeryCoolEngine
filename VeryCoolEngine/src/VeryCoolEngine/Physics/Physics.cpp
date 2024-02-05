@@ -8,7 +8,7 @@ namespace VeryCoolEngine {
 
 	namespace Physics {
 		reactphysics3d::PhysicsCommon s_xPhysicsCommon;
-		reactphysics3d::PhysicsWorld* s_pxPhysicsWorld;
+		reactphysics3d::PhysicsWorld* s_pxPhysicsWorld = nullptr;
 		double s_fTimestepAccumulator = 0;
 		PhysicsEventListener s_xEventListener;
 	}
@@ -26,6 +26,12 @@ namespace VeryCoolEngine {
 			s_pxPhysicsWorld->update(s_fDesiredFramerate);
 			s_fTimestepAccumulator -= s_fDesiredFramerate;
 		}
+	}
+
+	void Physics::ResetPhysics() {
+		s_xPhysicsCommon.destroyPhysicsWorld(s_pxPhysicsWorld);
+		s_pxPhysicsWorld = s_xPhysicsCommon.createPhysicsWorld();
+		s_pxPhysicsWorld->setEventListener(&s_xEventListener);
 	}
 
 	reactphysics3d::Ray Physics::BuildRayFromMouse(Camera* pxCam)

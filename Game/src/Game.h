@@ -21,6 +21,8 @@ namespace VeryCoolEngine {
 
 		
 
+		
+
 		//TODO: make xTrans a reference
 		VCEModel* AddModel(const char* szFileName, Material* pxMaterial, Transform xTrans);
 

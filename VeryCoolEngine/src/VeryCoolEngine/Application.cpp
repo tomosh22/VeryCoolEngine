@@ -79,6 +79,8 @@ namespace VeryCoolEngine {
 		});
 		
 		m_pxBlankTexture2D = Texture2D::Create(1, 1, TextureFormat::RGBA);
+
+		
 		
 		scene = new Scene();
 
@@ -373,6 +375,9 @@ namespace VeryCoolEngine {
 			Sleep(1);
 			if (renderInitialised)break;//#todo implement mutex here
 		}
+
+		ResetScene();
+
 		while (_running) {
 			mainThreadReady = true;
 
@@ -380,6 +385,27 @@ namespace VeryCoolEngine {
 
 			m_fDeltaTime = std::chrono::duration_cast<std::chrono::nanoseconds>(fCurrentTime - m_fLastFrameTime).count() / 1.e9;
 			m_fLastFrameTime = fCurrentTime;
+
+			if (m_eCurrentState != m_ePrevState) {
+				sceneMutex.lock();
+				Physics::ResetPhysics();
+				ResetScene();
+				
+				switch (m_eCurrentState) {
+				case VCE_GAMESTATE_PLAYING:
+					break;
+				case VCE_GAMESTATE_EDITOR:
+					break;
+				}
+				sceneMutex.unlock();
+				m_bSkipFrame = true;
+			}
+			m_ePrevState = m_eCurrentState;
+
+			if (m_bSkipFrame) {
+				m_bSkipFrame = false;
+				continue;
+			}
 
 			if (m_eCurrentState == VCE_GAMESTATE_PLAYING)
 				Physics::s_fTimestepAccumulator += m_fDeltaTime;
@@ -426,7 +452,6 @@ namespace VeryCoolEngine {
 				if(pxModel->m_bUsePhysics)
 					pxModel->m_pxTransform = (reactphysics3d::Transform*)&pxModel->m_pxRigidBody->getTransform();
 			
-
 			ConstructScene(m_fDeltaTime);
 
 			

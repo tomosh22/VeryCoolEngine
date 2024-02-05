@@ -81,6 +81,10 @@ namespace VeryCoolEngine {
 			VCE_GAMESTATE_PLAYING
 		};
 		int m_eCurrentState = VCE_GAMESTATE_EDITOR;
+		int m_ePrevState = m_eCurrentState;
+		bool m_bSkipFrame = false;
+
+		void ResetScene();
 
 		Window* _window;
 

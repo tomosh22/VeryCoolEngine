@@ -28,6 +28,8 @@ namespace VeryCoolEngine {
 		virtual void PlatformInit()=0;
 		void GenericInit();
 
+		virtual void InitialiseAssets() = 0;
+
 		virtual void OnResize(uint32_t uWidth, uint32_t uHeight) = 0;
 
 
