@@ -82,7 +82,7 @@ namespace VeryCoolEngine {
 
 		
 		
-		scene = new RendererScene();
+		m_pxRendererScene = new RendererScene();
 
 		m_xEditorCamera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, float(VCE_GAME_WIDTH) / float(VCE_GAME_HEIGHT));
 	}
@@ -130,7 +130,7 @@ namespace VeryCoolEngine {
 
 	Application::~Application() { 
 		delete _window;
-		delete scene;
+		delete m_pxRendererScene;
 	}
 
 	
@@ -309,25 +309,25 @@ namespace VeryCoolEngine {
 	void Application::ConstructScene(float fDt)
 	{
 		sceneMutex.lock();
-		scene->Reset();
+		m_pxRendererScene->Reset();
 
 		Physics::UpdatePhysics();
 
-		scene->camera = m_eCurrentState == VCE_GAMESTATE_EDITOR ? &m_xEditorCamera : &m_xGameCamera;
+		m_pxRendererScene->camera = m_eCurrentState == VCE_GAMESTATE_EDITOR ? &m_xEditorCamera : &m_xGameCamera;
 
-		scene->skybox = _pCubemap;
+		m_pxRendererScene->skybox = _pCubemap;
 
 		for (RendererAPI::Light& light : _lights) {
-			scene->lights[scene->numLights++] = light;
+			m_pxRendererScene->lights[m_pxRendererScene->numLights++] = light;
 		}
 
-		scene->m_axPipelineMeshes.insert({ "Skybox", std::vector<VCEModel*>() });
-		scene->m_axPipelineMeshes.at("Skybox").push_back(m_pxQuadModel);
+		m_pxRendererScene->m_axPipelineMeshes.insert({ "Skybox", std::vector<VCEModel*>() });
+		m_pxRendererScene->m_axPipelineMeshes.at("Skybox").push_back(m_pxQuadModel);
 
 
-		scene->m_axPipelineMeshes.insert({ "Meshes", std::vector<VCEModel*>() });
+		m_pxRendererScene->m_axPipelineMeshes.insert({ "Meshes", std::vector<VCEModel*>() });
 
-		scene->m_axPipelineMeshes.insert({ "SkinnedMeshes", std::vector<VCEModel*>() });
+		m_pxRendererScene->m_axPipelineMeshes.insert({ "SkinnedMeshes", std::vector<VCEModel*>() });
 		for (VCEModel* pxModel : m_apxModels) {
 			if (pxModel->m_pxAnimation != nullptr) {
 				//has an animation
@@ -338,7 +338,7 @@ namespace VeryCoolEngine {
 						pxMesh->m_xBoneMats.at(i) = xAnimMats.at(i);
 					}
 				}
-				scene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(pxModel);
+				m_pxRendererScene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(pxModel);
 			}
 			else {
 				//TODO: check this properly
@@ -346,26 +346,26 @@ namespace VeryCoolEngine {
 				//does not have an animation
 				//hacky way to make sure this mesh belongs in this pipeline
 				if (pxModel->m_apxMeshes.back()->m_pxMaterial != nullptr)
-					scene->m_axPipelineMeshes.at("Meshes").push_back(pxModel);
+					m_pxRendererScene->m_axPipelineMeshes.at("Meshes").push_back(pxModel);
 
 			}
 		}
 
-		scene->m_axPipelineMeshes.insert({ "GBuffer", std::vector<VCEModel*>() });
+		m_pxRendererScene->m_axPipelineMeshes.insert({ "GBuffer", std::vector<VCEModel*>() });
 		for (VCEModel* model : m_apxModels)
-			scene->m_axPipelineMeshes.at("GBuffer").push_back(model);
+			m_pxRendererScene->m_axPipelineMeshes.at("GBuffer").push_back(model);
 
 		for (RendererAPI::Light& light : _lights) {
-			scene->lights[scene->numLights++] = light;
+			m_pxRendererScene->lights[m_pxRendererScene->numLights++] = light;
 		}
 
 		RendererAPI::Light camLight{
 				m_xEditorCamera.GetPosition().x,m_xEditorCamera.GetPosition().y,m_xEditorCamera.GetPosition().z,100,
 				1,1,1,1
 		};
-		scene->lights[scene->numLights++] = camLight;
+		m_pxRendererScene->lights[m_pxRendererScene->numLights++] = camLight;
 
-		scene->ready = true;
+		m_pxRendererScene->ready = true;
 		sceneMutex.unlock();
 	}
 

@@ -94,7 +94,7 @@ namespace VeryCoolEngine {
 		bool renderThreadShouldRun = true;
 		bool renderInitialised = false;
 		std::mutex sceneMutex;
-		RendererScene* scene;
+		RendererScene* m_pxRendererScene;
 
 		Renderer* _pRenderer;
 		//RenderPass* m_pxBackbufferRenderPass;
