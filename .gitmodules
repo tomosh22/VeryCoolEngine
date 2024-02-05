@@ -16,3 +16,6 @@
 [submodule "verycoolengine/vendor/reactphysics3d"]
 	path = verycoolengine/vendor/reactphysics3d
 	url = https://github.com/tomosh22/reactphysics3dpremake
+[submodule "VeryCoolEngine/vendor/entt"]
+	path = VeryCoolEngine/vendor/entt
+	url = https://github.com/skypjack/entt.git
