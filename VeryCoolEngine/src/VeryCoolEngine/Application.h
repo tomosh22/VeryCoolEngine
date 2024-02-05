@@ -19,6 +19,7 @@
 #include "VeryCoolEngine/Renderer/PipelineSpecification.h"
 #include "VeryCoolEngine/Renderer/Animation.h"
 #include "Physics/Physics.h"
+#include "Scene/Scene.h"
 
 //#define VCE_DEFERRED_SHADING
 
@@ -95,6 +96,8 @@ namespace VeryCoolEngine {
 		bool renderInitialised = false;
 		std::mutex sceneMutex;
 		RendererScene* m_pxRendererScene;
+
+		Scene* m_pxCurrentScene;
 
 		Renderer* _pRenderer;
 		//RenderPass* m_pxBackbufferRenderPass;
