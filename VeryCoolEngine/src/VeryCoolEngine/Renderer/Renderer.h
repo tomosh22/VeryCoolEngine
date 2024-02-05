@@ -11,7 +11,7 @@
 
 namespace VeryCoolEngine {
 	
-	class Scene;
+	class RendererScene;
 	class Renderer
 	{
 	public:
@@ -36,7 +36,7 @@ namespace VeryCoolEngine {
 		virtual void SetClearColor(const glm::vec4 color) = 0;
 		virtual void Clear() = 0;
 		
-		virtual void BeginScene(Scene* scene) = 0;
+		virtual void BeginScene(RendererScene* scene) = 0;
 		virtual void EndScene() = 0;
 
 		virtual void BindViewProjMat(Shader* shader) = 0;

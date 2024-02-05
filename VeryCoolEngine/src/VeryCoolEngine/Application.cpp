@@ -82,7 +82,7 @@ namespace VeryCoolEngine {
 
 		
 		
-		scene = new Scene();
+		scene = new RendererScene();
 
 		m_xEditorCamera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, float(VCE_GAME_WIDTH) / float(VCE_GAME_HEIGHT));
 	}

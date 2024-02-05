@@ -56,7 +56,7 @@ namespace VeryCoolEngine {
 			virtual void SetClearColor(const glm::vec4 color) override;
 			virtual void Clear() override;
 
-			virtual void BeginScene(Scene* scene) override;
+			virtual void BeginScene(RendererScene* scene) override;
 			virtual void EndScene() override;
 
 			virtual void BindViewProjMat(Shader* shader) override;
@@ -219,7 +219,7 @@ namespace VeryCoolEngine {
 
 			void CreateSyncObjects();
 
-			void DrawFrame(Scene* scene);
+			void DrawFrame(RendererScene* scene);
 
 			void DrawSkybox();
 			void DrawOpaqueMeshes();

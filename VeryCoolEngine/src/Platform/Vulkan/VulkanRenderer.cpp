@@ -101,7 +101,7 @@ void VulkanRenderer::MainLoop() {
 
 	Application* app = Application::GetInstance();
 
-	Scene* scene = app->scene;
+	RendererScene* scene = app->scene;
 	while (true) {
 		std::this_thread::yield();
 		if (scene->ready)break;
@@ -385,7 +385,7 @@ void VulkanRenderer::DrawFoliage() {
 	m_pxFoliageCommandBuffer->EndRecording();
 }
 
-void VulkanRenderer::DrawFrame(Scene* scene) {
+void VulkanRenderer::DrawFrame(RendererScene* scene) {
 	if (m_bShouldResize) {
 		RecreateSwapChain();
 		m_bShouldResize = false;
@@ -426,7 +426,7 @@ void VulkanRenderer::DrawFrame(Scene* scene) {
 	m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void VeryCoolEngine::VulkanRenderer::BeginScene(Scene* scene)
+void VeryCoolEngine::VulkanRenderer::BeginScene(RendererScene* scene)
 {
 	Application* app = Application::GetInstance();
 

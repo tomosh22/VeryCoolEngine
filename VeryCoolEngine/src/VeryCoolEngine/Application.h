@@ -27,7 +27,7 @@ namespace VeryCoolEngine {
 
 	class ImGuiLayer;
 
-	struct Scene {
+	struct RendererScene {
 	public:
 		std::vector<std::function<void(void)>> _functionsToRun;
 		Camera* camera = nullptr;
@@ -94,7 +94,7 @@ namespace VeryCoolEngine {
 		bool renderThreadShouldRun = true;
 		bool renderInitialised = false;
 		std::mutex sceneMutex;
-		Scene* scene;
+		RendererScene* scene;
 
 		Renderer* _pRenderer;
 		//RenderPass* m_pxBackbufferRenderPass;
