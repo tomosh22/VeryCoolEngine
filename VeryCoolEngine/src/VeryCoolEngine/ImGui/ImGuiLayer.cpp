@@ -186,11 +186,11 @@ namespace VeryCoolEngine {
 		std::string cameraText = std::string("Camera ") + (app->_mouseEnabled ? "enabled" : "disabled") + ". Q to toggle.";
 		ImGui::Text(cameraText.c_str());
 
-		const glm::ivec3& camPos = app->m_xEditorCamera.GetPosition();
+		const glm::ivec3& camPos = app->m_pxCurrentScene->m_xEditorCamera.GetPosition();
 		std::string camPosText = "Camera Position: " + std::to_string(camPos.x) + " " + std::to_string(camPos.y) + " " + std::to_string(camPos.z);
 		ImGui::Text(camPosText.c_str());
 
-		const glm::vec3& camDir = app->m_xEditorCamera.ViewDirection();
+		const glm::vec3& camDir = app->m_pxCurrentScene->m_xEditorCamera.ViewDirection();
 		std::string camDirText = "Camera View Direction: " + std::to_string(camDir.x) + " " + std::to_string(camDir.y) + " " + std::to_string(camDir.z);
 		ImGui::Text(camDirText.c_str());
 

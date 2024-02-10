@@ -8,21 +8,21 @@ namespace VeryCoolEngine {
 	class ModelComponent
 	{
 	public:
-		ModelComponent(std::string strFilename, TransformComponent& xTrans, EntityID xEntityID);
-		ModelComponent(std::string strFilename, Material* pxMaterial, TransformComponent& xTrans, EntityID xEntityID);
+		ModelComponent(std::string strFilename, TransformComponent& xTrans, Entity* xEntity);
+		ModelComponent(std::string strFilename, Material* pxMaterial, TransformComponent& xTrans, Entity* xEntity);
 		ModelComponent() = delete;
 		~ModelComponent() {
 			delete m_pxModel;
 		}
 		VCEModel* GetModel() const { return m_pxModel; }
 
-		const TransformComponent& GetTransformRef() const { return m_xTransRef; }
+		TransformComponent& GetTransformRef() { return m_xTransRef; }
 	private:
 		friend class ModelComponent;
 		VCEModel* m_pxModel;
 		std::string m_strFilename;
 
 		TransformComponent& m_xTransRef;
-		EntityID m_xEntityID;
+		Entity& m_xParentEntity;
 	};
 }

@@ -31,6 +31,7 @@ namespace VeryCoolEngine {
 	void Physics::ResetPhysics() {
 		s_xPhysicsCommon.destroyPhysicsWorld(s_pxPhysicsWorld);
 		s_pxPhysicsWorld = s_xPhysicsCommon.createPhysicsWorld();
+		s_pxPhysicsWorld->setGravity({ 0,-9.81,0 });
 		s_pxPhysicsWorld->setEventListener(&s_xEventListener);
 	}
 

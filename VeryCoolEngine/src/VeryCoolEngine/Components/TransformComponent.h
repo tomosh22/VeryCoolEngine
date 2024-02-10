@@ -16,7 +16,6 @@ namespace VeryCoolEngine {
 		void SetScale(const glm::vec3& xScale);
 		//#TO_TODO: this is just a proxy right now
 		Transform m_xTransform;
-		reactphysics3d::Transform* m_pxPhysicsTransform;
 
 	};
 

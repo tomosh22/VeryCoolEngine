@@ -8,12 +8,13 @@ namespace VeryCoolEngine {
 	class Entity
 	{
 	public:
-		Entity();
+		Entity() = delete;
+		Entity(class Scene* pxScene);
 
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args) {
 			VCE_ASSERT(!HasComponent<T>(), "Already has this component");
-			return m_pxParentScene->m_xRegistry.emplace<T>(m_xEntity, std::forward<Args>(args)..., GetComponent<TransformComponent>(), m_xEntity);
+			return m_pxParentScene->m_xRegistry.emplace<T>(m_xEntity, std::forward<Args>(args)..., GetComponent<TransformComponent>(), this);
 		}
 
 		template<>
@@ -22,12 +23,12 @@ namespace VeryCoolEngine {
 		}
 
 		template<typename T>
-		bool HasComponent() const {
+		bool HasComponent() {
 			return m_pxParentScene->m_xRegistry.all_of<T>(m_xEntity);
 		}
 
 		template<typename T>
-		T& GetComponent() const {
+		T& GetComponent() {
 			VCE_ASSERT(HasComponent<T>(), "Doesn't have this component");
 			return m_pxParentScene->m_xRegistry.get<T>(m_xEntity);
 		}
@@ -38,6 +39,7 @@ namespace VeryCoolEngine {
 			m_pxParentScene->m_xRegistry.remove<T>(m_xEntity);
 		}
 
+		EntityID GetEntityID() { return m_xEntity; }
 		
 
 	private:

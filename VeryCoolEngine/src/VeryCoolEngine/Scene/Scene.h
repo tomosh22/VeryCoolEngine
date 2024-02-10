@@ -9,7 +9,7 @@ namespace VeryCoolEngine {
 	class Scene
 	{
 	public:
-		void Reset();
+		virtual void Reset() = 0;
 
 		template<typename T>
 		T& GetComponentFromEntity(EntityID xID) {
@@ -31,7 +31,7 @@ namespace VeryCoolEngine {
 			return xRet;
 		}
 
-		//#TO_TODO: don't like this
+		
 		std::vector<ColliderComponent*> GetAllColliderComponents();
 
 		Camera m_xEditorCamera;

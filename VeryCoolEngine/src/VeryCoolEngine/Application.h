@@ -85,6 +85,8 @@ namespace VeryCoolEngine {
 		int m_ePrevState = m_eCurrentState;
 		bool m_bSkipFrame = false;
 
+		void OnApplicationBegin();
+
 		void ResetScene();
 
 #pragma region ShouldBeInGame
@@ -141,9 +143,6 @@ namespace VeryCoolEngine {
 			int uTessLevel;
 		};
 		ManagedUniformBuffer* m_pxMiscMeshRenderDataUBO = nullptr;
-
-		Camera m_xEditorCamera;
-		Camera m_xGameCamera;
 
 		class BlockWorld* m_pxBlockWorld = nullptr;
 		std::vector<Shader*> _shaders;

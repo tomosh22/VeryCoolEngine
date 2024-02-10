@@ -84,8 +84,6 @@ namespace VeryCoolEngine {
 		
 		
 		m_pxRendererScene = new RendererScene();
-
-		m_xEditorCamera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, float(VCE_GAME_WIDTH) / float(VCE_GAME_HEIGHT));
 	}
 
 	
@@ -309,6 +307,7 @@ namespace VeryCoolEngine {
 
 
 	void Application::ResetScene() {
+#if 0
 		m_apxModels.clear();
 
 		m_bPlayerIsOnFloor = false;
@@ -329,10 +328,11 @@ namespace VeryCoolEngine {
 		m_pxGroundPlane->m_pxRigidBody->setType(reactphysics3d::BodyType::STATIC);
 
 		m_xGameCamera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, float(VCE_GAME_WIDTH) / float(VCE_GAME_HEIGHT));
+#endif
 
 		
 		if(m_pxCurrentScene){
-			m_pxCurrentScene->Reset();
+			//m_pxCurrentScene->Reset();
 			_pRenderer->InitialiseAssets();
 		}
 			
@@ -345,7 +345,7 @@ namespace VeryCoolEngine {
 
 		Physics::UpdatePhysics();
 
-		m_pxRendererScene->camera = m_eCurrentState == VCE_GAMESTATE_EDITOR ? &m_xEditorCamera : &m_xGameCamera;
+		m_pxRendererScene->camera = m_eCurrentState == VCE_GAMESTATE_EDITOR ? &m_pxCurrentScene->m_xEditorCamera : &m_pxCurrentScene->m_xGameCamera;
 
 		m_pxRendererScene->skybox = _pCubemap;
 
@@ -396,7 +396,7 @@ namespace VeryCoolEngine {
 		}
 
 		RendererAPI::Light camLight{
-				m_xEditorCamera.GetPosition().x,m_xEditorCamera.GetPosition().y,m_xEditorCamera.GetPosition().z,100,
+				m_pxCurrentScene->m_xEditorCamera.GetPosition().x,m_pxCurrentScene->m_xEditorCamera.GetPosition().y,m_pxCurrentScene->m_xEditorCamera.GetPosition().z,100,
 				1,1,1,1
 		};
 		m_pxRendererScene->lights[m_pxRendererScene->numLights++] = camLight;
@@ -412,10 +412,7 @@ namespace VeryCoolEngine {
 			if (renderInitialised)break;//#todo implement mutex here
 		}
 
-		ResetScene();
-		m_pxCurrentScene = new Scene();
-		m_pxCurrentScene->Reset();
-		_pRenderer->InitialiseAssets();
+		OnApplicationBegin();
 
 		while (_running) {
 			mainThreadReady = true;
@@ -427,8 +424,10 @@ namespace VeryCoolEngine {
 
 			if (m_eCurrentState != m_ePrevState) {
 				sceneMutex.lock();
-				Physics::ResetPhysics();
-				ResetScene();
+
+				//#TO_TODO: reset scene
+				//Physics::ResetPhysics();
+				//ResetScene();
 				
 				switch (m_eCurrentState) {
 				case VCE_GAMESTATE_PLAYING:
@@ -450,13 +449,13 @@ namespace VeryCoolEngine {
 				Physics::s_fTimestepAccumulator += m_fDeltaTime;
 
 			if(m_eCurrentState == VCE_GAMESTATE_EDITOR)
-				m_xEditorCamera.UpdateCamera(m_fDeltaTime);
+				m_pxCurrentScene->m_xEditorCamera.UpdateCamera(m_fDeltaTime);
 
 
 			switch (m_eCurrentState) {
 			case VCE_GAMESTATE_EDITOR:
-				if (m_xEditorCamera.IsCursorInRendererViewport() && Input::IsMouseButtonPressed(VCE_MOUSE_BUTTON_LEFT)) {
-					reactphysics3d::Ray xCursorRay = Physics::BuildRayFromMouse(&m_xEditorCamera);
+				if (m_pxCurrentScene->m_xEditorCamera.IsCursorInRendererViewport() && Input::IsMouseButtonPressed(VCE_MOUSE_BUTTON_LEFT)) {
+					reactphysics3d::Ray xCursorRay = Physics::BuildRayFromMouse(&m_pxCurrentScene->m_xEditorCamera);
 
 					VCEModel* pxHitModel = nullptr;
 					float fHitDistance = FLT_MAX;

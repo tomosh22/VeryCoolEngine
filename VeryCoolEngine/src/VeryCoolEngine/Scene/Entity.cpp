@@ -7,8 +7,7 @@
 
 namespace VeryCoolEngine {
 
-	Entity::Entity(){
-		m_pxParentScene = Application::GetInstance()->m_pxCurrentScene;
+	Entity::Entity(Scene* pxScene) : m_pxParentScene(pxScene){
 		m_xEntity = m_pxParentScene->m_xRegistry.create();
 		AddComponent<TransformComponent>();
 		//AddComponent<ModelComponent>();
