@@ -3,11 +3,24 @@
 #include "single_include/entt/entt.hpp"
 
 namespace VeryCoolEngine {
+	class ColliderComponent;
 	using EntityRegistry = entt::registry;
+	using EntityID = entt::entity;
 	class Scene
 	{
 	public:
 		void Reset();
+
+		template<typename T>
+		T& GetComponentFromEntity(EntityID xID) {
+			VCE_ASSERT(EntityHasComponent<T>(xID), "Doesn't have this component");
+			return m_xRegistry.get<T>(xID);
+		}
+
+		template<typename T>
+		bool EntityHasComponent(EntityID xID) const {
+			return m_xRegistry.all_of<T>(xID);
+		}
 
 		template<typename T>
 		std::vector<T*> GetAllOfComponentType() {
@@ -17,6 +30,9 @@ namespace VeryCoolEngine {
 				xRet.push_back(&xComponent);
 			return xRet;
 		}
+
+		//#TO_TODO: don't like this
+		std::vector<ColliderComponent*> GetAllColliderComponents();
 
 		Camera m_xEditorCamera;
 		Camera m_xGameCamera;

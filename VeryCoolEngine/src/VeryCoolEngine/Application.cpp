@@ -9,6 +9,7 @@
 #include "GLFW/glfw3.h"
 
 #include "Components/ModelComponent.h"
+#include "Components/ColliderComponent.h"
 
 namespace VeryCoolEngine {
 
@@ -459,6 +460,24 @@ namespace VeryCoolEngine {
 
 					VCEModel* pxHitModel = nullptr;
 					float fHitDistance = FLT_MAX;
+#if 1
+					std::vector<ColliderComponent*> xColliders = m_pxCurrentScene->GetAllColliderComponents();
+					for (ColliderComponent* pxCollider : xColliders) {
+						EntityID xEntity = pxCollider->GetEntityID();
+						if (!m_pxCurrentScene->EntityHasComponent<ModelComponent>(xEntity)) continue;
+
+						const ModelComponent& xModel = m_pxCurrentScene->GetComponentFromEntity<ModelComponent>(xEntity);
+
+						reactphysics3d::RaycastInfo xRayCastInfo;
+						if (pxCollider->GetRigidBody()->raycast(xCursorRay, xRayCastInfo)) {
+							float fNewDistance = reactphysics3d::Vector3(xRayCastInfo.worldPoint - xCursorRay.point1).length();
+							if (fNewDistance < fHitDistance) {
+								pxHitModel = xModel.GetModel();
+								fHitDistance = fNewDistance;
+							}
+						}
+					}
+#else
 					for (VCEModel* pxModel : m_apxModels) {
 						if (!pxModel->m_bUsePhysics) continue;
 
@@ -471,6 +490,7 @@ namespace VeryCoolEngine {
 							}
 						}
 					}
+#endif
 					if (pxHitModel != nullptr)
 						VCE_TRACE("Hit {}", pxHitModel->m_strDirectory);
 					else

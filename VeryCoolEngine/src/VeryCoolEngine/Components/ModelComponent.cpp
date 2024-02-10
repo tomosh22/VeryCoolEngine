@@ -5,10 +5,10 @@
 #include "VeryCoolEngine/Application.h"
 
 namespace VeryCoolEngine {
-	ModelComponent::ModelComponent(std::string strFilename, TransformComponent& xTrans) : m_strFilename(strFilename), m_xTransRef(xTrans) {
+	ModelComponent::ModelComponent(std::string strFilename, TransformComponent& xTrans, EntityID xEntityID) : m_strFilename(strFilename), m_xTransRef(xTrans), m_xEntityID(xEntityID) {
 		m_pxModel = new VCEModel(strFilename.c_str());
 	}
-	ModelComponent::ModelComponent(std::string strFilename, Material* pxMaterial, TransformComponent& xTrans) : m_strFilename(strFilename), m_xTransRef(xTrans) {
+	ModelComponent::ModelComponent(std::string strFilename, Material* pxMaterial, TransformComponent& xTrans, EntityID xEntityID) : m_strFilename(strFilename), m_xTransRef(xTrans), m_xEntityID(xEntityID) {
 		m_pxModel = new VCEModel();
 
 		//#TO_TODO this can be an emplace_back

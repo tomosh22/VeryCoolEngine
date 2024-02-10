@@ -1,12 +1,9 @@
 #pragma once
 #include "Scene.h"
-#include "VeryCoolEngine/Components/ColliderComponent.h"
-#include "VeryCoolEngine/Components/ModelComponent.h"
-
+#include "VeryCoolEngine/Components/TransformComponent.h"
 #include <string>
 
 namespace VeryCoolEngine {
-	class Material;
 
 	class Entity
 	{
@@ -16,7 +13,7 @@ namespace VeryCoolEngine {
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args) {
 			VCE_ASSERT(!HasComponent<T>(), "Already has this component");
-			return m_pxParentScene->m_xRegistry.emplace<T>(m_xEntity, std::forward<Args>(args)..., GetComponent<TransformComponent>());
+			return m_pxParentScene->m_xRegistry.emplace<T>(m_xEntity, std::forward<Args>(args)..., GetComponent<TransformComponent>(), m_xEntity);
 		}
 
 		template<>
@@ -25,12 +22,12 @@ namespace VeryCoolEngine {
 		}
 
 		template<typename T>
-		bool HasComponent() {
+		bool HasComponent() const {
 			return m_pxParentScene->m_xRegistry.all_of<T>(m_xEntity);
 		}
 
 		template<typename T>
-		T& GetComponent() {
+		T& GetComponent() const {
 			VCE_ASSERT(HasComponent<T>(), "Doesn't have this component");
 			return m_pxParentScene->m_xRegistry.get<T>(m_xEntity);
 		}
@@ -44,7 +41,7 @@ namespace VeryCoolEngine {
 		
 
 	private:
-		entt::entity m_xEntity;
+		EntityID m_xEntity;
 		Scene* m_pxParentScene;
 	};
 

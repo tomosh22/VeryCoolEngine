@@ -21,6 +21,7 @@
 #include "VulkanMaterial.h"
 
 #include "reactphysics3d/reactphysics3d.h"
+#include "VeryCoolEngine/Components/ModelComponent.h"
 
 
 using namespace VeryCoolEngine;
