@@ -53,6 +53,18 @@ void VulkanRenderer::InitWindow() {
 
 void VulkanRenderer::InitialiseAssets() {
 	Application* app = Application::GetInstance();
+
+	VCE_ASSERT(app->m_pxCurrentScene != nullptr, "Null scene");
+	for (ModelComponent* pxModelComponent : app->m_pxCurrentScene->GetAllOfComponentType<ModelComponent>()) {
+		for (Mesh* pMesh : pxModelComponent->GetModel()->m_apxMeshes) {
+			pMesh->PlatformInit();
+			//pMesh->GetShader()->PlatformInit();
+			if (pMesh->m_pxMaterial != nullptr)
+				pMesh->m_pxMaterial->PlatformInit();
+		}
+	}
+
+	//#TO_TODO: delete me, will be replaced by above for loop
 	for (VCEModel* pxModel : app->m_apxModels) {
 		for (Mesh* pMesh : pxModel->m_apxMeshes) {
 			pMesh->PlatformInit();
@@ -68,8 +80,6 @@ void VulkanRenderer::InitVulkan() {
 	Application* app = Application::GetInstance();
 
 	BoilerplateInit();
-
-	InitialiseAssets();
 	
 	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
 	app->_pLightUBO = ManagedUniformBuffer::Create(sizeof(RendererAPI::Light) * RendererAPI::g_uMaxLights, MAX_FRAMES_IN_FLIGHT, 1);

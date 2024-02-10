@@ -8,7 +8,7 @@
 #include "Physics/Physics.h"
 #include "GLFW/glfw3.h"
 
-
+#include "Components/ModelComponent.h"
 
 namespace VeryCoolEngine {
 
@@ -306,7 +306,38 @@ namespace VeryCoolEngine {
 
 	}
 
-	void Application::ConstructScene(float fDt)
+
+	void Application::ResetScene() {
+		m_apxModels.clear();
+
+		m_bPlayerIsOnFloor = false;
+
+		VCEModel* pxSphere = AddModel("sphereSmooth.obj", m_xMaterialMap.at("rock2k"), Transform({ 10,50,10 }, glm::vec3(10, 10, 10)));
+		Physics::AddSphereCollisionVolumeToModel(pxSphere, 10);
+
+		VCEModel* pxCube = AddModel("cubeFlat.obj", m_xMaterialMap.at("rock2k"), Transform({ -10,50,-10 }, glm::vec3(10, 10, 10)));
+		Physics::AddBoxCollisionVolumeToModel(pxCube, pxCube->m_xScale);
+
+		//blender doesn't UV map capsules so just using a stretched sphere instead
+		m_pxPlayerModel = AddModel("sphereSmooth.obj", m_xMaterialMap.at("rock2k"), Transform({ 10,50,-10 }, glm::vec3(5, 10, 5)));
+		Physics::AddCapsuleCollisionVolumeToModel(m_pxPlayerModel, 5, 10);
+		m_pxPlayerModel->m_pxRigidBody->setAngularLockAxisFactor(reactphysics3d::Vector3(0, 0, 0));
+
+		m_pxGroundPlane = AddModel("plane.obj", m_xMaterialMap.at("crystal2k"), Transform({ 0,0,0 }, glm::vec3(1000, 0.1, 1000)));
+		Physics::AddBoxCollisionVolumeToModel(m_pxGroundPlane, m_pxGroundPlane->m_xScale);
+		m_pxGroundPlane->m_pxRigidBody->setType(reactphysics3d::BodyType::STATIC);
+
+		m_xGameCamera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, float(VCE_GAME_WIDTH) / float(VCE_GAME_HEIGHT));
+
+		
+		if(m_pxCurrentScene){
+			m_pxCurrentScene->Reset();
+			_pRenderer->InitialiseAssets();
+		}
+			
+	}
+
+	void Application::ConstructRendererScene(float fDt)
 	{
 		sceneMutex.lock();
 		m_pxRendererScene->Reset();
@@ -328,7 +359,11 @@ namespace VeryCoolEngine {
 		m_pxRendererScene->m_axPipelineMeshes.insert({ "Meshes", std::vector<VCEModel*>() });
 
 		m_pxRendererScene->m_axPipelineMeshes.insert({ "SkinnedMeshes", std::vector<VCEModel*>() });
-		for (VCEModel* pxModel : m_apxModels) {
+
+		std::vector<ModelComponent*> xModels = m_pxCurrentScene->GetAllOfComponentType<ModelComponent>();
+		for (ModelComponent* xModelComponent : xModels) {
+			VCEModel* pxModel = xModelComponent->GetModel();
+			pxModel->m_xScale = xModelComponent->GetTransformRef().m_xTransform.m_xScale;
 			if (pxModel->m_pxAnimation != nullptr) {
 				//has an animation
 				pxModel->m_pxAnimation->UpdateAnimation(fDt / 1000.f);
@@ -377,6 +412,9 @@ namespace VeryCoolEngine {
 		}
 
 		ResetScene();
+		m_pxCurrentScene = new Scene();
+		m_pxCurrentScene->Reset();
+		_pRenderer->InitialiseAssets();
 
 		while (_running) {
 			mainThreadReady = true;
@@ -448,11 +486,13 @@ namespace VeryCoolEngine {
 				VCE_ASSERT(false, "Invalid game state");
 			}
 
+			/*
 			for (VCEModel* pxModel : m_apxModels)
 				if(pxModel->m_bUsePhysics)
 					pxModel->m_pxTransform = (reactphysics3d::Transform*)&pxModel->m_pxRigidBody->getTransform();
+			*/
 			
-			ConstructScene(m_fDeltaTime);
+			ConstructRendererScene(m_fDeltaTime);
 
 			
 			

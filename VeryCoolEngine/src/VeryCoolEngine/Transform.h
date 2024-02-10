@@ -13,6 +13,7 @@ namespace VeryCoolEngine {
 
 		void SetPosition(const glm::vec3& pos);
 		void SetRotationQuat(const glm::quat& rot);
+		void SetScale(const glm::vec3& xScale);
 		inline void UpdateMatrix();
 		void UpdateRotation();
 		glm::mat4 m_xMatrix;

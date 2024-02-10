@@ -30,6 +30,11 @@ namespace VeryCoolEngine {
 		UpdateMatrix();
 	}
 
+	void Transform::SetScale(const glm::vec3& xScale)
+	{
+		m_xScale = xScale;
+	}
+
 	//credit Rich Davison
 	glm::mat4 Transform::RotationMatFromQuat(const glm::quat& quat)
 	{

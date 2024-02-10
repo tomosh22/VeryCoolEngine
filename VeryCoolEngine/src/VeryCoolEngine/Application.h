@@ -19,7 +19,7 @@
 #include "VeryCoolEngine/Renderer/PipelineSpecification.h"
 #include "VeryCoolEngine/Renderer/Animation.h"
 #include "Physics/Physics.h"
-#include "Scene/Scene.h"
+#include "Scene/Entity.h"
 
 //#define VCE_DEFERRED_SHADING
 
@@ -72,7 +72,7 @@ namespace VeryCoolEngine {
 
 		static Application* GetInstance() { return _spInstance; }
 
-		void ConstructScene(float fDt);
+		void ConstructRendererScene(float fDt);
 
 		void CollisionCallback(VCEModel* pxModel1, VCEModel* pxModel2, Physics::CollisionEventType eType);
 
@@ -87,6 +87,17 @@ namespace VeryCoolEngine {
 
 		void ResetScene();
 
+#pragma region ShouldBeInGame
+		VCEModel* m_pxPlayerModel;
+		VCEModel* m_pxGroundPlane;
+		bool m_bPlayerIsOnFloor = false;
+		//TODO: make xTrans a reference
+		VCEModel* AddModel(const char* szFileName, Material* pxMaterial, Transform xTrans);
+
+		//TODO: make xTrans a reference
+		VCEModel* AddModel(const char* szFileName, Transform xTrans);
+#pragma endregion
+
 		Window* _window;
 
 		bool _renderThreadCanStart = false;
@@ -97,7 +108,7 @@ namespace VeryCoolEngine {
 		std::mutex sceneMutex;
 		RendererScene* m_pxRendererScene;
 
-		Scene* m_pxCurrentScene;
+		class Scene* m_pxCurrentScene = nullptr;
 
 		Renderer* _pRenderer;
 		//RenderPass* m_pxBackbufferRenderPass;

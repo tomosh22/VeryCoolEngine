@@ -1,11 +1,10 @@
+#include "vcepch.h"
 #include "Game.h"
 #include <imgui.h>
 
 
 
 #include "VeryCoolEngine.h"
-
-#include "VeryCoolEngine/BlockWorld/BlockWorld.h"
 
 #include <glm/gtx/transform.hpp>
 #include <glm/mat4x4.hpp>
@@ -41,35 +40,10 @@ namespace VeryCoolEngine {
 		return;
 	}
 
-	void Application::ResetScene() {
-		Game* pxGame = (Game*)Application::GetInstance();
-		m_apxModels.clear();
-
-		//#TO_TODO: this needs to be in some sort of OnSceneReset
-		pxGame->m_bPlayerIsOnFloor = false;
-
-		VCEModel* pxSphere = pxGame->AddModel("sphereSmooth.obj", m_xMaterialMap.at("rock2k"), Transform({ 10,50,10 }, glm::vec3(10, 10, 10)));
-		Physics::AddSphereCollisionVolumeToModel(pxSphere, 10);
-
-		VCEModel* pxCube = pxGame->AddModel("cubeFlat.obj", m_xMaterialMap.at("rock2k"), Transform({ -10,50,-10 }, glm::vec3(10, 10, 10)));
-		Physics::AddBoxCollisionVolumeToModel(pxCube, pxCube->m_xScale);
-
-		//blender doesn't UV map capsules so just using a stretched sphere instead
-		pxGame->m_pxPlayerModel = pxGame->AddModel("sphereSmooth.obj", m_xMaterialMap.at("rock2k"), Transform({ 10,50,-10 }, glm::vec3(5, 10, 5)));
-		Physics::AddCapsuleCollisionVolumeToModel(pxGame->m_pxPlayerModel, 5, 10);
-		pxGame->m_pxPlayerModel->m_pxRigidBody->setAngularLockAxisFactor(reactphysics3d::Vector3(0, 0, 0));
-
-		pxGame->m_pxGroundPlane = pxGame->AddModel("plane.obj", m_xMaterialMap.at("crystal2k"), Transform({ 0,0,0 }, glm::vec3(1000, 0.1, 1000)));
-		Physics::AddBoxCollisionVolumeToModel(pxGame->m_pxGroundPlane, pxGame->m_pxGroundPlane->m_xScale);
-		pxGame->m_pxGroundPlane->m_pxRigidBody->setType(reactphysics3d::BodyType::STATIC);
-
-		m_xGameCamera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, float(VCE_GAME_WIDTH) / float(VCE_GAME_HEIGHT));
-
-		_pRenderer->InitialiseAssets();
-	}
+	
 
 	//a little bit hacky
-	VCEModel* Game::AddModel(const char* szFileName, Material* pxMaterial, Transform xTrans)
+	VCEModel* Application::AddModel(const char* szFileName, Material* pxMaterial, Transform xTrans)
 	{
 		Mesh* mesh = Mesh::FromFile(szFileName);
 		mesh->SetShader(m_pxMeshShader);
@@ -99,7 +73,7 @@ namespace VeryCoolEngine {
 		return pxModel;
 	}
 
-	VCEModel* Game::AddModel(const char* szFileName, Transform xTrans)
+	VCEModel* Application::AddModel(const char* szFileName, Transform xTrans)
 	{
 		m_apxModels.push_back(new VCEModel(szFileName));
 
