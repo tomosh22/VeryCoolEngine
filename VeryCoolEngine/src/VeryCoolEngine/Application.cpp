@@ -425,9 +425,7 @@ namespace VeryCoolEngine {
 			if (m_eCurrentState != m_ePrevState) {
 				sceneMutex.lock();
 
-				//#TO_TODO: reset scene
-				//Physics::ResetPhysics();
-				//ResetScene();
+				m_pxCurrentScene->Reset();
 				
 				switch (m_eCurrentState) {
 				case VCE_GAMESTATE_PLAYING:
