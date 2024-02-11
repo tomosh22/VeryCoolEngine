@@ -274,7 +274,7 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 	m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxMiscMeshRenderDataUBO->ppBuffers[m_currentFrame], 2, 0);
 
 
-	for (VCEModel* pxModel : app->m_pxRendererScene->m_axPipelineMeshes.at("Meshes")) {
+	for (VCEModel* pxModel : app->m_pxRendererScene->GetModelsInPipeline("Meshes")) {
 		struct OpaqueMeshPushConstant {
 			glm::mat4 xMatrix;
 			int bSelected;
@@ -336,7 +336,7 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 	VulkanManagedUniformBuffer* pxMiscMeshRenderDataUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxMiscMeshRenderDataUBO);
 	m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxMiscMeshRenderDataUBO->ppBuffers[m_currentFrame], 2, 0);
 
-	for (VCEModel* pxModel : app->m_pxRendererScene->m_axPipelineMeshes.at("SkinnedMeshes")) {
+	for (VCEModel* pxModel : app->m_pxRendererScene->GetModelsInPipeline("SkinnedMeshes")) {
 		for (Mesh* pxMesh : pxModel->m_apxMeshes) {
 			VCE_ASSERT(pxMesh->m_bInitialised, "Mesh not initalised");
 			VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(pxMesh);

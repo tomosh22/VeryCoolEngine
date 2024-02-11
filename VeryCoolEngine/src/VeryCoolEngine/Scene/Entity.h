@@ -17,6 +17,13 @@ namespace VeryCoolEngine {
 			return m_pxParentScene->m_xRegistry.emplace<T>(m_xEntity, std::forward<Args>(args)..., GetComponent<TransformComponent>(), this);
 		}
 
+		template<typename T, typename... Args>
+		T& AddOrReplaceComponent(Args&&... args) {
+			if (HasComponent<T>())
+				RemoveComponent<T>();
+			return m_pxParentScene->m_xRegistry.emplace<T>(m_xEntity, std::forward<Args>(args)..., GetComponent<TransformComponent>(), this);
+		}
+
 		template<>
 		TransformComponent& AddComponent() {
 			return m_pxParentScene->m_xRegistry.emplace<TransformComponent>(m_xEntity);

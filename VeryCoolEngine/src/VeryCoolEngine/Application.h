@@ -28,16 +28,25 @@ namespace VeryCoolEngine {
 
 	class ImGuiLayer;
 
-	struct RendererScene {
+	class RendererScene {
 	public:
-		std::vector<std::function<void(void)>> _functionsToRun;
 		Camera* camera = nullptr;
 
-		std::unordered_map<std::string, std::vector<VCEModel*>> m_axPipelineMeshes;
+		
 
 		Shader* skyboxShader = nullptr;
 		TextureCube* skybox = nullptr;
 
+		inline void AddPipeline(const char* szName) {
+			m_axPipelineMeshes.insert({ szName, std::vector<VCEModel*>() });
+		}
+		inline void AddModelToPipeline(const char* szName, VCEModel* pxModel) {
+			m_axPipelineMeshes.at(szName).push_back(pxModel);
+		}
+
+		const std::vector<VCEModel*>& GetModelsInPipeline(const char* szName) const {
+			return m_axPipelineMeshes.at(szName);
+		}
 
 		std::vector<RendererAPI::Light> lights{};
 		unsigned int numLights = 0;
@@ -53,7 +62,8 @@ namespace VeryCoolEngine {
 			numLights = 0;
 
 		};
-
+	private:
+		std::unordered_map<std::string, std::vector<VCEModel*>> m_axPipelineMeshes;
 	};
 
 	class VCE_API Application

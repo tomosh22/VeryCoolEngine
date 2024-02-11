@@ -353,13 +353,12 @@ namespace VeryCoolEngine {
 			m_pxRendererScene->lights[m_pxRendererScene->numLights++] = light;
 		}
 
-		m_pxRendererScene->m_axPipelineMeshes.insert({ "Skybox", std::vector<VCEModel*>() });
-		m_pxRendererScene->m_axPipelineMeshes.at("Skybox").push_back(m_pxQuadModel);
+		m_pxRendererScene->AddPipeline("Skybox");
+		m_pxRendererScene->AddModelToPipeline("Skybox", m_pxQuadModel);
 
 
-		m_pxRendererScene->m_axPipelineMeshes.insert({ "Meshes", std::vector<VCEModel*>() });
-
-		m_pxRendererScene->m_axPipelineMeshes.insert({ "SkinnedMeshes", std::vector<VCEModel*>() });
+		m_pxRendererScene->AddPipeline("Meshes");
+		m_pxRendererScene->AddPipeline("SkinnedMeshes");
 
 		std::vector<ModelComponent*> xModels = m_pxCurrentScene->GetAllOfComponentType<ModelComponent>();
 		for (ModelComponent* xModelComponent : xModels) {
@@ -374,7 +373,7 @@ namespace VeryCoolEngine {
 						pxMesh->m_xBoneMats.at(i) = xAnimMats.at(i);
 					}
 				}
-				m_pxRendererScene->m_axPipelineMeshes.at("SkinnedMeshes").push_back(pxModel);
+				m_pxRendererScene->AddModelToPipeline("SkinnedMeshes", pxModel);
 			}
 			else {
 				//TODO: check this properly
@@ -382,14 +381,16 @@ namespace VeryCoolEngine {
 				//does not have an animation
 				//hacky way to make sure this mesh belongs in this pipeline
 				if (pxModel->m_apxMeshes.back()->m_pxMaterial != nullptr)
-					m_pxRendererScene->m_axPipelineMeshes.at("Meshes").push_back(pxModel);
+					m_pxRendererScene->AddModelToPipeline("Meshes", pxModel);
 
 			}
 		}
 
-		m_pxRendererScene->m_axPipelineMeshes.insert({ "GBuffer", std::vector<VCEModel*>() });
+#ifdef VCE_DEFERRED_SHADING
+		m_pxRendererScene->AddPipeline("GBuffer");
 		for (VCEModel* model : m_apxModels)
-			m_pxRendererScene->m_axPipelineMeshes.at("GBuffer").push_back(model);
+			m_pxRendererScene->AddModelToPipeline("GBuffer", model);
+#endif
 
 		for (RendererAPI::Light& light : _lights) {
 			m_pxRendererScene->lights[m_pxRendererScene->numLights++] = light;
