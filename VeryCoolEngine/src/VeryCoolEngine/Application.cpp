@@ -371,36 +371,82 @@ namespace VeryCoolEngine {
 		sceneMutex.unlock();
 	}
 
+	void Application::UpdateDeltaTime() {
+		std::chrono::high_resolution_clock::time_point fCurrentTime = std::chrono::high_resolution_clock::now();
+
+		m_fDeltaTime = std::chrono::duration_cast<std::chrono::nanoseconds>(fCurrentTime - m_fLastFrameTime).count() / 1.e9;
+		m_fLastFrameTime = fCurrentTime;
+	}
+
+	void Application::UpdateEditorState() {
+		m_pxCurrentScene->m_xEditorCamera.UpdateCamera(m_fDeltaTime);
+		if (m_pxCurrentScene->m_xEditorCamera.IsCursorInRendererViewport() && Input::IsMouseButtonPressed(VCE_MOUSE_BUTTON_LEFT)) {
+			reactphysics3d::Ray xCursorRay = Physics::BuildRayFromMouse(&m_pxCurrentScene->m_xEditorCamera);
+
+			VCEModel* pxHitModel = nullptr;
+			float fHitDistance = FLT_MAX;
+
+			std::vector<ColliderComponent*> xColliders = m_pxCurrentScene->GetAllColliderComponents();
+			for (ColliderComponent* pxCollider : xColliders) {
+				EntityID xEntity = pxCollider->GetEntityID();
+				if (!m_pxCurrentScene->EntityHasComponent<ModelComponent>(xEntity)) continue;
+
+
+				reactphysics3d::RaycastInfo xRayCastInfo;
+				if (pxCollider->GetRigidBody()->raycast(xCursorRay, xRayCastInfo)) {
+					float fNewDistance = reactphysics3d::Vector3(xRayCastInfo.worldPoint - xCursorRay.point1).length();
+					if (fNewDistance < fHitDistance) {
+						pxHitModel = m_pxCurrentScene->GetComponentFromEntity<ModelComponent>(xEntity).GetModel();
+						fHitDistance = fNewDistance;
+					}
+				}
+			}
+
+			if (pxHitModel != nullptr)
+				VCE_TRACE("Hit {}", pxHitModel->m_strDirectory);
+			else
+				VCE_TRACE("Hit nothing");
+
+			m_pxSelectedModel = pxHitModel;
+		}
+	}
+
+	void Application::UpdateGameState() {
+		Physics::s_fTimestepAccumulator += m_fDeltaTime;
+		GameLoop(m_fDeltaTime);
+		m_pxSelectedModel = nullptr;
+	}
+
+	void Application::HandleStateChange() {
+		sceneMutex.lock();
+
+		m_pxCurrentScene->Reset();
+
+		switch (m_eCurrentState) {
+		case VCE_GAMESTATE_PLAYING:
+			break;
+		case VCE_GAMESTATE_EDITOR:
+			break;
+		}
+		sceneMutex.unlock();
+		m_bSkipFrame = true;
+	}
+
 
 	void Application::Run() {
 		while (true) { 
-			Sleep(1);
+			std::this_thread::yield();
 			if (renderInitialised)break;//#todo implement mutex here
 		}
 
 		OnApplicationBegin();
 
 		while (_running) {
-			mainThreadReady = true;
 
-			std::chrono::high_resolution_clock::time_point fCurrentTime = std::chrono::high_resolution_clock::now();
-
-			m_fDeltaTime = std::chrono::duration_cast<std::chrono::nanoseconds>(fCurrentTime - m_fLastFrameTime).count() / 1.e9;
-			m_fLastFrameTime = fCurrentTime;
+			UpdateDeltaTime();
 
 			if (m_eCurrentState != m_ePrevState) {
-				sceneMutex.lock();
-
-				m_pxCurrentScene->Reset();
-				
-				switch (m_eCurrentState) {
-				case VCE_GAMESTATE_PLAYING:
-					break;
-				case VCE_GAMESTATE_EDITOR:
-					break;
-				}
-				sceneMutex.unlock();
-				m_bSkipFrame = true;
+				HandleStateChange();
 			}
 			m_ePrevState = m_eCurrentState;
 
@@ -409,76 +455,22 @@ namespace VeryCoolEngine {
 				continue;
 			}
 
-			if (m_eCurrentState == VCE_GAMESTATE_PLAYING)
-				Physics::s_fTimestepAccumulator += m_fDeltaTime;
-
-			if(m_eCurrentState == VCE_GAMESTATE_EDITOR)
-				m_pxCurrentScene->m_xEditorCamera.UpdateCamera(m_fDeltaTime);
-
-
 			switch (m_eCurrentState) {
 			case VCE_GAMESTATE_EDITOR:
-				if (m_pxCurrentScene->m_xEditorCamera.IsCursorInRendererViewport() && Input::IsMouseButtonPressed(VCE_MOUSE_BUTTON_LEFT)) {
-					reactphysics3d::Ray xCursorRay = Physics::BuildRayFromMouse(&m_pxCurrentScene->m_xEditorCamera);
-
-					VCEModel* pxHitModel = nullptr;
-					float fHitDistance = FLT_MAX;
-#if 1
-					std::vector<ColliderComponent*> xColliders = m_pxCurrentScene->GetAllColliderComponents();
-					for (ColliderComponent* pxCollider : xColliders) {
-						EntityID xEntity = pxCollider->GetEntityID();
-						if (!m_pxCurrentScene->EntityHasComponent<ModelComponent>(xEntity)) continue;
-
-						const ModelComponent& xModel = m_pxCurrentScene->GetComponentFromEntity<ModelComponent>(xEntity);
-
-						reactphysics3d::RaycastInfo xRayCastInfo;
-						if (pxCollider->GetRigidBody()->raycast(xCursorRay, xRayCastInfo)) {
-							float fNewDistance = reactphysics3d::Vector3(xRayCastInfo.worldPoint - xCursorRay.point1).length();
-							if (fNewDistance < fHitDistance) {
-								pxHitModel = xModel.GetModel();
-								fHitDistance = fNewDistance;
-							}
-						}
-					}
-#else
-					for (VCEModel* pxModel : m_apxModels) {
-						if (!pxModel->m_bUsePhysics) continue;
-
-						reactphysics3d::RaycastInfo xRayCastInfo;
-						if (pxModel->m_pxRigidBody->raycast(xCursorRay, xRayCastInfo)) {
-							float fNewDistance = reactphysics3d::Vector3(xRayCastInfo.worldPoint - xCursorRay.point1).length();
-							if (fNewDistance < fHitDistance) {
-								pxHitModel = pxModel;
-								fHitDistance = fNewDistance;
-							}
-						}
-					}
-#endif
-					if (pxHitModel != nullptr)
-						VCE_TRACE("Hit {}", pxHitModel->m_strDirectory);
-					else
-						VCE_TRACE("Hit nothing");
-
-					m_pxSelectedModel = pxHitModel;
-				}
+				UpdateEditorState();
 				break;
 			case VCE_GAMESTATE_PLAYING:
-				GameLoop(m_fDeltaTime);
-				m_pxSelectedModel = nullptr;
+				UpdateGameState();
 				break;
+#ifdef VCE_DEBUG
+			default:
 				VCE_ASSERT(false, "Invalid game state");
+				break;
+#endif
 			}
 
-			/*
-			for (VCEModel* pxModel : m_apxModels)
-				if(pxModel->m_bUsePhysics)
-					pxModel->m_pxTransform = (reactphysics3d::Transform*)&pxModel->m_pxRigidBody->getTransform();
-			*/
-			
 			ConstructRendererScene(m_fDeltaTime);
 
-			
-			
 			for (Layer* layer : _layerStack)
 				layer->OnUpdate();
 

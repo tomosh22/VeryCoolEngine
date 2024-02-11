@@ -103,6 +103,8 @@ void VulkanRenderer::MainLoop() {
 	Application* app = Application::GetInstance();
 
 	RendererScene* scene = app->m_pxRendererScene;
+
+	//this is just so the render thread doesn't claim the mutex before the main thread when the game first boots, should probably have a better way of handling this
 	while (true) {
 		std::this_thread::yield();
 		if (scene->ready)break;

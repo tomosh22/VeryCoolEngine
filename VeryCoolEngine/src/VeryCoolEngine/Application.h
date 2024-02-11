@@ -97,12 +97,15 @@ namespace VeryCoolEngine {
 
 		void OnApplicationBegin();
 
+		void UpdateDeltaTime();
+
+		void UpdateEditorState();
+		void UpdateGameState();
+		void HandleStateChange();
+
 		Window* _window;
 
 		bool _renderThreadCanStart = false;
-		bool mainThreadReady = false;
-		bool renderThreadReady = false;
-		bool renderThreadShouldRun = true;
 		bool renderInitialised = false;
 		std::mutex sceneMutex;
 		RendererScene* m_pxRendererScene;
