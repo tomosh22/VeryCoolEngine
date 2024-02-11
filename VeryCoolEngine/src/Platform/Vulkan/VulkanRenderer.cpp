@@ -64,16 +64,6 @@ void VulkanRenderer::InitialiseAssets() {
 				pMesh->m_pxMaterial->PlatformInit();
 		}
 	}
-
-	//#TO_TODO: delete me, will be replaced by above for loop
-	for (VCEModel* pxModel : app->m_apxModels) {
-		for (Mesh* pMesh : pxModel->m_apxMeshes) {
-			pMesh->PlatformInit();
-			//pMesh->GetShader()->PlatformInit();
-			if (pMesh->m_pxMaterial != nullptr)
-				pMesh->m_pxMaterial->PlatformInit();
-		}
-	}
 }
 
 void VulkanRenderer::InitVulkan() {

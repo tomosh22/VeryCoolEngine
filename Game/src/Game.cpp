@@ -74,7 +74,8 @@ namespace VeryCoolEngine {
 		m_pxCurrentScene->m_xGameCamera.UpdateRotation();
 
 		constexpr const float fMoveSpeed = 20;
-		if (game->m_bPlayerIsOnFloor) {
+		//#TO_TODO: reimplement
+		if (false/*game->m_bPlayerIsOnFloor*/) {
 			reactphysics3d::Vector3 xFinalVelocity(0, 0, 0);
 			if (Input::IsKeyPressed(VCE_KEY_SPACE)) {
 				xFinalVelocity += reactphysics3d::Vector3(0, 10, 0);
@@ -111,12 +112,14 @@ namespace VeryCoolEngine {
 
 	void Application::CollisionCallback(VCEModel* pxModel1, VCEModel* pxModel2, Physics::CollisionEventType eType) {
 		Game* pxGame = (Game*)Application::GetInstance();
+#if 0
 		if ((pxModel1 == pxGame->m_pxPlayerModel && pxModel2 == pxGame->m_pxGroundPlane) || (pxModel2 == pxGame->m_pxPlayerModel && pxModel1 == pxGame->m_pxGroundPlane)) {
 			if(eType == Physics::CollisionEventType::Start)
 				pxGame->m_bPlayerIsOnFloor = true;
 			else if (eType == Physics::CollisionEventType::Exit)
 				pxGame->m_bPlayerIsOnFloor = false;
 		}
+#endif
 			
 	}
 

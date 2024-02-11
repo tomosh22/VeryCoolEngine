@@ -97,19 +97,6 @@ namespace VeryCoolEngine {
 
 		void OnApplicationBegin();
 
-		void ResetScene();
-
-#pragma region ShouldBeInGame
-		VCEModel* m_pxPlayerModel;
-		VCEModel* m_pxGroundPlane;
-		bool m_bPlayerIsOnFloor = false;
-		//TODO: make xTrans a reference
-		VCEModel* AddModel(const char* szFileName, Material* pxMaterial, Transform xTrans);
-
-		//TODO: make xTrans a reference
-		VCEModel* AddModel(const char* szFileName, Transform xTrans);
-#pragma endregion
-
 		Window* _window;
 
 		bool _renderThreadCanStart = false;
@@ -166,7 +153,6 @@ namespace VeryCoolEngine {
 		//#TODO i really need a better way to do this, used to provide vertex input state to mesh pipeline
 		Mesh* m_pxExampleMesh;
 		Mesh* m_pxExampleSkinnedMesh;
-		std::vector<VCEModel*> m_apxModels;
 
 		std::unordered_map<std::string, Material*> m_xMaterialMap;
 
