@@ -8,7 +8,8 @@ namespace VeryCoolEngine {
 	inline void Transform::UpdateMatrix() {
 		glm::mat4 xTrans = glm::translate(glm::identity<glm::mat4>(), m_xPosition);
 		glm::mat4 xRotation = RotationMatFromQuat(m_xRotationQuat);
-		m_xMatrix = xTrans * xRotation;
+		glm::mat4 xScale = glm::scale(glm::identity<glm::mat4>(), m_xScale);
+		m_xMatrix = xTrans * xRotation * xScale;
 	}
 	void Transform::UpdateRotation()
 	{

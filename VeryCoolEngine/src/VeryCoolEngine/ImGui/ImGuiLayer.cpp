@@ -206,7 +206,8 @@ namespace VeryCoolEngine {
 			ImGui::TreePop();
 		}
 
-
+		//#TO_TODO: reimplment this
+#if 0
 		if (ImGui::TreeNode("Models")) {
 			int meshIndex = 0;
 			if(app->m_pxSelectedModel != nullptr)
@@ -222,6 +223,7 @@ namespace VeryCoolEngine {
 			}
 			ImGui::TreePop();
 		}
+#endif
 
 
 		ImGui::ColorEdit3("Override Normal", &app->_pRenderer->m_xOverrideNormal[0]);

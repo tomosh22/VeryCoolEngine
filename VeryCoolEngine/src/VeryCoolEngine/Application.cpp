@@ -25,7 +25,6 @@ namespace VeryCoolEngine {
 		_spInstance = this;
 
 		m_pxFoliageModel = new VCEModel();
-		m_pxFoliageModel->m_pxTransform = new reactphysics3d::Transform;
 		m_pxExampleSkinnedMesh = Mesh::FromFile("ogre.fbx");
 		m_pxExampleMesh = Mesh::FromFile("cubeFlat.obj");
 		m_pxFoliageModel->m_apxMeshes.emplace_back(Mesh::GenerateQuad(10));
@@ -329,7 +328,7 @@ namespace VeryCoolEngine {
 		std::vector<ModelComponent*> xModels = m_pxCurrentScene->GetAllOfComponentType<ModelComponent>();
 		for (ModelComponent* xModelComponent : xModels) {
 			VCEModel* pxModel = xModelComponent->GetModel();
-			pxModel->m_xScale = xModelComponent->GetTransformRef().m_xTransform.m_xScale;
+			pxModel->m_xModelMat = xModelComponent->GetTransformRef().m_xTransform.m_xMatrix;
 			if (pxModel->m_pxAnimation != nullptr) {
 				//has an animation
 				pxModel->m_pxAnimation->UpdateAnimation(fDt / 1000.f);

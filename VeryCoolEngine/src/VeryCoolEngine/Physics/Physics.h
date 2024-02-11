@@ -30,10 +30,6 @@ namespace VeryCoolEngine {
 		void UpdatePhysics();
 		void ResetPhysics();
 
-		void AddBoxCollisionVolumeToModel(VCEModel* pxModel, glm::vec3 xHalfExtents);
-		void AddSphereCollisionVolumeToModel(VCEModel* pxModel, float fRadius);
-		void AddCapsuleCollisionVolumeToModel(VCEModel* pxModel, float fRadius, float fHeight);
-
 		reactphysics3d::Ray BuildRayFromMouse(Camera* pxCam);
 
 		extern double s_fTimestepAccumulator;

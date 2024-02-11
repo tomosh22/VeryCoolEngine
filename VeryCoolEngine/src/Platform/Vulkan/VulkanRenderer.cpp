@@ -269,8 +269,7 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 			glm::mat4 xMatrix;
 			int bSelected;
 		} xPushConstant;
-		pxModel->m_pxTransform->getOpenGLMatrix(&xPushConstant.xMatrix[0][0]);
-		xPushConstant.xMatrix *= glm::scale(glm::identity<glm::mat4>(), pxModel->m_xScale);
+		xPushConstant.xMatrix = pxModel->m_xModelMat;
 		xPushConstant.bSelected = pxModel == app->m_pxSelectedModel ? 1 : 0;
 
 		for (Mesh* pxMesh : pxModel->m_apxMeshes) {
@@ -340,7 +339,7 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 			m_pxSkinnedMeshesCommandBuffer->BindAnimation(pxMesh, 2);
 
 			RendererAPI::MeshPushConstantData xPushConstants;
-			pxModel->m_pxTransform->getOpenGLMatrix(&xPushConstants.m_xModelMat[0][0]);;
+			xPushConstants.m_xModelMat = pxModel->m_xModelMat;
 			xPushConstants.m_uAnimate = bAnimate ? 1 : 0;
 			xPushConstants.m_fAlpha = fAnimAlpha;
 

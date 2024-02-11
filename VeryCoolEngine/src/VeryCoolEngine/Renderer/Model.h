@@ -39,9 +39,7 @@ namespace VeryCoolEngine {
         std::vector<Mesh*> m_apxMeshes;
         std::string m_strDirectory;
 
-        reactphysics3d::Transform* m_pxTransform;
-        reactphysics3d::RigidBody* m_pxRigidBody;
-        glm::vec3 m_xScale;
+        glm::mat4 m_xModelMat;
 
         VCEModel() = default;
 

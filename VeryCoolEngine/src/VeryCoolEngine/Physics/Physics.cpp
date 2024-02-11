@@ -70,49 +70,6 @@ namespace VeryCoolEngine {
 	}
 
 
-	void Physics::AddBoxCollisionVolumeToModel(VCEModel* pxModel, glm::vec3 xHalfExtents)
-	{
-		pxModel->m_bUsePhysics = true;
-
-		pxModel->m_pxRigidBody = Physics::s_pxPhysicsWorld->createRigidBody(*pxModel->m_pxTransform);
-
-		reactphysics3d::BoxShape* pxShape = Physics::s_xPhysicsCommon.createBoxShape(reactphysics3d::Vector3(xHalfExtents.x, xHalfExtents.y, xHalfExtents.z));
-		reactphysics3d::Collider* pxCollider = pxModel->m_pxRigidBody->addCollider(pxShape, reactphysics3d::Transform::identity());
-		pxModel->m_pxRigidBody->setType(reactphysics3d::BodyType::DYNAMIC);
-
-		//#TO: so I can access model from within collision callback
-		pxModel->m_pxRigidBody->setUserData(pxModel);
-	}
-
-	void Physics::AddSphereCollisionVolumeToModel(VCEModel* pxModel, float fRadius)
-	{
-		pxModel->m_bUsePhysics = true;
-
-		pxModel->m_pxRigidBody = Physics::s_pxPhysicsWorld->createRigidBody(*pxModel->m_pxTransform);
-
-		reactphysics3d::SphereShape* pxShape = Physics::s_xPhysicsCommon.createSphereShape(fRadius);
-		reactphysics3d::Collider* pxCollider = pxModel->m_pxRigidBody->addCollider(pxShape, reactphysics3d::Transform::identity());
-		pxModel->m_pxRigidBody->setType(reactphysics3d::BodyType::DYNAMIC);
-
-		//#TO: so I can access model from within collision callback
-		pxModel->m_pxRigidBody->setUserData(pxModel);
-	}
-
-	void Physics::AddCapsuleCollisionVolumeToModel(VCEModel* pxModel, float fRadius, float fHeight)
-	{
-		pxModel->m_bUsePhysics = true;
-
-		pxModel->m_pxRigidBody = Physics::s_pxPhysicsWorld->createRigidBody(*pxModel->m_pxTransform);
-
-		reactphysics3d::CapsuleShape* pxShape = Physics::s_xPhysicsCommon.createCapsuleShape(fRadius, fHeight);
-		reactphysics3d::Collider* pxCollider = pxModel->m_pxRigidBody->addCollider(pxShape, reactphysics3d::Transform::identity());
-		pxModel->m_pxRigidBody->setType(reactphysics3d::BodyType::DYNAMIC);
-
-		//#TO: so I can access model from within collision callback
-		pxModel->m_pxRigidBody->setUserData(pxModel);
-	}
-
-
 	Physics::PhysicsEventListener::PhysicsEventListener(VeryCoolEngine::Application* pxApp) : m_pxApp(pxApp) {}
 
 	void Physics::PhysicsEventListener::onContact(const CollisionCallback::CallbackData& xCallbackData) {

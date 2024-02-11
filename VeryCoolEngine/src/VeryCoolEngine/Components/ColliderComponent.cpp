@@ -10,11 +10,6 @@ namespace VeryCoolEngine {
 		TransformComponent& xTrans = m_xParentEntity.GetComponent<TransformComponent>();
 		xTrans.m_xTransform.SetPosition({ m_pxRigidBody->getTransform().getPosition().x, m_pxRigidBody->getTransform().getPosition().y, m_pxRigidBody->getTransform().getPosition().z });
 		xTrans.m_xTransform.SetRotationQuat({ m_pxRigidBody->getTransform().getOrientation().x, m_pxRigidBody->getTransform().getOrientation().y, m_pxRigidBody->getTransform().getOrientation().z, m_pxRigidBody->getTransform().getOrientation().w });
-
-		if (m_xParentEntity.HasComponent<ModelComponent>()) {
-			ModelComponent& xModel = m_xParentEntity.GetComponent<ModelComponent>();
-			xModel.GetModel()->m_pxTransform = const_cast<reactphysics3d::Transform*>(&m_pxRigidBody->getTransform());
-		}
 	}
 
 	BoxColliderComponent::BoxColliderComponent(TransformComponent& xTrans, Entity* xEntity) : ColliderComponent(xTrans, xEntity) {
