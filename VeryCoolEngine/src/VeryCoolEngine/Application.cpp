@@ -328,7 +328,8 @@ namespace VeryCoolEngine {
 		std::vector<ModelComponent*> xModels = m_pxCurrentScene->GetAllOfComponentType<ModelComponent>();
 		for (ModelComponent* xModelComponent : xModels) {
 			VCEModel* pxModel = xModelComponent->GetModel();
-			pxModel->m_xModelMat = xModelComponent->GetTransformRef().m_xTransform.m_xMatrix;
+			xModelComponent->GetTransformRef().GetTransform()->getOpenGLMatrix(&pxModel->m_xModelMat[0][0]);
+			pxModel->m_xModelMat *= glm::scale(glm::identity<glm::highp_mat4>(),xModelComponent->GetTransformRef().m_xScale);
 			if (pxModel->m_pxAnimation != nullptr) {
 				//has an animation
 				pxModel->m_pxAnimation->UpdateAnimation(fDt / 1000.f);

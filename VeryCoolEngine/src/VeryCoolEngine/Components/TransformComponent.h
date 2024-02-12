@@ -3,7 +3,9 @@
 
 namespace reactphysics3d {
 	class Transform;
+	class RigidBody;
 }
+
 namespace VeryCoolEngine {
 
 	class TransformComponent
@@ -14,8 +16,18 @@ namespace VeryCoolEngine {
 		void SetPosition(const glm::vec3& xPos);
 		void SetRotation(const glm::quat& xRot);
 		void SetScale(const glm::vec3& xScale);
-		//#TO_TODO: this is just a proxy right now
-		Transform m_xTransform;
+
+		reactphysics3d::Transform* GetTransform();
+		glm::vec3 m_xScale;
+		reactphysics3d::RigidBody* m_pxRigidBody = nullptr;
+		
+	private:
+		friend class BoxColliderComponent;
+		friend class SphereColliderComponent;
+		reactphysics3d::Transform* GetTransform_Unsafe();
+		reactphysics3d::Transform* m_pxTransform;
+		
+		
 
 	};
 

@@ -9,8 +9,6 @@ namespace VeryCoolEngine {
 	public:
 		reactphysics3d::RigidBody* GetRigidBody() { return m_pxRigidBody; }
 		const EntityID& GetEntityID() const { return m_xParentEntity.GetEntityID(); }
-
-		void OnUpdate();
 	protected:
 		ColliderComponent() = delete;
 		ColliderComponent(TransformComponent& xTrans, Entity* xEntity);
