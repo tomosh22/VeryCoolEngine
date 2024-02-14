@@ -416,7 +416,7 @@ namespace VeryCoolEngine {
 	void Application::UpdateGameState() {
 		Physics::s_fTimestepAccumulator += m_fDeltaTime;
 		for (ScriptComponent* pxScript : m_pxCurrentScene->GetAllOfComponentType<ScriptComponent>())
-			pxScript->OnUpdate(pxScript->m_pxScriptBehaviour, m_fDeltaTime);
+			pxScript->OnUpdate(m_fDeltaTime);
 		GameLoop(m_fDeltaTime);
 		m_pxSelectedModel = nullptr;
 	}

@@ -26,7 +26,7 @@ namespace VeryCoolEngine {
 		ModelComponent& xPlayerModel = m_xPlayerEntity.AddComponent<ModelComponent>(strName, pxMaterial);
 		ScriptComponent& xPlayerScript = m_xPlayerEntity.AddComponent<ScriptComponent>();
 		xPlayerScript.SetBehaviour<TestScriptBehaviour>();
-		xPlayerScript.Instantiate(xPlayerScript.m_pxScriptBehaviour, &xPlayerScript);
+		xPlayerScript.Instantiate(&xPlayerScript);
 		dynamic_cast<TestScriptBehaviour*>(xPlayerScript.m_pxScriptBehaviour)->m_pxGroundPlane = &m_xPlaneEntity;
 
 		strName = "sphereSmooth.obj";
@@ -58,7 +58,7 @@ namespace VeryCoolEngine {
 		xPlayerTrans.SetScale({ 10,10,10 });
 		BoxColliderComponent& xPlayerCollider = m_xPlayerEntity.AddOrReplaceComponent<BoxColliderComponent>();
 		ScriptComponent& xPlayerScript = m_xPlayerEntity.GetComponent<ScriptComponent>();
-		xPlayerScript.OnCreate(xPlayerScript.m_pxScriptBehaviour);
+		xPlayerScript.OnCreate();
 		
 
 		

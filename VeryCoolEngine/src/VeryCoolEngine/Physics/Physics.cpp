@@ -84,31 +84,31 @@ namespace VeryCoolEngine {
 			case reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStart:
 				if (pxEntity1->HasComponent<ScriptComponent>()) {
 					ScriptComponent& xScript = pxEntity1->GetComponent<ScriptComponent>();
-					xScript.OnCollision(xScript.m_pxScriptBehaviour, pxEntity2, CollisionEventType::Start);
+					xScript.OnCollision(pxEntity2, CollisionEventType::Start);
 				}
 				if (pxEntity2->HasComponent<ScriptComponent>()) {
 					ScriptComponent& xScript = pxEntity2->GetComponent<ScriptComponent>();
-					xScript.OnCollision(xScript.m_pxScriptBehaviour, pxEntity1, CollisionEventType::Start);
+					xScript.OnCollision(pxEntity1, CollisionEventType::Start);
 				}
 				break;
 			case reactphysics3d::CollisionCallback::ContactPair::EventType::ContactExit:
 				if (pxEntity1->HasComponent<ScriptComponent>()) {
 					ScriptComponent& xScript = pxEntity1->GetComponent<ScriptComponent>();
-					xScript.OnCollision(xScript.m_pxScriptBehaviour, pxEntity2, CollisionEventType::Exit);
+					xScript.OnCollision( pxEntity2, CollisionEventType::Exit);
 				}
 				if (pxEntity2->HasComponent<ScriptComponent>()) {
 					ScriptComponent& xScript = pxEntity2->GetComponent<ScriptComponent>();
-					xScript.OnCollision(xScript.m_pxScriptBehaviour, pxEntity1, CollisionEventType::Exit);
+					xScript.OnCollision( pxEntity1, CollisionEventType::Exit);
 				}
 				break;
 			case reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStay:
 				if (pxEntity1->HasComponent<ScriptComponent>()) {
 					ScriptComponent& xScript = pxEntity1->GetComponent<ScriptComponent>();
-					xScript.OnCollision(xScript.m_pxScriptBehaviour, pxEntity2, CollisionEventType::Stay);
+					xScript.OnCollision(pxEntity2, CollisionEventType::Stay);
 				}
 				if (pxEntity2->HasComponent<ScriptComponent>()) {
 					ScriptComponent& xScript = pxEntity2->GetComponent<ScriptComponent>();
-					xScript.OnCollision(xScript.m_pxScriptBehaviour, pxEntity1, CollisionEventType::Stay);
+					xScript.OnCollision(pxEntity1, CollisionEventType::Stay);
 				}
 				break;
 			}

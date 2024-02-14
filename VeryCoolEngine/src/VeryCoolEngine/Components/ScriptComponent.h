@@ -5,31 +5,6 @@
 #include "ColliderComponent.h"
 namespace VeryCoolEngine {
 
-	class ScriptBehaviour;
-	class ScriptComponent
-	{
-	public:
-
-		ScriptComponent(TransformComponent& xTrans, Entity* xEntity) : m_xParentEntity(*xEntity) {};
-
-		void(*Instantiate)(ScriptBehaviour*&, ScriptComponent*);
-		void(*OnCreate)(ScriptBehaviour*&);
-		void(*OnUpdate)(ScriptBehaviour*&, float);
-		void(*OnCollision)(ScriptBehaviour*&, Entity*, Physics::CollisionEventType);
-
-		ScriptBehaviour* m_pxScriptBehaviour = nullptr;
-
-		Entity& m_xParentEntity;
-
-		template<typename T>
-		void SetBehaviour() {
-			Instantiate = [](ScriptBehaviour*& pxScriptBehaviour, ScriptComponent* pxScriptComponent) {pxScriptBehaviour = new T(pxScriptComponent); };
-			OnCreate = [](ScriptBehaviour*& pxScriptBehaviour) {dynamic_cast<T*>(pxScriptBehaviour)->OnCreate(); };
-			OnUpdate = [](ScriptBehaviour*& pxScriptBehaviour, float fDt) {dynamic_cast<T*>(pxScriptBehaviour)->OnUpdate(fDt); };
-			OnCollision = [](ScriptBehaviour*& pxScriptBehaviour, Entity* pxOther, Physics::CollisionEventType eCollisionType){dynamic_cast<T*>(pxScriptBehaviour)->OnCollision(pxOther, eCollisionType); };
-		}
-	};
-
 	class ScriptBehaviour {
 	public:
 		virtual void OnCreate() = 0;
@@ -37,6 +12,28 @@ namespace VeryCoolEngine {
 		virtual void OnCollision(Entity* pxOther, Physics::CollisionEventType eCollisionType) = 0;
 
 	};
+	class ScriptComponent
+	{
+	public:
+
+		ScriptComponent(TransformComponent& xTrans, Entity* xEntity) : m_xParentEntity(*xEntity) {};
+
+		void(*Instantiate)(ScriptComponent*);
+
+		ScriptBehaviour* m_pxScriptBehaviour = nullptr;
+
+		Entity& m_xParentEntity;
+
+		void OnCreate() { m_pxScriptBehaviour->OnCreate(); }
+		void OnUpdate(float fDt) { m_pxScriptBehaviour->OnUpdate(fDt); }
+		void OnCollision(Entity* pxOther, Physics::CollisionEventType eCollisionType) { m_pxScriptBehaviour->OnCollision(pxOther, eCollisionType); }
+
+		template<typename T>
+		void SetBehaviour() {
+			Instantiate = [](ScriptComponent* pxScriptComponent) {pxScriptComponent->m_pxScriptBehaviour = new T(pxScriptComponent); };
+		}
+	};
+
 	class TestScriptBehaviour : public ScriptBehaviour {
 	public:
 		TestScriptBehaviour(ScriptComponent* pxScriptComponent) : m_xScriptComponent(*pxScriptComponent) {}
