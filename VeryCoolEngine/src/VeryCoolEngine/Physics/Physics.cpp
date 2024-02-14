@@ -3,6 +3,8 @@
 #include "VeryCoolEngine/Application.h"
 #include "VeryCoolEngine/Renderer/Camera.h"
 #include "VeryCoolEngine/Renderer/Model.h"
+#include "VeryCoolEngine/Scene/Entity.h"
+#include "VeryCoolEngine/Components/ScriptComponent.h"
 
 namespace VeryCoolEngine {
 
@@ -76,20 +78,40 @@ namespace VeryCoolEngine {
 		for (uint32_t i = 0; i < xCallbackData.getNbContactPairs(); i++) {
 			CollisionCallback::ContactPair xContactPair = xCallbackData.getContactPair(i);
 
-			VCEModel* pxModel1 = reinterpret_cast<VCEModel*>(xContactPair.getBody1()->getUserData());
-			VCEModel* pxModel2 = reinterpret_cast<VCEModel*>(xContactPair.getBody2()->getUserData());
+			Entity* pxEntity1 = reinterpret_cast<Entity*>(xContactPair.getBody1()->getUserData());
+			Entity* pxEntity2 = reinterpret_cast<Entity*>(xContactPair.getBody2()->getUserData());
 			switch (xContactPair.getEventType()) {
 			case reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStart:
-				m_pxApp->CollisionCallback(pxModel1, pxModel2, CollisionEventType::Start);
+				if (pxEntity1->HasComponent<ScriptComponent>()) {
+					ScriptComponent& xScript = pxEntity1->GetComponent<ScriptComponent>();
+					xScript.OnCollision(xScript.m_pxScriptBehaviour, pxEntity2, CollisionEventType::Start);
+				}
+				if (pxEntity2->HasComponent<ScriptComponent>()) {
+					ScriptComponent& xScript = pxEntity2->GetComponent<ScriptComponent>();
+					xScript.OnCollision(xScript.m_pxScriptBehaviour, pxEntity1, CollisionEventType::Start);
+				}
 				break;
 			case reactphysics3d::CollisionCallback::ContactPair::EventType::ContactExit:
-				m_pxApp->CollisionCallback(pxModel1, pxModel2, CollisionEventType::Exit);
+				if (pxEntity1->HasComponent<ScriptComponent>()) {
+					ScriptComponent& xScript = pxEntity1->GetComponent<ScriptComponent>();
+					xScript.OnCollision(xScript.m_pxScriptBehaviour, pxEntity2, CollisionEventType::Exit);
+				}
+				if (pxEntity2->HasComponent<ScriptComponent>()) {
+					ScriptComponent& xScript = pxEntity2->GetComponent<ScriptComponent>();
+					xScript.OnCollision(xScript.m_pxScriptBehaviour, pxEntity1, CollisionEventType::Exit);
+				}
 				break;
 			case reactphysics3d::CollisionCallback::ContactPair::EventType::ContactStay:
-				m_pxApp->CollisionCallback(pxModel1, pxModel2, CollisionEventType::Stay);
+				if (pxEntity1->HasComponent<ScriptComponent>()) {
+					ScriptComponent& xScript = pxEntity1->GetComponent<ScriptComponent>();
+					xScript.OnCollision(xScript.m_pxScriptBehaviour, pxEntity2, CollisionEventType::Stay);
+				}
+				if (pxEntity2->HasComponent<ScriptComponent>()) {
+					ScriptComponent& xScript = pxEntity2->GetComponent<ScriptComponent>();
+					xScript.OnCollision(xScript.m_pxScriptBehaviour, pxEntity1, CollisionEventType::Stay);
+				}
 				break;
 			}
-
 		}
 	}
 }

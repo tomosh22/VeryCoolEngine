@@ -84,7 +84,7 @@ namespace VeryCoolEngine {
 
 		void ConstructRendererScene(float fDt);
 
-		void CollisionCallback(VCEModel* pxModel1, VCEModel* pxModel2, Physics::CollisionEventType eType);
+		void CollisionCallback(Entity* pxEntity1, Entity* pxEntity2, Physics::CollisionEventType eType);
 
 		//don't like that I can't use uint32_t, blame imgui
 		enum GameState : int {
