@@ -3,6 +3,7 @@
 #include "VeryCoolEngine/Components/ModelComponent.h"
 #include "VeryCoolEngine/Components/TransformComponent.h"
 #include "VeryCoolEngine/Components/ColliderComponent.h"
+#include "VeryCoolEngine/Components/ScriptComponent.h"
 #include "VeryCoolEngine/Application.h"
 
 namespace VeryCoolEngine {
@@ -23,6 +24,9 @@ namespace VeryCoolEngine {
 		strName = "sphereSmooth.obj";
 		pxMaterial = app->m_xMaterialMap.at("rock2k");
 		ModelComponent& xPlayerModel = m_xPlayerEntity.AddComponent<ModelComponent>(strName, pxMaterial);
+		ScriptComponent& xPlayerScript = m_xPlayerEntity.AddComponent<ScriptComponent>();
+		xPlayerScript.SetBehaviour<TestScriptBehaviour>();
+		xPlayerScript.Instantiate(xPlayerScript.m_pxScriptBehaviour);
 
 		strName = "sphereSmooth.obj";
 		pxMaterial = app->m_xMaterialMap.at("rock2k");
