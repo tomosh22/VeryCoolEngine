@@ -22,8 +22,7 @@ namespace VeryCoolEngine {
 		reactphysics3d::RigidBody* m_pxRigidBody = nullptr;
 		
 	private:
-		friend class BoxColliderComponent;
-		friend class SphereColliderComponent;
+		friend class ColliderComponent;
 		reactphysics3d::Transform* GetTransform_Unsafe();
 		reactphysics3d::Transform* m_pxTransform;
 		

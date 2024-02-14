@@ -56,7 +56,8 @@ namespace VeryCoolEngine {
 		TransformComponent& xPlayerTrans = m_xPlayerEntity.GetComponent<TransformComponent>();
 		xPlayerTrans.SetPosition({ 5,50,5 });
 		xPlayerTrans.SetScale({ 10,10,10 });
-		BoxColliderComponent& xPlayerCollider = m_xPlayerEntity.AddOrReplaceComponent<BoxColliderComponent>();
+		ColliderComponent& xPlayerCollider = m_xPlayerEntity.AddOrReplaceComponent<ColliderComponent>();
+		xPlayerCollider.AddCollider(Physics::CollisionVolumeType::OBB);
 		ScriptComponent& xPlayerScript = m_xPlayerEntity.GetComponent<ScriptComponent>();
 		xPlayerScript.OnCreate();
 		
@@ -65,7 +66,8 @@ namespace VeryCoolEngine {
 		TransformComponent& xSphereTrans = m_xSphereEntity.GetComponent<TransformComponent>();
 		xSphereTrans.SetPosition({ 25,5,25 });
 		xSphereTrans.SetScale({ 10,10,10 });
-		SphereColliderComponent& xSphereCollider = m_xSphereEntity.AddOrReplaceComponent<SphereColliderComponent>();
+		ColliderComponent& xSphereCollider = m_xSphereEntity.AddOrReplaceComponent<ColliderComponent>();
+		xSphereCollider.AddCollider(Physics::CollisionVolumeType::Sphere);
 		
 
 
@@ -73,7 +75,8 @@ namespace VeryCoolEngine {
 		TransformComponent& xPlaneTrans = m_xPlaneEntity.GetComponent<TransformComponent>();
 		xPlaneTrans.SetPosition({ 1,1,1 });
 		xPlaneTrans.SetScale({ 1000,1,1000 });
-		BoxColliderComponent& xPlaneCollider = m_xPlaneEntity.AddOrReplaceComponent<BoxColliderComponent>();
+		ColliderComponent& xPlaneCollider = m_xPlaneEntity.AddOrReplaceComponent<ColliderComponent>();
+		xPlaneCollider.AddCollider(Physics::CollisionVolumeType::OBB);
 		xPlaneCollider.GetRigidBody()->setType(reactphysics3d::BodyType::STATIC);
 
 		

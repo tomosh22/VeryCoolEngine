@@ -11,9 +11,7 @@ namespace VeryCoolEngine {
 	//#TO_TODO: don't like this
 	std::vector<ColliderComponent*> Scene::GetAllColliderComponents() {
 		std::vector<ColliderComponent*> xRet;
-		for (BoxColliderComponent* pxCol : GetAllOfComponentType<BoxColliderComponent>())
-			xRet.push_back(pxCol);
-		for (SphereColliderComponent* pxCol : GetAllOfComponentType<SphereColliderComponent>())
+		for (ColliderComponent* pxCol : GetAllOfComponentType<ColliderComponent>())
 			xRet.push_back(pxCol);
 		return xRet;
 	}
