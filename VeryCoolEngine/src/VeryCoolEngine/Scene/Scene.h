@@ -1,11 +1,13 @@
 #pragma once
 #include "VeryCoolEngine/Renderer/Camera.h"
-#include "single_include/entt/entt.hpp"
+#include "VeryCoolEngine/PlatformTypes.h"
 
 namespace VeryCoolEngine {
 	class ColliderComponent;
-	using EntityRegistry = entt::registry;
-	using EntityID = entt::entity;
+	class Entity;
+
+
+
 	class Scene
 	{
 	public:
@@ -31,14 +33,19 @@ namespace VeryCoolEngine {
 			return xRet;
 		}
 
+		void Serialize(const std::string& strFilename);
 		
 		std::vector<ColliderComponent*> GetAllColliderComponents();
+
+		Entity GetEntityByGuid(GUID xGuid);
+		Entity GetEntityByGuid(GuidType uGuid);
 
 		Camera m_xEditorCamera;
 		Camera m_xGameCamera;
 	private:
 		friend class Entity;
 		EntityRegistry m_xRegistry;
+		std::unordered_map<GuidType, Entity> m_xEntityMap;
 	};
 
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include "VeryCoolEngine/Scene/Scene.h"
-#include "VeryCoolEngine/Scene/Entity.h"
+
 
 namespace VeryCoolEngine {
 	class TestScene : public Scene
@@ -9,9 +9,9 @@ namespace VeryCoolEngine {
 		TestScene();
 		void Reset() override;
 
-		Entity m_xPlayerEntity;
-		Entity m_xPlaneEntity;
-		Entity m_xSphereEntity;
+		GUID m_xPlayerGuid;
+		GUID m_xPlaneGuid;
+		GUID m_xSphereGuid;
 	};
 }
 

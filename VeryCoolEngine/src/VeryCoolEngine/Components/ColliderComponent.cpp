@@ -12,7 +12,7 @@ namespace VeryCoolEngine {
 		m_pxCollider = m_pxRigidBody->addCollider(pxShape, reactphysics3d::Transform::identity());
 
 		m_pxRigidBody->setType(reactphysics3d::BodyType::DYNAMIC);
-		m_pxRigidBody->setUserData(xEntity);
+		m_pxRigidBody->setUserData(reinterpret_cast<void*>(xEntity->GetGuid().m_uGuid));
 
 		xTrans.m_pxRigidBody = m_pxRigidBody;
 	}

@@ -7,10 +7,7 @@
 #include "VeryCoolEngine/Application.h"
 
 namespace VeryCoolEngine {
-	TestScene::TestScene() :
-		m_xPlayerEntity(this),
-		m_xPlaneEntity(this),
-		m_xSphereEntity(this)
+	TestScene::TestScene()
 	{
 		Application* app = Application::GetInstance();
 
@@ -21,23 +18,29 @@ namespace VeryCoolEngine {
 		std::string strName;
 		Material* pxMaterial;
 
+		Entity xPlayerEntity(this);
 		strName = "sphereSmooth.obj";
 		pxMaterial = app->m_xMaterialMap.at("rock2k");
-		ModelComponent& xPlayerModel = m_xPlayerEntity.AddComponent<ModelComponent>(strName, pxMaterial);
-		ScriptComponent& xPlayerScript = m_xPlayerEntity.AddComponent<ScriptComponent>();
+		ModelComponent& xPlayerModel = xPlayerEntity.AddComponent<ModelComponent>(strName, pxMaterial);
+		ScriptComponent& xPlayerScript = xPlayerEntity.AddComponent<ScriptComponent>();
 		xPlayerScript.SetBehaviour<TestScriptBehaviour>();
 		xPlayerScript.Instantiate(&xPlayerScript);
-		dynamic_cast<TestScriptBehaviour*>(xPlayerScript.m_pxScriptBehaviour)->m_pxGroundPlane = &m_xPlaneEntity;
+		m_xPlayerGuid = xPlayerEntity.GetGuid();
+		
 
 		strName = "sphereSmooth.obj";
 		pxMaterial = app->m_xMaterialMap.at("rock2k");
-		ModelComponent& xSphereModel = m_xSphereEntity.AddComponent<ModelComponent>(strName, pxMaterial);
+		Entity xSphereEntity(this);
+		ModelComponent& xSphereModel = xSphereEntity.AddComponent<ModelComponent>(strName, pxMaterial);
+		m_xSphereGuid = xSphereEntity.GetGuid();
 
 
 		strName = "plane.obj";
 		pxMaterial = app->m_xMaterialMap.at("crystal2k");
-		ModelComponent& xPlaneModel = m_xPlaneEntity.AddComponent<ModelComponent>(strName, pxMaterial);
-		
+		Entity xPlaneEntity(this);
+		ModelComponent& xPlaneModel = xPlaneEntity.AddComponent<ModelComponent>(strName, pxMaterial);
+		m_xPlaneGuid = xPlaneEntity.GetGuid();
+		dynamic_cast<TestScriptBehaviour*>(xPlayerScript.m_pxScriptBehaviour)->m_xGroundPlaneGuid = xPlaneEntity.GetGuid();
 
 		app->_pRenderer->InitialiseAssets();
 		
@@ -53,29 +56,30 @@ namespace VeryCoolEngine {
 
 		Physics::ResetPhysics();
 
-		TransformComponent& xPlayerTrans = m_xPlayerEntity.GetComponent<TransformComponent>();
+		Entity xPlayerEntity = GetEntityByGuid(m_xPlayerGuid);
+		TransformComponent& xPlayerTrans = xPlayerEntity.GetComponent<TransformComponent>();
 		xPlayerTrans.SetPosition({ 5,50,5 });
 		xPlayerTrans.SetScale({ 10,10,10 });
-		ColliderComponent& xPlayerCollider = m_xPlayerEntity.AddOrReplaceComponent<ColliderComponent>();
+		ColliderComponent& xPlayerCollider = xPlayerEntity.AddOrReplaceComponent<ColliderComponent>();
 		xPlayerCollider.AddCollider(Physics::CollisionVolumeType::OBB);
-		ScriptComponent& xPlayerScript = m_xPlayerEntity.GetComponent<ScriptComponent>();
+		ScriptComponent& xPlayerScript = xPlayerEntity.GetComponent<ScriptComponent>();
 		xPlayerScript.OnCreate();
 		
 
-		
-		TransformComponent& xSphereTrans = m_xSphereEntity.GetComponent<TransformComponent>();
+		Entity xSphereEntity = GetEntityByGuid(m_xSphereGuid);
+		TransformComponent& xSphereTrans = xSphereEntity.GetComponent<TransformComponent>();
 		xSphereTrans.SetPosition({ 25,5,25 });
 		xSphereTrans.SetScale({ 10,10,10 });
-		ColliderComponent& xSphereCollider = m_xSphereEntity.AddOrReplaceComponent<ColliderComponent>();
+		ColliderComponent& xSphereCollider = xSphereEntity.AddOrReplaceComponent<ColliderComponent>();
 		xSphereCollider.AddCollider(Physics::CollisionVolumeType::Sphere);
 		
 
 
-		
-		TransformComponent& xPlaneTrans = m_xPlaneEntity.GetComponent<TransformComponent>();
+		Entity xPlaneEntity = GetEntityByGuid(m_xPlaneGuid);
+		TransformComponent& xPlaneTrans = xPlaneEntity.GetComponent<TransformComponent>();
 		xPlaneTrans.SetPosition({ 1,1,1 });
 		xPlaneTrans.SetScale({ 1000,1,1000 });
-		ColliderComponent& xPlaneCollider = m_xPlaneEntity.AddOrReplaceComponent<ColliderComponent>();
+		ColliderComponent& xPlaneCollider = xPlaneEntity.AddOrReplaceComponent<ColliderComponent>();
 		xPlaneCollider.AddCollider(Physics::CollisionVolumeType::OBB);
 		xPlaneCollider.GetRigidBody()->setType(reactphysics3d::BodyType::STATIC);
 

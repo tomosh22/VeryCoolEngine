@@ -2,14 +2,15 @@
 #include "Scene.h"
 #include "VeryCoolEngine/Components/TransformComponent.h"
 #include <string>
+#include "VeryCoolEngine/PlatformTypes.h"
 
 namespace VeryCoolEngine {
-
+	
 	class Entity
 	{
 	public:
 		Entity() = delete;
-		Entity(class Scene* pxScene);
+		Entity(Scene* pxScene);
 
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args) {
@@ -48,10 +49,12 @@ namespace VeryCoolEngine {
 
 		EntityID GetEntityID() { return m_xEntity; }
 		
-
+		const GUID GetGuid() const { return m_xGuid; }
+		class Scene* m_pxParentScene;
 	private:
 		EntityID m_xEntity;
-		Scene* m_pxParentScene;
+		
+		GUID m_xGuid;
 	};
 
 }

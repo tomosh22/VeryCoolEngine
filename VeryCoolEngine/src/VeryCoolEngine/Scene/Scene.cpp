@@ -1,4 +1,5 @@
 #include "vcepch.h"
+#include "Entity.h"
 #include "Scene.h"
 #include "VeryCoolEngine/Components/ModelComponent.h"
 #include "VeryCoolEngine/Components/TransformComponent.h"
@@ -14,5 +15,16 @@ namespace VeryCoolEngine {
 		for (ColliderComponent* pxCol : GetAllOfComponentType<ColliderComponent>())
 			xRet.push_back(pxCol);
 		return xRet;
+	}
+
+	void Scene::Serialize(const std::string& strFilename) {
+		
+	}
+
+	Entity Scene::GetEntityByGuid(GUID xGuid) {
+		return m_xEntityMap.at(xGuid.m_uGuid);
+	}
+	Entity Scene::GetEntityByGuid(GuidType uGuid) {
+		return m_xEntityMap.at(uGuid);
 	}
 }

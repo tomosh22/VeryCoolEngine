@@ -9,7 +9,7 @@ namespace VeryCoolEngine {
 	public:
 		virtual void OnCreate() = 0;
 		virtual void OnUpdate(float fDt) = 0;
-		virtual void OnCollision(Entity* pxOther, Physics::CollisionEventType eCollisionType) = 0;
+		virtual void OnCollision(Entity xOther, Physics::CollisionEventType eCollisionType) = 0;
 
 	};
 	class ScriptComponent
@@ -26,7 +26,7 @@ namespace VeryCoolEngine {
 
 		void OnCreate() { m_pxScriptBehaviour->OnCreate(); }
 		void OnUpdate(float fDt) { m_pxScriptBehaviour->OnUpdate(fDt); }
-		void OnCollision(Entity* pxOther, Physics::CollisionEventType eCollisionType) { m_pxScriptBehaviour->OnCollision(pxOther, eCollisionType); }
+		void OnCollision(Entity xOther, Physics::CollisionEventType eCollisionType) { m_pxScriptBehaviour->OnCollision(xOther, eCollisionType); }
 
 		template<typename T>
 		void SetBehaviour() {
@@ -37,7 +37,7 @@ namespace VeryCoolEngine {
 	class TestScriptBehaviour : public ScriptBehaviour {
 	public:
 		TestScriptBehaviour(ScriptComponent* pxScriptComponent) : m_xScriptComponent(*pxScriptComponent) {}
-		Entity* m_pxGroundPlane = nullptr;
+		GUID m_xGroundPlaneGuid;
 		ScriptComponent& m_xScriptComponent;
 		bool m_bIsOnGround;
 		virtual void OnCreate() override {
@@ -46,8 +46,8 @@ namespace VeryCoolEngine {
 		virtual void OnUpdate(float fDt) override {
 			VCE_TRACE("On ground: {}", m_bIsOnGround);
 		}
-		virtual void OnCollision(Entity* pxOther, Physics::CollisionEventType eCollisionType) override {
-			if (pxOther == m_pxGroundPlane) {
+		virtual void OnCollision(Entity xOther, Physics::CollisionEventType eCollisionType) override {
+			if(xOther.GetGuid().m_uGuid == m_xGroundPlaneGuid.m_uGuid) {
 				if (eCollisionType == Physics::CollisionEventType::Exit)
 					m_bIsOnGround = false;
 				else if (eCollisionType == Physics::CollisionEventType::Start || eCollisionType == Physics::CollisionEventType::Stay)

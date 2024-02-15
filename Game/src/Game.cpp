@@ -61,8 +61,8 @@ namespace VeryCoolEngine {
 
 		TestScene* pxScene = dynamic_cast<TestScene*>(m_pxCurrentScene);
 
-		TransformComponent& xPlayerTrans = pxScene->m_xPlayerEntity.GetComponent<TransformComponent>();
-		ColliderComponent& xPlayerPhysics = pxScene->m_xPlayerEntity.GetComponent<ColliderComponent>();
+		TransformComponent& xPlayerTrans = pxScene->GetEntityByGuid(pxScene->m_xPlayerGuid).GetComponent<TransformComponent>();
+		ColliderComponent& xPlayerPhysics = pxScene->GetEntityByGuid(pxScene->m_xPlayerGuid).GetComponent<ColliderComponent>();
 
 		
 		glm::vec3 xCamPos = { xPlayerPhysics.GetRigidBody()->getTransform().getPosition().x,xPlayerPhysics.GetRigidBody()->getTransform().getPosition().y + 15, xPlayerPhysics.GetRigidBody()->getTransform().getPosition().z };

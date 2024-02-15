@@ -10,6 +10,7 @@ namespace VeryCoolEngine {
 	Entity::Entity(Scene* pxScene) : m_pxParentScene(pxScene){
 		m_xEntity = m_pxParentScene->m_xRegistry.create();
 		AddComponent<TransformComponent>();
+		pxScene->m_xEntityMap.insert({ m_xGuid.m_uGuid, *this });
 		//AddComponent<ModelComponent>();
 	}
 }
