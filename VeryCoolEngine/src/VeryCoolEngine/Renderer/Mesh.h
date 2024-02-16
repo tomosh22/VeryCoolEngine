@@ -179,9 +179,6 @@ namespace VeryCoolEngine {
 		uint32_t m_uNumBones = 0;
 		
 		std::vector<BoneData> m_xBoneData;
-		
-		
-		std::map<uint32_t, std::vector<std::pair<uint32_t, float>>> m_xBoneInfluences;
 
 		glm::vec3* m_pxVertexPositions = nullptr;
 		glm::vec2* m_pxUVs = nullptr;
