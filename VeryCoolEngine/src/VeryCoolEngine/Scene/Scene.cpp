@@ -151,7 +151,8 @@ namespace VeryCoolEngine {
 				std::string strMaterialGuid;
 				std::getline(xIn, strMaterialName);
 				std::getline(xIn, strMaterialGuid);
-				m_xMaterialMap.insert({ strMaterialName, Material::Create(strMaterialName.c_str()) });
+				GUID xGUID(strtoull(strMaterialGuid.c_str(), nullptr, 10));
+				m_xMaterialMap.insert({ xGUID.m_uGuid, Material::Create(strMaterialName.c_str()) });
 			}
 		}
 

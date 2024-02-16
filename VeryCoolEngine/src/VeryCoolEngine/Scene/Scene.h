@@ -53,7 +53,7 @@ namespace VeryCoolEngine {
 		friend class VulkanRenderer;
 #endif
 		friend class ModelComponent;
-		std::unordered_map<std::string, Material*> m_xMaterialMap;
+		std::unordered_map<GuidType, Material*> m_xMaterialMap;
 	};
 
 }

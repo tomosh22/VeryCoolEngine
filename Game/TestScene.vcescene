@@ -14,7 +14,7 @@ ColliderComponent
 OBB
 Dynamic
 ModelComponent
-rock2k
+2957329679
 sphereSmooth.obj
 ScriptComponent
 TestScriptBehvaiour
@@ -31,7 +31,7 @@ ColliderComponent
 Sphere
 Dynamic
 ModelComponent
-rock2k
+2957329679
 sphereSmooth.obj
 EndEntity
 Entity
@@ -44,6 +44,6 @@ ColliderComponent
 OBB
 Static
 ModelComponent
-crystal2k
+2068965743
 plane.obj
 EndEntity
