@@ -166,9 +166,6 @@ namespace VeryCoolEngine {
 			}
 		};
 
-		std::map<std::string, aiNodeAnim*> m_xNodeNameToAnim;
-		std::map<std::string, uint32_t> m_xBoneNameToIndex;
-		std::map<uint32_t, std::string> m_xBoneIndexToName;
 		std::vector<glm::mat4> m_xBoneMats;
 
 		Material* m_pxMaterial = nullptr;
