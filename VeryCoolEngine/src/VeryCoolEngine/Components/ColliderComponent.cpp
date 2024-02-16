@@ -18,6 +18,7 @@ namespace VeryCoolEngine {
 	}
 
 	void ColliderComponent::AddCollider(Physics::CollisionVolumeType eType) {
+		m_eType = eType;
 		switch (eType) {
 		case Physics::CollisionVolumeType::OBB:
 		{
@@ -32,6 +33,18 @@ namespace VeryCoolEngine {
 
 			m_pxCollider = m_pxRigidBody->addCollider(pxSphereShape, reactphysics3d::Transform::identity());
 		}
+			break;
+		}
+	}
+
+	void ColliderComponent::Serialize(std::ofstream& xOut) {
+		xOut << "ColliderComponent\n";
+		switch (m_eType) {
+		case Physics::CollisionVolumeType::OBB:
+			xOut << "OBB\n";
+			break;
+		case Physics::CollisionVolumeType::Sphere:
+			xOut << "Sphere\n";
 			break;
 		}
 	}

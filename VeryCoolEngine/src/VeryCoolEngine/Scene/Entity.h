@@ -51,6 +51,8 @@ namespace VeryCoolEngine {
 		
 		const GUID GetGuid() const { return m_xGuid; }
 		class Scene* m_pxParentScene;
+
+		void Serialize(std::ofstream& xOut);
 	private:
 		EntityID m_xEntity;
 		

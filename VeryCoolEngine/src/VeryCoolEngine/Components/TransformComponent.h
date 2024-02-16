@@ -13,6 +13,7 @@ namespace VeryCoolEngine {
 	public:
 		TransformComponent();
 		~TransformComponent();
+		void Serialize(std::ofstream& xOut);
 		void SetPosition(const glm::vec3& xPos);
 		void SetRotation(const glm::quat& xRot);
 		void SetScale(const glm::vec3& xScale);

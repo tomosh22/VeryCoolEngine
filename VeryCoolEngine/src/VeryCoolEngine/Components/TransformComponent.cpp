@@ -30,4 +30,12 @@ namespace VeryCoolEngine {
 	reactphysics3d::Transform* TransformComponent::GetTransform_Unsafe() {
 		return m_pxTransform;
 	}
+
+	void TransformComponent::Serialize(std::ofstream& xOut) {
+		xOut << "TransformComponent\n";
+		reactphysics3d::Transform* pxTrans = GetTransform();
+		xOut << pxTrans->getPosition().x << ' ' << pxTrans->getPosition().y << ' ' << pxTrans->getPosition().z << '\n';
+		xOut << pxTrans->getOrientation().x << ' ' << pxTrans->getOrientation().y << ' ' << pxTrans->getOrientation().z << ' ' << pxTrans->getOrientation().w << '\n';
+		xOut << m_xScale.x << ' ' << m_xScale.y << ' ' << m_xScale.z << '\n';
+	}
 }

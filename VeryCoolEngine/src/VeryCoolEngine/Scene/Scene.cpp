@@ -18,7 +18,15 @@ namespace VeryCoolEngine {
 	}
 
 	void Scene::Serialize(const std::string& strFilename) {
-		
+		VCE_TRACE("Serializing {}", strFilename.c_str());
+		std::ofstream xOut(strFilename.c_str());
+
+		for (auto [xGuid, xEntity] : m_xEntityMap) {
+			xOut << "Entity\n";
+			xEntity.Serialize(xOut);
+			xOut << "EndEntity\n";
+		}
+		xOut.close();
 	}
 
 	Entity Scene::GetEntityByGuid(GUID xGuid) {

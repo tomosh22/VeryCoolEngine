@@ -9,7 +9,8 @@ namespace VeryCoolEngine {
 	{
 	public:
 		ModelComponent(std::string strFilename, TransformComponent& xTrans, Entity* xEntity);
-		ModelComponent(std::string strFilename, Material* pxMaterial, TransformComponent& xTrans, Entity* xEntity);
+		ModelComponent(std::string strFilename, const std::string& strMaterialName, TransformComponent& xTrans, Entity* xEntity);
+		void Serialize(std::ofstream& xOut);
 		ModelComponent() = delete;
 		~ModelComponent() {
 			delete m_pxModel;
@@ -21,6 +22,8 @@ namespace VeryCoolEngine {
 		friend class ModelComponent;
 		VCEModel* m_pxModel;
 		std::string m_strFilename;
+
+		std::string m_strMaterialName;
 
 		TransformComponent& m_xTransRef;
 		Entity& m_xParentEntity;

@@ -10,6 +10,8 @@ namespace VeryCoolEngine {
 		virtual void OnCreate() = 0;
 		virtual void OnUpdate(float fDt) = 0;
 		virtual void OnCollision(Entity xOther, Physics::CollisionEventType eCollisionType) = 0;
+		virtual std::string GetBehaviourType() = 0;
+		std::vector<GUID> m_axGuidRefs;
 
 	};
 	class ScriptComponent
@@ -17,6 +19,7 @@ namespace VeryCoolEngine {
 	public:
 
 		ScriptComponent(TransformComponent& xTrans, Entity* xEntity) : m_xParentEntity(*xEntity) {};
+		void Serialize(std::ofstream& xOut);
 
 		void(*Instantiate)(ScriptComponent*);
 
@@ -37,7 +40,10 @@ namespace VeryCoolEngine {
 	class TestScriptBehaviour : public ScriptBehaviour {
 	public:
 		TestScriptBehaviour(ScriptComponent* pxScriptComponent) : m_xScriptComponent(*pxScriptComponent) {}
-		GUID m_xGroundPlaneGuid;
+
+		enum GuidRefernceIndices {
+			GroundPlane
+		};
 		ScriptComponent& m_xScriptComponent;
 		bool m_bIsOnGround;
 		virtual void OnCreate() override {
@@ -47,13 +53,14 @@ namespace VeryCoolEngine {
 			VCE_TRACE("On ground: {}", m_bIsOnGround);
 		}
 		virtual void OnCollision(Entity xOther, Physics::CollisionEventType eCollisionType) override {
-			if(xOther.GetGuid().m_uGuid == m_xGroundPlaneGuid.m_uGuid) {
+			if(xOther.GetGuid().m_uGuid == m_axGuidRefs[GroundPlane].m_uGuid) {
 				if (eCollisionType == Physics::CollisionEventType::Exit)
 					m_bIsOnGround = false;
 				else if (eCollisionType == Physics::CollisionEventType::Start || eCollisionType == Physics::CollisionEventType::Stay)
 					m_bIsOnGround = true;
 			}
 		}
+		virtual std::string GetBehaviourType() override { return "TestScriptBehvaiour"; }
 	};
 	
 }

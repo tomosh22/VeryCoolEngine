@@ -237,6 +237,10 @@ namespace VeryCoolEngine {
 		const char* aszItems[] = { "Editor", "Playing" };
 		ImGui::Combo("combo", &app->m_eCurrentState, aszItems, IM_ARRAYSIZE(aszItems));
 
+		if (ImGui::Button("Serialize Scene")) {
+			app->m_pxCurrentScene->Serialize("TestScene.vcescene");
+		}
+
 		ImGui::End();
 
 		/*if (ImGui::BeginMenuBar())

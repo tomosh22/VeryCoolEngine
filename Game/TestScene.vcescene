@@ -1,0 +1,40 @@
+Entity
+3754454491
+TransformComponent
+5 50 5
+0 0 0 1
+10 10 10
+ColliderComponent
+OBB
+ModelComponent
+rock2k
+sphereSmooth.obj
+ScriptComponent
+TestScriptBehvaiour
+1
+1576001455
+EndEntity
+Entity
+3590258406
+TransformComponent
+25 5 25
+0 0 0 1
+10 10 10
+ColliderComponent
+Sphere
+ModelComponent
+rock2k
+sphereSmooth.obj
+EndEntity
+Entity
+1576001455
+TransformComponent
+1 1 1
+0 0 0 1
+1000 1 1000
+ColliderComponent
+OBB
+ModelComponent
+crystal2k
+plane.obj
+EndEntity
