@@ -55,13 +55,14 @@ void VulkanRenderer::InitWindow() {
 void VulkanRenderer::InitialiseAssets() {
 	Application* app = Application::GetInstance();
 
-	VCE_ASSERT(app->m_pxCurrentScene != nullptr, "Null scene");
+	Scene* pxScene = app->m_pxCurrentScene;
+
+	VCE_ASSERT(pxScene != nullptr, "Null scene");
+	for (auto it = pxScene->m_xMaterialMap.begin(); it != pxScene->m_xMaterialMap.end(); it++)
+		it->second->PlatformInit();
 	for (ModelComponent* pxModelComponent : app->m_pxCurrentScene->GetAllOfComponentType<ModelComponent>()) {
 		for (Mesh* pMesh : pxModelComponent->GetModel()->m_apxMeshes) {
 			pMesh->PlatformInit();
-			//pMesh->GetShader()->PlatformInit();
-			if (pMesh->m_pxMaterial != nullptr)
-				pMesh->m_pxMaterial->PlatformInit();
 		}
 	}
 }
