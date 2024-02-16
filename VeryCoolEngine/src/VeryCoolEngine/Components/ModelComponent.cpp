@@ -14,7 +14,7 @@ namespace VeryCoolEngine {
 
 		//#TO_TODO this can be an emplace_back
 		Mesh* mesh = Mesh::FromFile(strFilename.c_str());
-		mesh->m_pxMaterial = Application::GetInstance()->m_xMaterialMap.at(strMaterialName.c_str());
+		mesh->m_pxMaterial = m_xParentEntity.m_pxParentScene->m_xMaterialMap.at(strMaterialName.c_str());
 		m_pxModel->m_apxMeshes.push_back(Mesh::FromFile(strFilename.c_str()));
 		m_pxModel->m_apxMeshes.back()->m_pxMaterial = mesh->m_pxMaterial;
 	}

@@ -46,6 +46,9 @@ namespace VeryCoolEngine {
 		//#TO_TODO: will cause problems if i have more than one scene loaded at a time
 		app->m_pxCurrentScene = this;
 
+		m_xMaterialMap.insert({ "rock2k", Material::Create("rock2k") });
+		m_xMaterialMap.insert({ "crystal2k", Material::Create("crystal2k") });
+
 		std::ifstream xIn("TestScene.vcescene");
 		std::string strLine;
 		while (std::getline(xIn, strLine)) {

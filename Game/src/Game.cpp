@@ -19,9 +19,6 @@ namespace VeryCoolEngine {
 	
 	Game::Game() {
 
-		m_xMaterialMap.insert({ "rock2k", Material::Create("rock2k") });
-		m_xMaterialMap.insert({ "crystal2k", Material::Create("crystal2k") });
-
 		//AddModel("ogre.fbx", Transform({ 0,200,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)), true);
 
 		//AddModel("otherFish.fbx", Transform({ 20,200,0 }, glm::quat_identity<float, glm::packed_highp>(), glm::vec3(1, 1, 1)), true);

@@ -157,8 +157,6 @@ namespace VeryCoolEngine {
 		Mesh* m_pxExampleMesh;
 		Mesh* m_pxExampleSkinnedMesh;
 
-		std::unordered_map<std::string, Material*> m_xMaterialMap;
-
 		Shader* m_pxMeshShader;
 		Shader* m_pxSkinnedMeshShader;
 		Shader* m_pxGBufferShader;
