@@ -27,6 +27,12 @@ namespace VeryCoolEngine {
 		{"Sphere", Physics::CollisionVolumeType::Sphere },
 	};
 
+	std::unordered_map<std::string, Physics::RigidBodyType> g_xRigidBodyNames = {
+
+		{"Dynamic", Physics::RigidBodyType::Dynamic },
+		{"Static", Physics::RigidBodyType::Static },
+	};
+
 	enum class ScriptBehaviourType {
 		TestScriptBehaviour
 	};
@@ -45,9 +51,9 @@ namespace VeryCoolEngine {
 		std::string strLine;
 		while (std::getline(xIn, strLine)) {
 			if (strLine == "Entity") {
-				Entity xEntity(this);
 				std::string strGuid;
 				std::getline(xIn, strGuid);
+				Entity xEntity(this, GUID(strtoull(strGuid.c_str(), nullptr, 10)));
 				while (std::getline(xIn, strLine)) {
 					if (strLine == "EndEntity")break;
 					switch (g_xComponentNames[strLine]) {
@@ -94,9 +100,11 @@ namespace VeryCoolEngine {
 					case ComponentType::Collider:
 					{
 						ColliderComponent& xCollider = xEntity.AddComponent<ColliderComponent>();
-						std::string strType;
-						std::getline(xIn, strType);
-						xCollider.AddCollider(g_xColliderNames[strType]);
+						std::string strVolumeType;
+						std::string strRigidBodyType;
+						std::getline(xIn, strVolumeType);
+						std::getline(xIn, strRigidBodyType);
+						xCollider.AddCollider(g_xColliderNames[strVolumeType], g_xRigidBodyNames[strRigidBodyType]);
 					}
 						break;
 					case ComponentType::Model:
@@ -128,7 +136,7 @@ namespace VeryCoolEngine {
 							m_xPlayerGuid = xEntity.GetGuid();
 							xScript.m_pxScriptBehaviour->m_axGuidRefs.resize(uNumGuids);
 							for(uint32_t i = 0; i < uNumGuids; i++)
-								xScript.m_pxScriptBehaviour->m_axGuidRefs.at(i).m_uGuid = strtoul(astrGuids[i].c_str(), nullptr, 10);
+								xScript.m_pxScriptBehaviour->m_axGuidRefs.at(i).m_uGuid = strtoull(astrGuids[i].c_str(), nullptr, 10);
 							bool a = false;
 							break;
 						}
@@ -166,8 +174,8 @@ namespace VeryCoolEngine {
 		app->_pRenderer->InitialiseAssets();
 		
 		m_xEditorCamera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, float(VCE_GAME_WIDTH) / float(VCE_GAME_HEIGHT));
-
-		Reset();
+		for (ScriptComponent* pxScript : GetAllOfComponentType<ScriptComponent>())
+			pxScript->OnCreate();
 
 		
 	}

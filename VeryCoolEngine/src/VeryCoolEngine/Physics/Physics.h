@@ -22,6 +22,11 @@ namespace VeryCoolEngine {
 			Stay
 		};
 
+		enum class RigidBodyType : uint32_t {
+			Dynamic,
+			Static
+		};
+
 		extern reactphysics3d::PhysicsCommon s_xPhysicsCommon;
 		extern reactphysics3d::PhysicsWorld* s_pxPhysicsWorld;
 

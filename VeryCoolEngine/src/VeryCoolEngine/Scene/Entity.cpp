@@ -15,6 +15,12 @@ namespace VeryCoolEngine {
 		pxScene->m_xEntityMap.insert({ m_xGuid.m_uGuid, *this });
 	}
 
+	Entity::Entity(Scene* pxScene, GUID xGuid) : m_pxParentScene(pxScene), m_xGuid(xGuid) {
+		m_xEntity = m_pxParentScene->m_xRegistry.create();
+		AddComponent<TransformComponent>();
+		pxScene->m_xEntityMap.insert({ m_xGuid.m_uGuid, *this });
+	}
+
 	void Entity::Serialize(std::ofstream& xOut) {
 		xOut << m_xGuid.m_uGuid << '\n';
 		if (HasComponent<TransformComponent>())

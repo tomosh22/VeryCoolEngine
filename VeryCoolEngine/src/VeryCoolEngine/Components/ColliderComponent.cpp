@@ -11,15 +11,16 @@ namespace VeryCoolEngine {
 
 		m_pxCollider = m_pxRigidBody->addCollider(pxShape, reactphysics3d::Transform::identity());
 
-		m_pxRigidBody->setType(reactphysics3d::BodyType::DYNAMIC);
+		
 		m_pxRigidBody->setUserData(reinterpret_cast<void*>(xEntity->GetGuid().m_uGuid));
 
 		xTrans.m_pxRigidBody = m_pxRigidBody;
 	}
 
-	void ColliderComponent::AddCollider(Physics::CollisionVolumeType eType) {
-		m_eType = eType;
-		switch (eType) {
+	void ColliderComponent::AddCollider(Physics::CollisionVolumeType eVolumeType, Physics::RigidBodyType eRigidBodyType) {
+		m_eVolumeType = eVolumeType;
+		m_eRigidBodyType = eRigidBodyType;
+		switch (eVolumeType) {
 		case Physics::CollisionVolumeType::OBB:
 		{
 			reactphysics3d::BoxShape* pxOBBShape = Physics::s_xPhysicsCommon.createBoxShape(reactphysics3d::Vector3(m_xTransRef.m_xScale.x, m_xTransRef.m_xScale.y, m_xTransRef.m_xScale.z));
@@ -35,16 +36,33 @@ namespace VeryCoolEngine {
 		}
 			break;
 		}
+
+		switch (eRigidBodyType) {
+		case Physics::RigidBodyType::Dynamic:
+			m_pxRigidBody->setType(reactphysics3d::BodyType::DYNAMIC);
+			break;
+		case Physics::RigidBodyType::Static:
+			m_pxRigidBody->setType(reactphysics3d::BodyType::STATIC);
+			break;
+		}
 	}
 
 	void ColliderComponent::Serialize(std::ofstream& xOut) {
 		xOut << "ColliderComponent\n";
-		switch (m_eType) {
+		switch (m_eVolumeType) {
 		case Physics::CollisionVolumeType::OBB:
 			xOut << "OBB\n";
 			break;
 		case Physics::CollisionVolumeType::Sphere:
 			xOut << "Sphere\n";
+			break;
+		}
+		switch (m_eRigidBodyType) {
+		case Physics::RigidBodyType::Dynamic:
+			xOut << "Dynamic\n";
+			break;
+		case Physics::RigidBodyType::Static:
+			xOut << "Static\n";
 			break;
 		}
 	}

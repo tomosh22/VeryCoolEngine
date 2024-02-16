@@ -11,6 +11,7 @@ namespace VeryCoolEngine {
 	public:
 		Entity() = delete;
 		Entity(Scene* pxScene);
+		Entity(Scene* pxScene, GUID xGuid);
 
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args) {

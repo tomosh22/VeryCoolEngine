@@ -10,6 +10,7 @@ namespace VeryCoolEngine {
 				if (rand() > RAND_MAX / 2)
 					m_uGuid |= 1ul << i;
 		}
+		GUID(GuidType uGuid) : m_uGuid(uGuid) {}
 		GuidType m_uGuid = 0;
 	};
 }

@@ -6,6 +6,7 @@ TransformComponent
 10 10 10
 ColliderComponent
 OBB
+Dynamic
 ModelComponent
 rock2k
 sphereSmooth.obj
@@ -22,6 +23,7 @@ TransformComponent
 10 10 10
 ColliderComponent
 Sphere
+Dynamic
 ModelComponent
 rock2k
 sphereSmooth.obj
@@ -34,6 +36,7 @@ TransformComponent
 1000 1 1000
 ColliderComponent
 OBB
+Static
 ModelComponent
 crystal2k
 plane.obj
