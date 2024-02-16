@@ -9,7 +9,6 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/mat4x4.hpp>
 
-#include "TestScene.h"
 #include "VeryCoolEngine/Components/TransformComponent.h"
 #include "VeryCoolEngine/Components/ColliderComponent.h"
 #include "VeryCoolEngine/Components/ModelComponent.h"
@@ -50,7 +49,7 @@ namespace VeryCoolEngine {
 	
 
 	void Application::OnApplicationBegin() {
-		m_pxCurrentScene = new TestScene();
+		m_pxCurrentScene = new Scene("TestScene.vcescene");
 		//m_pxCurrentScene->Reset();
 		_pRenderer->InitialiseAssets();
 	}
@@ -59,10 +58,8 @@ namespace VeryCoolEngine {
 	void Application::GameLoop(float fDt) {
 		Game* game = (Game*)Application::GetInstance();
 
-		TestScene* pxScene = dynamic_cast<TestScene*>(m_pxCurrentScene);
-
-		TransformComponent& xPlayerTrans = pxScene->GetEntityByGuid(pxScene->m_xPlayerGuid).GetComponent<TransformComponent>();
-		ColliderComponent& xPlayerPhysics = pxScene->GetEntityByGuid(pxScene->m_xPlayerGuid).GetComponent<ColliderComponent>();
+		TransformComponent& xPlayerTrans = m_pxCurrentScene->GetEntityByGuid(m_pxCurrentScene->m_xPlayerGuid).GetComponent<TransformComponent>();
+		ColliderComponent& xPlayerPhysics = m_pxCurrentScene->GetEntityByGuid(m_pxCurrentScene->m_xPlayerGuid).GetComponent<ColliderComponent>();
 
 		
 		glm::vec3 xCamPos = { xPlayerPhysics.GetRigidBody()->getTransform().getPosition().x,xPlayerPhysics.GetRigidBody()->getTransform().getPosition().y + 15, xPlayerPhysics.GetRigidBody()->getTransform().getPosition().z };

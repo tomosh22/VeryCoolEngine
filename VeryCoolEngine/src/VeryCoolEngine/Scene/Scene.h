@@ -11,7 +11,8 @@ namespace VeryCoolEngine {
 	class Scene
 	{
 	public:
-		virtual void Reset() = 0;
+		Scene(const std::string& strFilename);
+		void Reset();
 
 		template<typename T>
 		T& GetComponentFromEntity(EntityID xID) {
@@ -42,6 +43,8 @@ namespace VeryCoolEngine {
 
 		Camera m_xEditorCamera;
 		Camera m_xGameCamera;
+
+		GUID m_xPlayerGuid;
 	private:
 		friend class Entity;
 		EntityRegistry m_xRegistry;
