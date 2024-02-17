@@ -47,8 +47,6 @@ namespace VeryCoolEngine {
 
 	void Application::OnApplicationBegin() {
 		m_pxCurrentScene = new Scene("TestScene.vcescene");
-		//m_pxCurrentScene->Reset();
-		_pRenderer->InitialiseAssets();
 	}
 
 	//declared in Application.h, defined by game
