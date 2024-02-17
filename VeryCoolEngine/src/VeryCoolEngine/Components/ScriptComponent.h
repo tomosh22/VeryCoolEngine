@@ -58,6 +58,43 @@ namespace VeryCoolEngine {
 		}
 		virtual void OnUpdate(float fDt) override {
 			VCE_TRACE("On ground: {}", m_bIsOnGround);
+
+			constexpr const float fMoveSpeed = 20;
+			if (m_bIsOnGround) {
+				Scene* pxCurrentScene = m_xScriptComponent.m_xParentEntity.m_pxParentScene;
+				ColliderComponent& xPlayerPhysics = m_xScriptComponent.m_xParentEntity.GetComponent<ColliderComponent>();
+				reactphysics3d::Vector3 xFinalVelocity(0, 0, 0);
+				if (Input::IsKeyPressed(VCE_KEY_SPACE)) {
+					xFinalVelocity += reactphysics3d::Vector3(0, 10, 0);
+				}
+				if (Input::IsKeyPressed(VCE_KEY_W)) {
+					glm::mat4 rotation = glm::rotate(pxCurrentScene->m_xGameCamera.GetYaw(), glm::vec3(0, 1, 0));
+					glm::vec4 result = rotation * glm::vec4(0, 0, -1, 1);
+					glm::vec3 xVelocity = glm::vec3(result.x, result.y, result.z) * fMoveSpeed;
+					xFinalVelocity += reactphysics3d::Vector3(xVelocity.x, xVelocity.y, xVelocity.z);
+				}
+				if (Input::IsKeyPressed(VCE_KEY_S)) {
+					glm::mat4 rotation = glm::rotate(pxCurrentScene->m_xGameCamera.GetYaw(), glm::vec3(0, 1, 0));
+					glm::vec4 result = rotation * glm::vec4(0, 0, -1, 1);
+					result *= -1;
+					glm::vec3 xVelocity = glm::vec3(result.x, result.y, result.z) * fMoveSpeed;
+					xFinalVelocity += reactphysics3d::Vector3(xVelocity.x, xVelocity.y, xVelocity.z);
+				}
+				if (Input::IsKeyPressed(VCE_KEY_A)) {
+					glm::mat4 rotation = glm::rotate(pxCurrentScene->m_xGameCamera.GetYaw(), glm::vec3(0, 1, 0));
+					glm::vec4 result = rotation * glm::vec4(-1, 0, 0, 1);
+					glm::vec3 xVelocity = glm::vec3(result.x, result.y, result.z) * fMoveSpeed;
+					xFinalVelocity += reactphysics3d::Vector3(xVelocity.x, xVelocity.y, xVelocity.z);
+				}
+				if (Input::IsKeyPressed(VCE_KEY_D)) {
+					glm::mat4 rotation = glm::rotate(pxCurrentScene->m_xGameCamera.GetYaw(), glm::vec3(0, 1, 0));
+					glm::vec4 result = rotation * glm::vec4(-1, 0, 0, 1);
+					result *= -1;
+					glm::vec3 xVelocity = glm::vec3(result.x, result.y, result.z) * fMoveSpeed;
+					xFinalVelocity += reactphysics3d::Vector3(xVelocity.x, xVelocity.y, xVelocity.z);
+				}
+				xPlayerPhysics.GetRigidBody()->setLinearVelocity(xFinalVelocity);
+			}
 		}
 		virtual void OnCollision(Entity xOther, Physics::CollisionEventType eCollisionType) override {
 			if(xOther.GetGuid().m_uGuid == m_axGuidRefs[GroundPlane].m_uGuid) {

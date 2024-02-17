@@ -65,41 +65,7 @@ namespace VeryCoolEngine {
 		m_pxCurrentScene->m_xGameCamera.SetPosition(xCamPos);
 		m_pxCurrentScene->m_xGameCamera.UpdateRotation();
 
-		constexpr const float fMoveSpeed = 20;
-		//#TO_TODO: reimplement
-		if (false/*game->m_bPlayerIsOnFloor*/) {
-			reactphysics3d::Vector3 xFinalVelocity(0, 0, 0);
-			if (Input::IsKeyPressed(VCE_KEY_SPACE)) {
-				xFinalVelocity += reactphysics3d::Vector3(0, 10, 0);
-			}
-			if (Input::IsKeyPressed(VCE_KEY_W)) {
-				glm::mat4 rotation = glm::rotate(m_pxCurrentScene->m_xGameCamera.GetYaw(), glm::vec3(0, 1, 0));
-				glm::vec4 result = rotation * glm::vec4(0, 0, -1, 1);
-				glm::vec3 xVelocity = glm::vec3(result.x, result.y, result.z) * fMoveSpeed;
-				xFinalVelocity += reactphysics3d::Vector3(xVelocity.x, xVelocity.y, xVelocity.z);
-			}
-			if (Input::IsKeyPressed(VCE_KEY_S)) {
-				glm::mat4 rotation = glm::rotate(m_pxCurrentScene->m_xGameCamera.GetYaw(), glm::vec3(0, 1, 0));
-				glm::vec4 result = rotation * glm::vec4(0, 0, -1, 1);
-				result *= -1;
-				glm::vec3 xVelocity = glm::vec3(result.x, result.y, result.z) * fMoveSpeed;
-				xFinalVelocity += reactphysics3d::Vector3(xVelocity.x, xVelocity.y, xVelocity.z);
-			}
-			if (Input::IsKeyPressed(VCE_KEY_A)) {
-				glm::mat4 rotation = glm::rotate(m_pxCurrentScene->m_xGameCamera.GetYaw(), glm::vec3(0, 1, 0));
-				glm::vec4 result = rotation * glm::vec4(-1, 0, 0, 1);
-				glm::vec3 xVelocity = glm::vec3(result.x, result.y, result.z) * fMoveSpeed;
-				xFinalVelocity += reactphysics3d::Vector3(xVelocity.x, xVelocity.y, xVelocity.z);
-			}
-			if (Input::IsKeyPressed(VCE_KEY_D)) {
-				glm::mat4 rotation = glm::rotate(m_pxCurrentScene->m_xGameCamera.GetYaw(), glm::vec3(0, 1, 0));
-				glm::vec4 result = rotation * glm::vec4(-1, 0, 0, 1);
-				result *= -1;
-				glm::vec3 xVelocity = glm::vec3(result.x, result.y, result.z) * fMoveSpeed;
-				xFinalVelocity += reactphysics3d::Vector3(xVelocity.x, xVelocity.y, xVelocity.z);
-			}
-			xPlayerPhysics.GetRigidBody()->setLinearVelocity(xFinalVelocity);
-		}
+		
 	}
 
 	void Application::CollisionCallback(Entity* pxEntity1, Entity* pxEntity2, Physics::CollisionEventType eType) {
