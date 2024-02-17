@@ -20,6 +20,7 @@
 #include "VeryCoolEngine/Renderer/Animation.h"
 #include "Physics/Physics.h"
 #include "Scene/Entity.h"
+#include "VeryCoolEngine/AssetHandling/AssetHandler.h"
 
 //#define VCE_DEFERRED_SHADING
 
@@ -95,8 +96,6 @@ namespace VeryCoolEngine {
 		int m_ePrevState = m_eCurrentState;
 		bool m_bSkipFrame = false;
 
-		void OnApplicationBegin();
-
 		void UpdateDeltaTime();
 
 		void UpdateEditorState();
@@ -125,6 +124,7 @@ namespace VeryCoolEngine {
 		RenderPass* m_pxRenderToTexturePassNoClear;
 		RenderPass* m_pxCopyToFramebufferPass;
 
+		AssetHandler m_xAssetHandler;
 
 		Texture2D* m_pxBlankTexture2D;
 

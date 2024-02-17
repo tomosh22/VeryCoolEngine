@@ -40,7 +40,7 @@ namespace VeryCoolEngine {
 
 		static Texture2D* Create(uint32_t width, uint32_t height, TextureFormat textureFormat = TextureFormat::RGBA, TextureWrapMode wrapMode = TextureWrapMode::Clamp);
 
-		static Texture2D* Create(const std::string& path, bool srgb);
+		static Texture2D* Create(const std::string& path, bool srgb = false);
 
 		static Texture2D* Create();
 

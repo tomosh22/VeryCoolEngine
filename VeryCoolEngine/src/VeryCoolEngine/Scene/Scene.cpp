@@ -113,10 +113,11 @@ namespace VeryCoolEngine {
 					case ComponentType::Model:
 					{
 						std::string strFile;
-						std::string strMaterial;
-						std::getline(xIn, strMaterial);
+						std::string strMaterialGUID;
+						std::getline(xIn, strMaterialGUID);
 						std::getline(xIn, strFile);
-						ModelComponent& xModel = xEntity.AddComponent<ModelComponent>(strFile, strMaterial.c_str());
+						GUID xMaterialGUID(strtoull(strMaterialGUID.c_str(), nullptr, 10));
+						ModelComponent& xModel = xEntity.AddComponent<ModelComponent>(strFile, xMaterialGUID);
 					}
 					break;
 					case ComponentType::Script:
@@ -148,14 +149,6 @@ namespace VeryCoolEngine {
 					}
 				}
 			}
-			if (strLine == "Material") {
-				std::string strMaterialName;
-				std::string strMaterialGuid;
-				std::getline(xIn, strMaterialName);
-				std::getline(xIn, strMaterialGuid);
-				GUID xGUID(strtoull(strMaterialGuid.c_str(), nullptr, 10));
-				m_xMaterialMap.insert({ xGUID.m_uGuid, Material::Create(strMaterialName.c_str(), xGUID) });
-			}
 		}
 
 		app->_pRenderer->InitialiseAssets();
@@ -186,12 +179,7 @@ namespace VeryCoolEngine {
 	void Scene::Serialize(const std::string& strFilename) {
 		VCE_TRACE("Serializing {}", strFilename.c_str());
 		std::ofstream xOut(strFilename.c_str());
-
-		for (auto [xGuid, pxMaterial] : m_xMaterialMap) {
-			xOut << "Material\n";
-			xOut << pxMaterial->m_strName << '\n';
-			xOut << pxMaterial->m_xGUID.m_uGuid << '\n';
-		}
+		
 		for (auto [xGuid, xEntity] : m_xEntityMap) {
 			xOut << "Entity\n";
 			xEntity.Serialize(xOut);

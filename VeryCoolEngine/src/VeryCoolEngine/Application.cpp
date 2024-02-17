@@ -443,7 +443,13 @@ namespace VeryCoolEngine {
 			if (renderInitialised)break;//#todo implement mutex here
 		}
 
-		OnApplicationBegin();
+#ifdef VCE_USE_EDITOR
+		while (!m_bImGuiInitialised)
+			std::this_thread::yield();
+#endif
+		m_xAssetHandler.LoadAssetsFromFile("Assets.vceassets");
+		m_xAssetHandler.PlatformInitialiseAssets();
+		m_pxCurrentScene = new Scene("TestScene.vcescene");
 
 		while (_running) {
 

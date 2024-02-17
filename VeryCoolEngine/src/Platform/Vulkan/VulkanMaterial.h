@@ -9,7 +9,7 @@ namespace VeryCoolEngine {
 	{
 	public:
 		VulkanMaterial() {};
-		VulkanMaterial(const char* szName, GUID xGUID);
+		VulkanMaterial(GUID xAlbedoGUID, GUID xBumpMapGUID, GUID xRoughnessTexGUID, GUID xMetallicTexGUID, GUID xHeightmapTexGUID);
 		~VulkanMaterial() override {
 			VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
 			pxRenderer->GetDevice().destroyDescriptorSetLayout(m_xDescSetLayout);

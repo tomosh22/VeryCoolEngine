@@ -50,11 +50,6 @@ namespace VeryCoolEngine {
 		friend class Entity;
 		EntityRegistry m_xRegistry;
 		std::unordered_map<GuidType, Entity> m_xEntityMap;
-#ifdef VCE_VULKAN
-		friend class VulkanRenderer;
-#endif
-		friend class ModelComponent;
-		std::unordered_map<GuidType, Material*> m_xMaterialMap;
 	};
 
 }

@@ -194,6 +194,7 @@ namespace VeryCoolEngine {
 
 	void VulkanCommandBuffer::BindMaterial(Material* pxMaterial, uint32_t uSet)
 	{
+		VCE_ASSERT(pxMaterial->m_bInitialised, "Binding uninitialised material");
 		VulkanMaterial* pxVkMaterial = dynamic_cast<VulkanMaterial*>(pxMaterial);
 
 		m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxCurrentPipeline->m_xPipelineLayout, uSet, 1, &pxVkMaterial->m_xDescSet, 0, nullptr);

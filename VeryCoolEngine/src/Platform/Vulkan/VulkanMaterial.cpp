@@ -5,16 +5,14 @@
 #include "VulkanTexture.h"
 
 namespace VeryCoolEngine {
-	VulkanMaterial::VulkanMaterial(const char* szName, GUID xGUID)
+	VulkanMaterial::VulkanMaterial(GUID xAlbedoGUID, GUID xBumpMapGUID, GUID xRoughnessTexGUID, GUID xMetallicTexGUID, GUID xHeightmapTexGUID)
 	{
-		m_strName = szName;
-		m_xGUID = xGUID;
 		//TODO: don't make so many std::strings
-		SetAlbedo(Texture2D::Create((std::string(szName) + "/diffuse.jpg").c_str(), false));
-		SetBumpMap(Texture2D::Create((std::string(szName) + "/normal.jpg").c_str(), false));
-		SetRoughness(Texture2D::Create((std::string(szName) + "/roughness.jpg").c_str(), false));
-		SetMetallic(Texture2D::Create((std::string(szName) + "/metallic.jpg").c_str(), false));
-		SetHeightmap(Texture2D::Create((std::string(szName) + "/height.jpg").c_str(), false));
+		SetAlbedo(xAlbedoGUID);
+		SetBumpMap(xBumpMapGUID);
+		SetRoughness(xRoughnessTexGUID);
+		SetMetallic(xMetallicTexGUID);
+		SetHeightmap(xHeightmapTexGUID);
 	}
 	void VulkanMaterial::PlatformInit()
 	{
@@ -22,44 +20,24 @@ namespace VeryCoolEngine {
 		Application* app = Application::GetInstance();
 		std::vector<Texture2D*> xTextures;
 
-		if (m_pxAlbedo != nullptr) {
-			m_pxAlbedo->PlatformInit();
-		}
-		else {
+		if (m_pxAlbedo == nullptr)
 			m_pxAlbedo = app->m_pxBlankTexture2D;
-		}
 		xTextures.push_back(m_pxAlbedo);
 
-		if (m_pxBumpMap != nullptr){
-			m_pxBumpMap->PlatformInit();
-		}
-		else {
+		if (m_pxBumpMap == nullptr)
 			m_pxBumpMap = app->m_pxBlankTexture2D;
-		}
 		xTextures.push_back(m_pxBumpMap);
 
-		if (m_pxRoughnessTex != nullptr){
-			m_pxRoughnessTex->PlatformInit();
-		}
-		else {
+		if (m_pxRoughnessTex == nullptr)
 			m_pxRoughnessTex = app->m_pxBlankTexture2D;
-		}
 		xTextures.push_back(m_pxRoughnessTex);
 
-		if (m_pxMetallicTex != nullptr){
-			m_pxMetallicTex->PlatformInit();
-		}
-		else {
+		if (m_pxMetallicTex == nullptr)
 			m_pxMetallicTex = app->m_pxBlankTexture2D;
-		}
 		xTextures.push_back(m_pxMetallicTex);
 
-		if (m_pxHeightmapTex != nullptr){
-			m_pxHeightmapTex->PlatformInit();
-		}
-		else {
+		if (m_pxHeightmapTex == nullptr)
 			m_pxHeightmapTex = app->m_pxBlankTexture2D;
-		}
 		xTextures.push_back(m_pxHeightmapTex);
 
 		m_uNumTextures = xTextures.size();

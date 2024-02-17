@@ -69,8 +69,6 @@ void VulkanRenderer::InitialiseAssets() {
 	Scene* pxScene = app->m_pxCurrentScene;
 
 	VCE_ASSERT(pxScene != nullptr, "Null scene");
-	for (auto it = pxScene->m_xMaterialMap.begin(); it != pxScene->m_xMaterialMap.end(); it++)
-		it->second->PlatformInit();
 
 	
 
@@ -85,8 +83,6 @@ void VulkanRenderer::CleanupAssets() {
 	Application* app = Application::GetInstance();
 	Scene* pxScene = app->m_pxCurrentScene;
 
-	for (auto it = pxScene->m_xMaterialMap.begin(); it != pxScene->m_xMaterialMap.end(); it++)
-		delete it->second;
 
 	for (auto it = m_xPipelines.begin(); it != m_xPipelines.end(); it++)
 		delete it->second;

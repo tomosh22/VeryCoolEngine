@@ -15,6 +15,7 @@
 #include <filesystem>
 #include <thread>
 #include <map>
+#include <fstream>
 
 #include "VeryCoolEngine/Log.h"
 

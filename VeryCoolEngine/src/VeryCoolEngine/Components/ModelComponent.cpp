@@ -8,14 +8,12 @@ namespace VeryCoolEngine {
 	ModelComponent::ModelComponent(std::string strFilename, TransformComponent& xTrans, Entity* xEntity) : m_strFilename(strFilename), m_xTransRef(xTrans), m_xParentEntity(*xEntity) {
 		m_pxModel = new VCEModel(strFilename.c_str());
 	}
-	ModelComponent::ModelComponent(std::string strFilename, const std::string& strMaterialName, TransformComponent& xTrans, Entity* xEntity) : m_strFilename(strFilename), m_xTransRef(xTrans), m_xParentEntity(*xEntity) {
-		m_strMaterialName = strMaterialName;
+	ModelComponent::ModelComponent(std::string strFilename, GUID xMaterialGUID, TransformComponent& xTrans, Entity* xEntity) : m_strFilename(strFilename), m_xTransRef(xTrans), m_xParentEntity(*xEntity) {
 		m_pxModel = new VCEModel();
 
 		//#TO_TODO this can be an emplace_back
 		Mesh* mesh = Mesh::FromFile(strFilename.c_str());
-		GUID xGUID(strtoull(strMaterialName.c_str(), nullptr, 10));
-		mesh->m_pxMaterial = m_xParentEntity.m_pxParentScene->m_xMaterialMap.at(xGUID.m_uGuid);
+		mesh->m_pxMaterial = Application::GetInstance()->m_xAssetHandler.GetMaterial(xMaterialGUID);
 		m_pxModel->m_apxMeshes.push_back(Mesh::FromFile(strFilename.c_str()));
 		m_pxModel->m_apxMeshes.back()->m_pxMaterial = mesh->m_pxMaterial;
 	}
