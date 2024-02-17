@@ -8,6 +8,7 @@ namespace VeryCoolEngine {
 	class VulkanMesh : public Mesh
 	{
 	public:
+		~VulkanMesh() override;
 		virtual void PlatformInit() override;
 		virtual void SetVertexArray(VertexArray* vertexArray) override;
 		virtual VertexBuffer* CreateInstancedVertexBuffer() override;

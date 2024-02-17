@@ -67,6 +67,19 @@ void VulkanRenderer::InitialiseAssets() {
 	}
 }
 
+void VulkanRenderer::CleanupAssets() {
+	Application* app = Application::GetInstance();
+	Scene* pxScene = app->m_pxCurrentScene;
+
+	for (auto it = pxScene->m_xMaterialMap.begin(); it != pxScene->m_xMaterialMap.end(); it++)
+		delete it->second;
+	for (ModelComponent* pxModelComponent : app->m_pxCurrentScene->GetAllOfComponentType<ModelComponent>()) {
+		for (Mesh* pMesh : pxModelComponent->GetModel()->m_apxMeshes) {
+			delete pMesh;
+		}
+	}
+}
+
 void VulkanRenderer::InitVulkan() {
 	VulkanRenderer::s_pInstance = this;
 	Application* app = Application::GetInstance();

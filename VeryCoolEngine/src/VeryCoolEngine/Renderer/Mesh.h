@@ -68,6 +68,8 @@ namespace VeryCoolEngine {
 			delete[] m_pxNormals;
 			delete[] m_pxTangents;
 			delete[] m_pxBitangents;
+			delete[] m_pxBoneDatas;
+			delete[] m_pVerts;
 		};
 
 		virtual void SetVertexArray(VertexArray* vertexArray) = 0;

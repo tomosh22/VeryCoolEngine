@@ -52,6 +52,7 @@ namespace VeryCoolEngine {
 			virtual void OnResize(uint32_t uWidth, uint32_t uHeight) override;
 
 			virtual void InitialiseAssets() override;
+			virtual void CleanupAssets() override;
 
 			virtual void SetClearColor(const glm::vec4 color) override;
 			virtual void Clear() override;

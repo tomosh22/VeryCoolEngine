@@ -24,7 +24,15 @@ namespace VeryCoolEngine {
 		}
 	}
 
-    void VulkanMesh::PlatformInit()
+	VulkanMesh::~VulkanMesh()
+	{
+		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+		{
+			//m_axBoneDescSet[i]
+		}
+	}
+
+	void VulkanMesh::PlatformInit()
     {
 		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
 
