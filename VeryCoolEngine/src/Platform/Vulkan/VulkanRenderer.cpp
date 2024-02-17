@@ -55,6 +55,8 @@ void VulkanRenderer::InitWindow() {
 void VulkanRenderer::InitialiseAssets() {
 	Application* app = Application::GetInstance();
 
+	m_device.waitIdle();
+
 	m_device.resetDescriptorPool(m_descriptorPool);
 
 	for (auto it = m_xPipelines.begin(); it != m_xPipelines.end(); it++)
@@ -123,6 +125,9 @@ void VulkanRenderer::MainLoop() {
 	glfwPollEvents();
 
 	Application* app = Application::GetInstance();
+
+	if (app->m_bSkipFrame || app->m_bWantToResetScene)
+		return;
 
 	RendererScene* scene = app->m_pxRendererScene;
 

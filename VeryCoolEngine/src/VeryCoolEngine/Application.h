@@ -111,6 +111,7 @@ namespace VeryCoolEngine {
 		RendererScene* m_pxRendererScene;
 
 		class Scene* m_pxCurrentScene = nullptr;
+		bool m_bWantToResetScene = false;
 
 		Renderer* _pRenderer;
 		//RenderPass* m_pxBackbufferRenderPass;

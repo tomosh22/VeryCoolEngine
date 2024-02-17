@@ -244,6 +244,9 @@ namespace VeryCoolEngine {
 		if (ImGui::Button("Serialize Scene")) {
 			app->m_pxCurrentScene->Serialize("TestScene.vcescene");
 		}
+		if (ImGui::Button("Reset Scene")) {
+			app->m_bWantToResetScene = true;
+		}
 
 		ImGui::End();
 

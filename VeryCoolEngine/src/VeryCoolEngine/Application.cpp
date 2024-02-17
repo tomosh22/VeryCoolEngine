@@ -449,6 +449,16 @@ namespace VeryCoolEngine {
 
 			UpdateDeltaTime();
 
+			if (m_bWantToResetScene) {
+				m_bSkipFrame = true;
+				m_pxRendererScene->ready = false;
+				sceneMutex.lock();
+				delete m_pxCurrentScene;
+				m_pxCurrentScene = new Scene("TestScene.vcescene");
+				m_bWantToResetScene = false;
+				sceneMutex.unlock();
+			}
+
 			if (m_eCurrentState != m_ePrevState) {
 				HandleStateChange();
 			}
