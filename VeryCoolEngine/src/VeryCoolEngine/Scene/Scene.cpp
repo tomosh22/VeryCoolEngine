@@ -164,6 +164,10 @@ namespace VeryCoolEngine {
 			pxScript->OnCreate();
 	}
 
+	Scene::~Scene() {
+		m_xRegistry.clear();
+	}
+
 	void Scene::Reset() {
 		
 	}

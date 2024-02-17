@@ -26,10 +26,10 @@ namespace VeryCoolEngine {
 
 	VulkanMesh::~VulkanMesh()
 	{
-		for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-		{
-			//m_axBoneDescSet[i]
-		}
+		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+		delete m_pxVertexBuffer;
+		delete m_pxIndexBuffer;
+		pxRenderer->GetDevice().destroyDescriptorSetLayout(m_xBoneDescSetLayout);
 	}
 
 	void VulkanMesh::PlatformInit()

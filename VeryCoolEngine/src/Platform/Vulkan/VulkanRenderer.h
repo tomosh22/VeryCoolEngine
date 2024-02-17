@@ -53,6 +53,8 @@ namespace VeryCoolEngine {
 
 			virtual void InitialiseAssets() override;
 			virtual void CleanupAssets() override;
+			
+			virtual void WaitDeviceIdle() override;
 
 			virtual void SetClearColor(const glm::vec4 color) override;
 			virtual void Clear() override;
@@ -196,7 +198,7 @@ namespace VeryCoolEngine {
 			vk::ShaderModule CreateShaderModule(const std::vector<char>& code);
 
 
-			void CreateDescriptorPool();
+			void CreateDescriptorPool(bool bImGui = true);
 
 			void CreateDepthTexture();
 

@@ -31,6 +31,8 @@ namespace VeryCoolEngine {
 		virtual void InitialiseAssets() = 0;
 		virtual void CleanupAssets() = 0;
 
+		virtual void WaitDeviceIdle() = 0;
+
 		virtual void OnResize(uint32_t uWidth, uint32_t uHeight) = 0;
 
 

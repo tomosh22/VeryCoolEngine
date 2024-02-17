@@ -12,6 +12,7 @@ namespace VeryCoolEngine {
 	{
 	public:
 		Scene(const std::string& strFilename);
+		~Scene();
 		void Reset();
 
 		template<typename T>

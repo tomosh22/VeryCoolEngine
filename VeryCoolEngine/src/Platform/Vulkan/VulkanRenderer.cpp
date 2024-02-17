@@ -55,13 +55,10 @@ void VulkanRenderer::InitWindow() {
 void VulkanRenderer::InitialiseAssets() {
 	Application* app = Application::GetInstance();
 
-	m_device.waitIdle();
+	
+	CreateDescriptorPool(false);
 
-	m_device.resetDescriptorPool(m_descriptorPool);
-
-	for (auto it = m_xPipelines.begin(); it != m_xPipelines.end(); it++)
-		m_device.destroyPipeline(it->second->m_xPipeline);
-	m_xPipelines.clear();
+	
 
 	for (auto it = app->m_xPipelineSpecs.begin(); it != app->m_xPipelineSpecs.end(); it++) {
 		m_xPipelines.insert({ it->first,VulkanPipelineBuilder::FromSpecification(it->second) });
@@ -90,6 +87,17 @@ void VulkanRenderer::CleanupAssets() {
 			delete pMesh;
 		}
 	}
+
+	for (auto it = m_xPipelines.begin(); it != m_xPipelines.end(); it++)
+		m_device.destroyPipeline(it->second->m_xPipeline);
+	m_xPipelines.clear();
+
+	m_device.destroyDescriptorPool(m_descriptorPool);
+}
+
+void VeryCoolEngine::VulkanRenderer::WaitDeviceIdle()
+{
+	m_device.waitIdle();
 }
 
 void VulkanRenderer::InitVulkan() {

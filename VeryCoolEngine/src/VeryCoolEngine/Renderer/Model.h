@@ -47,9 +47,13 @@ namespace VeryCoolEngine {
 
         ~VCEModel() {
             delete m_pxAnimation;
+            for (Mesh* pxMesh : m_apxMeshes)
+                delete pxMesh;
             m_apxMeshes.clear();
 
             //TODO: is this necessary? these might get cleaned up by the renderer
+            for (Texture2D* pxTex : m_apxTextures)
+                delete pxTex;
             m_apxTextures.clear();
         }
 

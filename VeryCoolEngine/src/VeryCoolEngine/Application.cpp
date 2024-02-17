@@ -452,6 +452,7 @@ namespace VeryCoolEngine {
 			if (m_bWantToResetScene) {
 				m_bSkipFrame = true;
 				m_pxRendererScene->ready = false;
+				_pRenderer->WaitDeviceIdle();
 				sceneMutex.lock();
 				delete m_pxCurrentScene;
 				m_pxCurrentScene = new Scene("TestScene.vcescene");

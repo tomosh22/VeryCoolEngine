@@ -622,7 +622,7 @@ namespace VeryCoolEngine {
 
 
 
-	void VulkanRenderer::CreateDescriptorPool() {
+	void VulkanRenderer::CreateDescriptorPool(bool bimGui /*= true*/) {
 
 		vk::DescriptorPoolSize axPoolSizes[] =
 		{
@@ -646,7 +646,8 @@ namespace VeryCoolEngine {
 			.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind);
 
 		m_descriptorPool = m_device.createDescriptorPool(xPoolInfo);
-		m_xImguiDescriptorPool = m_device.createDescriptorPool(xPoolInfo);
+		if(bimGui)
+			m_xImguiDescriptorPool = m_device.createDescriptorPool(xPoolInfo);
 
 	}
 
