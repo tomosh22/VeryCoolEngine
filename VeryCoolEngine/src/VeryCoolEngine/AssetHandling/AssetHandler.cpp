@@ -40,6 +40,14 @@ namespace VeryCoolEngine {
 				GUID xHeightmapGUID(strtoull(strHeightmapTexGUID.c_str(), nullptr, 10));
 				AddMaterial(xGUID, xAlbedoGUID, xBumpMapGUID, xRoughnessTexGUID, xMetallicTexGUID, xHeightmapGUID);
 			}
+			if (strLine == "Mesh") {
+				std::string strGUID;
+				std::string strFile;
+				std::getline(xIn, strGUID);
+				std::getline(xIn, strFile);
+				GUID xGUID(strtoull(strGUID.c_str(), nullptr, 10));
+				AddMesh(xGUID, strFile);
+			}
 		}
 	}
 

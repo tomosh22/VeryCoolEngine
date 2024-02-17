@@ -112,12 +112,13 @@ namespace VeryCoolEngine {
 					break;
 					case ComponentType::Model:
 					{
-						std::string strFile;
+						std::string strMeshGUID;
 						std::string strMaterialGUID;
 						std::getline(xIn, strMaterialGUID);
-						std::getline(xIn, strFile);
+						std::getline(xIn, strMeshGUID);
+						GUID xMeshGUID(strtoull(strMeshGUID.c_str(), nullptr, 10));
 						GUID xMaterialGUID(strtoull(strMaterialGUID.c_str(), nullptr, 10));
-						ModelComponent& xModel = xEntity.AddComponent<ModelComponent>(strFile, xMaterialGUID);
+						ModelComponent& xModel = xEntity.AddComponent<ModelComponent>(xMeshGUID, xMaterialGUID);
 					}
 					break;
 					case ComponentType::Script:

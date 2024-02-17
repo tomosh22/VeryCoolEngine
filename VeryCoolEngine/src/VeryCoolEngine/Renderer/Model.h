@@ -47,11 +47,6 @@ namespace VeryCoolEngine {
 
         ~VCEModel() {
             delete m_pxAnimation;
-            for (Mesh* pxMesh : m_apxMeshes) {
-                if (pxMesh != nullptr)
-                    delete pxMesh;
-                pxMesh = nullptr;
-            }
             m_apxMeshes.clear();
 
             //TODO: is this necessary? these might get cleaned up by the renderer

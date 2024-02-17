@@ -10,7 +10,7 @@ OBB
 Dynamic
 ModelComponent
 2957329679
-sphereSmooth.obj
+1120456549
 ScriptComponent
 PlayerController
 1
@@ -28,7 +28,7 @@ Sphere
 Dynamic
 ModelComponent
 2957329679
-sphereSmooth.obj
+1120456549
 EndEntity
 Entity
 1576001455
@@ -42,5 +42,5 @@ OBB
 Static
 ModelComponent
 2068965743
-plane.obj
+2835556548
 EndEntity
