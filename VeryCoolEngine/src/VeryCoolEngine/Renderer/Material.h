@@ -1,5 +1,6 @@
 #pragma once
 #include "Texture.h"
+#include "VeryCoolEngine/PlatformTypes.h"
 namespace VeryCoolEngine {
 	class Material
 	{
@@ -7,7 +8,7 @@ namespace VeryCoolEngine {
 		virtual ~Material() {}
 
 		static Material* Create();
-		static Material* Create(const char* szName);
+		static Material* Create(const char* szName, GUID xGUID);
 
 		void SetAlbedo(Texture2D* pxTex);
 		void SetBumpMap(Texture2D* pxTex);
@@ -25,6 +26,9 @@ namespace VeryCoolEngine {
 
 		bool m_bInitialised = false;
 		uint32_t m_uNumTextures = 0;
+
+		std::string m_strName;
+		GUID m_xGUID;
 	};
 
 	class FoliageMaterial {

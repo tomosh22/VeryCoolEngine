@@ -5,8 +5,10 @@
 #include "VulkanTexture.h"
 
 namespace VeryCoolEngine {
-	VulkanMaterial::VulkanMaterial(const char* szName)
+	VulkanMaterial::VulkanMaterial(const char* szName, GUID xGUID)
 	{
+		m_strName = szName;
+		m_xGUID = xGUID;
 		//TODO: don't make so many std::strings
 		SetAlbedo(Texture2D::Create((std::string(szName) + "/diffuse.jpg").c_str(), false));
 		SetBumpMap(Texture2D::Create((std::string(szName) + "/normal.jpg").c_str(), false));

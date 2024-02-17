@@ -26,6 +26,6 @@ namespace VeryCoolEngine {
 		std::string m_strMaterialName;
 
 		TransformComponent& m_xTransRef;
-		Entity& m_xParentEntity;
+		Entity m_xParentEntity;
 	};
 }

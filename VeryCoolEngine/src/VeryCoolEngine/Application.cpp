@@ -390,15 +390,15 @@ namespace VeryCoolEngine {
 
 			std::vector<ColliderComponent*> xColliders = m_pxCurrentScene->GetAllColliderComponents();
 			for (ColliderComponent* pxCollider : xColliders) {
-				EntityID xEntity = pxCollider->GetEntityID();
-				if (!m_pxCurrentScene->EntityHasComponent<ModelComponent>(xEntity)) continue;
+				Entity& xEntity = pxCollider->m_xParentEntity;
+				if (!xEntity.HasComponent<ModelComponent>()) continue;
 
 
 				reactphysics3d::RaycastInfo xRayCastInfo;
 				if (pxCollider->GetRigidBody()->raycast(xCursorRay, xRayCastInfo)) {
 					float fNewDistance = reactphysics3d::Vector3(xRayCastInfo.worldPoint - xCursorRay.point1).length();
 					if (fNewDistance < fHitDistance) {
-						pxHitModel = m_pxCurrentScene->GetComponentFromEntity<ModelComponent>(xEntity).GetModel();
+						pxHitModel = xEntity.GetComponent<ModelComponent>().GetModel();
 						fHitDistance = fNewDistance;
 					}
 				}

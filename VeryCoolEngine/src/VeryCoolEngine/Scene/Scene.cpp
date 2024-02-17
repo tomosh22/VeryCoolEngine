@@ -152,7 +152,7 @@ namespace VeryCoolEngine {
 				std::getline(xIn, strMaterialName);
 				std::getline(xIn, strMaterialGuid);
 				GUID xGUID(strtoull(strMaterialGuid.c_str(), nullptr, 10));
-				m_xMaterialMap.insert({ xGUID.m_uGuid, Material::Create(strMaterialName.c_str()) });
+				m_xMaterialMap.insert({ xGUID.m_uGuid, Material::Create(strMaterialName.c_str(), xGUID) });
 			}
 		}
 
@@ -181,6 +181,11 @@ namespace VeryCoolEngine {
 		VCE_TRACE("Serializing {}", strFilename.c_str());
 		std::ofstream xOut(strFilename.c_str());
 
+		for (auto [xGuid, pxMaterial] : m_xMaterialMap) {
+			xOut << "Material\n";
+			xOut << pxMaterial->m_strName << '\n';
+			xOut << pxMaterial->m_xGUID.m_uGuid << '\n';
+		}
 		for (auto [xGuid, xEntity] : m_xEntityMap) {
 			xOut << "Entity\n";
 			xEntity.Serialize(xOut);

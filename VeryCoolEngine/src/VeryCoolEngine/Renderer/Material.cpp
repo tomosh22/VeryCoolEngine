@@ -11,9 +11,9 @@ namespace VeryCoolEngine {
 #endif
 	}
 
-	Material* Material::Create(const char* szName) {
+	Material* Material::Create(const char* szName, GUID xGUID) {
 #ifdef VCE_VULKAN
-		return new VulkanMaterial(szName);
+		return new VulkanMaterial(szName, xGUID);
 #endif
 	}
 

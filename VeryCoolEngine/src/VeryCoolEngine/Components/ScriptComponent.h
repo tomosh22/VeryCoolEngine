@@ -25,7 +25,7 @@ namespace VeryCoolEngine {
 
 		ScriptBehaviour* m_pxScriptBehaviour = nullptr;
 
-		Entity& m_xParentEntity;
+		Entity m_xParentEntity;
 
 		void OnCreate() { m_pxScriptBehaviour->OnCreate(); }
 		void OnUpdate(float fDt) { m_pxScriptBehaviour->OnUpdate(fDt); }
