@@ -40,6 +40,8 @@ namespace VeryCoolEngine {
 
         if (m_pxScene->HasAnimations())
             m_pxAnimation = new Animation(path, this);
+
+        importer.FreeScene();
     }
 
     void VCEModel::Draw(Shader& shader)

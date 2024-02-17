@@ -33,6 +33,9 @@ namespace VeryCoolEngine {
 	};
 
 	struct Vertex {
+		~Vertex(){
+			bool a = false;
+		}
 		glm::vec3 pos;
 		glm::vec2 uv;
 		glm::vec3 normal;
@@ -70,6 +73,8 @@ namespace VeryCoolEngine {
 			delete[] m_pxBitangents;
 			delete[] m_pxBoneDatas;
 			delete[] m_pVerts;
+			delete m_pxShader;
+			delete m_pxVertexArray;
 		};
 
 		virtual void SetVertexArray(VertexArray* vertexArray) = 0;

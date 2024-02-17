@@ -46,6 +46,10 @@ namespace VeryCoolEngine {
 	
 
 	void Application::OnApplicationBegin() {
+#ifdef VCE_USE_EDITOR
+		while (!m_bImGuiInitialised)
+			std::this_thread::yield();
+#endif
 		m_pxCurrentScene = new Scene("TestScene.vcescene");
 	}
 

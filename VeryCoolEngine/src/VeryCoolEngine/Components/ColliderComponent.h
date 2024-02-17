@@ -9,6 +9,9 @@ namespace VeryCoolEngine {
 	public:
 		ColliderComponent() = delete;
 		ColliderComponent(TransformComponent& xTrans, Entity* xEntity);
+		~ColliderComponent() {
+			Physics::s_pxPhysicsWorld->destroyRigidBody(m_pxRigidBody);
+		}
 		void Serialize(std::ofstream& xOut);
 		reactphysics3d::RigidBody* GetRigidBody() { return m_pxRigidBody; }
 		EntityID GetEntityID() { return m_xParentEntity.GetEntityID(); }

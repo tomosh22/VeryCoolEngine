@@ -73,6 +73,8 @@ namespace VeryCoolEngine {
 		pxRenderer->m_device.waitIdle();
 		ImGui_ImplVulkan_DestroyFontUploadObjects();
 #endif
+
+		Application::GetInstance()->m_bImGuiInitialised = true;
 	}
 
 	void ImGuiLayer::Begin() {

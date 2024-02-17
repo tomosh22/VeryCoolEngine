@@ -454,6 +454,7 @@ namespace VeryCoolEngine {
 				m_pxRendererScene->ready = false;
 				_pRenderer->WaitDeviceIdle();
 				sceneMutex.lock();
+				_pRenderer->CleanupAssets();
 				delete m_pxCurrentScene;
 				m_pxCurrentScene = new Scene("TestScene.vcescene");
 				m_bWantToResetScene = false;

@@ -7,7 +7,15 @@ namespace VeryCoolEngine {
 	{
 	public:
 		VulkanShader(const std::string& vertex, const std::string& fragment, const std::string& geometry = "", const std::string& domain = "", const std::string& hull = "");
-		~VulkanShader() { delete[] m_xInfos; }
+		~VulkanShader() {
+			VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+			vk::Device xDevice = pxRenderer->GetDevice();
+			xDevice.destroyShaderModule(xVertShaderModule);
+			xDevice.destroyShaderModule(xFragShaderModule);
+			xDevice.destroyShaderModule(xTescShaderModule);
+			xDevice.destroyShaderModule(xTeseShaderModule);
+			delete[] m_xInfos;
+		}
 		void ReloadShader() override;
 
 		void Bind() override;

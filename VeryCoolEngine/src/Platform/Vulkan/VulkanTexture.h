@@ -2,14 +2,13 @@
 #include "VeryCoolEngine/Renderer/Texture.h"
 
 namespace VeryCoolEngine {
-	class VulkanTexture {};
-	class VulkanTexture2D : public Texture2D, public VulkanTexture
+	class VulkanTexture2D : public Texture2D
 	{
 	public:
 		VulkanTexture2D() = default;
 		VulkanTexture2D(const std::string& path, bool srgb = false);
 		VulkanTexture2D(uint32_t width, uint32_t height, TextureFormat format, TextureWrapMode wrapMode);
-		~VulkanTexture2D();
+		~VulkanTexture2D() override;
 
 		void PlatformInit();
 

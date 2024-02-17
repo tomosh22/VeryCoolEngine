@@ -5,7 +5,13 @@ namespace VeryCoolEngine {
 	class Material
 	{
 	public:
-		virtual ~Material() {}
+		virtual ~Material() {
+			VCE_DELETE(m_pxAlbedo);
+			VCE_DELETE(m_pxBumpMap);
+			VCE_DELETE(m_pxRoughnessTex);
+			VCE_DELETE(m_pxMetallicTex);
+			VCE_DELETE(m_pxHeightmapTex);
+		}
 
 		static Material* Create();
 		static Material* Create(const char* szName, GUID xGUID);
@@ -33,7 +39,14 @@ namespace VeryCoolEngine {
 
 	class FoliageMaterial {
 	public:
-		virtual ~FoliageMaterial() {}
+		virtual ~FoliageMaterial() {
+			VCE_DELETE(m_pxAlbedo);
+			VCE_DELETE(m_pxBumpMap);
+			VCE_DELETE(m_pxRoughnessTex);
+			VCE_DELETE(m_pxHeightmapTex);
+			VCE_DELETE(m_pxAlphaTex);
+			VCE_DELETE(m_pxTranslucencyTex);
+		}
 
 		static FoliageMaterial* Create();
 		static FoliageMaterial* Create(const char* szName);

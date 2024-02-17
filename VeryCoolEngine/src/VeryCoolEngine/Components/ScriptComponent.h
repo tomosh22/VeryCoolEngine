@@ -7,6 +7,7 @@ namespace VeryCoolEngine {
 
 	class ScriptBehaviour {
 	public:
+		virtual ~ScriptBehaviour() {}
 		virtual void OnCreate() = 0;
 		virtual void OnUpdate(float fDt) = 0;
 		virtual void OnCollision(Entity xOther, Physics::CollisionEventType eCollisionType) = 0;
@@ -19,6 +20,9 @@ namespace VeryCoolEngine {
 	public:
 
 		ScriptComponent(TransformComponent& xTrans, Entity* xEntity) : m_xParentEntity(*xEntity) {};
+		~ScriptComponent() {
+			delete m_pxScriptBehaviour;
+		}
 		void Serialize(std::ofstream& xOut);
 
 		void(*Instantiate)(ScriptComponent*);
@@ -40,6 +44,9 @@ namespace VeryCoolEngine {
 	class TestScriptBehaviour : public ScriptBehaviour {
 	public:
 		TestScriptBehaviour(ScriptComponent* pxScriptComponent) : m_xScriptComponent(*pxScriptComponent) {}
+		~TestScriptBehaviour() override {
+			
+		}
 
 		enum GuidRefernceIndices {
 			GroundPlane

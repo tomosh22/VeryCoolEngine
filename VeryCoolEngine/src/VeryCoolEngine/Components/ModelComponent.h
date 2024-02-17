@@ -19,7 +19,6 @@ namespace VeryCoolEngine {
 
 		TransformComponent& GetTransformRef() { return m_xTransRef; }
 	private:
-		friend class ModelComponent;
 		VCEModel* m_pxModel;
 		std::string m_strFilename;
 

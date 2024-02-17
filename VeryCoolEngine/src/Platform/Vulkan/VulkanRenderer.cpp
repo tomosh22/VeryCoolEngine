@@ -64,11 +64,16 @@ void VulkanRenderer::InitialiseAssets() {
 		m_xPipelines.insert({ it->first,VulkanPipelineBuilder::FromSpecification(it->second) });
 	}
 
+
+
 	Scene* pxScene = app->m_pxCurrentScene;
 
 	VCE_ASSERT(pxScene != nullptr, "Null scene");
 	for (auto it = pxScene->m_xMaterialMap.begin(); it != pxScene->m_xMaterialMap.end(); it++)
 		it->second->PlatformInit();
+
+	
+
 	for (ModelComponent* pxModelComponent : app->m_pxCurrentScene->GetAllOfComponentType<ModelComponent>()) {
 		for (Mesh* pMesh : pxModelComponent->GetModel()->m_apxMeshes) {
 			pMesh->PlatformInit();
@@ -82,14 +87,9 @@ void VulkanRenderer::CleanupAssets() {
 
 	for (auto it = pxScene->m_xMaterialMap.begin(); it != pxScene->m_xMaterialMap.end(); it++)
 		delete it->second;
-	for (ModelComponent* pxModelComponent : app->m_pxCurrentScene->GetAllOfComponentType<ModelComponent>()) {
-		for (Mesh* pMesh : pxModelComponent->GetModel()->m_apxMeshes) {
-			delete pMesh;
-		}
-	}
 
 	for (auto it = m_xPipelines.begin(); it != m_xPipelines.end(); it++)
-		m_device.destroyPipeline(it->second->m_xPipeline);
+		delete it->second;
 	m_xPipelines.clear();
 
 	m_device.destroyDescriptorPool(m_descriptorPool);

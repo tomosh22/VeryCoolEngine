@@ -6,6 +6,7 @@ namespace VeryCoolEngine {
 
 	ColliderComponent::ColliderComponent(TransformComponent& xTrans, Entity* xEntity) : m_xTransRef(xTrans), m_xParentEntity(*xEntity) {
 		m_pxRigidBody = Physics::s_pxPhysicsWorld->createRigidBody(*xTrans.GetTransform_Unsafe());
+		delete xTrans.GetTransform_Unsafe();
 
 		reactphysics3d::BoxShape* pxShape = Physics::s_xPhysicsCommon.createBoxShape(reactphysics3d::Vector3(xTrans.m_xScale.x, xTrans.m_xScale.y, xTrans.m_xScale.z));
 

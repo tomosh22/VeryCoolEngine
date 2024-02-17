@@ -113,6 +113,10 @@ namespace VeryCoolEngine {
 		class Scene* m_pxCurrentScene = nullptr;
 		bool m_bWantToResetScene = false;
 
+#ifdef VCE_USE_EDITOR
+		bool m_bImGuiInitialised = false;
+#endif
+
 		Renderer* _pRenderer;
 		//RenderPass* m_pxBackbufferRenderPass;
 		RenderPass* m_pxImguiRenderPass;//imgui doesn't use depth buffer

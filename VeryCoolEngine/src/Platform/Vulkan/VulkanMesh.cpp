@@ -27,8 +27,9 @@ namespace VeryCoolEngine {
 	VulkanMesh::~VulkanMesh()
 	{
 		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
-		delete m_pxVertexBuffer;
-		delete m_pxIndexBuffer;
+		VCE_DELETE(m_pxVertexBuffer);
+		VCE_DELETE(m_pxVertexArray);
+		VCE_DELETE(m_pxIndexBuffer);
 		pxRenderer->GetDevice().destroyDescriptorSetLayout(m_xBoneDescSetLayout);
 	}
 

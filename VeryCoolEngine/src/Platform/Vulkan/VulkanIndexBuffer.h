@@ -10,6 +10,9 @@ namespace VeryCoolEngine {
 	public:
 		VulkanIndexBuffer() = default;
 		VulkanIndexBuffer(const VulkanIndexBuffer& other) = delete;
+		~VulkanIndexBuffer() override {
+			VCE_DELETE(m_pxIndexBuffer);
+		}
 
 		VulkanIndexBuffer(void* m_puIndices, size_t size);
 

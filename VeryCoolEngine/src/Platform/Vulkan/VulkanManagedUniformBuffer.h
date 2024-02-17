@@ -12,7 +12,7 @@ namespace VeryCoolEngine {
 		~VulkanManagedUniformBuffer() {
 			for (uint8_t i = 0; i < m_uNumFrames; i++)
 			{
-				delete ppBuffers[i];
+				VCE_DELETE(ppBuffers[i]);
 			}
 			delete[] ppBuffers;
 			delete[] ppMappedPtrs;

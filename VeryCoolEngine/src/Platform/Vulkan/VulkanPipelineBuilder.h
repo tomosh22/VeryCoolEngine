@@ -17,7 +17,13 @@ namespace VeryCoolEngine {
 		vk::Pipeline m_xPipeline;
 		vk::PipelineLayout	m_xPipelineLayout;
 
-
+		~VulkanPipeline() {
+			vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
+			xDevice.destroyPipeline(m_xPipeline);
+			xDevice.destroyPipelineLayout(m_xPipelineLayout);
+			for (vk::DescriptorSetLayout xLayout : m_axDescLayouts)
+				xDevice.destroyDescriptorSetLayout(xLayout);
+		}
 
 		std::vector<vk::DescriptorSetLayout> m_axDescLayouts;
 		std::vector<vk::DescriptorSet> m_axDescSets[MAX_FRAMES_IN_FLIGHT];

@@ -3,7 +3,9 @@
 namespace VeryCoolEngine {
 	class VertexArray{
 	public:
-		virtual ~VertexArray() = default;
+		virtual ~VertexArray() {
+			delete _pIndexBuffer;
+		};
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;

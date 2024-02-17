@@ -637,9 +637,9 @@ namespace VeryCoolEngine {
 
 		mesh->m_pxBufferLayout->CalculateOffsetsAndStrides();
 
-		return mesh;
+		importer.FreeScene();
 
-		return nullptr;
+		return mesh;
 	}
 
 	void Mesh::GenerateNormals()

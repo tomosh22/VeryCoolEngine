@@ -15,7 +15,8 @@ namespace VeryCoolEngine {
 	class Texture
 	{
 	public:
-		virtual ~Texture() = default;
+		Texture() = default;
+		virtual ~Texture() {};
 		virtual void Bind() const = 0;
 		virtual void BindToShader(Shader* shader, const std::string& uniformName, uint32_t bindPoint) const = 0;
 		virtual void Unbind() const = 0;
@@ -33,8 +34,9 @@ namespace VeryCoolEngine {
 
 	class Texture2D : public Texture {
 	public:
-		Texture2D() {};
+		Texture2D() = default;
 		Texture2D(std::string filePath, bool srgb) : _filePath(filePath), _srgb(srgb) {}
+		virtual ~Texture2D() {};
 
 		static Texture2D* Create(uint32_t width, uint32_t height, TextureFormat textureFormat = TextureFormat::RGBA, TextureWrapMode wrapMode = TextureWrapMode::Clamp);
 
