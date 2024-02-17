@@ -34,10 +34,10 @@ namespace VeryCoolEngine {
 	};
 
 	enum class ScriptBehaviourType {
-		TestScriptBehaviour
+		PlayerController
 	};
 	std::unordered_map<std::string, ScriptBehaviourType> g_xScriptBehaviourNames = {
-		{"TestScriptBehaviour", ScriptBehaviourType::TestScriptBehaviour},
+		{"PlayerController", ScriptBehaviourType::PlayerController},
 	};
 
 	Scene::Scene(const std::string& strFilename) {
@@ -53,8 +53,10 @@ namespace VeryCoolEngine {
 		while (std::getline(xIn, strLine)) {
 			if (strLine == "Entity") {
 				std::string strGuid;
+				std::string strName;
 				std::getline(xIn, strGuid);
-				Entity xEntity(this, GUID(strtoull(strGuid.c_str(), nullptr, 10)));
+				std::getline(xIn, strName);
+				Entity xEntity(this, GUID(strtoull(strGuid.c_str(), nullptr, 10)), strName);
 				while (std::getline(xIn, strLine)) {
 					if (strLine == "EndEntity")break;
 					switch (g_xComponentNames[strLine]) {
@@ -131,8 +133,8 @@ namespace VeryCoolEngine {
 						}
 						ScriptComponent& xScript = xEntity.AddComponent<ScriptComponent>();
 						switch (g_xScriptBehaviourNames[strBehaviourType]) {
-						case ScriptBehaviourType::TestScriptBehaviour:
-							xScript.SetBehaviour<TestScriptBehaviour>();
+						case ScriptBehaviourType::PlayerController:
+							xScript.SetBehaviour<PlayerController>();
 							xScript.Instantiate(&xScript);
 							m_xPlayerGuid = xEntity.GetGuid();
 							xScript.m_pxScriptBehaviour->m_axGuidRefs.resize(uNumGuids);

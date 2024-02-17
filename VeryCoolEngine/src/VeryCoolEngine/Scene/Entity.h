@@ -10,8 +10,8 @@ namespace VeryCoolEngine {
 	{
 	public:
 		Entity() = delete;
-		Entity(Scene* pxScene);
-		Entity(Scene* pxScene, GUID xGuid);
+		Entity(Scene* pxScene, const std::string& strName);
+		Entity(Scene* pxScene, GUID xGuid, const std::string& strName);
 
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args) {
@@ -27,8 +27,8 @@ namespace VeryCoolEngine {
 		}
 
 		template<>
-		TransformComponent& AddComponent() {
-			return m_pxParentScene->m_xRegistry.emplace<TransformComponent>(m_xEntity);
+		TransformComponent& AddComponent(const std::string& strName) {
+			return m_pxParentScene->m_xRegistry.emplace<TransformComponent>(m_xEntity, strName);
 		}
 
 		template<typename T>

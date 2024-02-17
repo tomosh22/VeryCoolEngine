@@ -41,10 +41,10 @@ namespace VeryCoolEngine {
 		}
 	};
 
-	class TestScriptBehaviour : public ScriptBehaviour {
+	class PlayerController : public ScriptBehaviour {
 	public:
-		TestScriptBehaviour(ScriptComponent* pxScriptComponent) : m_xScriptComponent(*pxScriptComponent) {}
-		~TestScriptBehaviour() override {
+		PlayerController(ScriptComponent* pxScriptComponent) : m_xScriptComponent(*pxScriptComponent) {}
+		~PlayerController() override {
 			
 		}
 
@@ -104,7 +104,7 @@ namespace VeryCoolEngine {
 					m_bIsOnGround = true;
 			}
 		}
-		virtual std::string GetBehaviourType() override { return "TestScriptBehvaiour"; }
+		virtual std::string GetBehaviourType() override { return "PlayerController"; }
 	};
 	
 }

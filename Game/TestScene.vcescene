@@ -6,6 +6,7 @@ crystal2k
 2068965743
 Entity
 3754454491
+Player
 TransformComponent
 5 50 5
 0 0 0 1
@@ -17,12 +18,13 @@ ModelComponent
 2957329679
 sphereSmooth.obj
 ScriptComponent
-TestScriptBehvaiour
+PlayerController
 1
 1576001455
 EndEntity
 Entity
 3590258406
+Sphere
 TransformComponent
 25 5 25
 0 0 0 1
@@ -36,6 +38,7 @@ sphereSmooth.obj
 EndEntity
 Entity
 1576001455
+Ground
 TransformComponent
 1 1 1
 0 0 0 1

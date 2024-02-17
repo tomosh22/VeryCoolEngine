@@ -4,7 +4,7 @@
 
 namespace VeryCoolEngine {
 
-	TransformComponent::TransformComponent() {
+	TransformComponent::TransformComponent(const std::string& strName) : m_strName(strName) {
 		m_pxTransform = new reactphysics3d::Transform;
 	}
 

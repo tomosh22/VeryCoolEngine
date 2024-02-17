@@ -11,7 +11,7 @@ namespace VeryCoolEngine {
 	class TransformComponent
 	{
 	public:
-		TransformComponent();
+		TransformComponent(const std::string& strName);
 		~TransformComponent();
 		void Serialize(std::ofstream& xOut);
 		void SetPosition(const glm::vec3& xPos);
@@ -21,6 +21,8 @@ namespace VeryCoolEngine {
 		reactphysics3d::Transform* GetTransform();
 		glm::vec3 m_xScale;
 		reactphysics3d::RigidBody* m_pxRigidBody = nullptr;
+
+		std::string m_strName;
 		
 	private:
 		friend class ColliderComponent;
