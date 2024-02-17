@@ -55,6 +55,16 @@ void VulkanRenderer::InitWindow() {
 void VulkanRenderer::InitialiseAssets() {
 	Application* app = Application::GetInstance();
 
+	m_device.resetDescriptorPool(m_descriptorPool);
+
+	for (auto it = m_xPipelines.begin(); it != m_xPipelines.end(); it++)
+		m_device.destroyPipeline(it->second->m_xPipeline);
+	m_xPipelines.clear();
+
+	for (auto it = app->m_xPipelineSpecs.begin(); it != app->m_xPipelineSpecs.end(); it++) {
+		m_xPipelines.insert({ it->first,VulkanPipelineBuilder::FromSpecification(it->second) });
+	}
+
 	Scene* pxScene = app->m_pxCurrentScene;
 
 	VCE_ASSERT(pxScene != nullptr, "Null scene");
@@ -92,9 +102,7 @@ void VulkanRenderer::InitVulkan() {
 
 	for (Shader* pxShader : app->_shaders) pxShader->PlatformInit();
 
-	for (auto it = app->m_xPipelineSpecs.begin(); it != app->m_xPipelineSpecs.end(); it++) {
-		m_xPipelines.insert({ it->first,VulkanPipelineBuilder::FromSpecification(it->second) });
-	}
+	
 	
 }
 
@@ -421,7 +429,7 @@ void VulkanRenderer::DrawFrame(RendererScene* scene) {
 
 	DrawSkinnedMeshes();
 
-	DrawFoliage();
+	//DrawFoliage();
 
 #ifdef VCE_USE_EDITOR
 	//TODO: I'm guessing the editor scene textures are being initalised in the wrong format

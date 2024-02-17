@@ -326,7 +326,7 @@ namespace VeryCoolEngine {
 			xTexSpec.m_bJustFragment = true;
 			xTexSpec.m_bBindless = false;
 			vk::DescriptorSetLayout xLayout = VulkanDescriptorSetLayoutBuilder::FromSpecification(xTexSpec);
-			m_axFramebufferTexDescSet.emplace_back(CreateDescriptorSet(xLayout, m_descriptorPool));
+			m_axFramebufferTexDescSet.emplace_back(CreateDescriptorSet(xLayout, m_xImguiDescriptorPool));
 
 		}
 
@@ -646,6 +646,7 @@ namespace VeryCoolEngine {
 			.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind);
 
 		m_descriptorPool = m_device.createDescriptorPool(xPoolInfo);
+		m_xImguiDescriptorPool = m_device.createDescriptorPool(xPoolInfo);
 
 	}
 

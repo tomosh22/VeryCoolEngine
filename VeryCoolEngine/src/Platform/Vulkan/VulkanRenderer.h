@@ -305,6 +305,7 @@ namespace VeryCoolEngine {
 			std::vector<VulkanTexture2D*> m_apxEditorSceneTexs;
 
 			vk::DescriptorPool m_descriptorPool;
+			vk::DescriptorPool m_xImguiDescriptorPool;
 
 			/*vk::DescriptorSetLayout m_xCameraLayout;
 			vk::DescriptorSetLayout m_xTextureLayou
