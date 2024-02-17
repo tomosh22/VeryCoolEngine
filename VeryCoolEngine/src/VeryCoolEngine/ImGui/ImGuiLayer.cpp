@@ -49,7 +49,36 @@ namespace VeryCoolEngine {
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init();
 #elif defined(VCE_VULKAN)
+
 		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+
+		vk::DescriptorPool xDescriptorPool;
+
+		vk::DescriptorPoolSize axPoolSizes[] =
+		{
+			{ vk::DescriptorType::eSampler, 100 },
+			{ vk::DescriptorType::eCombinedImageSampler, 100 },
+			{ vk::DescriptorType::eSampledImage, 100 },
+			{ vk::DescriptorType::eStorageImage, 100 },
+			{ vk::DescriptorType::eUniformTexelBuffer, 100 },
+			{ vk::DescriptorType::eStorageTexelBuffer, 100 },
+			{ vk::DescriptorType::eUniformBuffer, 100 },
+			{ vk::DescriptorType::eStorageBuffer, 100 },
+			{ vk::DescriptorType::eUniformBufferDynamic, 100 },
+			{ vk::DescriptorType::eStorageBufferDynamic, 100 },
+			{ vk::DescriptorType::eInputAttachment, 100 }
+		};
+
+		vk::DescriptorPoolCreateInfo xPoolInfo = vk::DescriptorPoolCreateInfo()
+			.setPoolSizeCount(sizeof(axPoolSizes) / sizeof(axPoolSizes[0]))
+			.setPPoolSizes(axPoolSizes)
+			.setMaxSets(1000)
+			.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind);
+
+		xDescriptorPool = pxRenderer->m_device.createDescriptorPool(xPoolInfo);
+
+
+		
 		ImGui_ImplGlfw_InitForVulkan(window, true);
 		ImGui_ImplVulkan_InitInfo init_info = {};
 		init_info.Instance = pxRenderer->m_instance;
@@ -57,7 +86,7 @@ namespace VeryCoolEngine {
 		init_info.Device = pxRenderer->m_device;
 		init_info.QueueFamily = pxRenderer->FindQueueFamilies(VulkanRenderer::GetInstance()->m_physicalDevice).graphicsFamily;
 		init_info.Queue = pxRenderer->m_graphicsQueue;
-		init_info.DescriptorPool = pxRenderer->m_descriptorPool;
+		init_info.DescriptorPool = xDescriptorPool;
 		init_info.MinImageCount = MAX_FRAMES_IN_FLIGHT;
 		init_info.ImageCount = MAX_FRAMES_IN_FLIGHT;
 		ImGui_ImplVulkan_Init(&init_info, dynamic_cast<VulkanRenderPass*>(Application::GetInstance()->m_pxImguiRenderPass)->m_xRenderPass);
