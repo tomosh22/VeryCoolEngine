@@ -189,8 +189,6 @@ namespace VeryCoolEngine {
 		float fFrameRate = 1. / app->m_fDeltaTime;
 		ImGui::Text(std::to_string(fFrameRate).c_str());
 
-		std::string cameraText = std::string("Camera ") + (app->_mouseEnabled ? "enabled" : "disabled") + ". Q to toggle.";
-		ImGui::Text(cameraText.c_str());
 
 		const glm::ivec3& camPos = app->m_pxCurrentScene->m_xEditorCamera.GetPosition();
 		std::string camPosText = "Camera Position: " + std::to_string(camPos.x) + " " + std::to_string(camPos.y) + " " + std::to_string(camPos.z);
@@ -250,7 +248,8 @@ namespace VeryCoolEngine {
 			app->m_bWantToResetScene = true;
 		}
 
-		ImGui::Text(std::to_string(app->_pRenderer->m_uNumDrawCalls).c_str());
+		ImGui::Checkbox("Disable Draw Calls", &app->_pRenderer->m_bDisableDrawCalls);
+		ImGui::Text(std::string(std::string("Draw Calls: ") + std::to_string(app->_pRenderer->m_uNumDrawCalls)).c_str());
 
 		ImGui::End();
 

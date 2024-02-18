@@ -92,6 +92,8 @@ namespace VeryCoolEngine {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			data._eventCallback(MouseMovedEvent((float)xPos, (float)yPos));
 		});
+
+		
 	}
 
 	void WindowsWindow::SetVSync(bool enabled) {
@@ -106,6 +108,21 @@ namespace VeryCoolEngine {
 	void WindowsWindow::OnUpdate() {
 		glfwPollEvents();
 		
+	}
+
+	void WindowsWindow::ToggleCaptureCursor()
+	{
+		glfwSetInputMode(_pWindow, GLFW_CURSOR, glfwGetInputMode(_pWindow, GLFW_CURSOR) == GLFW_CURSOR_DISABLED ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+	}
+
+	void WindowsWindow::EnableCaptureCursor()
+	{
+		glfwSetInputMode(_pWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+
+	void WindowsWindow::DisableCaptureCursor()
+	{
+		glfwSetInputMode(_pWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 
 }

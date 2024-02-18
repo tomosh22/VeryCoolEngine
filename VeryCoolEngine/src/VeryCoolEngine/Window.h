@@ -30,6 +30,10 @@ namespace VeryCoolEngine {
 
 		virtual void OnUpdate() = 0;
 
+		virtual void ToggleCaptureCursor() = 0;
+		virtual void EnableCaptureCursor() = 0;
+		virtual void DisableCaptureCursor() = 0;
+
 		virtual unsigned int GetWidth() const = 0;
 		virtual unsigned int GetHeight() const = 0;
 

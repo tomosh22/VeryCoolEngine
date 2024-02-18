@@ -25,6 +25,10 @@ namespace VeryCoolEngine {
 
 		void OnUpdate() override;
 
+		void ToggleCaptureCursor() override;
+		void EnableCaptureCursor() override;
+		void DisableCaptureCursor() override;
+
 		inline unsigned int GetWidth() const override { return m_pData._width; }
 		inline unsigned int GetHeight() const override { return m_pData._height; }
 

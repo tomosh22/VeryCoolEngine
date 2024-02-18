@@ -89,7 +89,8 @@ namespace VeryCoolEngine {
 
 	void Application::OnEvent(Event& e) {
 		if (e.GetType() == EventType::KeyPressed && dynamic_cast<KeyPressedEvent&>(e).GetKeyCode() == VCE_KEY_ESCAPE) _running = false;
-		if (e.GetType() == EventType::KeyPressed && dynamic_cast<KeyPressedEvent&>(e).GetKeyCode() == VCE_KEY_Q) _mouseEnabled = !_mouseEnabled;
+		if (e.GetType() == EventType::KeyPressed && dynamic_cast<KeyPressedEvent&>(e).GetKeyCode() == VCE_KEY_Q)
+			_window->ToggleCaptureCursor();
 
 		if (e.GetType() == EventType::KeyPressed) {
 			Input::s_xPressedKeys.insert(dynamic_cast<KeyPressedEvent&>(e).GetKeyCode());
@@ -432,8 +433,10 @@ namespace VeryCoolEngine {
 
 		switch (m_eCurrentState) {
 		case VCE_GAMESTATE_PLAYING:
+			_window->EnableCaptureCursor();
 			break;
 		case VCE_GAMESTATE_EDITOR:
+			_window->DisableCaptureCursor();
 			break;
 		}
 		sceneMutex.unlock();
@@ -454,6 +457,12 @@ namespace VeryCoolEngine {
 		m_xAssetHandler.LoadAssetsFromFile("Assets.vceassets");
 		m_xAssetHandler.PlatformInitialiseAssets();
 		m_pxCurrentScene = new Scene("TestScene.vcescene");
+
+#ifdef VCE_USE_EDITOR
+		_window->DisableCaptureCursor();
+#else
+		_window->EnableCaptureCursor();
+#endif
 
 		while (_running) {
 

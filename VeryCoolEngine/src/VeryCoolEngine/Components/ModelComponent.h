@@ -11,6 +11,7 @@ namespace VeryCoolEngine {
 	public:
 		ModelComponent(std::string strFilename, TransformComponent& xTrans, Entity* xEntity);
 		ModelComponent(GUID xMeshGUID, GUID xMaterialGUID, TransformComponent& xTrans, Entity* xEntity);
+		ModelComponent(const std::string& xMeshName, const std::string& xMaterialName, TransformComponent& xTrans, Entity* xEntity);
 		void Serialize(std::ofstream& xOut);
 		ModelComponent() = delete;
 		~ModelComponent() {

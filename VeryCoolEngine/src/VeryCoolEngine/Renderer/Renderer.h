@@ -70,6 +70,7 @@ namespace VeryCoolEngine {
 		uint32_t m_uTessLevel = 1;
 		bool bAnimate = true;
 		float fAnimAlpha = 1;
+		bool m_bDisableDrawCalls = false;
 
 		virtual void ProfilingBeginFrame() = 0;
 		virtual void RecordDrawCall() = 0;

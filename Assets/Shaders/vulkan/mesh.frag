@@ -96,7 +96,7 @@ void main(){
 	_oColor = vec4(0);
 	vec4 diffuse = texture(diffuseTex,UV);
 	for(int i = 0; i < numLights; i++){
-		
+		break;
 		if(useBumpMap != 0){
 			point(_oColor, diffuse, lights[i], bumpNormal, metallic, roughness, 0.95);
 		}

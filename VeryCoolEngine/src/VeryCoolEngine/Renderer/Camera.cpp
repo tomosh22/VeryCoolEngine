@@ -79,7 +79,8 @@ namespace VeryCoolEngine {
 			return;
 		}
 
-		if (Application::GetInstance()->_mouseEnabled) {
+		//#TO_TODO: if cursor was not released this frame
+		if (true) {
 
 			double deltaPitch = (currentMousePos.second - prevMousePos.second) / 1000.;
 			pitch -= deltaPitch;

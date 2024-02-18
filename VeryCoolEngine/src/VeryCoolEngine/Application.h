@@ -176,7 +176,6 @@ namespace VeryCoolEngine {
 		LayerStack _layerStack;
 		bool _running = true;
 		bool OnWindowClose(WindowCloseEvent& e);
-		bool _mouseEnabled = true;
 
 		//#todo temporary, need to implement a proper uniform system
 		bool _aoEnabled = true;

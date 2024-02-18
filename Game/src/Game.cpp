@@ -64,7 +64,7 @@ namespace VeryCoolEngine {
 			xTrans.SetPosition({rand() / float(RAND_MAX) * 500,20,rand() / float(RAND_MAX) * 500 });
 			xTrans.SetScale({ 20,20,20 });
 
-			xEntity.AddComponent<ModelComponent>(GUID(1120456549), GUID(2957329679));
+			xEntity.AddComponent<ModelComponent>("sphereSmooth.obj", "rock2k");
 		}
 	}
 
