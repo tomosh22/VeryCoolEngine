@@ -141,7 +141,7 @@ void VulkanRenderer::MainLoop() {
 		if (scene->ready)break;
 	}
 	app->sceneMutex.lock();
-
+	ProfilingBeginFrame();
 
 	BeginScene(scene);
 
@@ -149,9 +149,12 @@ void VulkanRenderer::MainLoop() {
 
 	DrawFrame(app->m_pxRendererScene);
 
-	
+	ProfilingEndFrame();
 
 	app->sceneMutex.unlock();
+
+	//#TO_TODO: really don't like that this is here
+	Input::ResetPressedKeys();
 }
 
 void VulkanRenderer::CopyToFramebuffer() {
@@ -516,4 +519,15 @@ void RendererAPI::Platform_SubmitCmdBuffers() {
 
 	//TODO: put this in end frame when I eventually write it
 	s_xCmdBuffersToSubmit.clear();
+}
+
+void VeryCoolEngine::VulkanRenderer::ProfilingBeginFrame() {
+	m_uNumDrawCalls = 0;
+}
+
+void VeryCoolEngine::VulkanRenderer::RecordDrawCall() {
+	m_uNumDrawCalls++;
+}
+
+void VeryCoolEngine::VulkanRenderer::ProfilingEndFrame() {
 }

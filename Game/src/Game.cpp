@@ -58,7 +58,14 @@ namespace VeryCoolEngine {
 		m_pxCurrentScene->m_xGameCamera.SetPosition(xCamPos);
 		m_pxCurrentScene->m_xGameCamera.UpdateRotation();
 
-		
+		if (Input::WasKeyPressed(VCE_KEY_R)) {
+			Entity xEntity(m_pxCurrentScene, "Sphere");
+			TransformComponent& xTrans = xEntity.GetComponent<TransformComponent>();
+			xTrans.SetPosition({rand() / float(RAND_MAX) * 500,20,rand() / float(RAND_MAX) * 500 });
+			xTrans.SetScale({ 20,20,20 });
+
+			xEntity.AddComponent<ModelComponent>(GUID(1120456549), GUID(2957329679));
+		}
 	}
 
 	void Application::CollisionCallback(Entity* pxEntity1, Entity* pxEntity2, Physics::CollisionEventType eType) {

@@ -250,6 +250,8 @@ namespace VeryCoolEngine {
 			app->m_bWantToResetScene = true;
 		}
 
+		ImGui::Text(std::to_string(app->_pRenderer->m_uNumDrawCalls).c_str());
+
 		ImGui::End();
 
 		/*if (ImGui::BeginMenuBar())

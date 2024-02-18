@@ -5,7 +5,7 @@
 namespace VeryCoolEngine {
 	class WindowsInput : public Input{
 	protected:
-		bool IsKeyPressedImpl(int keyCode) override;
+		bool IsKeyDownImpl(int keyCode) override;
 		bool IsKeyReleasedImpl(int keyCode) override;
 		bool IsMouseButtonPressedImpl(int button) override;
 		std::pair<double, double> GetMousePosImpl() override;

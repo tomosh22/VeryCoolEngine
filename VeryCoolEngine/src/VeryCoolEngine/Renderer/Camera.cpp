@@ -37,36 +37,36 @@ namespace VeryCoolEngine {
 
 		//std::cout << yaw << std::endl;
 
-		if (Input::IsKeyPressed(VCE_KEY_W)) {
+		if (Input::IsKeyDown(VCE_KEY_W)) {
 			glm::dmat4 rotation = glm::rotate(yaw, glm::dvec3( 0,1,0 ));
 			glm::vec4 result = rotation * glm::vec4(0, 0, -1,1) * frameSpeed;
 			position += glm::vec3(result.x, result.y, result.z);
 			//position += glm::mat4::Rotation(yaw, Vector3(0, 1, 0)) * Vector3(0, 0, -1) * frameSpeed;
 		}
-		if (Input::IsKeyPressed(VCE_KEY_S)) {
+		if (Input::IsKeyDown(VCE_KEY_S)) {
 			glm::dmat4 rotation = glm::rotate(yaw, glm::dvec3(0, 1, 0));
 			glm::vec4 result = rotation * glm::vec4(0, 0, -1, 1) * frameSpeed;
 			position -= glm::vec3(result.x, result.y, result.z);
 			//position -= Matrix4::Rotation(yaw, Vector3(0, 1, 0)) * Vector3(0, 0, -1) * frameSpeed;
 		}
 
-		if (Input::IsKeyPressed(VCE_KEY_A)) {
+		if (Input::IsKeyDown(VCE_KEY_A)) {
 			glm::dmat4 rotation = glm::rotate(yaw, glm::dvec3(0, 1, 0));
 			glm::dvec4 result = rotation * glm::vec4(-1, 0, 0, 1) * frameSpeed;
 			position += glm::vec3(result.x, result.y, result.z);
 			//position += Matrix4::Rotation(yaw, Vector3(0, 1, 0)) * Vector3(-1, 0, 0) * frameSpeed;
 		}
-		if (Input::IsKeyPressed(VCE_KEY_D)) {
+		if (Input::IsKeyDown(VCE_KEY_D)) {
 			glm::dmat4 rotation = glm::rotate(yaw, glm::dvec3(0, 1, 0));
 			glm::dvec4 result = rotation * glm::vec4(-1, 0, 0, 1) * frameSpeed;
 			position -= glm::vec3(result.x,result.y,result.z);
 			//position -= Matrix4::Rotation(yaw, Vector3(0, 1, 0)) * Vector3(-1, 0, 0) * frameSpeed;
 		}
 
-		if (Input::IsKeyPressed(VCE_KEY_LEFT_SHIFT)) {
+		if (Input::IsKeyDown(VCE_KEY_LEFT_SHIFT)) {
 			position.y -= frameSpeed;
 		}
-		if (Input::IsKeyPressed(VCE_KEY_SPACE)) {
+		if (Input::IsKeyDown(VCE_KEY_SPACE)) {
 			position.y += frameSpeed;
 		}
 	}

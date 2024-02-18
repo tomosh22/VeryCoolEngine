@@ -64,6 +64,7 @@ namespace VeryCoolEngine {
 	}
 	void VulkanCommandBuffer::Draw(uint32_t uNumIndices, uint32_t uNumInstances /*= 1*/, uint32_t uVertexOffset /*= 0*/, uint32_t uIndexOffset /*= 0*/, uint32_t uInstanceOffset /*= 0*/)
 	{
+		m_pxRenderer->RecordDrawCall();
 		m_xCurrentCmdBuffer.drawIndexed(uNumIndices, uNumInstances, uIndexOffset, uVertexOffset, uInstanceOffset);
 	}
 

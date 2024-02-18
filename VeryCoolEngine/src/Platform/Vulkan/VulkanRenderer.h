@@ -71,6 +71,10 @@ namespace VeryCoolEngine {
 
 			virtual void DrawIndexed(VertexArray* vertexArray, MeshTopolgy topology = MeshTopolgy::Triangles) override;
 			virtual void DrawIndexedInstanced(VertexArray* vertexArray, unsigned int count, MeshTopolgy topology = MeshTopolgy::Triangles) override;
+
+			virtual void ProfilingBeginFrame() override;
+			virtual void RecordDrawCall() override;
+			virtual void ProfilingEndFrame() override;
 #pragma endregion
 
 

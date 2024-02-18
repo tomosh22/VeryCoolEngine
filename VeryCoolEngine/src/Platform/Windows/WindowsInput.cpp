@@ -10,7 +10,7 @@ namespace VeryCoolEngine {
 
 	Input* Input::_sInstance = new WindowsInput();
 
-	bool WindowsInput::IsKeyPressedImpl(int keyCode){
+	bool WindowsInput::IsKeyDownImpl(int keyCode){
 		GLFWwindow* window = reinterpret_cast<GLFWwindow*>(Application::GetInstance()->GetWindow().GetNativeWindow());
 		int state = glfwGetKey(window, keyCode);
 		return state == GLFW_PRESS;

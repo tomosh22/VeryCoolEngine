@@ -71,6 +71,11 @@ namespace VeryCoolEngine {
 		bool bAnimate = true;
 		float fAnimAlpha = 1;
 
+		virtual void ProfilingBeginFrame() = 0;
+		virtual void RecordDrawCall() = 0;
+		virtual void ProfilingEndFrame() = 0;
+		uint32_t m_uNumDrawCalls = 0;
+
 		
 	private:
 	};

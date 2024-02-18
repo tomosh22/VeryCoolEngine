@@ -91,6 +91,10 @@ namespace VeryCoolEngine {
 		if (e.GetType() == EventType::KeyPressed && dynamic_cast<KeyPressedEvent&>(e).GetKeyCode() == VCE_KEY_ESCAPE) _running = false;
 		if (e.GetType() == EventType::KeyPressed && dynamic_cast<KeyPressedEvent&>(e).GetKeyCode() == VCE_KEY_Q) _mouseEnabled = !_mouseEnabled;
 
+		if (e.GetType() == EventType::KeyPressed) {
+			Input::s_xPressedKeys.insert(dynamic_cast<KeyPressedEvent&>(e).GetKeyCode());
+		}
+
 		if (e.GetType() == EventType::WindowResize) {
 			WindowResizeEvent& xWindowResizeEvent = (WindowResizeEvent&)e;
 			_window->SetWidth(xWindowResizeEvent.GetWidth());
@@ -454,6 +458,8 @@ namespace VeryCoolEngine {
 		while (_running) {
 
 			UpdateDeltaTime();
+			
+			
 
 			if (m_bWantToResetScene) {
 				m_bSkipFrame = true;
@@ -496,7 +502,7 @@ namespace VeryCoolEngine {
 			for (Layer* layer : _layerStack)
 				layer->OnUpdate();
 
-
+			
 		}
 		_renderThread.join();
 	}
