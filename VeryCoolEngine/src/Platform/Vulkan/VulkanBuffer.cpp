@@ -57,7 +57,7 @@ namespace VeryCoolEngine {
 		VulkanRenderer::GetInstance()->EndSingleUseCmdBuffer(xCmd);
 
 	}
-	void VulkanBuffer::CopyBufferToImage(VulkanBuffer* pxSrc, VulkanTexture2D* pxDst, uint32_t uWidth, uint32_t uHeight)
+	void VulkanBuffer::CopyBufferToImage(VulkanBuffer* pxSrc, VulkanTexture2D* pxDst)
 	{
 		vk::CommandBuffer xCmd = VulkanRenderer::GetInstance()->BeginSingleUseCmdBuffer();
 
@@ -74,10 +74,11 @@ namespace VeryCoolEngine {
 			.setBufferImageHeight(0)
 			.setImageSubresource(xSubresource)
 			.setImageOffset({ 0,0,0 })
-			.setImageExtent({ uWidth, uHeight, 1 });
+			.setImageExtent({ pxDst->GetWidth(), pxDst->GetHeight(), 1});
 
 		xCmd.copyBufferToImage(pxSrc->m_xBuffer, pxDst->m_xImage, vk::ImageLayout::eTransferDstOptimal, 1, &region);
 
 		VulkanRenderer::GetInstance()->EndSingleUseCmdBuffer(xCmd);
 	}
+	
 }

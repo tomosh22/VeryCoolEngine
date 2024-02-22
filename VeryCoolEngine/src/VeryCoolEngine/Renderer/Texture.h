@@ -26,6 +26,7 @@ namespace VeryCoolEngine {
 		void* m_pData = nullptr;
 		uint32_t m_uDataLength = 0;
 		bool m_bIsDepthTexture = false;
+		uint32_t m_uNumMips = 0;
 		
 	private:
 	};

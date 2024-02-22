@@ -29,6 +29,8 @@ namespace VeryCoolEngine {
 		static VulkanTexture2D* CreateColourAttachment(uint32_t uWidth, uint32_t uHeight, uint32_t uMipCount, vk::Format eFormat);
 		static VulkanTexture2D* CreateDepthAttachment(uint32_t uWidth, uint32_t uHeight);
 
+		static void BlitImageToImage(VulkanTexture2D* pxSrc, VulkanTexture2D* pxDst, uint32_t uDstMip);
+
 		vk::Image m_xImage;
 		vk::ImageView m_xImageView;
 		vk::DeviceMemory m_xDeviceMemory;

@@ -793,7 +793,7 @@ namespace VeryCoolEngine {
 			xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eDepthStencilAttachmentWrite);
 			break;
 		case (vk::ImageLayout::eShaderReadOnlyOptimal):
-			xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eInputAttachmentRead);
+			xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eShaderRead);
 			break;
 		default:
 			VCE_ASSERT(false, "unknown layout");

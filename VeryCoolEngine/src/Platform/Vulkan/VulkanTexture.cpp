@@ -48,6 +48,8 @@ namespace VeryCoolEngine {
 
 		m_uWidth = uWidth; m_uHeight = uHeight;
 
+		m_uNumMips = std::floor(std::log2(std::max(m_uWidth, m_uHeight))) + 1;
+
 		vk::DeviceSize uSize = uWidth * uHeight * 4;
 
 		VulkanBuffer* pxStagingBuffer = new VulkanBuffer(uSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
@@ -59,10 +61,10 @@ namespace VeryCoolEngine {
 			.setFormat(xFormat)
 			.setTiling(vk::ImageTiling::eOptimal)
 			.setExtent({ m_uWidth,m_uHeight,1 })
-			.setMipLevels(1)
+			.setMipLevels(m_uNumMips)
 			.setArrayLayers(1)
 			.setInitialLayout(vk::ImageLayout::eUndefined)
-			.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled)
+			.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc)
 			.setSharingMode(vk::SharingMode::eExclusive)
 			.setSamples(vk::SampleCountFlagBits::e1);
 
@@ -87,9 +89,15 @@ namespace VeryCoolEngine {
 
 		xDevice.bindImageMemory(m_xImage, m_xDeviceMemory, 0);
 
-		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer);
-		VulkanBuffer::CopyBufferToImage(pxStagingBuffer, this, m_uWidth, m_uHeight);
-		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader);//todo will probably need to change this to vertex shader in the future
+		for(uint32_t i = 0; i < m_uNumMips; i++)
+			pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, i);
+		VulkanBuffer::CopyBufferToImage(pxStagingBuffer, this);
+		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eTransferSrcOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, 0);
+		for (uint32_t i = 1; i < m_uNumMips; i++)
+			BlitImageToImage(this, this, i);
+		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, 0);
+		for (uint32_t i = 1; i < m_uNumMips; i++)
+			pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, i);//todo will probably need to change this to vertex shader in the future
 
 		delete pxStagingBuffer;
 
@@ -97,7 +105,7 @@ namespace VeryCoolEngine {
 		vk::ImageSubresourceRange xSubresourceRange = vk::ImageSubresourceRange()
 			.setAspectMask(vk::ImageAspectFlagBits::eColor)
 			.setBaseMipLevel(0)
-			.setLevelCount(1)
+			.setLevelCount(m_uNumMips)
 			.setBaseArrayLayer(0)
 			.setLayerCount(1);
 
@@ -175,7 +183,7 @@ namespace VeryCoolEngine {
 		xDevice.bindImageMemory(m_xImage, m_xDeviceMemory, 0);
 
 		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer);
-		VulkanBuffer::CopyBufferToImage(pxStagingBuffer, this, m_uWidth, m_uHeight);
+		VulkanBuffer::CopyBufferToImage(pxStagingBuffer, this);
 		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader);//todo will probably need to change this to vertex shader in the future
 
 		delete pxStagingBuffer;
@@ -386,5 +394,47 @@ namespace VeryCoolEngine {
 	}
 	VulkanTexture2D* VulkanTexture2D::CreateDepthAttachment(uint32_t uWidth, uint32_t uHeight) {
 		return CreateVulkanTexture2D(uWidth, uHeight, 1, vk::Format::eD32Sfloat, vk::ImageAspectFlagBits::eDepth, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::ImageLayout::eDepthAttachmentOptimal, vk::PipelineStageFlagBits::eEarlyFragmentTests);
+	}
+	void VulkanTexture2D::BlitImageToImage(VulkanTexture2D* pxSrc, VulkanTexture2D* pxDst, uint32_t uDstMip)
+	{
+		vk::CommandBuffer xCmd = VulkanRenderer::GetInstance()->BeginSingleUseCmdBuffer();
+
+		std::array<vk::Offset3D, 2> axSrcOffsets;
+		axSrcOffsets.at(0).setX(0);
+		axSrcOffsets.at(0).setY(0);
+		axSrcOffsets.at(0).setZ(0);
+		axSrcOffsets.at(1).setX(pxSrc->GetWidth());
+		axSrcOffsets.at(1).setY(pxSrc->GetHeight());
+		axSrcOffsets.at(1).setZ(1);
+
+		vk::ImageSubresourceLayers xSrcSubresource = vk::ImageSubresourceLayers()
+			.setAspectMask(vk::ImageAspectFlagBits::eColor)
+			.setMipLevel(0)
+			.setBaseArrayLayer(0)
+			.setLayerCount(1);
+
+		std::array<vk::Offset3D, 2> axDstOffsets;
+		axDstOffsets.at(0).setX(0);
+		axDstOffsets.at(0).setY(0);
+		axDstOffsets.at(0).setZ(0);
+		axDstOffsets.at(1).setX(pxSrc->GetWidth() / std::pow(2, uDstMip));
+		axDstOffsets.at(1).setY(pxSrc->GetHeight() / std::pow(2, uDstMip));
+		axDstOffsets.at(1).setZ(1);
+
+		vk::ImageSubresourceLayers xDstSubresource = vk::ImageSubresourceLayers()
+			.setAspectMask(vk::ImageAspectFlagBits::eColor)
+			.setMipLevel(uDstMip)
+			.setBaseArrayLayer(0)
+			.setLayerCount(1);
+
+		vk::ImageBlit xBlit = vk::ImageBlit()
+			.setSrcOffsets(axSrcOffsets)
+			.setDstOffsets(axDstOffsets)
+			.setSrcSubresource(xSrcSubresource)
+			.setDstSubresource(xDstSubresource);
+
+		xCmd.blitImage(pxSrc->m_xImage, vk::ImageLayout::eTransferSrcOptimal, pxDst->m_xImage, vk::ImageLayout::eTransferDstOptimal, xBlit, vk::Filter::eLinear);
+
+		VulkanRenderer::GetInstance()->EndSingleUseCmdBuffer(xCmd);
 	}
 }

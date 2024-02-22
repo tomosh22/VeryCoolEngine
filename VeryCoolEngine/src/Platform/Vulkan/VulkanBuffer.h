@@ -19,7 +19,7 @@ namespace VeryCoolEngine {
 		void UploadData(void* pData, vk::DeviceSize uSize);
 
 		static void CopyBufferToBuffer(VulkanBuffer* pxSrc, VulkanBuffer* pxDst, size_t uSize);
-		static void CopyBufferToImage(VulkanBuffer* pxSrc, VulkanTexture2D* pxDst, uint32_t uWidth, uint32_t uHeight);
+		static void CopyBufferToImage(VulkanBuffer* pxSrc, VulkanTexture2D* pxDst);
 
 		vk::Buffer m_xBuffer;
 		vk::DeviceMemory m_xDeviceMem;
