@@ -28,6 +28,7 @@ layout(std140, set = 0, binding=0) uniform matrices{
 layout(std140, set = 0, binding = 2) uniform Misc{
 	vec3 overrideNormal;
 	int useBumpMap;
+	int visualiseNormals;
 	int usePhongTess;
 	float phongTessFactor;
 	int tessLevel;
@@ -118,15 +119,6 @@ void main(){
 	
 	gl_Position = _uViewProjMat * worldPos;
 	
-	
-	
-	
-	
-	mat3 normalMatrix = transpose ( inverse ( mat3 ( modelMatrix )));
-	
-	vec3 T = normalize(vec3(modelMatrix * vec4(combinedTangent,0)));
-    vec3 B = normalize(vec3(modelMatrix * vec4(combinedBitangent,0)));
-    vec3 N = normalize(vec3(modelMatrix * vec4(_oNormal,0)));
-    _oTBN = mat3(T, B, N);
+    _oTBN = mat3(normalize(combinedTangent), normalize(combinedBitangent), normalize(_oNormal));
 	
 }

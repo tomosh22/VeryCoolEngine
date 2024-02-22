@@ -143,6 +143,7 @@ namespace VeryCoolEngine {
 		struct MeshRenderData {
 			glm::vec3 xOverrideNormal;
 			int uUseBumpMap;
+			int uVisualiseNormals;
 			int uUsePhongTess;
 			float fPhongTessFactor;
 			int uTessLevel;

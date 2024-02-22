@@ -368,12 +368,6 @@ namespace VeryCoolEngine {
 			m_pxRendererScene->lights[m_pxRendererScene->numLights++] = light;
 		}
 
-		RendererAPI::Light camLight{
-				m_pxCurrentScene->m_xEditorCamera.GetPosition().x,m_pxCurrentScene->m_xEditorCamera.GetPosition().y,m_pxCurrentScene->m_xEditorCamera.GetPosition().z,100,
-				1,1,1,1
-		};
-		m_pxRendererScene->lights[m_pxRendererScene->numLights++] = camLight;
-
 		m_pxRendererScene->ready = true;
 		sceneMutex.unlock();
 	}
@@ -455,6 +449,10 @@ namespace VeryCoolEngine {
 			std::this_thread::yield();
 #endif
 		m_xAssetHandler.LoadAssetsFromFile("Assets.vceassets");
+
+		for(uint32_t i = 0; i < 15; i++)
+			m_xAssetHandler.LoadAssetsFromFile(std::to_string(i) + ".vceassets");
+
 		m_xAssetHandler.PlatformInitialiseAssets();
 		m_pxCurrentScene = new Scene("TestScene.vcescene");
 

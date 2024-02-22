@@ -20,15 +20,15 @@ Entity
 3590258406
 Sphere
 TransformComponent
-25 5 25
-0 0 0 1
+25 25 25
+0 0.70710678118 0.70710678118 0
 10 10 10
 ColliderComponent
 Sphere
 Dynamic
 ModelComponent
 2957329679
-1120456549
+2093847655
 EndEntity
 Entity
 1576001455
@@ -43,4 +43,169 @@ Static
 ModelComponent
 2068965743
 2835556548
+EndEntity
+Entity
+3336536012
+skyrim0
+TransformComponent
+50 250 25
+0 0.70710678118 0.70710678118 0
+10 10 10
+ModelComponent
+2142645055
+3554442935
+EndEntity
+Entity
+4209998847
+skyrim1
+TransformComponent
+50 250 25
+0 0.70710678118 0.70710678118 0
+10 10 10
+ModelComponent
+3162176989
+4148148861
+EndEntity
+Entity
+3409835503
+skyrim2
+TransformComponent
+50 250 25
+0 0.70710678118 0.70710678118 0
+10 10 10
+ModelComponent
+4214663596
+3214130947
+EndEntity
+Entity
+4138558428
+skyrim3
+TransformComponent
+50 250 25
+0 0.70710678118 0.70710678118 0
+10 10 10
+ModelComponent
+3183378415
+1944059571
+EndEntity
+Entity
+4244107261
+skyrim4
+TransformComponent
+50 250 25
+0 0.70710678118 0.70710678118 0
+10 10 10
+ModelComponent
+3747563967
+2113928975
+EndEntity
+Entity
+1874449907
+skyrim5
+TransformComponent
+50 250 25
+0 0.70710678118 0.70710678118 0
+10 10 10
+ModelComponent
+2126158325
+1807482807
+EndEntity
+Entity
+4293917310
+skyrim6
+TransformComponent
+50 250 25
+0 0.70710678118 0.70710678118 0
+10 10 10
+ModelComponent
+1570241467
+4058775551
+EndEntity
+Entity
+3215781885
+skyrim7
+TransformComponent
+50 250 25
+0 0.70710678118 0.70710678118 0
+10 10 10
+ModelComponent
+3220432831
+4290691071
+EndEntity
+Entity
+2950209407
+skyrim8
+TransformComponent
+50 250 25
+0 0.70710678118 0.70710678118 0
+10 10 10
+ModelComponent
+4141858011
+4154404734
+EndEntity
+Entity
+4272225725
+skyrim9
+TransformComponent
+50 250 25
+0 0.70710678118 0.70710678118 0
+10 10 10
+ModelComponent
+3193565183
+3758063311
+EndEntity
+Entity
+2985176831
+skyrim10
+TransformComponent
+50 250 25
+0 0.70710678118 0.70710678118 0
+10 10 10
+ModelComponent
+3755474930
+2138537807
+EndEntity
+Entity
+3203919614
+skyrim11
+TransformComponent
+50 250 25
+0 0.70710678118 0.70710678118 0
+10 10 10
+ModelComponent
+4226793471
+4256106463
+EndEntity
+Entity
+598692579
+skyrim12
+TransformComponent
+50 250 25
+0 0.70710678118 0.70710678118 0
+10 10 10
+ModelComponent
+4289636863
+3327813485
+EndEntity
+Entity
+3656968187
+skyrim13
+TransformComponent
+50 250 25
+0 0.70710678118 0.70710678118 0
+10 10 10
+ModelComponent
+3187407775
+4177521663
+EndEntity
+Entity
+1035886327
+skyrim14
+TransformComponent
+50 250 25
+0 0.70710678118 0.70710678118 0
+10 10 10
+ModelComponent
+3201990000
+3212574140
 EndEntity

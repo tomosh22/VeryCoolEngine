@@ -1,0 +1,17 @@
+Texture2D
+527335309
+skyrim/10d.png
+Texture2D
+2684157951
+skyrim/10n.png
+Material
+skyrim10
+3755474930
+527335309
+2684157951
+0
+0
+0
+Mesh
+2138537807
+skyrim/10.obj

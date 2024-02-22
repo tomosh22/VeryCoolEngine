@@ -283,6 +283,7 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 
 	xMeshRenderData.xOverrideNormal = m_xOverrideNormal;
 	xMeshRenderData.uUseBumpMap = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;
+	xMeshRenderData.uVisualiseNormals = app->_pRenderer->m_bVisualiseNormals ? 1 : 0;
 	xMeshRenderData.uUsePhongTess = app->_pRenderer->m_bUsePhongTess ? 1 : 0;
 	xMeshRenderData.fPhongTessFactor = app->_pRenderer->m_fPhongTessFactor;
 	xMeshRenderData.uTessLevel = app->_pRenderer->m_uTessLevel;
@@ -342,6 +343,7 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 
 	xMeshRenderData.xOverrideNormal = m_xOverrideNormal;
 	xMeshRenderData.uUseBumpMap = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;
+	xMeshRenderData.uVisualiseNormals = app->_pRenderer->m_bVisualiseNormals ? 1 : 0;
 	xMeshRenderData.uUsePhongTess = app->_pRenderer->m_bUsePhongTess ? 1 : 0;
 	xMeshRenderData.fPhongTessFactor = app->_pRenderer->m_fPhongTessFactor;
 	xMeshRenderData.uTessLevel = app->_pRenderer->m_uTessLevel;

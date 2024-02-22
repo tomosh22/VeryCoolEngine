@@ -65,6 +65,7 @@ namespace VeryCoolEngine {
 		bool m_bShouldResize = false;
 		glm::vec3 m_xOverrideNormal = { 0,0,0 };
 		bool m_bUseBumpMaps = true;
+		bool m_bVisualiseNormals = false;
 		bool m_bUsePhongTess = true;
 		float m_fPhongTessFactor = 1.0f;
 		uint32_t m_uTessLevel = 1;

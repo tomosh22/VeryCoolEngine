@@ -26,6 +26,7 @@ layout(std140, set = 0, binding=0) uniform matrices{
 layout(std140, set = 0, binding = 2) uniform Misc{
 	vec3 overrideNormal;
 	int useBumpMap;
+	int visualiseNormals;
 	int usePhongTess;
 	float phongTessFactor;
 	int tessLevel;
@@ -53,6 +54,7 @@ void point(inout vec4 finalColor, vec4 diffuse, Light light, vec3 bumpNormal, fl
 	float normalDotViewDir = max(dot(bumpNormal, viewDir), 0.0001);
 	float normalDotHalfDir = max(dot(bumpNormal, halfDir), 0.0001);
 	float halfDirDotViewDir = max(dot(halfDir, viewDir), 0.0001);
+	
 
 	float F = reflectivity + (1 - reflectivity) * pow((1-halfDirDotViewDir), 5);
 
@@ -86,17 +88,21 @@ void point(inout vec4 finalColor, vec4 diffuse, Light light, vec3 bumpNormal, fl
 void main(){
 	
 	
+	
 	vec3 bumpNormal = texture(bumpMap, UV).rgb;
 	bumpNormal += overrideNormal;
 	bumpNormal = normalize(TBN * bumpNormal); 
 	
+	if(visualiseNormals != 0){
+		_oColor = vec4(bumpNormal,1);
+		return;
+	}
 	
 	float roughness = texture(roughnessTex,UV).x;
 	float metallic = texture(metallicTex,UV).x;
 	_oColor = vec4(0);
 	vec4 diffuse = texture(diffuseTex,UV);
 	for(int i = 0; i < numLights; i++){
-		break;
 		if(useBumpMap != 0){
 			point(_oColor, diffuse, lights[i], bumpNormal, metallic, roughness, 0.95);
 		}

@@ -280,7 +280,7 @@ namespace VeryCoolEngine {
 
 		//todo all these should be parameters
 		vk::SamplerCreateInfo xInfo = vk::SamplerCreateInfo()
-			.setMagFilter(vk::Filter::eNearest)
+			.setMagFilter(vk::Filter::eLinear)
 			.setMinFilter(vk::Filter::eLinear)
 			.setAddressModeU(vk::SamplerAddressMode::eRepeat)
 			.setAddressModeV(vk::SamplerAddressMode::eRepeat)

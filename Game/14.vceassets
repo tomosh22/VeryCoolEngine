@@ -1,0 +1,17 @@
+Texture2D
+3220029299
+skyrim/14d.png
+Texture2D
+3117931679
+skyrim/14n.png
+Material
+skyrim14
+3201990000
+3220029299
+3117931679
+0
+0
+0
+Mesh
+3212574140
+skyrim/14.obj

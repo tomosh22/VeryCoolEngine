@@ -30,7 +30,7 @@ last frame (default value is for simplicities sake...)
 namespace VeryCoolEngine {
 	void Camera::UpdateCamera(float dt) {
 		//Update the mouse by how much
-		double frameSpeed = dt;
+		double frameSpeed = dt * 100;
 
 		
 		UpdateRotation();

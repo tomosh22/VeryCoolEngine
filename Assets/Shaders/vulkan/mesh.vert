@@ -11,6 +11,7 @@ layout(location = 4) in vec3 _aBitangent;
 layout(std140, set = 0, binding = 2) uniform Misc{
 	vec3 overrideNormal;
 	int useBumpMap;
+	int visualiseNormals;
 	int usePhongTess;
 	float phongTessFactor;
 	int tessLevel;
@@ -24,10 +25,11 @@ layout(location = 4) out vec3 _oWorldPos;
 
 void main(){
 
-	_oUV = _aUV * 5;
-	_oNormal = _aNormal;
-	_oTangent = _aTangent;
-	_oBitangent = _aBitangent;
+	_oUV = _aUV;
+	mat3 normalMatrix = transpose(inverse(mat3(modelMatrix)));
+	_oNormal = normalize(normalMatrix * normalize(_aNormal));
+	_oTangent = normalize(normalMatrix * normalize(_aTangent));
+	_oBitangent = cross(_oTangent, _oNormal);
 	_oWorldPos = (modelMatrix * vec4(_aPosition,1)).xyz;
 
 	gl_Position = vec4(_aPosition,1);

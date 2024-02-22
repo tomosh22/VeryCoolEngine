@@ -501,12 +501,15 @@ namespace VeryCoolEngine {
 			const aiVector3D* pxTangent = &(pxMesh->mTangents[i]);
 			const aiVector3D* pxBitangent = &(pxMesh->mBitangents[i]);
 
+
+
 			Vertex v;
 			v.pos = glm::vec3(pxPos->x, pxPos->y, pxPos->z);
 			v.uv = glm::vec2(pxTexCoord->x, pxTexCoord->y);
 			v.normal = glm::vec3(pxNormal->x, pxNormal->y, pxNormal->z);
 			v.tangent = glm::vec3(pxTangent->x, pxTangent->y, pxTangent->z);
 			v.bitangent = glm::vec3(pxBitangent->x, pxBitangent->y, pxBitangent->z);
+			
 			//if (mesh->m_uNumBones)
 				//v.m_xBoneData = mesh->m_xBoneData[i];
 			mesh->m_axVertices.push_back(v);
