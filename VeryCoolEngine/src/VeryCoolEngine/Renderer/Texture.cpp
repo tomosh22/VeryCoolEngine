@@ -12,13 +12,13 @@ namespace VeryCoolEngine {
 		return new VulkanTexture2D(width, height, format, wrapMode);
 #endif
 	}
-	Texture2D* Texture2D::Create(const std::string& path, bool srgb /*= false*/)
+	Texture2D* Texture2D::Create(const std::string& path, TextureStreamPriority eStreamPrio, bool srgb /*= false*/)
 	{
 #ifdef VCE_OPENGL
 		return new OpenGLTexture2D(path,srgb);
 #endif
 #ifdef VCE_VULKAN
-		return new VulkanTexture2D(path, srgb);
+		return new VulkanTexture2D(path, eStreamPrio, srgb);
 #endif
 	}
 

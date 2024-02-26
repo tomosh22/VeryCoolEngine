@@ -17,6 +17,8 @@ namespace VeryCoolEngine {
 
 		void PlatformInit() override;
 
+		void HandleStreamUpdate() override;
+
 		vk::DescriptorSet m_xDescSet;
 		vk::DescriptorSetLayout m_xDescSetLayout;
 	};

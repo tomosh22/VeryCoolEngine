@@ -21,6 +21,7 @@
 #include "Physics/Physics.h"
 #include "Scene/Entity.h"
 #include "VeryCoolEngine/AssetHandling/AssetHandler.h"
+#include "VeryCoolEngine/Renderer/AsyncLoader.h"
 
 //#define VCE_DEFERRED_SHADING
 
@@ -125,6 +126,7 @@ namespace VeryCoolEngine {
 		RenderPass* m_pxCopyToFramebufferPass;
 
 		AssetHandler m_xAssetHandler;
+		AsyncLoader m_xAsyncLoader;
 
 		Texture2D* m_pxBlankTexture2D;
 

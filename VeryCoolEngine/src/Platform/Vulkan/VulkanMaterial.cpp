@@ -54,6 +54,7 @@ namespace VeryCoolEngine {
 		uint32_t uCount = 0;
 
 		for (Texture2D* pxTex : xTextures) {
+			pxTex->m_pxParentMaterial = this;
 			VulkanTexture2D* pxVkTex = dynamic_cast<VulkanTexture2D*>(pxTex);
 
 			vk::DescriptorImageInfo& xInfo = xInfos.at(uCount)
@@ -78,17 +79,71 @@ namespace VeryCoolEngine {
 
 	}
 
+	void VulkanMaterial::HandleStreamUpdate()
+	{
+		Application* app = Application::GetInstance();
+		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+		std::vector<Texture2D*> xTextures;
+
+		if (m_pxAlbedo == nullptr)
+			m_pxAlbedo = app->m_pxBlankTexture2D;
+		xTextures.push_back(m_pxAlbedo);
+
+		if (m_pxBumpMap == nullptr)
+			m_pxBumpMap = app->m_pxBlankTexture2D;
+		xTextures.push_back(m_pxBumpMap);
+
+		if (m_pxRoughnessTex == nullptr)
+			m_pxRoughnessTex = app->m_pxBlankTexture2D;
+		xTextures.push_back(m_pxRoughnessTex);
+
+		if (m_pxMetallicTex == nullptr)
+			m_pxMetallicTex = app->m_pxBlankTexture2D;
+		xTextures.push_back(m_pxMetallicTex);
+
+		if (m_pxHeightmapTex == nullptr)
+			m_pxHeightmapTex = app->m_pxBlankTexture2D;
+		xTextures.push_back(m_pxHeightmapTex);
+
+		m_uNumTextures = xTextures.size();
+
+		std::vector<vk::DescriptorImageInfo> xInfos(m_uNumTextures);
+		std::vector<vk::WriteDescriptorSet> xWrites(m_uNumTextures);
+		uint32_t uCount = 0;
+
+		for (Texture2D* pxTex : xTextures) {
+			VulkanTexture2D* pxVkTex = dynamic_cast<VulkanTexture2D*>(pxTex);
+
+			vk::DescriptorImageInfo& xInfo = xInfos.at(uCount)
+				.setSampler(pxVkTex->m_xSampler)
+				.setImageView(pxVkTex->m_xImageView)
+				.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+
+			vk::WriteDescriptorSet& xWrite = xWrites.at(uCount)
+				.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+				.setDstSet(m_xDescSet)
+				.setDstBinding(uCount)
+				.setDstArrayElement(0)
+				.setDescriptorCount(1)
+				.setPImageInfo(&xInfo);
+
+			uCount++;
+		}
+
+		pxRenderer->GetDevice().updateDescriptorSets(xWrites.size(), xWrites.data(), 0, nullptr);
+	}
+
 
 #pragma mark foliage
 	VulkanFoliageMaterial::VulkanFoliageMaterial(const char* szName)
 	{
 		//TODO: don't make so many std::strings
-		SetAlbedo(Texture2D::Create((std::string(szName) + "/diffuse.jpg").c_str(), false));
-		SetBumpMap(Texture2D::Create((std::string(szName) + "/normal.jpg").c_str(), false));
-		SetRoughness(Texture2D::Create((std::string(szName) + "/roughness.jpg").c_str(), false));
-		SetHeightmap(Texture2D::Create((std::string(szName) + "/height.jpg").c_str(), false));
-		SetAlpha(Texture2D::Create((std::string(szName) + "/alpha.jpg").c_str(), false));
-		SetTranslucency(Texture2D::Create((std::string(szName) + "/translucency.jpg").c_str(), false));
+		SetAlbedo(Texture2D::Create((std::string(szName) + "/diffuse.jpg").c_str(), TextureStreamPriority::NotStreamed));
+		SetBumpMap(Texture2D::Create((std::string(szName) + "/normal.jpg").c_str(), TextureStreamPriority::NotStreamed));
+		SetRoughness(Texture2D::Create((std::string(szName) + "/roughness.jpg").c_str(), TextureStreamPriority::NotStreamed));
+		SetHeightmap(Texture2D::Create((std::string(szName) + "/height.jpg").c_str(), TextureStreamPriority::NotStreamed));
+		SetAlpha(Texture2D::Create((std::string(szName) + "/alpha.jpg").c_str(), TextureStreamPriority::NotStreamed));
+		SetTranslucency(Texture2D::Create((std::string(szName) + "/translucency.jpg").c_str(), TextureStreamPriority::NotStreamed));
 	}
 	void VulkanFoliageMaterial::PlatformInit()
 	{

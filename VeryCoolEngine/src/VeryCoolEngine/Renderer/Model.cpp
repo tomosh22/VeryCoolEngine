@@ -337,7 +337,7 @@ namespace VeryCoolEngine {
             }
             if (!skip)
             {
-                Texture2D* texture = Texture2D::Create(str.C_Str(), false);
+                Texture2D* texture = Texture2D::Create(str.C_Str(), TextureStreamPriority::NotStreamed);
                 texture->_filePath = str.C_Str();
                 textures.push_back(texture);
                 m_apxTextures.push_back(texture);

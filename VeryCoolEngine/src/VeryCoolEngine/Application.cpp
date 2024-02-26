@@ -314,6 +314,9 @@ namespace VeryCoolEngine {
 		sceneMutex.lock();
 		m_pxRendererScene->Reset();
 
+		m_xAsyncLoader.ProcessPendingStreams_AsyncLoaderThread();
+		m_xAsyncLoader.ProcessPendingStreams_MainThread();
+
 		Physics::UpdatePhysics();
 
 		m_pxRendererScene->camera = m_eCurrentState == VCE_GAMESTATE_EDITOR ? &m_pxCurrentScene->m_xEditorCamera : &m_pxCurrentScene->m_xGameCamera;
@@ -465,7 +468,6 @@ namespace VeryCoolEngine {
 		while (_running) {
 
 			UpdateDeltaTime();
-			
 			
 
 			if (m_bWantToResetScene) {

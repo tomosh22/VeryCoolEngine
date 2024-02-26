@@ -1,8 +1,8 @@
 #pragma once
 #include "VeryCoolEngine/PlatformTypes.h"
+#include "VeryCoolEngine/Renderer/Texture.h"
 
 namespace VeryCoolEngine {
-	class Texture2D;
 	class Mesh;
 	class Material;
 	class AssetHandler
@@ -15,7 +15,7 @@ namespace VeryCoolEngine {
 
 		void PlatformInitialiseAssets();
 
-		void AddTexture2D(GUID xGUID, const std::string& strPath);
+		void AddTexture2D(GUID xGUID, const std::string& strPath, TextureStreamPriority eStreamPrio);
 		void AddMesh(GUID xGUID, const std::string& strPath);
 		void AddMaterial(GUID xGUID, const std::string& strName, GUID xAlbedoGUID, GUID xBumpMapGUID, GUID xRoughnessTexGUID, GUID xMetallicTexGUID, GUID xHeightmapTexGUID);
 

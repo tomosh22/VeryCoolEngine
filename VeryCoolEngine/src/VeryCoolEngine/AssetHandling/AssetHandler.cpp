@@ -11,11 +11,13 @@ namespace VeryCoolEngine {
 		while (std::getline(xIn, strLine)) {
 			if (strLine == "Texture2D") {
 				std::string strGUID;
+				std::string strStreamPrio;
 				std::string strFile;
 				std::getline(xIn, strGUID);
+				std::getline(xIn, strStreamPrio);
 				std::getline(xIn, strFile);
 				GUID xGUID(strtoull(strGUID.c_str(), nullptr, 10));
-				AddTexture2D(xGUID, strFile);
+				AddTexture2D(xGUID, strFile, (TextureStreamPriority)std::stoi(strStreamPrio));
 			}
 			if (strLine == "Material") {
 				std::string strName;
@@ -60,9 +62,9 @@ namespace VeryCoolEngine {
 			it->second->PlatformInit();
 	}
 
-	void AssetHandler::AddTexture2D(GUID xGUID, const std::string& strPath) {
+	void AssetHandler::AddTexture2D(GUID xGUID, const std::string& strPath, TextureStreamPriority eStreamPrio) {
 		VCE_ASSERT(m_xTexture2dMap.find(xGUID.m_uGuid) == m_xTexture2dMap.end(), "Texture2D guid already exists");
-		m_xTexture2dMap.insert({xGUID.m_uGuid, Texture2D::Create(strPath)});
+		m_xTexture2dMap.insert({xGUID.m_uGuid, Texture2D::Create(strPath, eStreamPrio)});
 		VCE_ASSERT(m_xTexture2dNameMap.find(strPath) == m_xTexture2dNameMap.end(), "Mesh name already exists");
 		m_xTexture2dNameMap.insert({ strPath, m_xTexture2dMap.at(xGUID.m_uGuid) });
 	}

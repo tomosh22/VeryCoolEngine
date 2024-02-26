@@ -12,6 +12,21 @@ namespace VeryCoolEngine {
 		Clamp,
 		Repeat
 	};
+	enum class TextureStreamPriority : uint8_t {
+		NotStreamed = 0,
+		Low = 1,
+		Medium = 2,
+		High = 3
+	};
+	class Texture2D;
+	struct StreamingInfo {
+		TextureStreamPriority ePrio = TextureStreamPriority::NotStreamed;
+		bool bIsStreamingTex = false;
+		void* m_pLowResData = nullptr;
+		bool bStreamDone = false;
+		Texture2D* pxNewTex = nullptr;
+		
+	};
 	class Texture
 	{
 	public:
@@ -21,12 +36,17 @@ namespace VeryCoolEngine {
 		virtual void BindToShader(Shader* shader, const std::string& uniformName, uint32_t bindPoint) const = 0;
 		virtual void Unbind() const = 0;
 		virtual void PlatformInit() = 0;
+		virtual void ReceiveStream() = 0;
 		
 		bool m_bInitialised = false;
 		void* m_pData = nullptr;
 		uint32_t m_uDataLength = 0;
 		bool m_bIsDepthTexture = false;
 		uint32_t m_uNumMips = 0;
+
+		
+		StreamingInfo m_xStreamInfo;
+		class Material* m_pxParentMaterial;
 		
 	private:
 	};
@@ -39,7 +59,7 @@ namespace VeryCoolEngine {
 
 		static Texture2D* Create(uint32_t width, uint32_t height, TextureFormat textureFormat = TextureFormat::RGBA, TextureWrapMode wrapMode = TextureWrapMode::Clamp);
 
-		static Texture2D* Create(const std::string& path, bool srgb = false);
+		static Texture2D* Create(const std::string& path, TextureStreamPriority eStreamPrio, bool srgb = false);
 
 		static Texture2D* Create();
 

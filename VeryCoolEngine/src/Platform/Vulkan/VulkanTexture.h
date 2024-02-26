@@ -6,11 +6,13 @@ namespace VeryCoolEngine {
 	{
 	public:
 		VulkanTexture2D() = default;
-		VulkanTexture2D(const std::string& path, bool srgb = false);
+		VulkanTexture2D(const std::string& path, TextureStreamPriority eStreamPrio, bool srgb = false);
 		VulkanTexture2D(uint32_t width, uint32_t height, TextureFormat format, TextureWrapMode wrapMode);
 		~VulkanTexture2D() override;
 
-		void PlatformInit();
+		void PlatformInit() override;
+
+		void ReceiveStream() override;
 
 		static vk::Sampler CreateSampler();
 

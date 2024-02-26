@@ -6,6 +6,7 @@
 #include <stb_image.h>
 #include "VeryCoolEngine/AssetHandling/Assets.h"
 #include "VulkanBuffer.h"
+#include "VeryCoolEngine/Renderer/AsyncLoader.h"
 
 namespace VeryCoolEngine {
 
@@ -20,14 +21,18 @@ namespace VeryCoolEngine {
 			m_xFormat = vk::Format::eR8G8B8A8Unorm;
 	}
 
-	VulkanTexture2D::VulkanTexture2D(const std::string& path, bool srgb) {
+	VulkanTexture2D::VulkanTexture2D(const std::string& path, TextureStreamPriority eStreamPrio, bool srgb) {
 		m_bHasFilePath = true;
 		_filePath = path;
 		_srgb = srgb;
+		m_xStreamInfo.ePrio = eStreamPrio;
+
 	}
 
 	VulkanTexture2D::~VulkanTexture2D() {
+		//#TO_TODO: can do this in PlatformInit
 		stbi_image_free(m_pData);
+
 		vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
 		xDevice.destroySampler(m_xSampler);
 		xDevice.destroyImageView(m_xImageView);
@@ -44,7 +49,14 @@ namespace VeryCoolEngine {
 
 		int uWidth, uHeight, uNumChannels;
 
-		m_pData = (char*)stbi_load((TEXTUREDIR + _filePath).c_str(), &uWidth, &uHeight, &uNumChannels, STBI_rgb_alpha);
+		if(m_xStreamInfo.ePrio == TextureStreamPriority::NotStreamed)
+			m_pData = (char*)stbi_load((TEXTUREDIR + _filePath).c_str(), &uWidth, &uHeight, &uNumChannels, STBI_rgb_alpha);
+		else {
+			std::string strOriginalPath = _filePath;
+			_filePath = _filePath.replace(_filePath.find("."), 0, "_lowres");
+			m_pData = (char*)stbi_load((TEXTUREDIR + _filePath).c_str(), &uWidth, &uHeight, &uNumChannels, STBI_rgb_alpha);
+			AsyncLoader::g_xPendingStreams.insert({this, strOriginalPath });
+		}
 
 		m_uWidth = uWidth; m_uHeight = uHeight;
 
@@ -278,6 +290,26 @@ namespace VeryCoolEngine {
 		if (m_bHasFilePath)InitWithFileName();
 		else if (m_pData)InitWithData();
 		else InitWithoutData();
+	}
+
+	void VulkanTexture2D::ReceiveStream()
+	{
+		//#TO_TODO: can do this in PlatformInit
+		stbi_image_free(m_pData);
+
+		vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
+		xDevice.destroySampler(m_xSampler);
+		xDevice.destroyImageView(m_xImageView);
+		xDevice.destroyImage(m_xImage);
+		xDevice.freeMemory(m_xDeviceMemory);
+
+		VulkanTexture2D* pxNewTex = dynamic_cast<VulkanTexture2D*>(m_xStreamInfo.pxNewTex);
+
+		m_xSampler = pxNewTex->m_xSampler;
+		m_xImageView = pxNewTex->m_xImageView;
+		m_xImage = pxNewTex->m_xImage;
+		m_xDeviceMemory = pxNewTex->m_xDeviceMemory;
+
 	}
 
 	vk::Sampler VulkanTexture2D::CreateSampler() {

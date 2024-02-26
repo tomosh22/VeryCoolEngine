@@ -25,6 +25,8 @@ namespace VeryCoolEngine {
 
 		virtual void PlatformInit() = 0;
 
+		virtual void HandleStreamUpdate() = 0;
+
 
 		GUID m_xAlbedoGUID;
 		GUID m_xBumpMapGUID;
