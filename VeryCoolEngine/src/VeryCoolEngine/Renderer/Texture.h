@@ -20,11 +20,13 @@ namespace VeryCoolEngine {
 	};
 	class Texture2D;
 	struct StreamingInfo {
-		TextureStreamPriority ePrio = TextureStreamPriority::NotStreamed;
-		bool bIsStreamingTex = false;
-		void* m_pLowResData = nullptr;
-		bool bStreamDone = false;
-		Texture2D* pxNewTex = nullptr;
+		TextureStreamPriority m_ePrio = TextureStreamPriority::NotStreamed;
+		bool m_bIsStreamingTex = false;
+		void* m_pNewData = nullptr;
+		bool m_bStreamDone = false;
+		Texture2D* m_pxNewTex = nullptr;
+		int m_uNewWidth = -1;
+		int m_uNewHeight = -1;
 		
 	};
 	class Texture
@@ -35,7 +37,7 @@ namespace VeryCoolEngine {
 		virtual void Bind() const = 0;
 		virtual void BindToShader(Shader* shader, const std::string& uniformName, uint32_t bindPoint) const = 0;
 		virtual void Unbind() const = 0;
-		virtual void PlatformInit() = 0;
+		virtual void PlatformInit(bool bAsyncLoader = false) = 0;
 		virtual void ReceiveStream() = 0;
 		
 		bool m_bInitialised = false;
@@ -63,7 +65,7 @@ namespace VeryCoolEngine {
 
 		static Texture2D* Create();
 
-		void PlatformInit() override {};
+		void PlatformInit(bool bAsyncLoader = false) override {};
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;

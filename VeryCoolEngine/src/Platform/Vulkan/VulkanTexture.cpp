@@ -25,7 +25,7 @@ namespace VeryCoolEngine {
 		m_bHasFilePath = true;
 		_filePath = path;
 		_srgb = srgb;
-		m_xStreamInfo.ePrio = eStreamPrio;
+		m_xStreamInfo.m_ePrio = eStreamPrio;
 
 	}
 
@@ -40,7 +40,7 @@ namespace VeryCoolEngine {
 		xDevice.freeMemory(m_xDeviceMemory);
 	}
 
-	void VulkanTexture2D::InitWithFileName() {
+	void VulkanTexture2D::InitWithFileName(bool bAsyncLoader /*= false*/) {
 		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
 		vk::Device xDevice = pxRenderer->GetDevice();
 		vk::PhysicalDevice xPhysDevice = pxRenderer->GetPhysicalDevice();
@@ -49,19 +49,21 @@ namespace VeryCoolEngine {
 
 		int uWidth, uHeight, uNumChannels;
 
-		if(m_xStreamInfo.ePrio == TextureStreamPriority::NotStreamed)
+		if(m_xStreamInfo.m_ePrio == TextureStreamPriority::NotStreamed)
 			m_pData = (char*)stbi_load((TEXTUREDIR + _filePath).c_str(), &uWidth, &uHeight, &uNumChannels, STBI_rgb_alpha);
 		else {
 			std::string strOriginalPath = _filePath;
 			_filePath = _filePath.replace(_filePath.find("."), 0, "_lowres");
 			m_pData = (char*)stbi_load((TEXTUREDIR + _filePath).c_str(), &uWidth, &uHeight, &uNumChannels, STBI_rgb_alpha);
-			AsyncLoader::g_xPendingStreams.insert({this, strOriginalPath });
+			if(strOriginalPath.find("crystal") != std::string::npos)
+				AsyncLoader::g_xPendingStreams.insert({this, strOriginalPath });
 		}
 
 		m_uWidth = uWidth; m_uHeight = uHeight;
 
 		m_uNumMips = std::floor(std::log2(std::max(m_uWidth, m_uHeight))) + 1;
 
+		//#TO_TODO: stop hardcoding
 		vk::DeviceSize uSize = uWidth * uHeight * 4;
 
 		VulkanBuffer* pxStagingBuffer = new VulkanBuffer(uSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
@@ -102,16 +104,18 @@ namespace VeryCoolEngine {
 		xDevice.bindImageMemory(m_xImage, m_xDeviceMemory, 0);
 
 		for(uint32_t i = 0; i < m_uNumMips; i++)
-			pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, i);
-		VulkanBuffer::CopyBufferToImage(pxStagingBuffer, this);
-		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eTransferSrcOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, 0);
+			pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, i, 0,  bAsyncLoader);
+		VulkanBuffer::CopyBufferToImage(pxStagingBuffer, this, bAsyncLoader);
+		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eTransferSrcOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, 0, 0,  bAsyncLoader);
 		for (uint32_t i = 1; i < m_uNumMips; i++)
-			BlitImageToImage(this, this, i);
-		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, 0);
+			BlitImageToImage(this, this, i, bAsyncLoader);
+		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, 0, 0, bAsyncLoader);
 		for (uint32_t i = 1; i < m_uNumMips; i++)
-			pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, i);//todo will probably need to change this to vertex shader in the future
+			pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, i,  0, bAsyncLoader);//todo will probably need to change this to vertex shader in the future
 
-		delete pxStagingBuffer;
+		//#TO_TODO: this needs deleting elsewhere
+		if(!bAsyncLoader)
+			delete pxStagingBuffer;
 
 
 		vk::ImageSubresourceRange xSubresourceRange = vk::ImageSubresourceRange()
@@ -285,31 +289,94 @@ namespace VeryCoolEngine {
 #endif
 	}
 
-	void VulkanTexture2D::PlatformInit() {
+	void VulkanTexture2D::PlatformInit(bool bAsyncLoader /*= false*/) {
 		if (m_bInitialised)return;
-		if (m_bHasFilePath)InitWithFileName();
+		if (m_bHasFilePath)InitWithFileName(bAsyncLoader);
 		else if (m_pData)InitWithData();
 		else InitWithoutData();
 	}
 
 	void VulkanTexture2D::ReceiveStream()
 	{
+
 		//#TO_TODO: can do this in PlatformInit
 		stbi_image_free(m_pData);
 
-		vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
-		xDevice.destroySampler(m_xSampler);
+		
+
+		VulkanTexture2D* pxVkTex = dynamic_cast<VulkanTexture2D*>(m_xStreamInfo.m_pxNewTex);
+		m_uWidth = m_xStreamInfo.m_uNewWidth;
+		m_uHeight = m_xStreamInfo.m_uNewHeight;
+
+		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+		vk::Device xDevice = pxRenderer->GetDevice();
+		vk::PhysicalDevice xPhysDevice = pxRenderer->GetPhysicalDevice();
+
+		xDevice.waitIdle();
+
+		//xDevice.destroySampler(m_xSampler);
 		xDevice.destroyImageView(m_xImageView);
 		xDevice.destroyImage(m_xImage);
 		xDevice.freeMemory(m_xDeviceMemory);
 
-		VulkanTexture2D* pxNewTex = dynamic_cast<VulkanTexture2D*>(m_xStreamInfo.pxNewTex);
 
-		m_xSampler = pxNewTex->m_xSampler;
-		m_xImageView = pxNewTex->m_xImageView;
-		m_xImage = pxNewTex->m_xImage;
-		m_xDeviceMemory = pxNewTex->m_xDeviceMemory;
+		vk::ImageCreateInfo xImageInfo = vk::ImageCreateInfo()
+			.setImageType(vk::ImageType::e2D)
+			.setFormat(vk::Format::eR8G8B8A8Srgb)
+			.setTiling(vk::ImageTiling::eOptimal)
+			.setExtent({ m_uWidth,m_uHeight,1 })
+			.setMipLevels(m_uNumMips)
+			.setArrayLayers(1)
+			.setInitialLayout(vk::ImageLayout::eUndefined)
+			.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferSrc)
+			.setSharingMode(vk::SharingMode::eExclusive)
+			.setSamples(vk::SampleCountFlagBits::e1);
 
+		m_xImage = xDevice.createImage(xImageInfo);
+
+		vk::MemoryRequirements xMemRequirements = xDevice.getImageMemoryRequirements(m_xImage);
+
+		uint32_t memoryType = -1;
+		for (uint32_t i = 0; i < xPhysDevice.getMemoryProperties().memoryTypeCount; i++) {
+			if ((xMemRequirements.memoryTypeBits & (1 << i)) && (xPhysDevice.getMemoryProperties().memoryTypes[i].propertyFlags & vk::MemoryPropertyFlagBits::eDeviceLocal) == vk::MemoryPropertyFlagBits::eDeviceLocal) {
+				memoryType = i;
+				break;
+			}
+		}
+		VCE_ASSERT(memoryType != -1, "couldn't find physical memory type");
+
+		vk::MemoryAllocateInfo xAllocInfo = vk::MemoryAllocateInfo()
+			.setAllocationSize(xMemRequirements.size)
+			.setMemoryTypeIndex(memoryType);
+
+		m_xDeviceMemory = xDevice.allocateMemory(xAllocInfo);
+
+		xDevice.bindImageMemory(m_xImage, m_xDeviceMemory, 0);
+
+		for (uint32_t i = 0; i < m_uNumMips; i++)
+			pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, i, 0, true);
+		VulkanBuffer::CopyBufferToImage(dynamic_cast<VulkanBuffer*>(AsyncLoader::g_pxStagingBuffer), this, true);
+		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eTransferSrcOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, 0, 0, true);
+		//for (uint32_t i = 1; i < m_uNumMips; i++)
+			//BlitImageToImage(this, this, i, true);
+		//pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, 0, 0, true);
+		//for (uint32_t i = 1; i < m_uNumMips; i++)
+			//pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, i, 0, true);//todo will probably need to change this to vertex shader in the future
+
+		vk::ImageSubresourceRange xSubresourceRange = vk::ImageSubresourceRange()
+			.setAspectMask(vk::ImageAspectFlagBits::eColor)
+			.setBaseMipLevel(0)
+			.setLevelCount(m_uNumMips)
+			.setBaseArrayLayer(0)
+			.setLayerCount(1);
+
+		vk::ImageViewCreateInfo xViewCreate = vk::ImageViewCreateInfo()
+			.setImage(m_xImage)
+			.setViewType(vk::ImageViewType::e2D)
+			.setFormat(vk::Format::eR8G8B8A8Srgb)
+			.setSubresourceRange(xSubresourceRange);
+
+		m_xImageView = xDevice.createImageView(xViewCreate);
 	}
 
 	vk::Sampler VulkanTexture2D::CreateSampler() {
@@ -427,10 +494,8 @@ namespace VeryCoolEngine {
 	VulkanTexture2D* VulkanTexture2D::CreateDepthAttachment(uint32_t uWidth, uint32_t uHeight) {
 		return CreateVulkanTexture2D(uWidth, uHeight, 1, vk::Format::eD32Sfloat, vk::ImageAspectFlagBits::eDepth, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled, vk::ImageLayout::eDepthAttachmentOptimal, vk::PipelineStageFlagBits::eEarlyFragmentTests);
 	}
-	void VulkanTexture2D::BlitImageToImage(VulkanTexture2D* pxSrc, VulkanTexture2D* pxDst, uint32_t uDstMip)
+	void VulkanTexture2D::BlitImageToImage(VulkanTexture2D* pxSrc, VulkanTexture2D* pxDst, uint32_t uDstMip, bool bAsyncLoader /*= false*/)
 	{
-		vk::CommandBuffer xCmd = VulkanRenderer::GetInstance()->BeginSingleUseCmdBuffer();
-
 		std::array<vk::Offset3D, 2> axSrcOffsets;
 		axSrcOffsets.at(0).setX(0);
 		axSrcOffsets.at(0).setY(0);
@@ -465,8 +530,15 @@ namespace VeryCoolEngine {
 			.setSrcSubresource(xSrcSubresource)
 			.setDstSubresource(xDstSubresource);
 
-		xCmd.blitImage(pxSrc->m_xImage, vk::ImageLayout::eTransferSrcOptimal, pxDst->m_xImage, vk::ImageLayout::eTransferDstOptimal, xBlit, vk::Filter::eLinear);
+		if (bAsyncLoader) {
 
-		VulkanRenderer::GetInstance()->EndSingleUseCmdBuffer(xCmd);
+			vk::CommandBuffer xCmd = *reinterpret_cast<vk::CommandBuffer*>(AsyncLoader::g_pxAsyncLoaderCommandBuffer->Platform_GetCurrentCmdBuffer());
+			xCmd.blitImage(pxSrc->m_xImage, vk::ImageLayout::eTransferSrcOptimal, pxDst->m_xImage, vk::ImageLayout::eTransferDstOptimal, xBlit, vk::Filter::eLinear);
+		}
+		else {
+			vk::CommandBuffer xCmd = VulkanRenderer::GetInstance()->BeginSingleUseCmdBuffer();
+			xCmd.blitImage(pxSrc->m_xImage, vk::ImageLayout::eTransferSrcOptimal, pxDst->m_xImage, vk::ImageLayout::eTransferDstOptimal, xBlit, vk::Filter::eLinear);
+			VulkanRenderer::GetInstance()->EndSingleUseCmdBuffer(xCmd);
+		}
 	}
 }

@@ -11,11 +11,14 @@
 #include "VulkanRenderPass.h"
 
 namespace VeryCoolEngine {
-	VulkanCommandBuffer::VulkanCommandBuffer()
+	VulkanCommandBuffer::VulkanCommandBuffer(bool bAsyncLoader)
 	{
 		m_pxRenderer = VulkanRenderer::GetInstance();
 		vk::CommandBufferAllocateInfo allocInfo{};
-		allocInfo.commandPool = m_pxRenderer->m_commandPool;
+		if(bAsyncLoader)
+			allocInfo.commandPool = m_pxRenderer->m_xAsyncLoaderCommandPool;
+		else
+			allocInfo.commandPool = m_pxRenderer->m_commandPool;
 		allocInfo.level = vk::CommandBufferLevel::ePrimary;
 		allocInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
 		m_xCmdBuffers = m_pxRenderer->m_device.allocateCommandBuffers(allocInfo);
@@ -39,14 +42,13 @@ namespace VeryCoolEngine {
 
 		m_uCurrentDescSetIndex = 0;
 	}
-	void VulkanCommandBuffer::EndRecording(bool bSubmit /*= true*/)
+	void VulkanCommandBuffer::EndRecording(RenderOrder eOrder, bool bEndPass /*= true*/)
 	{
-		m_xCurrentCmdBuffer.endRenderPass();
+		if(bEndPass)
+			m_xCurrentCmdBuffer.endRenderPass();
 		RendererAPI* pxRendererAPI = VulkanRenderer::GetInstance()->m_pxRendererAPI;
 		m_xCurrentCmdBuffer.end();
-		if (bSubmit) {
-			pxRendererAPI->s_xCmdBuffersToSubmit.push_back(&m_xCurrentCmdBuffer);
-		}
+		pxRendererAPI->s_axCmdBuffersToSubmit[eOrder].push_back(&m_xCurrentCmdBuffer);
 
 	}
 

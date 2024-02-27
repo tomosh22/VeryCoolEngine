@@ -703,6 +703,7 @@ namespace VeryCoolEngine {
 		poolInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
 		poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
 		m_commandPool = m_device.createCommandPool(poolInfo);
+		m_xAsyncLoaderCommandPool = m_device.createCommandPool(poolInfo);
 	}
 
 	void VulkanRenderer::CreateDepthTexture() {
@@ -765,9 +766,9 @@ namespace VeryCoolEngine {
 		m_device.freeCommandBuffers(m_commandPool, 1, &xBuffer);
 	}
 
-	void VulkanRenderer::ImageTransitionBarrier(vk::Image xImage, vk::ImageLayout eOldLayout, vk::ImageLayout eNewLayout, vk::ImageAspectFlags eAspect, vk::PipelineStageFlags eSrcStage, vk::PipelineStageFlags eDstStage, int uMipLevel, int uLayer) {
+	void VulkanRenderer::ImageTransitionBarrier(vk::Image xImage, vk::ImageLayout eOldLayout, vk::ImageLayout eNewLayout, vk::ImageAspectFlags eAspect, vk::PipelineStageFlags eSrcStage, vk::PipelineStageFlags eDstStage, int uMipLevel /*=0*/, int uLayer /*=0*/, bool bAsyncLoader /*= false*/) {
 		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
-		vk::CommandBuffer xCmd = pxRenderer->BeginSingleUseCmdBuffer();
+		
 		vk::ImageSubresourceRange xSubRange = vk::ImageSubresourceRange(eAspect, uMipLevel, 1, uLayer, 1);
 
 		vk::ImageMemoryBarrier xMemoryBarrier = vk::ImageMemoryBarrier()
@@ -800,9 +801,17 @@ namespace VeryCoolEngine {
 			break;
 		}
 
-		xCmd.pipelineBarrier(eSrcStage, eDstStage, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &xMemoryBarrier);
+		if (bAsyncLoader) {
+			
+			vk::CommandBuffer xCmd = *reinterpret_cast<vk::CommandBuffer*>(AsyncLoader::g_pxAsyncLoaderCommandBuffer->Platform_GetCurrentCmdBuffer());
+			xCmd.pipelineBarrier(eSrcStage, eDstStage, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &xMemoryBarrier);
+		}
+		else{
+			vk::CommandBuffer xCmd = pxRenderer->BeginSingleUseCmdBuffer();
+			xCmd.pipelineBarrier(eSrcStage, eDstStage, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &xMemoryBarrier);
 
-		pxRenderer->EndSingleUseCmdBuffer(xCmd);
+			pxRenderer->EndSingleUseCmdBuffer(xCmd);
+		}
 	}
 
 	void VulkanRenderer::CreateSyncObjects() {

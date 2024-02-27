@@ -174,6 +174,9 @@ namespace VeryCoolEngine {
 		virtual ~Buffer() = default;
 
 		static Buffer* Create(uint64_t uSize);
+		static Buffer* CreateStaging(uint64_t uSize);
+
+		virtual void UploadData(void* pData, uint32_t uSize) = 0;
 
 		uint64_t GetSize() const {return m_uSize;}
 

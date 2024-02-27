@@ -3,12 +3,12 @@
 namespace VeryCoolEngine {
 	class VertexBuffer;
 	class IndexBuffer;
-	class VulkanCommandBuffer : RendererAPI::CommandBuffer
+	class VulkanCommandBuffer : public RendererAPI::CommandBuffer
 	{
 	public:
-		VulkanCommandBuffer();
+		VulkanCommandBuffer(bool bAsyncLoader);
 		void BeginRecording() override;
-		void EndRecording(bool bSubmit = true) override;
+		void EndRecording(RenderOrder eOrder, bool bEndPass = true) override;
 		void SetVertexBuffer(VertexBuffer* xVertexBuffer, uint32_t uBindPoint = 0) override;
 		void SetIndexBuffer(IndexBuffer* xIndexBuffer) override;
 		void Draw(uint32_t uNumIndices, uint32_t uNumInstances = 1, uint32_t uVertexOffset = 0, uint32_t uIndexOffset = 0, uint32_t uInstanceOffset = 0) override;

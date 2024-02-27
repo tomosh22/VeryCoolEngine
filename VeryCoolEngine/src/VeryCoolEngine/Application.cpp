@@ -11,6 +11,9 @@
 #include "Components/ModelComponent.h"
 #include "Components/ColliderComponent.h"
 #include "Components/ScriptComponent.h"
+#ifdef VCE_VULKAN
+#include "Platform/Vulkan/VulkanCommandBuffer.h"
+#endif
 
 namespace VeryCoolEngine {
 
@@ -76,6 +79,8 @@ namespace VeryCoolEngine {
 #endif
 			_pRenderer->RenderThreadFunction();
 		});
+
+		
 		
 		m_pxBlankTexture2D = Texture2D::Create(1, 1, TextureFormat::RGBA);
 
@@ -314,9 +319,6 @@ namespace VeryCoolEngine {
 		sceneMutex.lock();
 		m_pxRendererScene->Reset();
 
-		m_xAsyncLoader.ProcessPendingStreams_AsyncLoaderThread();
-		m_xAsyncLoader.ProcessPendingStreams_MainThread();
-
 		Physics::UpdatePhysics();
 
 		m_pxRendererScene->camera = m_eCurrentState == VCE_GAMESTATE_EDITOR ? &m_pxCurrentScene->m_xEditorCamera : &m_pxCurrentScene->m_xGameCamera;
@@ -465,6 +467,11 @@ namespace VeryCoolEngine {
 		_window->EnableCaptureCursor();
 #endif
 
+		m_xAsyncLoaderThread = std::thread([&]() {
+			m_xAsyncLoader.ThreadFunc();
+		});
+		
+
 		while (_running) {
 
 			UpdateDeltaTime();
@@ -514,5 +521,6 @@ namespace VeryCoolEngine {
 			
 		}
 		_renderThread.join();
+		m_xAsyncLoaderThread.join();
 	}
 }

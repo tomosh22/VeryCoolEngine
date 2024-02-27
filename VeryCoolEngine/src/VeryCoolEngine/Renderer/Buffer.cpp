@@ -33,5 +33,15 @@ namespace VeryCoolEngine {
 
 #endif
 	}
+
+	Buffer* Buffer::CreateStaging(uint64_t uSize) {
+#ifdef VCE_OPENGL
+		return new OpenGLIndexBuffer(indices, count);
+#endif
+#ifdef VCE_VULKAN
+		return new VulkanBuffer(uSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+
+#endif
+	}
 	
 }

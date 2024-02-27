@@ -192,6 +192,7 @@ namespace VeryCoolEngine {
 
 	private:
 		std::thread _renderThread;
+		std::thread m_xAsyncLoaderThread;
 		
 		
 		

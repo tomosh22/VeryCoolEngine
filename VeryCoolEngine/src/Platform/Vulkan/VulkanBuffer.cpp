@@ -35,7 +35,7 @@ namespace VeryCoolEngine {
 		xDevice.bindBufferMemory(m_xBuffer, m_xDeviceMem, 0);
 	}
 
-	void VulkanBuffer::UploadData(void* pData, vk::DeviceSize uSize)
+	void VulkanBuffer::UploadData(void* pData, uint32_t uSize)
 	{
 		vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
 		void* pMappedPtr;
@@ -57,9 +57,9 @@ namespace VeryCoolEngine {
 		VulkanRenderer::GetInstance()->EndSingleUseCmdBuffer(xCmd);
 
 	}
-	void VulkanBuffer::CopyBufferToImage(VulkanBuffer* pxSrc, VulkanTexture2D* pxDst)
+	void VulkanBuffer::CopyBufferToImage(VulkanBuffer* pxSrc, VulkanTexture2D* pxDst, bool bAsyncLoader /*= false*/)
 	{
-		vk::CommandBuffer xCmd = VulkanRenderer::GetInstance()->BeginSingleUseCmdBuffer();
+		
 
 		vk::ImageSubresourceLayers xSubresource = vk::ImageSubresourceLayers()
 			.setAspectMask(vk::ImageAspectFlagBits::eColor)
@@ -76,9 +76,18 @@ namespace VeryCoolEngine {
 			.setImageOffset({ 0,0,0 })
 			.setImageExtent({ pxDst->GetWidth(), pxDst->GetHeight(), 1});
 
-		xCmd.copyBufferToImage(pxSrc->m_xBuffer, pxDst->m_xImage, vk::ImageLayout::eTransferDstOptimal, 1, &region);
+		if (bAsyncLoader) {
 
-		VulkanRenderer::GetInstance()->EndSingleUseCmdBuffer(xCmd);
+			vk::CommandBuffer xCmd = *reinterpret_cast<vk::CommandBuffer*>(AsyncLoader::g_pxAsyncLoaderCommandBuffer->Platform_GetCurrentCmdBuffer());
+			xCmd.copyBufferToImage(pxSrc->m_xBuffer, pxDst->m_xImage, vk::ImageLayout::eTransferDstOptimal, 1, &region);
+		}
+		else {
+			vk::CommandBuffer xCmd = VulkanRenderer::GetInstance()->BeginSingleUseCmdBuffer();
+			xCmd.copyBufferToImage(pxSrc->m_xBuffer, pxDst->m_xImage, vk::ImageLayout::eTransferDstOptimal, 1, &region);
+			VulkanRenderer::GetInstance()->EndSingleUseCmdBuffer(xCmd);
+		}
+
+		
 	}
 	
 }

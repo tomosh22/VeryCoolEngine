@@ -9,6 +9,17 @@ namespace VeryCoolEngine {
 	class ManagedUniformBuffer;
 	class Material;
 	class Mesh;
+
+	enum RenderOrder : uint32_t {
+		RENDER_ORDER_MEMORY_UPDATE,
+		RENDER_ORDER_SKYBOX,
+		RENDER_ORDER_OPAQUE_MESHES,
+		RENDER_ORDER_SKINNED_MESHES,
+		RENDER_ORDER_FOLIAGE,
+		RENDER_ORDER_COPY_TO_FRAMEBUFFER,
+		RENDER_ORDER_MAX
+	};
+
 	class RendererAPI
 	{
 	public:
@@ -100,9 +111,9 @@ namespace VeryCoolEngine {
 
 		class CommandBuffer {
 		public:
-			CommandBuffer() = default;
+			CommandBuffer(bool bAsybcLoader = false) {}
 			virtual void BeginRecording() = 0;
-			virtual void EndRecording(bool bSubmit = true) = 0;
+			virtual void EndRecording(RenderOrder eOrder, bool bEndPass = true) = 0;
 			virtual void SetVertexBuffer(VertexBuffer* xVertexBuffer, uint32_t uBindPoint = 0) = 0;
 			virtual void SetIndexBuffer(IndexBuffer* xIndexBuffer) = 0;
 			virtual void Draw(uint32_t uNumIndices, uint32_t uNumInstances = 1, uint32_t uVertexOffset = 0, uint32_t uIndexOffset = 0, uint32_t uInstanceOffset = 0) = 0;
@@ -124,7 +135,7 @@ namespace VeryCoolEngine {
 			ManagedUniformBuffer* m_pxUniformBuffer;
 		};
 
-		std::vector<void*> s_xCmdBuffersToSubmit;
+		std::vector<void*> s_axCmdBuffersToSubmit[RENDER_ORDER_MAX];
 		void Platform_SubmitCmdBuffers();
 
 		//static TargetSetup s_xGBufferTargetSetup;

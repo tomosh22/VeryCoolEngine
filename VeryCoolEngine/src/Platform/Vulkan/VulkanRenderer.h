@@ -101,7 +101,7 @@ namespace VeryCoolEngine {
 			vk::CommandBuffer BeginSingleUseCmdBuffer(vk::CommandBufferLevel eLevel = vk::CommandBufferLevel::ePrimary);
 			void EndSingleUseCmdBuffer(vk::CommandBuffer xBuffer);
 
-			void ImageTransitionBarrier(vk::Image xImage, vk::ImageLayout eOldLayout, vk::ImageLayout eNewLayout, vk::ImageAspectFlags eAspect, vk::PipelineStageFlags eSrcStage, vk::PipelineStageFlags eDstStage, int uMipLevel = 0, int uLayer = 0);
+			void ImageTransitionBarrier(vk::Image xImage, vk::ImageLayout eOldLayout, vk::ImageLayout eNewLayout, vk::ImageAspectFlags eAspect, vk::PipelineStageFlags eSrcStage, vk::PipelineStageFlags eDstStage, int uMipLevel = 0, int uLayer = 0, bool bAsyncLoader = false);
 
 			static std::vector<char> ReadFile(const std::string& filename) {
 				std::ifstream file(filename, std::ios::ate | std::ios::binary);
@@ -337,6 +337,7 @@ namespace VeryCoolEngine {
 			std::vector<vk::Framebuffer> m_axRenderToTextureFramebuffersNoClear;
 
 			vk::CommandPool m_commandPool;
+			vk::CommandPool m_xAsyncLoaderCommandPool;
 			std::vector<vk::CommandBuffer> m_commandBuffers;
 
 			VulkanCommandBuffer* m_pxCopyToFramebufferCommandBuffer;

@@ -16,10 +16,10 @@ namespace VeryCoolEngine {
 
 		VulkanBuffer(vk::DeviceSize uSize, vk::BufferUsageFlags eUsageFlags, vk::MemoryPropertyFlags eMemProperties);
 
-		void UploadData(void* pData, vk::DeviceSize uSize);
+		void UploadData(void* pData, uint32_t uSize) override;
 
 		static void CopyBufferToBuffer(VulkanBuffer* pxSrc, VulkanBuffer* pxDst, size_t uSize);
-		static void CopyBufferToImage(VulkanBuffer* pxSrc, VulkanTexture2D* pxDst);
+		static void CopyBufferToImage(VulkanBuffer* pxSrc, VulkanTexture2D* pxDst, bool bAsyncLoader = false);
 
 		vk::Buffer m_xBuffer;
 		vk::DeviceMemory m_xDeviceMem;

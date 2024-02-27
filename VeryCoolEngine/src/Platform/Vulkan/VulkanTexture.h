@@ -10,7 +10,7 @@ namespace VeryCoolEngine {
 		VulkanTexture2D(uint32_t width, uint32_t height, TextureFormat format, TextureWrapMode wrapMode);
 		~VulkanTexture2D() override;
 
-		void PlatformInit() override;
+		void PlatformInit(bool bAsyncLoader = false) override;
 
 		void ReceiveStream() override;
 
@@ -23,7 +23,7 @@ namespace VeryCoolEngine {
 		uint32_t GetWidth() const override;
 		uint32_t GetHeight() const override;
 
-		void InitWithFileName();
+		void InitWithFileName(bool bAsyncLoader = false);
 		void InitWithData();
 		void InitWithoutData();
 
@@ -31,7 +31,7 @@ namespace VeryCoolEngine {
 		static VulkanTexture2D* CreateColourAttachment(uint32_t uWidth, uint32_t uHeight, uint32_t uMipCount, vk::Format eFormat);
 		static VulkanTexture2D* CreateDepthAttachment(uint32_t uWidth, uint32_t uHeight);
 
-		static void BlitImageToImage(VulkanTexture2D* pxSrc, VulkanTexture2D* pxDst, uint32_t uDstMip);
+		static void BlitImageToImage(VulkanTexture2D* pxSrc, VulkanTexture2D* pxDst, uint32_t uDstMip, bool bAsyncLoader = false);
 
 		vk::Image m_xImage;
 		vk::ImageView m_xImageView;

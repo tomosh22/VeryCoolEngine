@@ -23,6 +23,8 @@
 #include "reactphysics3d/reactphysics3d.h"
 #include "VeryCoolEngine/Components/ModelComponent.h"
 
+#include "VeryCoolEngine/Renderer/AsyncLoader.h"
+
 
 using namespace VeryCoolEngine;
 
@@ -34,11 +36,13 @@ VulkanRenderer::VulkanRenderer() {
 
 	m_pxRendererAPI = new RendererAPI;
 
-	m_pxCopyToFramebufferCommandBuffer = new VulkanCommandBuffer;
-	m_pxSkyboxCommandBuffer = new VulkanCommandBuffer;
-	m_pxOpaqueMeshesCommandBuffer = new VulkanCommandBuffer;
-	m_pxSkinnedMeshesCommandBuffer = new VulkanCommandBuffer;
-	m_pxFoliageCommandBuffer = new VulkanCommandBuffer;
+	m_pxCopyToFramebufferCommandBuffer = new VulkanCommandBuffer(false);
+	m_pxSkyboxCommandBuffer = new VulkanCommandBuffer(false);
+	m_pxOpaqueMeshesCommandBuffer = new VulkanCommandBuffer(false);
+	m_pxSkinnedMeshesCommandBuffer = new VulkanCommandBuffer(false);
+	m_pxFoliageCommandBuffer = new VulkanCommandBuffer(false);
+
+	AsyncLoader::g_pxAsyncLoaderCommandBuffer = new VulkanCommandBuffer(true);
 
 
 	//TODO: delete me
@@ -141,6 +145,7 @@ void VulkanRenderer::MainLoop() {
 		if (scene->ready)break;
 	}
 	app->sceneMutex.lock();
+
 	ProfilingBeginFrame();
 
 	BeginScene(scene);
@@ -243,7 +248,7 @@ void VulkanRenderer::CopyToFramebuffer() {
 #endif
 
 	
-	m_pxCopyToFramebufferCommandBuffer->EndRecording();
+	m_pxCopyToFramebufferCommandBuffer->EndRecording(RENDER_ORDER_COPY_TO_FRAMEBUFFER);
 	
 }
 
@@ -266,7 +271,7 @@ void VulkanRenderer::DrawSkybox() {
 	m_pxSkyboxCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances, 0, 0, 0);
 
 
-	m_pxSkyboxCommandBuffer->EndRecording();
+	m_pxSkyboxCommandBuffer->EndRecording(RENDER_ORDER_SKYBOX);
 }
 
 void VulkanRenderer::DrawOpaqueMeshes() {
@@ -326,7 +331,7 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 	}
 
 
-	m_pxOpaqueMeshesCommandBuffer->EndRecording();
+	m_pxOpaqueMeshesCommandBuffer->EndRecording(RENDER_ORDER_OPAQUE_MESHES);
 }
 
 void VulkanRenderer::DrawSkinnedMeshes() {
@@ -388,7 +393,7 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 		}
 	}
 
-	m_pxSkinnedMeshesCommandBuffer->EndRecording();
+	m_pxSkinnedMeshesCommandBuffer->EndRecording(RENDER_ORDER_SKINNED_MESHES);
 }
 
 void VulkanRenderer::DrawFoliage() {
@@ -420,7 +425,7 @@ void VulkanRenderer::DrawFoliage() {
 	
 	
 
-	m_pxFoliageCommandBuffer->EndRecording();
+	m_pxFoliageCommandBuffer->EndRecording(RENDER_ORDER_FOLIAGE);
 }
 
 void VulkanRenderer::DrawFrame(RendererScene* scene) {
@@ -435,6 +440,12 @@ void VulkanRenderer::DrawFrame(RendererScene* scene) {
 		RecreateSwapChain();
 		return;
 	}
+
+	static uint32_t uFrameCount = 0;
+	Application* pxApp = Application::GetInstance();
+	if(uFrameCount > 1000)
+		pxApp->m_xAsyncLoader.ProcessPendingStreams_MainThread();
+	uFrameCount++;
 
 
 	DrawSkybox();
@@ -500,16 +511,20 @@ void VeryCoolEngine::VulkanRenderer::RenderThreadFunction()
 void RendererAPI::Platform_SubmitCmdBuffers() {
 	VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
 
-	vk::PipelineStageFlags eWaitStages = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+	vk::PipelineStageFlags eWaitStages = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eTransfer;
+
+	AsyncLoader::g_xAsyncLoaderMutex.lock();
 
 	std::vector<vk::CommandBuffer> xPlatformCmdBufs;
-	for (void* pCmdBuf : s_xCmdBuffersToSubmit) {
-		vk::CommandBuffer& xBuf = *reinterpret_cast<vk::CommandBuffer*>(pCmdBuf);
-		xPlatformCmdBufs.push_back(xBuf);
+	for (uint32_t i = 0; i < RENDER_ORDER_MAX; i++){
+		for (void* pCmdBuf : s_axCmdBuffersToSubmit[i]) {
+			vk::CommandBuffer& xBuf = *reinterpret_cast<vk::CommandBuffer*>(pCmdBuf);
+			xPlatformCmdBufs.push_back(xBuf);
+		}
 	}
 
 	vk::SubmitInfo xSubmitInfo = vk::SubmitInfo()
-		.setCommandBufferCount(s_xCmdBuffersToSubmit.size())
+		.setCommandBufferCount(xPlatformCmdBufs.size())
 		.setPCommandBuffers(xPlatformCmdBufs.data())
 		.setPWaitSemaphores(&pxRenderer->GetCurrentImageAvailableSem())
 		.setPSignalSemaphores(&pxRenderer->GetCurrentRenderCompleteSem())
@@ -517,10 +532,16 @@ void RendererAPI::Platform_SubmitCmdBuffers() {
 		.setSignalSemaphoreCount(1)
 		.setWaitDstStageMask(eWaitStages);
 
+
 	pxRenderer->GetGraphicsQueue().submit(xSubmitInfo, pxRenderer->GetCurrentInFlightFence());
 
+
 	//TODO: put this in end frame when I eventually write it
-	s_xCmdBuffersToSubmit.clear();
+	for (uint32_t i = 0; i < RENDER_ORDER_MAX; i++) {
+		s_axCmdBuffersToSubmit[i].clear();
+	}
+
+	AsyncLoader::g_xAsyncLoaderMutex.unlock();
 }
 
 void VeryCoolEngine::VulkanRenderer::ProfilingBeginFrame() {
