@@ -55,8 +55,7 @@ namespace VeryCoolEngine {
 			std::string strOriginalPath = _filePath;
 			_filePath = _filePath.replace(_filePath.find("."), 0, "_lowres");
 			m_pData = (char*)stbi_load((TEXTUREDIR + _filePath).c_str(), &uWidth, &uHeight, &uNumChannels, STBI_rgb_alpha);
-			if(strOriginalPath.find("crystal") != std::string::npos)
-				AsyncLoader::g_xPendingStreams.insert({this, strOriginalPath });
+			AsyncLoader::g_xPendingStreams.insert({this, strOriginalPath });
 		}
 
 		m_uWidth = uWidth; m_uHeight = uHeight;

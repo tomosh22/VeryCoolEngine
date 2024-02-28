@@ -441,8 +441,8 @@ void VulkanRenderer::DrawFrame(RendererScene* scene) {
 		return;
 	}
 
-	static uint32_t uFrameCount = 0;
 	Application* pxApp = Application::GetInstance();
+	static uint32_t uFrameCount = 0;
 	if(uFrameCount > 1000)
 		pxApp->m_xAsyncLoader.ProcessPendingStreams_MainThread();
 	uFrameCount++;
@@ -513,8 +513,6 @@ void RendererAPI::Platform_SubmitCmdBuffers() {
 
 	vk::PipelineStageFlags eWaitStages = vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eTransfer;
 
-	AsyncLoader::g_xAsyncLoaderMutex.lock();
-
 	std::vector<vk::CommandBuffer> xPlatformCmdBufs;
 	for (uint32_t i = 0; i < RENDER_ORDER_MAX; i++){
 		for (void* pCmdBuf : s_axCmdBuffersToSubmit[i]) {
@@ -540,8 +538,6 @@ void RendererAPI::Platform_SubmitCmdBuffers() {
 	for (uint32_t i = 0; i < RENDER_ORDER_MAX; i++) {
 		s_axCmdBuffersToSubmit[i].clear();
 	}
-
-	AsyncLoader::g_xAsyncLoaderMutex.unlock();
 }
 
 void VeryCoolEngine::VulkanRenderer::ProfilingBeginFrame() {

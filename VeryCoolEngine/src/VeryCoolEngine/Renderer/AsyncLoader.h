@@ -14,6 +14,7 @@ namespace VeryCoolEngine {
 		static std::mutex g_xAsyncLoaderMutex;
 		static RendererAPI::CommandBuffer* g_pxAsyncLoaderCommandBuffer;
 		static class Buffer* g_pxStagingBuffer;
+		static Texture2D* g_pxCurrentTexture;
 
 		void ThreadFunc();
 

@@ -14,6 +14,7 @@ namespace VeryCoolEngine {
 	std::mutex AsyncLoader::g_xAsyncLoaderMutex;
 	RendererAPI::CommandBuffer* AsyncLoader::g_pxAsyncLoaderCommandBuffer = nullptr;
 	Buffer* AsyncLoader::g_pxStagingBuffer = nullptr;
+	Texture2D* AsyncLoader::g_pxCurrentTexture = nullptr;
 
 	void AsyncLoader::ThreadFunc() {
 #ifdef VCE_VULKAN
@@ -28,8 +29,7 @@ namespace VeryCoolEngine {
 
 	void AsyncLoader::ProcessPendingStreams_AsyncLoaderThread(){
 		
-		if (g_xPendingStreams.size()) {
-			g_xAsyncLoaderMutex.lock();
+		if (g_xPendingStreams.size() && g_pxCurrentTexture == nullptr) {
 			Texture2D* pxTex = g_xPendingStreams.begin()->first;
 			std::string pxFile = g_xPendingStreams.begin()->second;
 
@@ -37,14 +37,22 @@ namespace VeryCoolEngine {
 			int iNumChannels;
 			pxTex->m_xStreamInfo.m_pNewData = (char*)stbi_load((TEXTUREDIR + pxNewTex->_filePath).c_str(), &pxTex->m_xStreamInfo.m_uNewWidth, &pxTex->m_xStreamInfo.m_uNewHeight, &iNumChannels, STBI_rgb_alpha);
 
+			uint8_t* pTemp = (uint8_t*)calloc(1,1024u * 1024u * 32);
+			g_xAsyncLoaderMutex.lock();
+			g_pxStagingBuffer->UploadData(pTemp, 1024u * 1024u * 32);
+			free(pTemp);
 			//#TO_TODO: stop hardcoding size
 			g_pxStagingBuffer->UploadData(pxTex->m_xStreamInfo.m_pNewData, pxTex->m_xStreamInfo.m_uNewWidth * pxTex->m_xStreamInfo.m_uNewHeight * 4);
+
+			g_pxCurrentTexture = pxTex;
+			g_xAsyncLoaderMutex.unlock();
 
 			pxTex->m_xStreamInfo.m_pxNewTex = pxNewTex;
 			g_xPendingStreams.erase(g_xPendingStreams.begin());
 			
 			g_xReceivingTextures.push_back(pxTex);
-			g_xAsyncLoaderMutex.unlock();
+
+			
 		}
 		
 
@@ -52,17 +60,19 @@ namespace VeryCoolEngine {
 	}
 
 	void AsyncLoader::ProcessPendingStreams_MainThread() {
-		g_xAsyncLoaderMutex.lock();
 		AsyncLoader::g_pxAsyncLoaderCommandBuffer->BeginRecording();
 		if (g_xReceivingTextures.size()) {
 			for (auto it = g_xReceivingTextures.begin(); it != g_xReceivingTextures.end(); it++) {
+				g_xAsyncLoaderMutex.lock();
 				(*it)->ReceiveStream();
 				if((*it)->m_pxParentMaterial)
 					(*it)->m_pxParentMaterial->HandleStreamUpdate();
+
+				g_pxCurrentTexture = nullptr;
+				g_xAsyncLoaderMutex.unlock();
 			}
 			g_xReceivingTextures.clear();
 		}
 		AsyncLoader::g_pxAsyncLoaderCommandBuffer->EndRecording(RENDER_ORDER_MEMORY_UPDATE, false);
-		g_xAsyncLoaderMutex.unlock();
 	}
 }
