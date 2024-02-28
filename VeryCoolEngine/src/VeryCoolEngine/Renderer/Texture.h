@@ -48,7 +48,7 @@ namespace VeryCoolEngine {
 
 		
 		StreamingInfo m_xStreamInfo;
-		class Material* m_pxParentMaterial;
+		class Material* m_pxParentMaterial = nullptr;
 		
 	private:
 	};
