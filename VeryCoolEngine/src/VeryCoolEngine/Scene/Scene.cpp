@@ -53,10 +53,12 @@ namespace VeryCoolEngine {
 		while (std::getline(xIn, strLine)) {
 			if (strLine == "Entity") {
 				std::string strGuid;
+				std::string strParentGuid;
 				std::string strName;
 				std::getline(xIn, strGuid);
+				std::getline(xIn, strParentGuid);
 				std::getline(xIn, strName);
-				Entity xEntity(this, GUID(strtoull(strGuid.c_str(), nullptr, 10)), strName);
+				Entity xEntity(this, GUID(strtoull(strGuid.c_str(), nullptr, 10)), GUID(strtoull(strParentGuid.c_str(), nullptr, 10)), strName);
 				while (std::getline(xIn, strLine)) {
 					if (strLine == "EndEntity")break;
 					switch (g_xComponentNames[strLine]) {

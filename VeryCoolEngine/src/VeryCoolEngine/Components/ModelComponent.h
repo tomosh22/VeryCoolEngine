@@ -20,6 +20,8 @@ namespace VeryCoolEngine {
 		VCEModel* GetModel() const { return m_pxModel; }
 
 		TransformComponent& GetTransformRef() { return m_xTransRef; }
+
+		Entity& GetParentEntity() { return m_xParentEntity; }
 	private:
 		VCEModel* m_pxModel;
 		std::string m_strFilename;

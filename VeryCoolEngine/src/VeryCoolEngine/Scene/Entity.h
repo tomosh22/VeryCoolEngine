@@ -11,7 +11,7 @@ namespace VeryCoolEngine {
 	public:
 		Entity() = delete;
 		Entity(Scene* pxScene, const std::string& strName);
-		Entity(Scene* pxScene, GUID xGuid, const std::string& strName);
+		Entity(Scene* pxScene, GUID xGUID, GUID xParentGUID, const std::string& strName);
 
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args) {
@@ -54,10 +54,13 @@ namespace VeryCoolEngine {
 		class Scene* m_pxParentScene;
 
 		void Serialize(std::ofstream& xOut);
+
+		GUID m_xParentEntityGUID;
 	private:
 		EntityID m_xEntity;
 		
 		GUID m_xGuid;
+		
 	};
 
 }

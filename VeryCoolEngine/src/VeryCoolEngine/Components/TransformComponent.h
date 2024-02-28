@@ -28,9 +28,6 @@ namespace VeryCoolEngine {
 		friend class ColliderComponent;
 		reactphysics3d::Transform* GetTransform_Unsafe();
 		reactphysics3d::Transform* m_pxTransform;
-		
-		
-
 	};
 
 }
