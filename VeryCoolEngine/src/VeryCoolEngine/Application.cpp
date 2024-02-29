@@ -341,13 +341,16 @@ namespace VeryCoolEngine {
 			VCEModel* pxModel = xModelComponent->GetModel();
 			xModelComponent->GetTransformRef().GetTransform()->getOpenGLMatrix(&pxModel->m_xModelMat[0][0]);
 			pxModel->m_xModelMat *= glm::scale(glm::identity<glm::highp_mat4>(),xModelComponent->GetTransformRef().m_xScale);
-			Entity& xEntity = xModelComponent->GetParentEntity();
-			while (xEntity.m_xParentEntityGUID.m_uGuid != 0) {
+			GUID xParentGUID = xModelComponent->GetParentEntity().m_xParentEntityGUID;
+			while (xParentGUID.m_uGuid != 0) {
 				glm::mat4 xToMultiply;
+				Entity xEntity = xModelComponent->GetParentEntity().m_pxParentScene->GetEntityByGuid(xParentGUID);
 				xEntity.GetComponent<TransformComponent>().GetTransform()->getOpenGLMatrix(&xToMultiply[0][0]);
 				pxModel->m_xModelMat *= xToMultiply;
-				pxModel->m_xModelMat *= glm::scale(glm::identity<glm::highp_mat4>(), xEntity.GetComponent<TransformComponent>().m_xScale);
-				xEntity = xEntity.m_pxParentScene->GetEntityByGuid(xEntity.m_xParentEntityGUID);
+				//#TO_TODO: why is the minus necessary?
+				pxModel->m_xModelMat *= -glm::scale(glm::identity<glm::highp_mat4>(), xEntity.GetComponent<TransformComponent>().m_xScale);
+				xParentGUID = xEntity.m_xParentEntityGUID;
+
 			}
 			if (pxModel->m_pxAnimation != nullptr) {
 				//has an animation

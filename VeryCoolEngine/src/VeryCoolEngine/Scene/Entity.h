@@ -56,6 +56,7 @@ namespace VeryCoolEngine {
 		void Serialize(std::ofstream& xOut);
 
 		GUID m_xParentEntityGUID;
+		std::string m_strName;
 	private:
 		EntityID m_xEntity;
 		

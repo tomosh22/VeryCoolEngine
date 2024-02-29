@@ -15,7 +15,7 @@ namespace VeryCoolEngine {
 		pxScene->m_xEntityMap.insert({ m_xGuid.m_uGuid, *this });
 	}
 
-	Entity::Entity(Scene* pxScene, GUID xGUID, GUID xParentGUID, const std::string& strName) : m_pxParentScene(pxScene), m_xGuid(xGUID), m_xParentEntityGUID(xParentGUID) {
+	Entity::Entity(Scene* pxScene, GUID xGUID, GUID xParentGUID, const std::string& strName) : m_pxParentScene(pxScene), m_xGuid(xGUID), m_xParentEntityGUID(xParentGUID), m_strName(strName) {
 		m_xEntity = m_pxParentScene->m_xRegistry.create();
 		AddComponent<TransformComponent>(strName);
 		pxScene->m_xEntityMap.insert({ m_xGuid.m_uGuid, *this });
