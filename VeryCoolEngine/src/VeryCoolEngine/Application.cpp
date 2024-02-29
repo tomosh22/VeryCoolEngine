@@ -323,6 +323,8 @@ namespace VeryCoolEngine {
 
 		m_pxRendererScene->camera = m_eCurrentState == VCE_GAMESTATE_EDITOR ? &m_pxCurrentScene->m_xEditorCamera : &m_pxCurrentScene->m_xGameCamera;
 
+		m_pxRendererScene->m_pxScene = m_pxCurrentScene;
+
 		m_pxRendererScene->skybox = _pCubemap;
 
 		for (RendererAPI::Light& light : _lights) {
@@ -335,44 +337,6 @@ namespace VeryCoolEngine {
 
 		m_pxRendererScene->AddPipeline("Meshes");
 		m_pxRendererScene->AddPipeline("SkinnedMeshes");
-
-		std::vector<ModelComponent*> xModels = m_pxCurrentScene->GetAllOfComponentType<ModelComponent>();
-		for (ModelComponent* xModelComponent : xModels) {
-			VCEModel* pxModel = xModelComponent->GetModel();
-			xModelComponent->GetTransformRef().GetTransform()->getOpenGLMatrix(&pxModel->m_xModelMat[0][0]);
-			pxModel->m_xModelMat *= glm::scale(glm::identity<glm::highp_mat4>(),xModelComponent->GetTransformRef().m_xScale);
-			GUID xParentGUID = xModelComponent->GetParentEntity().m_xParentEntityGUID;
-			while (xParentGUID.m_uGuid != 0) {
-				glm::mat4 xToMultiply;
-				Entity xEntity = xModelComponent->GetParentEntity().m_pxParentScene->GetEntityByGuid(xParentGUID);
-				xEntity.GetComponent<TransformComponent>().GetTransform()->getOpenGLMatrix(&xToMultiply[0][0]);
-				pxModel->m_xModelMat *= xToMultiply;
-				//#TO_TODO: why is the minus necessary?
-				pxModel->m_xModelMat *= -glm::scale(glm::identity<glm::highp_mat4>(), xEntity.GetComponent<TransformComponent>().m_xScale);
-				xParentGUID = xEntity.m_xParentEntityGUID;
-
-			}
-			if (pxModel->m_pxAnimation != nullptr) {
-				//has an animation
-				pxModel->m_pxAnimation->UpdateAnimation(fDt / 1000.f);
-				std::vector<glm::mat4>& xAnimMats = pxModel->m_pxAnimation->GetFinalBoneMatrices();
-				for (Mesh* pxMesh : pxModel->m_apxMeshes) {
-					for (uint32_t i = 0; i < pxMesh->m_xBoneMats.size(); i++) {
-						pxMesh->m_xBoneMats.at(i) = xAnimMats.at(i);
-					}
-				}
-				m_pxRendererScene->AddModelToPipeline("SkinnedMeshes", pxModel);
-			}
-			else {
-				//TODO: check this properly
-				if (pxModel == m_pxQuadModel || pxModel == m_pxFoliageModel) continue;
-				//does not have an animation
-				//hacky way to make sure this mesh belongs in this pipeline
-				if (pxModel->m_apxMeshes.back()->m_pxMaterial != nullptr)
-					m_pxRendererScene->AddModelToPipeline("Meshes", pxModel);
-
-			}
-		}
 
 #ifdef VCE_DEFERRED_SHADING
 		m_pxRendererScene->AddPipeline("GBuffer");

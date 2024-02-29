@@ -25,6 +25,7 @@ namespace VeryCoolEngine {
 	class VulkanTexture2D;
 	class VulkanBuffer;
 	class VulkanCommandBuffer;
+	class Scene;
 	
 
 	static constexpr const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
@@ -229,8 +230,9 @@ namespace VeryCoolEngine {
 			void DrawFrame(RendererScene* scene);
 
 			void DrawSkybox();
-			void DrawOpaqueMeshes();
-			void DrawSkinnedMeshes();
+			void DrawHeightmapTerrain(Scene* pxScene);
+			void DrawOpaqueMeshes(Scene* pxScene);
+			void DrawSkinnedMeshes(Scene* pxScene);
 			void DrawFoliage();
 
 			void RecreateSwapChain();

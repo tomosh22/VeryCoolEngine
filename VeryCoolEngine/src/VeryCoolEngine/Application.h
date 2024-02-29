@@ -34,7 +34,7 @@ namespace VeryCoolEngine {
 	public:
 		Camera* camera = nullptr;
 
-		
+		class Scene* m_pxScene;
 
 		Shader* skyboxShader = nullptr;
 		TextureCube* skybox = nullptr;

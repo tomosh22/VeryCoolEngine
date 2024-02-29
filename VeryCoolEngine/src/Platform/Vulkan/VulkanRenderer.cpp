@@ -274,7 +274,12 @@ void VulkanRenderer::DrawSkybox() {
 	m_pxSkyboxCommandBuffer->EndRecording(RENDER_ORDER_SKYBOX);
 }
 
-void VulkanRenderer::DrawOpaqueMeshes() {
+void VulkanRenderer::DrawHeightmapTerrain(Scene* pxScene) {
+	
+}
+
+
+void VulkanRenderer::DrawOpaqueMeshes(Scene* pxScene) {
 	Application* app = Application::GetInstance();
 
 	m_pxOpaqueMeshesCommandBuffer->BeginRecording();
@@ -305,8 +310,33 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 	VulkanManagedUniformBuffer* pxMiscMeshRenderDataUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxMiscMeshRenderDataUBO);
 	m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxMiscMeshRenderDataUBO->ppBuffers[m_currentFrame], 2, 0);
 
+	std::vector<VCEModel*> xModels;
+	for (ModelComponent* xModelComponent : pxScene->GetAllOfComponentType<ModelComponent>()) {
+		VCEModel* pxModel = xModelComponent->GetModel();
+		xModelComponent->GetTransformRef().GetTransform()->getOpenGLMatrix(&pxModel->m_xModelMat[0][0]);
+		pxModel->m_xModelMat *= glm::scale(glm::identity<glm::highp_mat4>(), xModelComponent->GetTransformRef().m_xScale);
+		GUID xParentGUID = xModelComponent->GetParentEntity().m_xParentEntityGUID;
+		while (xParentGUID.m_uGuid != 0) {
+			glm::mat4 xToMultiply;
+			Entity xEntity = xModelComponent->GetParentEntity().m_pxParentScene->GetEntityByGuid(xParentGUID);
+			xEntity.GetComponent<TransformComponent>().GetTransform()->getOpenGLMatrix(&xToMultiply[0][0]);
+			pxModel->m_xModelMat *= xToMultiply;
+			//#TO_TODO: why is the minus necessary?
+			pxModel->m_xModelMat *= -glm::scale(glm::identity<glm::highp_mat4>(), xEntity.GetComponent<TransformComponent>().m_xScale);
+			xParentGUID = xEntity.m_xParentEntityGUID;
 
-	for (VCEModel* pxModel : app->m_pxRendererScene->GetModelsInPipeline("Meshes")) {
+		}
+		if (pxModel->m_pxAnimation == nullptr) {
+			//TODO: check this properly
+			if (pxModel == app->m_pxQuadModel || pxModel == app->m_pxFoliageModel) continue;
+			//does not have an animation
+			//hacky way to make sure this mesh belongs in this pipeline
+			if (pxModel->m_apxMeshes.back()->m_pxMaterial != nullptr)
+				xModels.push_back(pxModel);
+		}
+	}
+
+	for (VCEModel* pxModel : xModels) {
 		struct OpaqueMeshPushConstant {
 			glm::mat4 xMatrix;
 			int bSelected;
@@ -334,7 +364,7 @@ void VulkanRenderer::DrawOpaqueMeshes() {
 	m_pxOpaqueMeshesCommandBuffer->EndRecording(RENDER_ORDER_OPAQUE_MESHES);
 }
 
-void VulkanRenderer::DrawSkinnedMeshes() {
+void VulkanRenderer::DrawSkinnedMeshes(Scene* pxScene) {
 	Application* app = Application::GetInstance();
 
 	m_pxSkinnedMeshesCommandBuffer->BeginRecording();
@@ -367,6 +397,35 @@ void VulkanRenderer::DrawSkinnedMeshes() {
 
 	VulkanManagedUniformBuffer* pxMiscMeshRenderDataUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxMiscMeshRenderDataUBO);
 	m_pxSkinnedMeshesCommandBuffer->BindBuffer(pxMiscMeshRenderDataUBO->ppBuffers[m_currentFrame], 2, 0);
+
+	std::vector<VCEModel*> xModels;
+	for (ModelComponent* xModelComponent : pxScene->GetAllOfComponentType<ModelComponent>()) {
+		VCEModel* pxModel = xModelComponent->GetModel();
+		xModelComponent->GetTransformRef().GetTransform()->getOpenGLMatrix(&pxModel->m_xModelMat[0][0]);
+		pxModel->m_xModelMat *= glm::scale(glm::identity<glm::highp_mat4>(), xModelComponent->GetTransformRef().m_xScale);
+		GUID xParentGUID = xModelComponent->GetParentEntity().m_xParentEntityGUID;
+		while (xParentGUID.m_uGuid != 0) {
+			glm::mat4 xToMultiply;
+			Entity xEntity = xModelComponent->GetParentEntity().m_pxParentScene->GetEntityByGuid(xParentGUID);
+			xEntity.GetComponent<TransformComponent>().GetTransform()->getOpenGLMatrix(&xToMultiply[0][0]);
+			pxModel->m_xModelMat *= xToMultiply;
+			//#TO_TODO: why is the minus necessary?
+			pxModel->m_xModelMat *= -glm::scale(glm::identity<glm::highp_mat4>(), xEntity.GetComponent<TransformComponent>().m_xScale);
+			xParentGUID = xEntity.m_xParentEntityGUID;
+
+		}
+		if (pxModel->m_pxAnimation != nullptr) {
+			//has an animation
+			pxModel->m_pxAnimation->UpdateAnimation(app->m_fDeltaTime / 1000.f);
+			std::vector<glm::mat4>& xAnimMats = pxModel->m_pxAnimation->GetFinalBoneMatrices();
+			for (Mesh* pxMesh : pxModel->m_apxMeshes) {
+				for (uint32_t i = 0; i < pxMesh->m_xBoneMats.size(); i++) {
+					pxMesh->m_xBoneMats.at(i) = xAnimMats.at(i);
+				}
+			}
+			xModels.push_back(pxModel);
+		}
+	}
 
 	for (VCEModel* pxModel : app->m_pxRendererScene->GetModelsInPipeline("SkinnedMeshes")) {
 		for (Mesh* pxMesh : pxModel->m_apxMeshes) {
@@ -442,17 +501,20 @@ void VulkanRenderer::DrawFrame(RendererScene* scene) {
 	}
 
 	Application* pxApp = Application::GetInstance();
-	static uint32_t uFrameCount = 0;
-	if(uFrameCount > 1000)
+	static bool s_bSkip = true;
+	if(!s_bSkip)
 		pxApp->m_xAsyncLoader.ProcessPendingStreams_MainThread();
-	uFrameCount++;
+	s_bSkip = false;
+	
 
 
 	DrawSkybox();
 
-	DrawOpaqueMeshes();
+	DrawHeightmapTerrain(scene->m_pxScene);
 
-	DrawSkinnedMeshes();
+	DrawOpaqueMeshes(scene->m_pxScene);
+
+	DrawSkinnedMeshes(scene->m_pxScene);
 
 	//DrawFoliage();
 
