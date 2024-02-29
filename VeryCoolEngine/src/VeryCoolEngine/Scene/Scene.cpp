@@ -5,6 +5,7 @@
 #include "VeryCoolEngine/Components/TransformComponent.h"
 #include "VeryCoolEngine/Components/ColliderComponent.h"
 #include "VeryCoolEngine/Components/ScriptComponent.h"
+#include "VeryCoolEngine/Components/TerrainComponent.h"
 #include "VeryCoolEngine/Application.h"
 namespace VeryCoolEngine {
 
@@ -12,13 +13,15 @@ namespace VeryCoolEngine {
 		Transform,
 		Model,
 		Collider,
-		Script
+		Script,
+		Terrain
 	};
 	std::unordered_map<std::string, ComponentType> g_xComponentNames = {
 		{"TransformComponent", ComponentType::Transform},
 		{"ModelComponent", ComponentType::Model},
 		{"ColliderComponent", ComponentType::Collider},
 		{"ScriptComponent", ComponentType::Script},
+		{"TerrainComponent", ComponentType::Terrain},
 	};
 
 	std::unordered_map<std::string, Physics::CollisionVolumeType> g_xColliderNames = {
@@ -147,6 +150,17 @@ namespace VeryCoolEngine {
 							bool a = false;
 							break;
 						}
+					}
+					break;
+					case ComponentType::Terrain:
+					{
+						std::string strHeightmapGUID;
+						std::string strMaterialGUID;
+						std::getline(xIn, strHeightmapGUID);
+						std::getline(xIn, strMaterialGUID);
+						GUID xHeightmapGUID(strtoull(strHeightmapGUID.c_str(), nullptr, 10));
+						GUID xMaterialGUID(strtoull(strMaterialGUID.c_str(), nullptr, 10));
+						xEntity.AddComponent<TerrainComponent>(xHeightmapGUID, xMaterialGUID);
 					}
 					break;
 					}

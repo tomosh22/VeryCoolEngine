@@ -9,7 +9,7 @@ namespace VeryCoolEngine {
 	class TerrainComponent
 	{
 	public:
-		TerrainComponent(GUID xMeshGUID, GUID xMaterialGUID, TransformComponent& xTrans, Entity* xEntity);
+		TerrainComponent(GUID xHeightmapGUID, GUID xMaterialGUID, TransformComponent& xTrans, Entity* xEntity);
 		TerrainComponent() = delete;
 
 		TransformComponent& GetTransformRef() { return m_xTransRef; }
