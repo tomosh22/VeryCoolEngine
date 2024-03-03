@@ -22,6 +22,8 @@
 
 #include "reactphysics3d/reactphysics3d.h"
 
+#include "HeightmapTools.h"
+
 namespace VeryCoolEngine {
 
 
@@ -238,6 +240,8 @@ namespace VeryCoolEngine {
 		ImGui::SliderInt("Tesselation Level", (int*)&app->_pRenderer->m_uTessLevel, 1, 64);
 		ImGui::Checkbox("Animate", &app->_pRenderer->bAnimate);
 		ImGui::SliderFloat("Animation Alpha", &app->_pRenderer->fAnimAlpha, 0,1);
+		ImGui::SliderFloat("Terrain Height", &app->_pRenderer->m_fTerrainHeight, 0,1000);
+		ImGui::SliderInt("Terrain UV Scale", &app->_pRenderer->m_iTerrainUVScale, 0,20);
 
 		const char* aszItems[] = { "Editor", "Playing" };
 		ImGui::Combo("combo", &app->m_eCurrentState, aszItems, IM_ARRAYSIZE(aszItems));
@@ -247,6 +251,10 @@ namespace VeryCoolEngine {
 		}
 		if (ImGui::Button("Reset Scene")) {
 			app->m_bWantToResetScene = true;
+		}
+
+		if (ImGui::Button("Generate Heightmap Data")) {
+			GenerateHeightmapData();
 		}
 
 		ImGui::Checkbox("Disable Draw Calls", &app->_pRenderer->m_bDisableDrawCalls);

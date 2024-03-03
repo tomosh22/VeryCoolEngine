@@ -345,6 +345,7 @@ namespace VeryCoolEngine {
 			VulkanCommandBuffer* m_pxCopyToFramebufferCommandBuffer;
 			VulkanCommandBuffer* m_pxSkyboxCommandBuffer;
 			VulkanCommandBuffer* m_pxOpaqueMeshesCommandBuffer;
+			VulkanCommandBuffer* m_pxTerrainCommandBuffer;
 			VulkanCommandBuffer* m_pxSkinnedMeshesCommandBuffer;
 			VulkanCommandBuffer* m_pxFoliageCommandBuffer;
 

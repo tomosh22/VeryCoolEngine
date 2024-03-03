@@ -72,6 +72,8 @@ namespace VeryCoolEngine {
 		bool bAnimate = true;
 		float fAnimAlpha = 1;
 		bool m_bDisableDrawCalls = false;
+		float m_fTerrainHeight = 1.0f;
+		int32_t m_iTerrainUVScale = 1;
 
 		virtual void ProfilingBeginFrame() = 0;
 		virtual void RecordDrawCall() = 0;

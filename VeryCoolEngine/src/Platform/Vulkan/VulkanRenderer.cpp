@@ -22,6 +22,7 @@
 
 #include "reactphysics3d/reactphysics3d.h"
 #include "VeryCoolEngine/Components/ModelComponent.h"
+#include "VeryCoolEngine/Components/TerrainComponent.h"
 
 #include "VeryCoolEngine/Renderer/AsyncLoader.h"
 
@@ -39,6 +40,7 @@ VulkanRenderer::VulkanRenderer() {
 	m_pxCopyToFramebufferCommandBuffer = new VulkanCommandBuffer(false);
 	m_pxSkyboxCommandBuffer = new VulkanCommandBuffer(false);
 	m_pxOpaqueMeshesCommandBuffer = new VulkanCommandBuffer(false);
+	m_pxTerrainCommandBuffer = new VulkanCommandBuffer(false);
 	m_pxSkinnedMeshesCommandBuffer = new VulkanCommandBuffer(false);
 	m_pxFoliageCommandBuffer = new VulkanCommandBuffer(false);
 
@@ -109,6 +111,7 @@ void VulkanRenderer::InitVulkan() {
 	app->_pCameraUBO = ManagedUniformBuffer::Create(sizeof(glm::mat4) * 3 + sizeof(glm::vec4), MAX_FRAMES_IN_FLIGHT, 0);
 	app->_pLightUBO = ManagedUniformBuffer::Create(sizeof(RendererAPI::Light) * RendererAPI::g_uMaxLights, MAX_FRAMES_IN_FLIGHT, 1);
 	app->m_pxMiscMeshRenderDataUBO = ManagedUniformBuffer::Create(sizeof(Application::MeshRenderData), MAX_FRAMES_IN_FLIGHT, 2);
+	app->m_pxMiscTerrainRenderDataUBO = ManagedUniformBuffer::Create(sizeof(Application::TerrainRenderData), MAX_FRAMES_IN_FLIGHT, 2);
 
 	for (Shader* pxShader : app->_shaders) pxShader->PlatformInit();
 
@@ -275,7 +278,61 @@ void VulkanRenderer::DrawSkybox() {
 }
 
 void VulkanRenderer::DrawHeightmapTerrain(Scene* pxScene) {
-	
+	Application* app = Application::GetInstance();
+
+	m_pxTerrainCommandBuffer->BeginRecording();
+
+	m_pxTerrainCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTextureNoClear"));
+
+
+	m_pxTerrainCommandBuffer->SetPipeline(&m_xPipelines.at("Terrain")->m_xPipeline);
+
+	Application::TerrainRenderData xTerrainRenderData;
+
+	xTerrainRenderData.uUseBumpMap = app->_pRenderer->m_bUseBumpMaps ? 1 : 0;
+	xTerrainRenderData.uVisualiseNormals = app->_pRenderer->m_bVisualiseNormals ? 1 : 0;
+	xTerrainRenderData.uTessLevel = app->_pRenderer->m_uTessLevel;
+	xTerrainRenderData.fHeight = app->_pRenderer->m_fTerrainHeight;
+	xTerrainRenderData.iUVScale = app->_pRenderer->m_iTerrainUVScale;
+
+	app->m_pxMiscTerrainRenderDataUBO->UploadData(&xTerrainRenderData, sizeof(Application::TerrainRenderData), m_currentFrame, 0);
+
+	VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
+	m_pxTerrainCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0, 0);
+
+	VulkanManagedUniformBuffer* pxLightUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pLightUBO);
+	m_pxTerrainCommandBuffer->BindBuffer(pxLightUBO->ppBuffers[m_currentFrame], 1, 0);
+
+
+	VulkanManagedUniformBuffer* pxMiscTerrainRenderDataUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxMiscTerrainRenderDataUBO);
+	m_pxTerrainCommandBuffer->BindBuffer(pxMiscTerrainRenderDataUBO->ppBuffers[m_currentFrame], 2, 0);
+
+	Mesh* pxQuadMesh = app->m_pxPlaneMesh;
+	VCE_ASSERT(pxQuadMesh->m_bInitialised, "Mesh not initalised");
+	for(TerrainComponent* pxTerrainComponent : pxScene->GetAllOfComponentType<TerrainComponent>()){
+		struct OpaqueMeshPushConstant {
+			glm::mat4 xMatrix;
+			int bSelected;
+		} xPushConstant;
+		//#TO_TODO: model matrix of terrain and is selected
+		xPushConstant.xMatrix = glm::translate(glm::identity<glm::highp_mat4>(), { TERRAIN_SIZE * pxTerrainComponent->m_iCoordX * 2,0,TERRAIN_SIZE * pxTerrainComponent->m_iCoordY * 2 }) * glm::scale(glm::identity<glm::highp_mat4>(), { TERRAIN_SIZE,1,TERRAIN_SIZE });
+		xPushConstant.bSelected = 0;
+		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(pxQuadMesh);
+		m_pxTerrainCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
+		m_pxTerrainCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
+
+		m_pxTerrainCommandBuffer->BindMaterial(pxTerrainComponent->m_pxMaterial, 1);
+		m_pxTerrainCommandBuffer->BindHeightmapTexture(pxTerrainComponent->m_pxHeightmap, 2);
+
+
+
+		m_pxTerrainCommandBuffer->PushConstant(&xPushConstant, sizeof(OpaqueMeshPushConstant));
+
+		m_pxTerrainCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
+	}
+
+
+	m_pxTerrainCommandBuffer->EndRecording(RENDER_ORDER_TERRAIN);
 }
 
 

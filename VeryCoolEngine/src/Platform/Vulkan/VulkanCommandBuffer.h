@@ -20,6 +20,7 @@ namespace VeryCoolEngine {
 		void UploadUniformData(void* pData, size_t uSize) override;
 
 		void BindMaterial(Material* pxMaterial, uint32_t uSet) override;
+		void BindHeightmapTexture(HeightmapTexture* pxHeightmap, uint32_t uSet) override;
 		void BindAnimation(Mesh* pxMesh, uint32_t uSet) override;
 
 		vk::CommandBuffer& GetCurrentCmdBuffer() { return m_xCurrentCmdBuffer; }

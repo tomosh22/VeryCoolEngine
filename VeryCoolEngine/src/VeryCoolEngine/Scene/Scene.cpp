@@ -156,11 +156,17 @@ namespace VeryCoolEngine {
 					{
 						std::string strHeightmapGUID;
 						std::string strMaterialGUID;
+						std::string strCoordinate;
 						std::getline(xIn, strHeightmapGUID);
 						std::getline(xIn, strMaterialGUID);
+						std::getline(xIn, strCoordinate);
+						std::stringstream xCoordinateStream(strCoordinate);
+						std::string strX, strY;
+						std::getline(xCoordinateStream, strX, ' ');
+						std::getline(xCoordinateStream, strY, ' ');
 						GUID xHeightmapGUID(strtoull(strHeightmapGUID.c_str(), nullptr, 10));
 						GUID xMaterialGUID(strtoull(strMaterialGUID.c_str(), nullptr, 10));
-						xEntity.AddComponent<TerrainComponent>(xHeightmapGUID, xMaterialGUID);
+						xEntity.AddComponent<TerrainComponent>(xHeightmapGUID, xMaterialGUID, std::stoi(strX), std::stoi(strY));
 					}
 					break;
 					}

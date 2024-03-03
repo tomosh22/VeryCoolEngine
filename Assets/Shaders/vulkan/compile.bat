@@ -11,6 +11,13 @@
 %VULKAN_SDK%\Bin\glslc.exe foliage.vert -o foliageVert.spv
 %VULKAN_SDK%\Bin\glslc.exe foliage.frag -o foliageFrag.spv
 
+%VULKAN_SDK%\Bin\glslc.exe Terrain/terrain.vert -o Terrain/terrainVert.spv
+%VULKAN_SDK%\Bin\glslc.exe Terrain/terrain.frag -o Terrain/terrainFrag.spv
+%VULKAN_SDK%\Bin\glslc.exe Terrain/terrain.tesc -o Terrain/terrainTesc.spv
+%VULKAN_SDK%\Bin\glslc.exe Terrain/terrain.tese -o Terrain/terrainTese.spv
+%VULKAN_SDK%\Bin\glslc.exe Terrain/terrainSimple.vert -o Terrain/terrainSimpleVert.spv
+%VULKAN_SDK%\Bin\glslc.exe Terrain/terrainSimple.frag -o Terrain/terrainSimpleFrag.spv
+
 
 %VULKAN_SDK%\Bin\glslc.exe copyToFrameBuffer.vert -o copyToFrameBufferVert.spv
 %VULKAN_SDK%\Bin\glslc.exe copyToFrameBuffer.frag -o copyToFrameBufferFrag.spv

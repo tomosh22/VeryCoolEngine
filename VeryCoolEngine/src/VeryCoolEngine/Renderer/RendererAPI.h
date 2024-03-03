@@ -9,10 +9,12 @@ namespace VeryCoolEngine {
 	class ManagedUniformBuffer;
 	class Material;
 	class Mesh;
+	class HeightmapTexture;
 
 	enum RenderOrder : uint32_t {
 		RENDER_ORDER_MEMORY_UPDATE,
 		RENDER_ORDER_SKYBOX,
+		RENDER_ORDER_TERRAIN,
 		RENDER_ORDER_OPAQUE_MESHES,
 		RENDER_ORDER_SKINNED_MESHES,
 		RENDER_ORDER_FOLIAGE,
@@ -129,6 +131,7 @@ namespace VeryCoolEngine {
 			virtual void BindMaterial(Material* pxMaterial, uint32_t uSet) = 0;
 			//TODO: this will be a model when i stop duplicating animation data
 			virtual void BindAnimation(Mesh* pxModel, uint32_t uSet) = 0;
+			virtual void BindHeightmapTexture(HeightmapTexture* pxHeightmap, uint32_t uSet) = 0;
 
 			virtual void* Platform_GetCurrentCmdBuffer() const = 0;
 

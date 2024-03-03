@@ -125,6 +125,8 @@ namespace VeryCoolEngine {
 		RenderPass* m_pxRenderToTexturePassNoClear;
 		RenderPass* m_pxCopyToFramebufferPass;
 
+		//#TO_TODO: do i want these handled by AssetHandler?
+		std::vector<HeightmapTexture*> m_apxHeightmapTextures;
 		AssetHandler m_xAssetHandler;
 		AsyncLoader m_xAsyncLoader;
 
@@ -133,6 +135,8 @@ namespace VeryCoolEngine {
 		VCEModel* m_pxFoliageModel;
 		std::vector<glm::vec3> m_xTestFoliagePositions;
 		FoliageMaterial* m_pxFoliageMaterial;
+
+		Mesh* m_pxPlaneMesh;
 
 		
 		std::unordered_map<std::string, PipelineSpecification> m_xPipelineSpecs;
@@ -150,7 +154,15 @@ namespace VeryCoolEngine {
 			float fPhongTessFactor;
 			int uTessLevel;
 		};
+		struct TerrainRenderData {
+			int uUseBumpMap;
+			int uVisualiseNormals;
+			int uTessLevel;
+			float fHeight;
+			int32_t iUVScale;
+		};
 		ManagedUniformBuffer* m_pxMiscMeshRenderDataUBO = nullptr;
+		ManagedUniformBuffer* m_pxMiscTerrainRenderDataUBO = nullptr;
 
 		class BlockWorld* m_pxBlockWorld = nullptr;
 		std::vector<Shader*> _shaders;
@@ -166,6 +178,7 @@ namespace VeryCoolEngine {
 		Mesh* m_pxExampleSkinnedMesh;
 
 		Shader* m_pxMeshShader;
+		Shader* m_pxTerrainShader;
 		Shader* m_pxSkinnedMeshShader;
 		Shader* m_pxGBufferShader;
 		Shader* m_pxCopyToFramebufferShader;

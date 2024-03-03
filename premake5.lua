@@ -53,9 +53,12 @@ project "VeryCoolEngine"
 		"%{prj.name}/vendor/stb",
 		"%{prj.name}/vendor/tinyobj",
 		"%{prj.name}/vendor/PerlinNoise",
+		"VeryCoolEngine/vendor/entt",
 		"%{prj.name}/src",
 		"%{prj.name}/vendor/reactphysics3d/include",
 		"$(VULKAN_SDK)/include",
+		
+		"Tools"
 	}
 	libdirs {
 		"$(VULKAN_SDK)/lib"
@@ -64,7 +67,8 @@ project "VeryCoolEngine"
 		"GLFW",
 		"ImGui",
 		"vulkan-1.lib",
-		"assimp"
+		"assimp",
+		"Tools"
 	}
 
 	filter "system:windows"
@@ -114,6 +118,7 @@ project "Game"
 		"VeryCoolEngine/src",
 		"VeryCoolEngine/vendor/imgui",
 		"VeryCoolEngine/vendor/glm",
+		"VeryCoolEngine/vendor/entt",
 		"VeryCoolEngine/vendor/Glad/include",
 		"VeryCoolEngine/vendor/reactphysics3d/include",
 		"%{prj.name}/vendor/stb",
@@ -143,4 +148,56 @@ project "Game"
 	filter "configurations:Dist"
 		defines "VCE_DIST"
 		optimize "on"
+		
+project "Tools"
+	location "Tools"
+	kind "StaticLib"
+	language "C++"
+	cppdialect "C++20"
+	staticruntime "on"
 	
+	targetdir ("bin/" .. outputDir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputDir .. "/%{prj.name}")
+	
+	files{
+		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/src/**.h"
+	}
+	
+	includedirs{
+		"$(OPENCV_DIR)/../../include",
+		"VeryCoolEngine/src",
+		"VeryCoolEngine/vendor/spdlog/include",
+		"$(VULKAN_SDK)/include",
+		"VeryCoolEngine/vendor/glm",
+		"VeryCoolEngine/vendor/entt",
+	}
+	
+	
+	
+	defines{
+			"VCE_WINDOWS"
+		}
+		
+		filter "configurations:Debug"
+		defines "VCE_DEBUG"
+		symbols "on"
+		links{
+			"$(OPENCV_DIR)/lib/opencv_world490d.lib"
+		}
+	
+
+	filter "configurations:Release"
+		defines "VCE_RELEASE"
+		optimize "on"
+		links{
+			"$(OPENCV_DIR)/lib/opencv_world490.lib"
+		}
+	
+
+	filter "configurations:Dist"
+		defines "VCE_DIST"
+		optimize "on"
+		links{
+			"$(OPENCV_DIR)/lib/opencv_world490.lib"
+		}

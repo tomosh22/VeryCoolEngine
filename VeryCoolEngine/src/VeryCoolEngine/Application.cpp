@@ -14,6 +14,7 @@
 #ifdef VCE_VULKAN
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 #endif
+#include "VeryCoolEngine/Renderer/HeightmapTexture.h"
 
 namespace VeryCoolEngine {
 
@@ -34,6 +35,8 @@ namespace VeryCoolEngine {
 		m_pxFoliageModel->m_apxMeshes.emplace_back(Mesh::GenerateQuad(10));
 		m_pxFoliageMaterial = FoliageMaterial::Create("foliage1k");
 		m_pxFoliageModel->m_strDirectory = "FoliageModel";
+
+		m_pxPlaneMesh = Mesh::FromFile("plane_64verts.obj");
 
 		m_xTestFoliagePositions = {
 			{40.1,70,0},
@@ -146,6 +149,7 @@ namespace VeryCoolEngine {
 	void Application::SetupPipelines() {
 
 		m_pxMeshShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
+		m_pxTerrainShader = Shader::Create("vulkan/Terrain/terrainVert.spv", "vulkan/Terrain/terrainFrag.spv", "", "vulkan/Terrain/terrainTesc.spv", "vulkan/Terrain/terrainTese.spv");
 		m_pxGBufferShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshGBufferFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
 		m_pxCopyToFramebufferShader = Shader::Create("vulkan/copyToFrameBufferVert.spv", "vulkan/copyToFrameBufferFrag.spv");
 		m_pxSkinnedMeshShader = Shader::Create("vulkan/skinnedMeshVert.spv", "vulkan/meshFrag.spv");
@@ -204,6 +208,31 @@ namespace VeryCoolEngine {
 					{
 						{3,0},
 						{0,5}
+					}
+					)
+			});
+
+		m_xPipelineSpecs.insert(
+			{ "Terrain",
+					PipelineSpecification(
+					"Terrain",
+					m_pxPlaneMesh,
+					m_pxTerrainShader,
+					{BlendFactor::SrcAlpha},
+					{BlendFactor::OneMinusSrcAlpha},
+					{true},
+					true,
+					true,
+					DepthCompareFunc::GreaterOrEqual,
+					{ColourFormat::BGRA8_sRGB},
+					DepthFormat::D32_SFloat,
+					"RenderToTextureNoClear",
+					true,
+					true,
+					{
+						{3,0},
+						{0,5},
+						{0,1}
 					}
 					)
 			});
@@ -337,6 +366,7 @@ namespace VeryCoolEngine {
 
 		m_pxRendererScene->AddPipeline("Meshes");
 		m_pxRendererScene->AddPipeline("SkinnedMeshes");
+		m_pxRendererScene->AddPipeline("Terrain");
 
 #ifdef VCE_DEFERRED_SHADING
 		m_pxRendererScene->AddPipeline("GBuffer");
@@ -432,9 +462,15 @@ namespace VeryCoolEngine {
 
 		for(uint32_t i = 0; i < 15; i++)
 			m_xAssetHandler.LoadAssetsFromFile(std::to_string(i) + ".vceassets");
+		m_xAssetHandler.LoadAssetsFromFile("heightmap.vceassets");
 
 		m_xAssetHandler.PlatformInitialiseAssets();
+		
 		m_pxCurrentScene = new Scene("TestScene.vcescene");
+		//#TO_TODO: do i want these handled by assethandler?
+		for (HeightmapTexture* pxHeightmap : m_apxHeightmapTextures)
+			pxHeightmap->PlatformInit();
+		m_pxPlaneMesh->PlatformInit();
 
 #ifdef VCE_USE_EDITOR
 		_window->DisableCaptureCursor();
