@@ -356,11 +356,11 @@ namespace VeryCoolEngine {
 			pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, i, 0, true);
 		VulkanBuffer::CopyBufferToImage(dynamic_cast<VulkanBuffer*>(AsyncLoader::g_pxStagingBuffer), this, true);
 		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eTransferSrcOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, 0, 0, true);
-		//for (uint32_t i = 1; i < m_uNumMips; i++)
-			//BlitImageToImage(this, this, i, true);
-		//pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, 0, 0, true);
-		//for (uint32_t i = 1; i < m_uNumMips; i++)
-			//pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, i, 0, true);//todo will probably need to change this to vertex shader in the future
+		for (uint32_t i = 1; i < m_uNumMips; i++)
+			BlitImageToImage(this, this, i, true);
+		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, 0, 0, true);
+		for (uint32_t i = 1; i < m_uNumMips; i++)
+			pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, i, 0, true);//todo will probably need to change this to vertex shader in the future
 
 		vk::ImageSubresourceRange xSubresourceRange = vk::ImageSubresourceRange()
 			.setAspectMask(vk::ImageAspectFlagBits::eColor)
@@ -398,9 +398,7 @@ namespace VeryCoolEngine {
 			.setCompareEnable(VK_FALSE)
 			.setCompareOp(vk::CompareOp::eAlways)
 			.setMipmapMode(vk::SamplerMipmapMode::eLinear)
-			.setMipLodBias(0)
-			.setMinLod(0)
-			.setMaxLod(0);	
+			.setMaxLod(FLT_MAX);	
 
 		return std::move(xDevice.createSampler(xInfo));
 

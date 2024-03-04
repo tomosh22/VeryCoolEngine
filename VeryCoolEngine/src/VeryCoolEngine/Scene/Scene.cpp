@@ -43,15 +43,9 @@ namespace VeryCoolEngine {
 		{"PlayerController", ScriptBehaviourType::PlayerController},
 	};
 
-	Scene::Scene(const std::string& strFilename) {
+	void Scene::LoadAssets(const std::string& strFilename) {
 		Application* app = Application::GetInstance();
-
-		//#TO_TODO: will cause problems if i have more than one scene loaded at a time
-		app->m_pxCurrentScene = this;
-
-		
-
-		std::ifstream xIn("TestScene.vcescene");
+		std::ifstream xIn(strFilename);
 		std::string strLine;
 		while (std::getline(xIn, strLine)) {
 			if (strLine == "Entity") {
@@ -173,8 +167,20 @@ namespace VeryCoolEngine {
 				}
 			}
 		}
-
 		app->_pRenderer->InitialiseAssets();
+	}
+
+	Scene::Scene(const std::string& strFilename) {
+		Application* app = Application::GetInstance();
+
+		//#TO_TODO: will cause problems if i have more than one scene loaded at a time
+		app->m_pxCurrentScene = this;
+
+		
+
+		LoadAssets(strFilename);
+
+		
 
 		m_xEditorCamera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, float(VCE_GAME_WIDTH) / float(VCE_GAME_HEIGHT));
 		m_xGameCamera = Camera::BuildPerspectiveCamera(glm::vec3(0, 70, 5), 0, 0, 45, 1, 1000, float(VCE_GAME_WIDTH) / float(VCE_GAME_HEIGHT));

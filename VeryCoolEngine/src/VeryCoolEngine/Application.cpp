@@ -16,6 +16,8 @@
 #endif
 #include "VeryCoolEngine/Renderer/HeightmapTexture.h"
 
+#define USE_TESSELATION
+
 namespace VeryCoolEngine {
 
 	Renderer* Renderer::_spRenderer = nullptr;
@@ -149,7 +151,11 @@ namespace VeryCoolEngine {
 	void Application::SetupPipelines() {
 
 		m_pxMeshShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
+#ifdef USE_TESSELATION
 		m_pxTerrainShader = Shader::Create("vulkan/Terrain/terrainVert.spv", "vulkan/Terrain/terrainFrag.spv", "", "vulkan/Terrain/terrainTesc.spv", "vulkan/Terrain/terrainTese.spv");
+#else
+		m_pxTerrainShader = Shader::Create("vulkan/Terrain/terrainVert.spv", "vulkan/Terrain/terrainFrag.spv");
+#endif
 		m_pxGBufferShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshGBufferFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
 		m_pxCopyToFramebufferShader = Shader::Create("vulkan/copyToFrameBufferVert.spv", "vulkan/copyToFrameBufferFrag.spv");
 		m_pxSkinnedMeshShader = Shader::Create("vulkan/skinnedMeshVert.spv", "vulkan/meshFrag.spv");
@@ -228,7 +234,11 @@ namespace VeryCoolEngine {
 					DepthFormat::D32_SFloat,
 					"RenderToTextureNoClear",
 					true,
+#ifdef USE_TESSELATION
 					true,
+#else
+					false,
+#endif
 					{
 						{3,0},
 						{0,5},
@@ -467,6 +477,7 @@ namespace VeryCoolEngine {
 		m_xAssetHandler.PlatformInitialiseAssets();
 		
 		m_pxCurrentScene = new Scene("TestScene.vcescene");
+		m_pxCurrentScene->LoadAssets("heightmap.vcescene");
 		//#TO_TODO: do i want these handled by assethandler?
 		for (HeightmapTexture* pxHeightmap : m_apxHeightmapTextures)
 			pxHeightmap->PlatformInit();

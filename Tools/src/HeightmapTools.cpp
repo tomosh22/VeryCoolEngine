@@ -99,8 +99,8 @@ namespace VeryCoolEngine {
         uint32_t uNumSplitsX = uImageWidth / TERRAIN_SIZE;
         uint32_t uNumSplitsY = uImageHeight / TERRAIN_SIZE;
 
-        std::ofstream xAssetsOut("C:\\dev\\VeryCoolEngine\\Assets\\Textures\\Heightmaps\\Test\\heightmap.vceassets");
-        std::ofstream xSceneOut("C:\\dev\\VeryCoolEngine\\Assets\\Textures\\Heightmaps\\Test\\heightmap.vcescene");
+        std::ofstream xAssetsOut("C:\\dev\\VeryCoolEngine\\Game\\heightmap.vceassets");
+        std::ofstream xSceneOut("C:\\dev\\VeryCoolEngine\\Game\\heightmap.vcescene");
 
         for (uint32_t x = 0; x < uNumSplitsX; x++) {
             for (uint32_t y = 0; y < uNumSplitsY; y++) {
@@ -117,8 +117,7 @@ namespace VeryCoolEngine {
                 GUID xAssetGUID;
                 GUID xSceneGUID;
                 xAssetsOut << "Texture2D\n" << xAssetGUID.m_uGuid << '\n' << "0\n" << "Heightmaps/Test/" << std::to_string(x) + "_" + std::to_string(y) + ".png\n";
-                xSceneOut << "Entity\n" << xSceneGUID.m_uGuid << '\n' << "0\n" << "Terrain" << std::to_string(x) +
-                    "_" + std::to_string(y) + ".png\n";
+                xSceneOut << "Entity\n" << xSceneGUID.m_uGuid << '\n' << "0\n" << "Terrain" << std::to_string(x) + "_" + std::to_string(y) << '\n' << "TerrainComponent\n" << xAssetGUID.m_uGuid << "\n1538048126\n" << x << ' ' << y << "\nEndEntity\n";
             }
         }
 

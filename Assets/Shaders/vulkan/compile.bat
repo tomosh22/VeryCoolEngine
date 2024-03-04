@@ -15,8 +15,6 @@
 %VULKAN_SDK%\Bin\glslc.exe Terrain/terrain.frag -o Terrain/terrainFrag.spv
 %VULKAN_SDK%\Bin\glslc.exe Terrain/terrain.tesc -o Terrain/terrainTesc.spv
 %VULKAN_SDK%\Bin\glslc.exe Terrain/terrain.tese -o Terrain/terrainTese.spv
-%VULKAN_SDK%\Bin\glslc.exe Terrain/terrainSimple.vert -o Terrain/terrainSimpleVert.spv
-%VULKAN_SDK%\Bin\glslc.exe Terrain/terrainSimple.frag -o Terrain/terrainSimpleFrag.spv
 
 
 %VULKAN_SDK%\Bin\glslc.exe copyToFrameBuffer.vert -o copyToFrameBufferVert.spv

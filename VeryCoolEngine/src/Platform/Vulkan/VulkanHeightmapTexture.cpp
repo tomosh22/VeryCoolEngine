@@ -32,8 +32,8 @@ namespace VeryCoolEngine {
 
 		//todo all these should be parameters
 		vk::SamplerCreateInfo xSamplerInfo = vk::SamplerCreateInfo()
-			.setMagFilter(vk::Filter::eLinear)
-			.setMinFilter(vk::Filter::eLinear)
+			.setMagFilter(vk::Filter::eNearest)
+			.setMinFilter(vk::Filter::eNearest)
 			.setAddressModeU(vk::SamplerAddressMode::eClampToEdge)
 			.setAddressModeV(vk::SamplerAddressMode::eClampToEdge)
 			.setAddressModeW(vk::SamplerAddressMode::eClampToEdge)
@@ -43,7 +43,7 @@ namespace VeryCoolEngine {
 			.setUnnormalizedCoordinates(VK_FALSE)
 			.setCompareEnable(VK_FALSE)
 			.setCompareOp(vk::CompareOp::eAlways)
-			.setMipmapMode(vk::SamplerMipmapMode::eLinear)
+			.setMipmapMode(vk::SamplerMipmapMode::eNearest)
 			.setMipLodBias(0)
 			.setMinLod(0)
 			.setMaxLod(0);

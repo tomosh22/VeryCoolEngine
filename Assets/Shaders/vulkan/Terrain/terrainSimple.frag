@@ -11,7 +11,7 @@ layout(location = 3) in mat3 TBN;
 
 
 
-void point(inout vec4 finalColor, vec4 diffuse, Light light, vec3 bumpNormal, float metal, float rough, float reflectivity) {
+void point(inout vec4 finalColor, vec4 diffuse, PointLight light, vec3 bumpNormal, float metal, float rough, float reflectivity) {
 	vec3 lightDir = normalize(light.positionAndRadius.xyz - WorldPos);
 	vec3 viewDir = normalize(_uCamPos.xyz - WorldPos);
 	vec3 halfDir = normalize(lightDir + viewDir);

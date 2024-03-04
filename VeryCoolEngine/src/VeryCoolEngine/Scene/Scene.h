@@ -15,6 +15,8 @@ namespace VeryCoolEngine {
 		~Scene();
 		void Reset();
 
+		void LoadAssets(const std::string& strFilename);
+
 		template<typename T>
 		T& GetComponentFromEntity(EntityID xID) {
 			VCE_ASSERT(EntityHasComponent<T>(xID), "Doesn't have this component");
