@@ -16,6 +16,10 @@ layout(location = 1) out vec3 o_xNormal[];
 layout(location = 2) out vec3 o_xTangent[];
 layout(location = 3) out vec3 o_xBitangent[];
 layout(location = 4) out vec3 o_xWorldPos[];
+layout(location = 5) out vec2 o_xOtherUV0[];
+layout(location = 6) out vec2 o_xOtherUV1[];
+layout(location = 7) out vec3 o_xOtherPos0[];
+layout(location = 8) out vec3 o_xOtherPos1[];
 
 
 void main(){
@@ -32,4 +36,23 @@ void main(){
 	o_xTangent[gl_InvocationID] = a_xTangent[gl_InvocationID];
 	o_xBitangent[gl_InvocationID] = a_xBitangent[gl_InvocationID];
 	o_xWorldPos[gl_InvocationID] = a_xWorldPos[gl_InvocationID];
+	
+	if(gl_InvocationID == 0){
+		o_xOtherUV0[gl_InvocationID] = o_xUV[1];
+		o_xOtherUV1[gl_InvocationID] = o_xUV[2];
+		o_xOtherPos0[gl_InvocationID] = o_xWorldPos[1];
+		o_xOtherPos1[gl_InvocationID] = o_xWorldPos[2];
+	}
+	else if(gl_InvocationID == 1){
+		o_xOtherUV0[gl_InvocationID] = o_xUV[2];
+		o_xOtherUV1[gl_InvocationID] = o_xUV[0];
+		o_xOtherPos0[gl_InvocationID] = o_xWorldPos[2];
+		o_xOtherPos1[gl_InvocationID] = o_xWorldPos[0];
+	}
+	else if(gl_InvocationID == 2){
+		o_xOtherUV0[gl_InvocationID] = o_xUV[0];
+		o_xOtherUV1[gl_InvocationID] = o_xUV[1];
+		o_xOtherPos0[gl_InvocationID] = o_xWorldPos[0];
+		o_xOtherPos1[gl_InvocationID] = o_xWorldPos[1];
+	}
 }

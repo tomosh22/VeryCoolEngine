@@ -32,8 +32,8 @@ namespace VeryCoolEngine {
 
 		//todo all these should be parameters
 		vk::SamplerCreateInfo xSamplerInfo = vk::SamplerCreateInfo()
-			.setMagFilter(vk::Filter::eNearest)
-			.setMinFilter(vk::Filter::eNearest)
+			.setMagFilter(vk::Filter::eLinear)
+			.setMinFilter(vk::Filter::eLinear)
 			.setAddressModeU(vk::SamplerAddressMode::eClampToEdge)
 			.setAddressModeV(vk::SamplerAddressMode::eClampToEdge)
 			.setAddressModeW(vk::SamplerAddressMode::eClampToEdge)

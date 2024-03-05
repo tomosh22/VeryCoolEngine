@@ -4,6 +4,7 @@
 #include "VeryCoolEngine/core.h"
 #include "VeryCoolEngine/Components/TerrainComponent.h"
 #include "VeryCoolEngine/PlatformTypes.h"
+#include "VeryCoolEngine/Renderer/Mesh.h"
 
 
 namespace VeryCoolEngine {
@@ -74,6 +75,89 @@ namespace VeryCoolEngine {
         }
     }
 
+    void WriteMesh(cv::Mat& xImage, uint32_t uCoordX, uint32_t uCoordY) {
+        uint32_t uWidth = xImage.cols;
+        uint32_t uHeight = xImage.rows;
+
+        Mesh* mesh = Mesh::Create();
+        mesh->m_pxBufferLayout = new BufferLayout();
+        glm::vec3 vertexScale = glm::vec3(1.0f, 1.0f, 1.0f);
+        glm::vec2 textureScale = glm::vec2(100, 100);
+        mesh->m_uNumVerts = uWidth * uHeight;
+        mesh->m_uNumIndices = (uWidth - 1) * (uHeight - 1) * 6;
+        mesh->m_pxVertexPositions = new glm::vec3[mesh->m_uNumVerts];
+        mesh->m_pxUVs = new glm::vec2[mesh->m_uNumVerts];
+        mesh->m_pxNormals = new glm::vec3[mesh->m_uNumVerts];
+        mesh->m_pxTangents = new glm::vec3[mesh->m_uNumVerts];
+        for (size_t i = 0; i < mesh->m_uNumVerts; i++)
+        {
+            mesh->m_pxNormals[i] = { 0,0,0 };
+            mesh->m_pxTangents[i] = { 0,0,0 };
+        }
+        mesh->m_puIndices = new unsigned int[mesh->m_uNumIndices];
+
+
+
+        for (int z = 0; z < uHeight; ++z) {
+            for (int x = 0; x < uWidth; ++x) {
+                int offset = (z * uWidth) + x;
+                mesh->m_pxVertexPositions[offset] = glm::vec3(x, xImage.at<cv::Vec3b>(z,x).val[0], z) * vertexScale;
+                glm::vec2 fUV = glm::vec2(x, z) / textureScale;
+                mesh->m_pxUVs[offset] = fUV;
+            }
+        }
+
+        size_t i = 0;
+        for (int z = 0; z < uHeight - 1; ++z) {
+            for (int x = 0; x < uWidth - 1; ++x) {
+                int a = (z * uWidth) + x;
+                int b = (z * uWidth) + x + 1;
+                int c = ((z + 1) * uWidth) + x + 1;
+                int d = ((z + 1) * uWidth) + x;
+                mesh->m_puIndices[i++] = a;
+                mesh->m_puIndices[i++] = c;
+                mesh->m_puIndices[i++] = b;
+                mesh->m_puIndices[i++] = c;
+                mesh->m_puIndices[i++] = a;
+                mesh->m_puIndices[i++] = d;
+            }
+        }
+
+        mesh->GenerateNormals();
+
+
+        std::string strName = std::to_string(uCoordX) + "_" + std::to_string(uCoordY);
+        std::ofstream file(strName + ".obj");
+
+        
+        
+
+        file << "o " << strName << '\n';
+
+        for (uint32_t i = 0; i < mesh->m_uNumVerts; i++) {
+            glm::vec3 pos = mesh->m_pxVertexPositions[i];
+            file << "v ";
+            file << std::to_string(pos[0]) << " ";
+            file << std::to_string(pos[1]) << " ";
+            file << std::to_string(pos[2]) << '\n';
+        }
+        for (uint32_t i = 0; i < mesh->m_uNumVerts; i++) {
+            glm::vec2 uv = mesh->m_pxUVs[i];
+            file << "vt ";
+            file << std::to_string(uv[0]) << " ";
+            file << std::to_string(uv[1]) << '\n';
+        }
+        for (uint32_t i = 0; i < mesh->m_uNumIndices; i+= 3) {
+            file << "f ";
+            file << mesh->m_puIndices[i] + 1 << '/' << mesh->m_puIndices[i] + 1 << ' ';
+            file << mesh->m_puIndices[i+1] + 1 << '/' << mesh->m_puIndices[i+1] + 1 << ' ';
+            file << mesh->m_puIndices[i+2] + 1 << '/' << mesh->m_puIndices[i+2] + 1;
+            file << '\n';
+        }
+        file.close();
+        delete mesh;
+    }
+
     void GenerateHeightmapData() {
         // Read the large source image
         cv::Mat xHeightmap = cv::imread("C:\\dev\\VeryCoolEngine\\Assets\\Textures\\Heightmaps\\Test\\heightmap.png");
@@ -112,6 +196,8 @@ namespace VeryCoolEngine {
                 // Save the modified tile
                 cv::flip(xImgOut, xImgOutFlipped, 0);
                 cv::imwrite(strOut, xImgOutFlipped);
+
+                WriteMesh(xImgOutFlipped, x, y);
 
                 // Output to asset and scene files
                 GUID xAssetGUID;

@@ -111,6 +111,10 @@ namespace VeryCoolEngine {
 
 		static Mesh* FromFile(const std::string& path, bool swapYZ = false);
 
+		void GenerateNormals();
+		void GenerateTangents();
+		glm::vec4 GenerateTangent(uint32_t uA, uint32_t uB, uint32_t uC);
+
 
 		std::vector<BufferElement> m_axInstanceData;
 		uint32_t m_uNumInstances = 1;
@@ -177,6 +181,14 @@ namespace VeryCoolEngine {
 
 		Material* m_pxMaterial = nullptr;
 
+		glm::vec3* m_pxVertexPositions = nullptr;
+		glm::vec2* m_pxUVs = nullptr;
+		glm::vec3* m_pxNormals = nullptr;
+		glm::vec3* m_pxTangents = nullptr;
+		glm::vec3* m_pxBitangents = nullptr;
+		unsigned int* m_puIndices = nullptr;
+		BoneData* m_pxBoneDatas = nullptr;
+
 	protected:
 		VertexArray* m_pxVertexArray;
 		Shader* m_pxShader;//#todo this should be in material
@@ -187,22 +199,14 @@ namespace VeryCoolEngine {
 		
 		std::vector<BoneData> m_xBoneData;
 
-		glm::vec3* m_pxVertexPositions = nullptr;
-		glm::vec2* m_pxUVs = nullptr;
-		glm::vec3* m_pxNormals = nullptr;
-		glm::vec3* m_pxTangents = nullptr;
-		glm::vec3* m_pxBitangents = nullptr;
-		unsigned int* m_puIndices = nullptr;
-		BoneData* m_pxBoneDatas = nullptr;
+		
 
 		
 		void* m_pVerts;
 
 		
 
-		void GenerateNormals();
-		void GenerateTangents();
-		glm::vec4 GenerateTangent(uint32_t uA, uint32_t uB, uint32_t uC);
+		
 
 	};
 

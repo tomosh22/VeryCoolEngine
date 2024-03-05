@@ -10,6 +10,10 @@ layout(location = 1) in vec3 _aNormal[];
 layout(location = 2) in vec3 _aTangent[];
 layout(location = 3) in vec3 _aBitangent[];
 layout(location = 4) in vec3 _aWorldPos[];
+layout(location = 5) in vec2 o_xOtherUV0[];
+layout(location = 6) in vec2 o_xOtherUV1[];
+layout(location = 7) in vec3 o_xOtherPos0[];
+layout(location = 8) in vec3 o_xOtherPos1[];
 
 layout(location = 0) out vec2 _oUV;
 layout(location = 1) out vec3 _oNormal;
@@ -66,6 +70,11 @@ void main(){
 
     _oUV = TriMixVec2(_aUV[0], _aUV[1], _aUV[2]);
 	
+	vec2 otherUV0 = TriMixVec2(o_xOtherUV0[0], o_xOtherUV0[1], o_xOtherUV0[2]);
+	vec2 otherUV1 = TriMixVec2(o_xOtherUV1[0], o_xOtherUV1[1], o_xOtherUV1[2]);
+	vec3 otherPos0 = TriMixVec3(o_xOtherPos0[0], o_xOtherPos0[1], o_xOtherPos0[2]);
+	vec3 otherPos1 = TriMixVec3(o_xOtherPos1[0], o_xOtherPos1[1], o_xOtherPos1[2]);
+	
 	vec3 combinedNormal = TriMixVec3(_aNormal[0], _aNormal[1], _aNormal[2]);
 
     // Compute the displaced positions
@@ -74,16 +83,16 @@ void main(){
     displacedPos.y += height * heightMultiplier;
     displacedPos.y += texture(detailHeightmap , _oUV * uvScale ).x * (heightMultiplier * 0.001f);
 
-    #if 0
-	/*
-    vec3 displacedNormal0 = ComputeNormal(displacedPos, CalculateTemporaryPosition(0), CalculateTemporaryPosition(1));
-    vec3 displacedNormal1 = ComputeNormal(displacedPos, CalculateTemporaryPosition(1), CalculateTemporaryPosition(2));
-    vec3 displacedNormal2 = ComputeNormal(displacedPos, CalculateTemporaryPosition(0), CalculateTemporaryPosition(2));
+    #if 1
+	float otherHeight0 = texture(heightMap , otherUV0 ).x;
+	otherPos0.y += otherHeight0 * heightMultiplier;
+	otherPos0.y += texture(detailHeightmap , otherUV0 * uvScale ).x * (heightMultiplier * 0.001f);
 	
-	vec3 displacedNormal = normalize(displacedNormal0 + displacedNormal1 + displacedNormal2);
-	*/
-	vec3 averagePosition = (CalculateTemporaryPosition(0) + CalculateTemporaryPosition(1) + CalculateTemporaryPosition(2)) / 3.f;
-	vec3 displacedNormal = normalize(displacedPos - averagePosition);
+	float otherHeight1 = texture(heightMap , otherUV1 ).x;
+	otherPos1.y += otherHeight1 * heightMultiplier;
+	otherPos1.y += texture(detailHeightmap , otherUV1 * uvScale ).x * (heightMultiplier * 0.001f);
+	
+	vec3 displacedNormal = ComputeNormal(otherPos0, otherPos1, displacedPos);
 	#else
 	vec3 displacedNormal = ComputeNormal(CalculateTemporaryPosition(0), CalculateTemporaryPosition(1), CalculateTemporaryPosition(2));
 	#endif
