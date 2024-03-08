@@ -1,4 +1,5 @@
 #include "vcepch.h"
+#include "VeryCoolEngine/Log.h"
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include "VeryCoolEngine/core.h"
@@ -75,7 +76,9 @@ namespace VeryCoolEngine {
         }
     }
 
-    void WriteMesh(cv::Mat& xImage, uint32_t uCoordX, uint32_t uCoordY) {
+#define HEIGHTMAP_MESH_DENSITY 5
+
+    void WriteMesh(cv::Mat& xImage) {
         uint32_t uWidth = xImage.cols;
         uint32_t uHeight = xImage.rows;
 
@@ -83,8 +86,8 @@ namespace VeryCoolEngine {
         mesh->m_pxBufferLayout = new BufferLayout();
         glm::vec3 vertexScale = glm::vec3(1.0f, 1.0f, 1.0f);
         glm::vec2 textureScale = glm::vec2(100, 100);
-        mesh->m_uNumVerts = uWidth * uHeight;
-        mesh->m_uNumIndices = (uWidth - 1) * (uHeight - 1) * 6;
+        mesh->m_uNumVerts = uWidth * uHeight * HEIGHTMAP_MESH_DENSITY * HEIGHTMAP_MESH_DENSITY;
+        mesh->m_uNumIndices = ((uWidth * HEIGHTMAP_MESH_DENSITY) - 1) * ((uHeight * HEIGHTMAP_MESH_DENSITY) - 1) * 6;
         mesh->m_pxVertexPositions = new glm::vec3[mesh->m_uNumVerts];
         mesh->m_pxUVs = new glm::vec2[mesh->m_uNumVerts];
         mesh->m_pxNormals = new glm::vec3[mesh->m_uNumVerts];
@@ -98,22 +101,46 @@ namespace VeryCoolEngine {
 
 
 
-        for (int z = 0; z < uHeight; ++z) {
-            for (int x = 0; x < uWidth; ++x) {
-                int offset = (z * uWidth) + x;
-                mesh->m_pxVertexPositions[offset] = glm::vec3(x, xImage.at<cv::Vec3b>(z,x).val[0], z) * vertexScale;
+        for (uint32_t z = 0; z < uHeight * HEIGHTMAP_MESH_DENSITY; ++z) {
+            for (uint32_t x = 0; x < uWidth * HEIGHTMAP_MESH_DENSITY; ++x) {
+                glm::vec2 xUV = { (double)x / HEIGHTMAP_MESH_DENSITY , (double)z / HEIGHTMAP_MESH_DENSITY };
+                uint32_t offset = (z * uWidth * HEIGHTMAP_MESH_DENSITY) + x;
+
+                uint32_t x0 = std::floor(xUV.x);
+                uint32_t x1 = std::min((uint32_t)std::ceil(xUV.x), uWidth-1);
+                uint32_t y0 = std::floor(xUV.y);
+                uint32_t y1 = std::min((uint32_t)std::ceil(xUV.y), uHeight -1);
+
+                typedef cv::Vec<float, 3> type;
+
+                type topLeft = xImage.at<type>(y0, x0);
+                type topRight = xImage.at<type>(y0, x1);
+                type bottomLeft = xImage.at<type>(y1, x0);
+                type bottomRight = xImage.at<type>(y1, x1);
+
+                double weightX = xUV.x - x0;
+                double weightY = xUV.y - y0;
+
+
+                double top = topRight.val[0] * weightX + topLeft.val[0] * (1.f - weightX);
+                double bottom = bottomRight.val[0] * weightX + bottomLeft.val[0] * (1.f - weightX);
+
+                double finalVal = bottom * weightY + top * (1.f - weightY);
+
+                mesh->m_pxVertexPositions[offset] = glm::vec3((double)x / HEIGHTMAP_MESH_DENSITY, finalVal * 100.l, (double)z / HEIGHTMAP_MESH_DENSITY) * vertexScale;
                 glm::vec2 fUV = glm::vec2(x, z) / textureScale;
-                mesh->m_pxUVs[offset] = fUV;
+                mesh->m_pxUVs[offset] = fUV / (float)HEIGHTMAP_MESH_DENSITY;
+
             }
         }
 
         size_t i = 0;
-        for (int z = 0; z < uHeight - 1; ++z) {
-            for (int x = 0; x < uWidth - 1; ++x) {
-                int a = (z * uWidth) + x;
-                int b = (z * uWidth) + x + 1;
-                int c = ((z + 1) * uWidth) + x + 1;
-                int d = ((z + 1) * uWidth) + x;
+        for (int z = 0; z < (uHeight * HEIGHTMAP_MESH_DENSITY) - 1; ++z) {
+            for (int x = 0; x < (uWidth * HEIGHTMAP_MESH_DENSITY) - 1; ++x) {
+                int a = (z * (uWidth * HEIGHTMAP_MESH_DENSITY)) + x;
+                int b = (z * (uWidth * HEIGHTMAP_MESH_DENSITY)) + x + 1;
+                int c = ((z + 1) * (uWidth * HEIGHTMAP_MESH_DENSITY)) + x + 1;
+                int d = ((z + 1) * (uWidth * HEIGHTMAP_MESH_DENSITY)) + x;
                 mesh->m_puIndices[i++] = a;
                 mesh->m_puIndices[i++] = c;
                 mesh->m_puIndices[i++] = b;
@@ -126,51 +153,72 @@ namespace VeryCoolEngine {
         mesh->GenerateNormals();
 
 
-        std::string strName = std::to_string(uCoordX) + "_" + std::to_string(uCoordY);
+        std::string strName = "TerrainMesh";
         std::ofstream file(strName + ".obj");
 
         
-        
+        std::chrono::high_resolution_clock::time_point xNow = std::chrono::high_resolution_clock::now();
+
+        std::stringstream strPositions;
+        std::stringstream strUVs;
+        std::stringstream strFaces;
+        std::thread xPositionsThread([&strPositions, &mesh](void) {
+            for (uint32_t i = 0; i < mesh->m_uNumVerts; i++) {
+                glm::vec3 pos = mesh->m_pxVertexPositions[i];
+                strPositions << "v ";
+                strPositions << pos[0] << " ";
+                strPositions << pos[1] << " ";
+                strPositions << pos[2] << '\n';
+            }
+            });
+        std::thread xUVsThread([&strUVs, &mesh](void) {
+            for (uint32_t i = 0; i < mesh->m_uNumVerts; i++) {
+                glm::vec2 uv = mesh->m_pxUVs[i];
+                strUVs << "vt ";
+                strUVs << uv[0] << " ";
+                strUVs << uv[1] << '\n';
+            }
+            });
+        std::thread xFacesThread([&strFaces, &mesh](void) {
+            for (uint32_t i = 0; i < mesh->m_uNumIndices; i += 3) {
+                strFaces << "f ";
+                strFaces << mesh->m_puIndices[i] + 1 << '/' << mesh->m_puIndices[i] + 1 << ' ';
+                strFaces << mesh->m_puIndices[i + 1] + 1 << '/' << mesh->m_puIndices[i + 1] + 1 << ' ';
+                strFaces << mesh->m_puIndices[i + 2] + 1 << '/' << mesh->m_puIndices[i + 2] + 1;
+                strFaces << '\n';
+            }
+            });
 
         file << "o " << strName << '\n';
-
-        for (uint32_t i = 0; i < mesh->m_uNumVerts; i++) {
-            glm::vec3 pos = mesh->m_pxVertexPositions[i];
-            file << "v ";
-            file << std::to_string(pos[0]) << " ";
-            file << std::to_string(pos[1]) << " ";
-            file << std::to_string(pos[2]) << '\n';
-        }
-        for (uint32_t i = 0; i < mesh->m_uNumVerts; i++) {
-            glm::vec2 uv = mesh->m_pxUVs[i];
-            file << "vt ";
-            file << std::to_string(uv[0]) << " ";
-            file << std::to_string(uv[1]) << '\n';
-        }
-        for (uint32_t i = 0; i < mesh->m_uNumIndices; i+= 3) {
-            file << "f ";
-            file << mesh->m_puIndices[i] + 1 << '/' << mesh->m_puIndices[i] + 1 << ' ';
-            file << mesh->m_puIndices[i+1] + 1 << '/' << mesh->m_puIndices[i+1] + 1 << ' ';
-            file << mesh->m_puIndices[i+2] + 1 << '/' << mesh->m_puIndices[i+2] + 1;
-            file << '\n';
-        }
+        xPositionsThread.join();
+        xUVsThread.join();
+        xFacesThread.join();
+        file << strPositions.str();
+        file << strUVs.str();
+        file << strFaces.str();
+        
+        
+        
         file.close();
         delete mesh;
+
+        uint32_t uNumSeconds = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - xNow).count();
+        VCE_TRACE("Mesh export took {} seconds", uNumSeconds);
     }
 
     void GenerateHeightmapData() {
         // Read the large source image
-        cv::Mat xHeightmap = cv::imread("C:\\dev\\VeryCoolEngine\\Assets\\Textures\\Heightmaps\\Test\\heightmap.png");
+        cv::Mat xHeightmap = cv::imread("C:\\dev\\VeryCoolEngine\\Assets\\Textures\\Heightmaps\\Test\\heightmap.hdr", cv::IMREAD_ANYDEPTH);
 
         if (xHeightmap.empty()) {
             std::cerr << "Invalid image" << std::endl;
             return;
         }
 
-        PreprocessHeightmap(xHeightmap);
+        //PreprocessHeightmap(xHeightmap);
 
         // Save the preprocessed heightmap as a PNG file
-        cv::imwrite("C:\\dev\\VeryCoolEngine\\Assets\\Textures\\Heightmaps\\Test\\preprocessed_heightmap.png", xHeightmap);
+        //cv::imwrite("C:\\dev\\VeryCoolEngine\\Assets\\Textures\\Heightmaps\\Test\\preprocessed_heightmap.png", xHeightmap);
 
         uint32_t uImageWidth = xHeightmap.cols;
         uint32_t uImageHeight = xHeightmap.rows;
@@ -186,6 +234,10 @@ namespace VeryCoolEngine {
         std::ofstream xAssetsOut("C:\\dev\\VeryCoolEngine\\Game\\heightmap.vceassets");
         std::ofstream xSceneOut("C:\\dev\\VeryCoolEngine\\Game\\heightmap.vcescene");
 
+        WriteMesh(xHeightmap);
+
+        return;
+
         for (uint32_t x = 0; x < uNumSplitsX; x++) {
             for (uint32_t y = 0; y < uNumSplitsY; y++) {
                 std::string strOut = "C:\\dev\\VeryCoolEngine\\Assets\\Textures\\Heightmaps\\Test\\" + std::to_string(x) + "_" + std::to_string(y) + ".png";
@@ -197,7 +249,7 @@ namespace VeryCoolEngine {
                 cv::flip(xImgOut, xImgOutFlipped, 0);
                 cv::imwrite(strOut, xImgOutFlipped);
 
-                WriteMesh(xImgOutFlipped, x, y);
+                
 
                 // Output to asset and scene files
                 GUID xAssetGUID;
