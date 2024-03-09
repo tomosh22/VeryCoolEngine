@@ -115,6 +115,8 @@ namespace VeryCoolEngine {
 		void GenerateTangents();
 		glm::vec4 GenerateTangent(uint32_t uA, uint32_t uB, uint32_t uC);
 
+		void WriteToObj(const char* szFilename);
+
 
 		std::vector<BufferElement> m_axInstanceData;
 		uint32_t m_uNumInstances = 1;

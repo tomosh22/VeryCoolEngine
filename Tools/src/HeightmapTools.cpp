@@ -76,9 +76,9 @@ namespace VeryCoolEngine {
         }
     }
 
-#define HEIGHTMAP_MESH_DENSITY 5
+#define HEIGHTMAP_MESH_DENSITY 1
 
-    void WriteMesh(cv::Mat& xImage) {
+    Mesh* WriteMesh(cv::Mat& xImage) {
         uint32_t uWidth = xImage.cols;
         uint32_t uHeight = xImage.rows;
 
@@ -152,6 +152,7 @@ namespace VeryCoolEngine {
 
         mesh->GenerateNormals();
 
+        return mesh;
 
         std::string strName = "TerrainMesh";
         std::ofstream file(strName + ".obj");
@@ -200,66 +201,91 @@ namespace VeryCoolEngine {
         
         
         file.close();
-        delete mesh;
+        return mesh;
 
         uint32_t uNumSeconds = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - xNow).count();
         VCE_TRACE("Mesh export took {} seconds", uNumSeconds);
     }
 
     void GenerateHeightmapData() {
-        // Read the large source image
         cv::Mat xHeightmap = cv::imread("C:\\dev\\VeryCoolEngine\\Assets\\Textures\\Heightmaps\\Test\\heightmap.hdr", cv::IMREAD_ANYDEPTH);
 
-        if (xHeightmap.empty()) {
-            std::cerr << "Invalid image" << std::endl;
-            return;
-        }
-
-        //PreprocessHeightmap(xHeightmap);
-
-        // Save the preprocessed heightmap as a PNG file
-        //cv::imwrite("C:\\dev\\VeryCoolEngine\\Assets\\Textures\\Heightmaps\\Test\\preprocessed_heightmap.png", xHeightmap);
+        VCE_ASSERT(!xHeightmap.empty(), "Invalid image");
 
         uint32_t uImageWidth = xHeightmap.cols;
         uint32_t uImageHeight = xHeightmap.rows;
 
-        if (uImageWidth % TERRAIN_SIZE != 0 || uImageHeight % TERRAIN_SIZE != 0) {
-            std::cerr << "Heightmap width or height is not multiple of TERRAIN_SIZE" << std::endl;
-            return;
-        }
+        
+
+        VCE_ASSERT((uImageWidth * HEIGHTMAP_MESH_DENSITY) % TERRAIN_SIZE == 0, "Invalid terrain width");
+        VCE_ASSERT((uImageHeight * HEIGHTMAP_MESH_DENSITY) % TERRAIN_SIZE == 0, "Invalid terrain height");
 
         uint32_t uNumSplitsX = uImageWidth / TERRAIN_SIZE;
-        uint32_t uNumSplitsY = uImageHeight / TERRAIN_SIZE;
+        uint32_t uNumSplitsZ = uImageHeight / TERRAIN_SIZE;
 
-        std::ofstream xAssetsOut("C:\\dev\\VeryCoolEngine\\Game\\heightmap.vceassets");
-        std::ofstream xSceneOut("C:\\dev\\VeryCoolEngine\\Game\\heightmap.vcescene");
+        //std::ofstream xAssetsOut("C:\\dev\\VeryCoolEngine\\Game\\heightmap.vceassets");
+        //std::ofstream xSceneOut("C:\\dev\\VeryCoolEngine\\Game\\heightmap.vcescene");
 
-        WriteMesh(xHeightmap);
+        Mesh* pxMesh = WriteMesh(xHeightmap);
+        
 
-        return;
+        for (uint32_t z = 0; z < uNumSplitsZ; z++) {
+            for (uint32_t x = 0; x < uNumSplitsX; x++) {
+                Mesh* pxSubMesh = Mesh::Create();
+                pxSubMesh->m_pxBufferLayout = new BufferLayout();
+                pxSubMesh->m_uNumVerts = TERRAIN_SIZE * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY * HEIGHTMAP_MESH_DENSITY;
+                pxSubMesh->m_uNumIndices = ((TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) - 1) * ((TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) - 1) * 6;
+                pxSubMesh->m_pxVertexPositions = new glm::vec3[pxSubMesh->m_uNumVerts];
+                pxSubMesh->m_pxUVs = new glm::vec2[pxSubMesh->m_uNumVerts];
+                pxSubMesh->m_pxNormals = new glm::vec3[pxSubMesh->m_uNumVerts];
+                pxSubMesh->m_pxTangents = new glm::vec3[pxSubMesh->m_uNumVerts];
+                for (size_t i = 0; i < pxSubMesh->m_uNumVerts; i++)
+                {
+                    pxSubMesh->m_pxNormals[i] = { 0,0,0 };
+                    pxSubMesh->m_pxTangents[i] = { 0,0,0 };
+                }
+                pxSubMesh->m_puIndices = new unsigned int[pxSubMesh->m_uNumIndices] {0};
 
-        for (uint32_t x = 0; x < uNumSplitsX; x++) {
-            for (uint32_t y = 0; y < uNumSplitsY; y++) {
-                std::string strOut = "C:\\dev\\VeryCoolEngine\\Assets\\Textures\\Heightmaps\\Test\\" + std::to_string(x) + "_" + std::to_string(y) + ".png";
-                cv::Rect xRect(x * TERRAIN_SIZE, y * TERRAIN_SIZE, TERRAIN_SIZE, TERRAIN_SIZE);
-                cv::Mat xImgOut = xHeightmap(xRect).clone(); // Clone to avoid modifying original data
-                cv::Mat xImgOutFlipped;
 
-                // Save the modified tile
-                cv::flip(xImgOut, xImgOutFlipped, 0);
-                cv::imwrite(strOut, xImgOutFlipped);
+                for (int subZ = 0; subZ < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY; ++subZ) {
+                    for (int subX = 0; subX < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY; ++subX) {
+                        int newOffset = (subZ * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) + subX;
+                        int oldOffset = (subZ * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY * uNumSplitsZ) + subX + x;
+                        pxSubMesh->m_pxVertexPositions[newOffset] = pxMesh->m_pxVertexPositions[oldOffset];
+                        pxSubMesh->m_pxUVs[newOffset] = pxMesh->m_pxUVs[oldOffset];
+                        pxSubMesh->m_pxNormals[newOffset] = pxMesh->m_pxNormals[oldOffset];
+                    }
+                }
+
+                size_t i = 0;
+                for (int z = 0; z < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY - 1; ++z) {
+                    for (int x = 0; x < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY - 1; ++x) {
+                        int a = (z * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) + x;
+                        int b = (z * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) + x + 1;
+                        int c = ((z + 1) * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) + x + 1;
+                        int d = ((z + 1) * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) + x;
+                        pxSubMesh->m_puIndices[i++] = a;
+                        pxSubMesh->m_puIndices[i++] = c;
+                        pxSubMesh->m_puIndices[i++] = b;
+                        pxSubMesh->m_puIndices[i++] = c;
+                        pxSubMesh->m_puIndices[i++] = a;
+                        pxSubMesh->m_puIndices[i++] = d;
+                    }
+                }
+
+                pxSubMesh->WriteToObj((std::to_string(x) + "_" + std::to_string(z) + ".obj").c_str());
 
                 
 
                 // Output to asset and scene files
                 GUID xAssetGUID;
                 GUID xSceneGUID;
-                xAssetsOut << "Texture2D\n" << xAssetGUID.m_uGuid << '\n' << "0\n" << "Heightmaps/Test/" << std::to_string(x) + "_" + std::to_string(y) + ".png\n";
-                xSceneOut << "Entity\n" << xSceneGUID.m_uGuid << '\n' << "0\n" << "Terrain" << std::to_string(x) + "_" + std::to_string(y) << '\n' << "TerrainComponent\n" << xAssetGUID.m_uGuid << "\n1538048126\n" << x << ' ' << y << "\nEndEntity\n";
+                //xAssetsOut << "Texture2D\n" << xAssetGUID.m_uGuid << '\n' << "0\n" << "Heightmaps/Test/" << std::to_string(x) + "_" + std::to_string(z) + ".png\n";
+                //xSceneOut << "Entity\n" << xSceneGUID.m_uGuid << '\n' << "0\n" << "Terrain" << std::to_string(x) + "_" + std::to_string(z) << '\n' << "TerrainComponent\n" << xAssetGUID.m_uGuid << "\n1538048126\n" << x << ' ' << z << "\nEndEntity\n";
             }
         }
 
-        xAssetsOut.close();
-        xSceneOut.close();
+        //xAssetsOut.close();
+       // xSceneOut.close();
     }
 }

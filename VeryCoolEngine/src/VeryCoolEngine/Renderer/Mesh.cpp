@@ -708,4 +708,54 @@ namespace VeryCoolEngine {
 		float handedness = glm::dot(biCross,binormal) < 0.f ? -1.f : 1.f;
 		return glm::vec4(tangent.x,tangent.y,tangent.z,handedness);
 	}
+
+	void Mesh::WriteToObj(const char* szFilename) {
+		std::chrono::high_resolution_clock::time_point xNow = std::chrono::high_resolution_clock::now();
+
+		std::ofstream file(szFilename);
+
+		std::stringstream strPositions;
+		std::stringstream strUVs;
+		std::stringstream strFaces;
+		std::thread xPositionsThread([&](void) {
+			for (uint32_t i = 0; i < m_uNumVerts; i++) {
+				glm::vec3 pos = m_pxVertexPositions[i];
+				strPositions << "v ";
+				strPositions << pos[0] << " ";
+				strPositions << pos[1] << " ";
+				strPositions << pos[2] << '\n';
+			}
+			});
+		std::thread xUVsThread([&](void) {
+			for (uint32_t i = 0; i < m_uNumVerts; i++) {
+				glm::vec2 uv = m_pxUVs[i];
+				strUVs << "vt ";
+				strUVs << uv[0] << " ";
+				strUVs << uv[1] << '\n';
+			}
+			});
+		std::thread xFacesThread([&](void) {
+			for (uint32_t i = 0; i < m_uNumIndices; i += 3) {
+				strFaces << "f ";
+				strFaces << m_puIndices[i] + 1 << '/' << m_puIndices[i] + 1 << ' ';
+				strFaces << m_puIndices[i + 1] + 1 << '/' << m_puIndices[i + 1] + 1 << ' ';
+				strFaces << m_puIndices[i + 2] + 1 << '/' << m_puIndices[i + 2] + 1;
+				strFaces << '\n';
+			}
+			});
+
+		file << "o " << "Mesh" << '\n';
+		xPositionsThread.join();
+		xUVsThread.join();
+		xFacesThread.join();
+		file << strPositions.str();
+		file << strUVs.str();
+		file << strFaces.str();
+
+
+		file.close();
+
+		uint32_t uNumSeconds = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - xNow).count();
+		VCE_TRACE("Mesh export took {} seconds", uNumSeconds);
+	}
 }
