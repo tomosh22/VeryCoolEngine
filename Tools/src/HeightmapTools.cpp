@@ -244,13 +244,13 @@ namespace VeryCoolEngine {
                     pxSubMesh->m_pxNormals[i] = { 0,0,0 };
                     pxSubMesh->m_pxTangents[i] = { 0,0,0 };
                 }
-                pxSubMesh->m_puIndices = new unsigned int[pxSubMesh->m_uNumIndices] {0};
+                pxSubMesh->m_puIndices = new uint32_t[pxSubMesh->m_uNumIndices] {0};
 
 
-                for (int subZ = 0; subZ < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY; ++subZ) {
-                    for (int subX = 0; subX < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY; ++subX) {
-                        int newOffset = (subZ * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) + subX;
-                        int oldOffset = (subZ * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY * uNumSplitsZ) + subX + x;
+                for (uint32_t subZ = 0; subZ < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY; subZ++) {
+                    for (uint32_t subX = 0; subX < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY; subX++) {
+                        uint32_t newOffset = (subZ * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) + subX;
+                        uint32_t oldOffset = (subZ * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY * uNumSplitsZ) + (z * uImageWidth * HEIGHTMAP_MESH_DENSITY * TERRAIN_SIZE) + subX + x * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY;
                         pxSubMesh->m_pxVertexPositions[newOffset] = pxMesh->m_pxVertexPositions[oldOffset];
                         pxSubMesh->m_pxUVs[newOffset] = pxMesh->m_pxUVs[oldOffset];
                         pxSubMesh->m_pxNormals[newOffset] = pxMesh->m_pxNormals[oldOffset];
@@ -258,12 +258,12 @@ namespace VeryCoolEngine {
                 }
 
                 size_t i = 0;
-                for (int z = 0; z < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY - 1; ++z) {
-                    for (int x = 0; x < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY - 1; ++x) {
-                        int a = (z * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) + x;
-                        int b = (z * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) + x + 1;
-                        int c = ((z + 1) * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) + x + 1;
-                        int d = ((z + 1) * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) + x;
+                for (uint32_t indexZ = 0; indexZ < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY - 1; indexZ++) {
+                    for (uint32_t indexX = 0; indexX < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY - 1; indexX++) {
+                        uint32_t a = (indexZ * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) + indexX;
+                        uint32_t b = (indexZ * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) + indexX + 1;
+                        uint32_t c = ((indexZ + 1) * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) + indexX + 1;
+                        uint32_t d = ((indexZ + 1) * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) + indexX;
                         pxSubMesh->m_puIndices[i++] = a;
                         pxSubMesh->m_puIndices[i++] = c;
                         pxSubMesh->m_puIndices[i++] = b;
@@ -277,7 +277,6 @@ namespace VeryCoolEngine {
 
                 
 
-                // Output to asset and scene files
                 GUID xAssetGUID;
                 GUID xSceneGUID;
                 //xAssetsOut << "Texture2D\n" << xAssetGUID.m_uGuid << '\n' << "0\n" << "Heightmaps/Test/" << std::to_string(x) + "_" + std::to_string(z) + ".png\n";
