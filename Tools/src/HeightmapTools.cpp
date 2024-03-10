@@ -76,7 +76,7 @@ namespace VeryCoolEngine {
         }
     }
 
-#define HEIGHTMAP_MESH_DENSITY 1
+#define HEIGHTMAP_MESH_DENSITY 4
 
     Mesh* WriteMesh(cv::Mat& xImage) {
         uint32_t uWidth = xImage.cols;
@@ -250,7 +250,7 @@ namespace VeryCoolEngine {
                 for (uint32_t subZ = 0; subZ < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY; subZ++) {
                     for (uint32_t subX = 0; subX < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY; subX++) {
                         uint32_t newOffset = (subZ * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY) + subX;
-                        uint32_t oldOffset = (subZ * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY * uNumSplitsZ) + (z * uImageWidth * HEIGHTMAP_MESH_DENSITY * TERRAIN_SIZE) + subX + x * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY;
+                        uint32_t oldOffset = (subZ * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY * uNumSplitsZ) + (z * uImageWidth * HEIGHTMAP_MESH_DENSITY * TERRAIN_SIZE * uNumSplitsZ) + subX + x * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY;
                         pxSubMesh->m_pxVertexPositions[newOffset] = pxMesh->m_pxVertexPositions[oldOffset];
                         pxSubMesh->m_pxUVs[newOffset] = pxMesh->m_pxUVs[oldOffset];
                         pxSubMesh->m_pxNormals[newOffset] = pxMesh->m_pxNormals[oldOffset];
