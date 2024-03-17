@@ -715,15 +715,19 @@ namespace VeryCoolEngine {
 		std::ofstream file(szFilename);
 
 		std::stringstream strPositions;
+		strPositions.precision(32);
 		std::stringstream strUVs;
 		std::stringstream strFaces;
 		std::thread xPositionsThread([&](void) {
 			for (uint32_t i = 0; i < m_uNumVerts; i++) {
 				glm::vec3 pos = m_pxVertexPositions[i];
 				strPositions << "v ";
-				strPositions << pos[0] << " ";
-				strPositions << pos[1] << " ";
-				strPositions << pos[2] << '\n';
+				double dOutX = static_cast<double>(pos[0]);
+				double dOutY = static_cast<double>(pos[1]);
+				double dOutZ = static_cast<double>(pos[2]);
+				strPositions << dOutX << " ";
+				strPositions << dOutY << " ";
+				strPositions << dOutZ << '\n';
 			}
 			});
 		std::thread xUVsThread([&](void) {

@@ -14,7 +14,6 @@
 #ifdef VCE_VULKAN
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 #endif
-#include "VeryCoolEngine/Renderer/HeightmapTexture.h"
 
 #define USE_TESSELATION
 
@@ -241,8 +240,7 @@ namespace VeryCoolEngine {
 #endif
 					{
 						{3,0},
-						{0,5},
-						{0,1}
+						{0,5}
 					}
 					)
 			});
@@ -478,9 +476,6 @@ namespace VeryCoolEngine {
 		
 		m_pxCurrentScene = new Scene("TestScene.vcescene");
 		m_pxCurrentScene->LoadAssets("heightmap.vcescene");
-		//#TO_TODO: do i want these handled by assethandler?
-		for (HeightmapTexture* pxHeightmap : m_apxHeightmapTextures)
-			pxHeightmap->PlatformInit();
 		m_pxPlaneMesh->PlatformInit();
 
 #ifdef VCE_USE_EDITOR

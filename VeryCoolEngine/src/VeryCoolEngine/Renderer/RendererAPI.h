@@ -131,7 +131,6 @@ namespace VeryCoolEngine {
 			virtual void BindMaterial(Material* pxMaterial, uint32_t uSet) = 0;
 			//TODO: this will be a model when i stop duplicating animation data
 			virtual void BindAnimation(Mesh* pxModel, uint32_t uSet) = 0;
-			virtual void BindHeightmapTexture(HeightmapTexture* pxHeightmap, uint32_t uSet) = 0;
 
 			virtual void* Platform_GetCurrentCmdBuffer() const = 0;
 

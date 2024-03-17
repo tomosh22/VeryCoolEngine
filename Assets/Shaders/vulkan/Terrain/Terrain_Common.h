@@ -41,7 +41,6 @@ layout(set = 1, binding = 1) uniform sampler2D bumpMap;
 layout(set = 1, binding = 2) uniform sampler2D roughnessTex;
 layout(set = 1, binding = 3) uniform sampler2D metallicTex;
 layout(set = 1, binding = 4) uniform sampler2D detailHeightmap;
-layout(set = 2, binding = 0) uniform sampler2D heightMap;
 
 const float fReflectivity = 0.99f;
 

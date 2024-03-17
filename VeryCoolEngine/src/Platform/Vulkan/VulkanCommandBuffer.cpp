@@ -7,7 +7,6 @@
 #include "VulkanPipelineBuilder.h"
 #include "VulkanManagedUniformBuffer.h"
 #include "VulkanMaterial.h"
-#include "VulkanHeightmapTexture.h"
 #include "VulkanMesh.h"
 #include "VulkanRenderPass.h"
 
@@ -197,14 +196,6 @@ namespace VeryCoolEngine {
 		m_pxUniformBuffer->UploadData(pData, uSize, m_pxRenderer->m_currentFrame);
 	}
 
-
-	void VulkanCommandBuffer::BindHeightmapTexture(HeightmapTexture* pxHeightmap, uint32_t uSet)
-	{
-		VCE_ASSERT(pxHeightmap->m_bInitialised, "Binding uninitialised heightmap");
-		VulkanHeightmapTexture* pxVkHeightmap = dynamic_cast<VulkanHeightmapTexture*>(pxHeightmap);
-
-		m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxCurrentPipeline->m_xPipelineLayout, uSet, 1, &pxVkHeightmap->m_xDescSet, 0, nullptr);
-	}
 
 	void VulkanCommandBuffer::BindMaterial(Material* pxMaterial, uint32_t uSet)
 	{

@@ -183,7 +183,7 @@ namespace VeryCoolEngine {
 
 		Material* m_pxMaterial = nullptr;
 
-		glm::vec3* m_pxVertexPositions = nullptr;
+		glm::highp_vec3* m_pxVertexPositions = nullptr;
 		glm::vec2* m_pxUVs = nullptr;
 		glm::vec3* m_pxNormals = nullptr;
 		glm::vec3* m_pxTangents = nullptr;

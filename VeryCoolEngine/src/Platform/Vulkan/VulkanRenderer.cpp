@@ -315,14 +315,18 @@ void VulkanRenderer::DrawHeightmapTerrain(Scene* pxScene) {
 			int bSelected;
 		} xPushConstant;
 		//#TO_TODO: model matrix of terrain and is selected
-		xPushConstant.xMatrix = glm::translate(glm::identity<glm::highp_mat4>(), { TERRAIN_SIZE * pxTerrainComponent->m_iCoordX * 2,0,TERRAIN_SIZE * pxTerrainComponent->m_iCoordY * 2 }) * glm::scale(glm::identity<glm::highp_mat4>(), { TERRAIN_SIZE,1,TERRAIN_SIZE });
+		xPushConstant.xMatrix =
+#if 0
+			glm::translate(glm::identity<glm::highp_mat4>(), { TERRAIN_SIZE * pxTerrainComponent->m_iCoordX,0,TERRAIN_SIZE * pxTerrainComponent->m_iCoordY }) * glm::scale(glm::identity<glm::highp_mat4>(), { 1,1,1 });
+#else
+			glm::identity<glm::highp_mat4>();
+#endif
 		xPushConstant.bSelected = 0;
-		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(pxQuadMesh);
+		VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(pxTerrainComponent->m_pxMesh);
 		m_pxTerrainCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
 		m_pxTerrainCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
 
 		m_pxTerrainCommandBuffer->BindMaterial(pxTerrainComponent->m_pxMaterial, 1);
-		m_pxTerrainCommandBuffer->BindHeightmapTexture(pxTerrainComponent->m_pxHeightmap, 2);
 
 
 

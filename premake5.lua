@@ -176,6 +176,7 @@ project "Tools"
 	
 	
 	defines{
+			"ASSETROOTLOCATION=" .. '\"' .. _WORKING_DIR .. assetPath .. '\"',
 			"VCE_WINDOWS"
 		}
 		
