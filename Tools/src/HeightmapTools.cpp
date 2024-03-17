@@ -252,10 +252,10 @@ namespace VeryCoolEngine {
 #ifdef VCE_DEBUG
                 std::set<uint32_t> xFoundOldIndices;
                 std::set<uint32_t> xFoundNewIndices;
-                //std::unordered_set <glm::highp_vec3> xPositionsSet;
 #endif
                 std::array<uint32_t, TERRAIN_SIZE* HEIGHTMAP_MESH_DENSITY> xRightEdgeIndices;
                 std::array<uint32_t, TERRAIN_SIZE* HEIGHTMAP_MESH_DENSITY> xTopEdgeIndices;
+                uint32_t uTopRightFromBoth = 0;
 
                 glm::highp_vec3 xOrigin = { x, 0, z };
                 for (uint32_t subZ = 0; subZ < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY; subZ++) {
@@ -282,15 +282,8 @@ namespace VeryCoolEngine {
                             xRightEdgeIndices.at(subZ) = uNewOffset;
                         if (subZ == TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY - 1)
                             xTopEdgeIndices.at(subX) = uNewOffset;
-
-
-                        //VCE_ASSERT(xPositionsSet.find(pxSubMesh->m_pxVertexPositions[uNewOffset]) == xPositionsSet.end(), "Duplicate position");
-
-#if 0
-                        xOrigin.x = std::max(xOrigin.x, pxSubMesh->m_pxVertexPositions[uNewOffset].x);
-                        xOrigin.y = std::max(xOrigin.y, pxSubMesh->m_pxVertexPositions[uNewOffset].y);
-                        xOrigin.z = std::max(xOrigin.z, pxSubMesh->m_pxVertexPositions[uNewOffset].z);
-#endif
+                        if (subX == TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY - 1 && subZ == TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY - 1)
+                            uTopRightFromBoth = uNewOffset;
 
 #ifdef VCE_DEBUG
                         uHeighestNewOffset = std::max(uHeighestNewOffset, uNewOffset);
@@ -300,13 +293,6 @@ namespace VeryCoolEngine {
 #endif
                     }
                 }
-
-#if 0
-                for (uint32_t i = 0; i < pxSubMesh->m_uNumVerts; i++)
-                    pxSubMesh->m_pxVertexPositions[i] += xOrigin;
-#endif
-
-                //VCE_ASSERT(uHeighestNewOffset == pxSubMesh->m_uNumVerts - 1, "Incorrect index somewhere");
 
                 size_t indexIndex = 0;
                 for (uint32_t indexZ = 0; indexZ < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY - 1; indexZ++) {
@@ -325,6 +311,7 @@ namespace VeryCoolEngine {
                     }
                 }
 
+                uint32_t uTopRightFromX = 0;
                 if (x < uNumSplitsX - 1) {
                     uint32_t subX = TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY;
                     for (uint32_t subZ = 0; subZ < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY; subZ++) {
@@ -348,14 +335,8 @@ namespace VeryCoolEngine {
                         pxSubMesh->m_pxUVs[uNewOffset] = pxMesh->m_pxUVs[uOldOffset];
                         pxSubMesh->m_pxNormals[uNewOffset] = pxMesh->m_pxNormals[uOldOffset];
 
-
-                        //VCE_ASSERT(xPositionsSet.find(pxSubMesh->m_pxVertexPositions[uNewOffset]) == xPositionsSet.end(), "Duplicate position");
-
-#if 0
-                        xOrigin.x = std::max(xOrigin.x, pxSubMesh->m_pxVertexPositions[uNewOffset].x);
-                        xOrigin.y = std::max(xOrigin.y, pxSubMesh->m_pxVertexPositions[uNewOffset].y);
-                        xOrigin.z = std::max(xOrigin.z, pxSubMesh->m_pxVertexPositions[uNewOffset].z);
-#endif
+                        if (subZ == TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY - 1)
+                            uTopRightFromX = uNewOffset;
 
 #ifdef VCE_DEBUG
                         uHeighestNewOffset = std::max(uHeighestNewOffset, uNewOffset);
@@ -385,6 +366,8 @@ namespace VeryCoolEngine {
                     }
                 }
 
+                uint32_t uTopRightFromZ = 0;
+
                 if (z < uNumSplitsZ - 1) {
                     uint32_t subZ = TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY;
                     for (uint32_t subX = 0; subX < TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY; subX++) {
@@ -408,20 +391,13 @@ namespace VeryCoolEngine {
                         pxSubMesh->m_pxUVs[uNewOffset] = pxMesh->m_pxUVs[uOldOffset];
                         pxSubMesh->m_pxNormals[uNewOffset] = pxMesh->m_pxNormals[uOldOffset];
 
-
-                        //VCE_ASSERT(xPositionsSet.find(pxSubMesh->m_pxVertexPositions[uNewOffset]) == xPositionsSet.end(), "Duplicate position");
-
-#if 0
-                        xOrigin.x = std::max(xOrigin.x, pxSubMesh->m_pxVertexPositions[uNewOffset].x);
-                        xOrigin.y = std::max(xOrigin.y, pxSubMesh->m_pxVertexPositions[uNewOffset].y);
-                        xOrigin.z = std::max(xOrigin.z, pxSubMesh->m_pxVertexPositions[uNewOffset].z);
-#endif
+                        if (subX == TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY - 1)
+                            uTopRightFromZ = uNewOffset;
 
 #ifdef VCE_DEBUG
                         uHeighestNewOffset = std::max(uHeighestNewOffset, uNewOffset);
                         xFoundOldIndices.insert(uOldOffset);
                         xFoundNewIndices.insert(uNewOffset);
-                        //xPositionsSet.insert(pxSubMesh->m_pxVertexPositions[uNewOffset]);
 #endif
 
                     }
@@ -443,6 +419,53 @@ namespace VeryCoolEngine {
                         pxSubMesh->m_puIndices[indexIndex++] = d;
                         VCE_ASSERT(indexIndex <= pxSubMesh->m_uNumIndices, "Index index too big");
                     }
+                }
+
+                if (x < uNumSplitsX - 1 && z < uNumSplitsZ - 1) {
+                    uint32_t subZ = TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY;
+                    uint32_t subX = TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY;
+                    uint32_t uNewOffset = ++uHeighestNewOffset;
+
+                    VCE_ASSERT(uNewOffset < pxSubMesh->m_uNumVerts, "Offset too big for submesh");
+
+                    uint32_t uStartOfRow = (subZ * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY * uNumSplitsZ) + (z * uImageWidth * HEIGHTMAP_MESH_DENSITY * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY);
+                    VCE_ASSERT(uStartOfRow < pxMesh->m_uNumVerts, "Start of row has gone past end of mesh");
+                    uint32_t uIndexIntoRow = subX + x * TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY;
+                    VCE_ASSERT(uIndexIntoRow < HEIGHTMAP_MESH_DENSITY * uImageWidth, "Gone past end of row");
+                    uint32_t uOldOffset = uStartOfRow + uIndexIntoRow;
+
+                    VCE_ASSERT(uOldOffset < pxMesh->m_uNumVerts, "Incorrect index somewhere");
+
+                    VCE_ASSERT(xFoundOldIndices.find(uOldOffset) == xFoundOldIndices.end(), "Duplicate old index");
+                    VCE_ASSERT(xFoundNewIndices.find(uNewOffset) == xFoundNewIndices.end(), "Duplicate new index");
+
+
+                    pxSubMesh->m_pxVertexPositions[uNewOffset] = pxMesh->m_pxVertexPositions[uOldOffset];
+                    pxSubMesh->m_pxUVs[uNewOffset] = pxMesh->m_pxUVs[uOldOffset];
+                    pxSubMesh->m_pxNormals[uNewOffset] = pxMesh->m_pxNormals[uOldOffset];
+
+#ifdef VCE_DEBUG
+                    uHeighestNewOffset = std::max(uHeighestNewOffset, uNewOffset);
+                    xFoundOldIndices.insert(uOldOffset);
+                    xFoundNewIndices.insert(uNewOffset);
+#endif
+
+
+
+                    uint32_t indexZ = TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY - 1;
+                    uint32_t indexX = TERRAIN_SIZE * HEIGHTMAP_MESH_DENSITY - 1;
+                    uint32_t a = uTopRightFromX;
+                    uint32_t d = uTopRightFromBoth;
+                    uint32_t c = uTopRightFromZ;
+                    uint32_t b = uHeighestNewOffset;
+
+                    pxSubMesh->m_puIndices[indexIndex++] = a;
+                    pxSubMesh->m_puIndices[indexIndex++] = c;
+                    pxSubMesh->m_puIndices[indexIndex++] = b;
+                    pxSubMesh->m_puIndices[indexIndex++] = c;
+                    pxSubMesh->m_puIndices[indexIndex++] = a;
+                    pxSubMesh->m_puIndices[indexIndex++] = d;
+                    VCE_ASSERT(indexIndex <= pxSubMesh->m_uNumIndices, "Index index too big");
                 }
 
 
