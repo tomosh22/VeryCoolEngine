@@ -6,9 +6,9 @@ namespace VeryCoolEngine {
 	using GuidType = uint64_t;
 	struct GUID {
 		GUID() {
-			for (uint32_t i = 0; i < sizeof(GuidType) * 8; i++)
+			for (uint64_t i = 0; i < sizeof(GuidType) * 8; i++)
 				if (rand() > RAND_MAX / 2)
-					m_uGuid |= 1ul << i;
+					m_uGuid |= static_cast<GuidType>(1u) << i;
 		}
 		GUID(GuidType uGuid) : m_uGuid(uGuid) {}
 		GuidType m_uGuid = 0;

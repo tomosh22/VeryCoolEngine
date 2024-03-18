@@ -3,7 +3,11 @@
 #include "VeryCoolEngine/Scene/Entity.h"
 #include "VeryCoolEngine/PlatformTypes.h"
 
+//width/height that heightmap is divided into
 #define TERRAIN_SIZE 64
+
+//multiplier for vertex positions
+#define TERRAIN_SCALE 10
 
 namespace VeryCoolEngine {
 	class Texture2D;

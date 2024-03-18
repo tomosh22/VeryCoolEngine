@@ -84,8 +84,6 @@ namespace VeryCoolEngine {
 
         Mesh* mesh = Mesh::Create();
         mesh->m_pxBufferLayout = new BufferLayout();
-        glm::vec3 vertexScale = glm::vec3(1.0f, 1.0f, 1.0f);
-        glm::vec2 textureScale = glm::vec2(100, 100);
         mesh->m_uNumVerts = uWidth * uHeight * HEIGHTMAP_MESH_DENSITY * HEIGHTMAP_MESH_DENSITY;
         mesh->m_uNumIndices = ((uWidth * HEIGHTMAP_MESH_DENSITY) - 1) * ((uHeight * HEIGHTMAP_MESH_DENSITY) - 1) * 6;
         mesh->m_pxVertexPositions = new glm::highp_vec3[mesh->m_uNumVerts];
@@ -127,8 +125,8 @@ namespace VeryCoolEngine {
 
                 double finalVal = bottom * weightY + top * (1.f - weightY);
 
-                mesh->m_pxVertexPositions[offset] = glm::highp_vec3((double)x / HEIGHTMAP_MESH_DENSITY, finalVal * 100.l, (double)z / HEIGHTMAP_MESH_DENSITY) * vertexScale;
-                glm::vec2 fUV = glm::vec2(x, z) / textureScale;
+                mesh->m_pxVertexPositions[offset] = glm::highp_vec3((double)x / HEIGHTMAP_MESH_DENSITY, finalVal * 100.l, (double)z / HEIGHTMAP_MESH_DENSITY) * static_cast<float>(TERRAIN_SCALE);
+                glm::vec2 fUV = glm::vec2(x, z);
                 mesh->m_pxUVs[offset] = fUV / (float)HEIGHTMAP_MESH_DENSITY;
 
             }
