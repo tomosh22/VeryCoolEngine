@@ -204,6 +204,7 @@ namespace VeryCoolEngine {
 
 
 			void CreateDescriptorPool(bool bImGui = true);
+			void CreatePerDrawDescriptorPool();
 
 			void CreateDepthTexture();
 
@@ -314,13 +315,8 @@ namespace VeryCoolEngine {
 
 			vk::DescriptorPool m_descriptorPool;
 			vk::DescriptorPool m_xImguiDescriptorPool;
+			vk::DescriptorPool m_xPerFrameDescriptorPool[MAX_FRAMES_IN_FLIGHT];
 
-			/*vk::DescriptorSetLayout m_xCameraLayout;
-			vk::DescriptorSetLayout m_xTextureLayou
-			vk::DescriptorSetLayout m_xSkyboxTextureLayout;
-			vk::DescriptorSet m_xCameraDescriptor;
-			vk::DescriptorSet m_xTextureDescriptor;*/
-			vk::DescriptorSet m_xSkyboxTextureDescriptor;
 
 			VulkanTexture2D* m_xDepthTexture;
 

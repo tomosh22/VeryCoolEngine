@@ -40,7 +40,9 @@ namespace VeryCoolEngine {
 		m_xCurrentCmdBuffer = m_xCmdBuffers[m_pxRenderer->m_currentFrame];
 		m_xCurrentCmdBuffer.begin(vk::CommandBufferBeginInfo());
 
-		m_uCurrentDescSetIndex = 0;
+		m_eCurrentBindFreq = BINDING_FREQUENCY_MAX;
+
+		m_bIsRecording = true;
 	}
 	void VulkanCommandBuffer::EndRecording(RenderOrder eOrder, bool bEndPass /*= true*/)
 	{
@@ -49,6 +51,10 @@ namespace VeryCoolEngine {
 		RendererAPI* pxRendererAPI = VulkanRenderer::GetInstance()->m_pxRendererAPI;
 		m_xCurrentCmdBuffer.end();
 		pxRendererAPI->s_axCmdBuffersToSubmit[eOrder].push_back(&m_xCurrentCmdBuffer);
+
+		m_eCurrentBindFreq = BINDING_FREQUENCY_MAX;
+
+		m_bIsRecording = false;
 
 	}
 
@@ -68,6 +74,92 @@ namespace VeryCoolEngine {
 	{
 		if (m_pxRenderer->m_bDisableDrawCalls)
 			return;
+
+		if (m_pxCurrentPipeline->m_axDescLayouts.size() > 1) {
+			vk::DescriptorSetLayout& xLayout = m_pxCurrentPipeline->m_axDescLayouts[1];
+			vk::DescriptorSet xSet = m_pxRenderer->CreateDescriptorSet(xLayout, m_pxRenderer->m_xPerFrameDescriptorPool[m_pxRenderer->m_currentFrame]);
+
+			uint32_t uNumTextures = 0;
+			for (uint32_t i = 0; i < MAX_BINDINGS; i++) {
+				if (m_xBindings[BINDING_FREQUENCY_PER_DRAW].m_xTextures[i] != nullptr)
+					uNumTextures++;
+				else {
+#ifdef VCE_DEBUG
+					for (uint32_t j = i + 1; j < MAX_BINDINGS; j++)
+						VCE_ASSERT(m_xBindings[BINDING_FREQUENCY_PER_DRAW].m_xTextures[j] == nullptr, "All non null textures must be contiguous");
+#endif
+					break;
+				}
+
+			}
+
+			uint32_t uNumBuffers = 0;
+			for (uint32_t i = 0; i < MAX_BINDINGS; i++) {
+				if (m_xBindings[BINDING_FREQUENCY_PER_DRAW].m_xBuffers[i] != nullptr)
+					uNumBuffers++;
+				else {
+#ifdef VCE_DEBUG
+					for (uint32_t j = i + 1; j < MAX_BINDINGS; j++)
+						VCE_ASSERT(m_xBindings[BINDING_FREQUENCY_PER_DRAW].m_xBuffers[j] == nullptr, "All non null buffers must be contiguous");
+#endif
+					break;
+				}
+
+			}
+
+			std::vector<vk::DescriptorImageInfo> xTexInfos(uNumTextures);
+			std::vector<vk::WriteDescriptorSet> xTexWrites(uNumTextures);
+			uint32_t uCount = 0;
+			for (uint32_t i = 0; i < uNumTextures; i++) {
+				Texture* pxTex = m_xBindings[BINDING_FREQUENCY_PER_DRAW].m_xTextures[i];
+				VulkanTexture2D* pxVkTex = dynamic_cast<VulkanTexture2D*>(pxTex);
+
+				vk::DescriptorImageInfo& xInfo = xTexInfos.at(uCount)
+					.setSampler(pxVkTex->m_xSampler)
+					.setImageView(pxVkTex->m_xImageView)
+					.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+
+				vk::WriteDescriptorSet& xWrite = xTexWrites.at(uCount)
+					.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+					.setDstSet(xSet)
+					.setDstBinding(uCount)
+					.setDstArrayElement(0)
+					.setDescriptorCount(1)
+					.setPImageInfo(&xInfo);
+
+				uCount++;
+			}
+
+			m_pxRenderer->GetDevice().updateDescriptorSets(xTexWrites.size(), xTexWrites.data(), 0, nullptr);
+
+			std::vector<vk::DescriptorBufferInfo> xBufferInfos(uNumBuffers);
+			std::vector<vk::WriteDescriptorSet> xBufferWrites(uNumBuffers);
+			for (uint32_t i = 0; i < uNumBuffers; i++) {
+				Buffer* pxBuf = m_xBindings[BINDING_FREQUENCY_PER_DRAW].m_xBuffers[i];
+				VulkanBuffer* pxVkBuf = dynamic_cast<VulkanBuffer*>(pxBuf);
+
+				vk::DescriptorBufferInfo& xInfo = xBufferInfos.at(uCount)
+					.setBuffer(pxVkBuf->m_xBuffer)
+					.setOffset(0)
+					.setRange(pxVkBuf->GetSize());
+
+				vk::WriteDescriptorSet& xWrite = xTexWrites.at(uCount)
+					.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+					.setDstSet(xSet)
+					.setDstBinding(uCount)
+					.setDstArrayElement(0)
+					.setDescriptorCount(1)
+					.setPBufferInfo(&xInfo);
+
+				uCount++;
+			}
+
+			m_pxRenderer->GetDevice().updateDescriptorSets(xBufferWrites.size(), xBufferWrites.data(), 0, nullptr);
+
+			m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxCurrentPipeline->m_xPipelineLayout, (int)BINDING_FREQUENCY_PER_DRAW, 1, &xSet, 0, nullptr);
+		}
+	
+
 		m_pxRenderer->RecordDrawCall();
 		m_xCurrentCmdBuffer.drawIndexed(uNumIndices, uNumInstances, uIndexOffset, uVertexOffset, uInstanceOffset);
 	}
@@ -140,50 +232,60 @@ namespace VeryCoolEngine {
 				axSets.push_back(set);
 		}
 		m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pxVkPipeline->m_xPipelineLayout, 0, axSets.size(), axSets.data(), 0, nullptr);
-		
-
-		m_uCurrentDescSetIndex = axSets.size();
 
 		m_pxCurrentPipeline = pxVkPipeline;
 	}
 
 	void VulkanCommandBuffer::BindTexture(void* pxTexture, uint32_t uBindPoint, uint32_t uSet) {
-		VulkanTexture2D* pxTex = reinterpret_cast<VulkanTexture2D*>(pxTexture);
+		VCE_ASSERT(m_eCurrentBindFreq < BINDING_FREQUENCY_MAX, "Haven't called BeginBind");
 
-		vk::DescriptorImageInfo xInfo = vk::DescriptorImageInfo()
-			.setSampler(pxTex->m_xSampler)
-			.setImageView(pxTex->m_xImageView)
-			.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+		if (m_eCurrentBindFreq == BINDING_FREQUENCY_PER_FRAME) {
+			VulkanTexture2D* pxTex = reinterpret_cast<VulkanTexture2D*>(pxTexture);
 
-		vk::WriteDescriptorSet xWrite = vk::WriteDescriptorSet()
-			.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-			.setDstSet(m_pxCurrentPipeline->m_axDescSets[m_pxRenderer->m_currentFrame][uSet])
-			.setDstBinding(uBindPoint)
-			.setDstArrayElement(0)
-			.setDescriptorCount(1)
-			.setPImageInfo(&xInfo);
+			vk::DescriptorImageInfo xInfo = vk::DescriptorImageInfo()
+				.setSampler(pxTex->m_xSampler)
+				.setImageView(pxTex->m_xImageView)
+				.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
 
-		m_pxRenderer->GetDevice().updateDescriptorSets(1, &xWrite, 0, nullptr);
+			vk::WriteDescriptorSet xWrite = vk::WriteDescriptorSet()
+				.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+				//#TO index 0 for per frame set
+				.setDstSet(m_pxCurrentPipeline->m_axDescSets[m_pxRenderer->m_currentFrame][0])
+				.setDstBinding(uBindPoint)
+				.setDstArrayElement(0)
+				.setDescriptorCount(1)
+				.setPImageInfo(&xInfo);
+
+			m_pxRenderer->GetDevice().updateDescriptorSets(1, &xWrite, 0, nullptr);
+		}
+		else if(m_eCurrentBindFreq == BINDING_FREQUENCY_PER_DRAW)
+			m_xBindings[m_eCurrentBindFreq].m_xTextures[uBindPoint] = reinterpret_cast<Texture*>(pxTexture);
 	}
 
 	void VulkanCommandBuffer::BindBuffer(void* pxBuffer, uint32_t uBindPoint, uint32_t uSet) {
+		VCE_ASSERT(m_eCurrentBindFreq < BINDING_FREQUENCY_MAX, "Haven't called BeginBind");
 
-		VulkanBuffer* pxBuf = reinterpret_cast<VulkanBuffer*>(pxBuffer);
+		if (m_eCurrentBindFreq == BINDING_FREQUENCY_PER_FRAME) {
+			VulkanBuffer* pxBuf = reinterpret_cast<VulkanBuffer*>(pxBuffer);
 
-		vk::DescriptorBufferInfo xInfo = vk::DescriptorBufferInfo()
-			.setBuffer(pxBuf->m_xBuffer)
-			.setOffset(0)
-			.setRange(pxBuf->GetSize());
+			vk::DescriptorBufferInfo xInfo = vk::DescriptorBufferInfo()
+				.setBuffer(pxBuf->m_xBuffer)
+				.setOffset(0)
+				.setRange(pxBuf->GetSize());
 
-		vk::WriteDescriptorSet xWrite = vk::WriteDescriptorSet()
-			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-			.setDstSet(m_pxCurrentPipeline->m_axDescSets[m_pxRenderer->m_currentFrame][uSet])
-			.setDstBinding(uBindPoint)
-			.setDescriptorCount(1)
-			.setPBufferInfo(&xInfo);
+			vk::WriteDescriptorSet xWrite = vk::WriteDescriptorSet()
+				.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+				//#TO index 0 for per frame set
+				.setDstSet(m_pxCurrentPipeline->m_axDescSets[m_pxRenderer->m_currentFrame][0])
+				.setDstBinding(uBindPoint)
+				.setDescriptorCount(1)
+				.setPBufferInfo(&xInfo);
 
-		m_pxRenderer->GetDevice().updateDescriptorSets(1, &xWrite, 0, nullptr);
+			m_pxRenderer->GetDevice().updateDescriptorSets(1, &xWrite, 0, nullptr);
 
+		}
+		else if (m_eCurrentBindFreq == BINDING_FREQUENCY_PER_DRAW)
+			m_xBindings[m_eCurrentBindFreq].m_xBuffers[uBindPoint] = reinterpret_cast<Buffer*>(pxBuffer);
 	}
 
 	void VulkanCommandBuffer::PushConstant(void* pData, size_t uSize)
@@ -196,20 +298,13 @@ namespace VeryCoolEngine {
 		m_pxUniformBuffer->UploadData(pData, uSize, m_pxRenderer->m_currentFrame);
 	}
 
-
-	void VulkanCommandBuffer::BindMaterial(Material* pxMaterial, uint32_t uSet)
+	void VulkanCommandBuffer::BeginBind(BINDING_FREQUENCY eFreq)
 	{
-		VCE_ASSERT(pxMaterial->m_bInitialised, "Binding uninitialised material");
-		VulkanMaterial* pxVkMaterial = dynamic_cast<VulkanMaterial*>(pxMaterial);
-
-		m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxCurrentPipeline->m_xPipelineLayout, uSet, 1, &pxVkMaterial->m_xDescSet, 0, nullptr);
-	}
-
-	void VulkanCommandBuffer::BindAnimation(Mesh* pxMesh, uint32_t uSet)
-	{
-		VulkanMesh* pxVkMesh = dynamic_cast<VulkanMesh*>(pxMesh);
-
-		m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxCurrentPipeline->m_xPipelineLayout, uSet, 1, &pxVkMesh->m_axBoneDescSet[m_pxRenderer->m_currentFrame], 0, nullptr);
+		for (uint32_t i = 0; i < MAX_BINDINGS; i++) {
+			m_xBindings[eFreq].m_xBuffers[i] = nullptr;
+			m_xBindings[eFreq].m_xTextures[i] = nullptr;
+		}
+		m_eCurrentBindFreq = eFreq;
 	}
 }
 

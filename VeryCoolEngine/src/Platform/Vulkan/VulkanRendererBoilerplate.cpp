@@ -651,6 +651,35 @@ namespace VeryCoolEngine {
 
 	}
 
+	void VulkanRenderer::CreatePerDrawDescriptorPool() {
+
+		vk::DescriptorPoolSize axPoolSizes[] =
+		{
+			{ vk::DescriptorType::eSampler, 1000 },
+			{ vk::DescriptorType::eCombinedImageSampler, 1000 },
+			{ vk::DescriptorType::eSampledImage, 1000 },
+			{ vk::DescriptorType::eStorageImage, 1000 },
+			{ vk::DescriptorType::eUniformTexelBuffer, 1000 },
+			{ vk::DescriptorType::eStorageTexelBuffer, 1000 },
+			{ vk::DescriptorType::eUniformBuffer, 1000 },
+			{ vk::DescriptorType::eStorageBuffer, 1000 },
+			{ vk::DescriptorType::eUniformBufferDynamic, 1000 },
+			{ vk::DescriptorType::eStorageBufferDynamic, 1000 },
+			{ vk::DescriptorType::eInputAttachment, 1000 }
+		};
+
+		vk::DescriptorPoolCreateInfo xPoolInfo = vk::DescriptorPoolCreateInfo()
+			.setPoolSizeCount(sizeof(axPoolSizes) / sizeof(axPoolSizes[0]))
+			.setPPoolSizes(axPoolSizes)
+			.setMaxSets(1000)
+			.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet | vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind);
+
+		m_device.destroyDescriptorPool(m_xPerFrameDescriptorPool[m_currentFrame]);
+
+		m_xPerFrameDescriptorPool[m_currentFrame] = m_device.createDescriptorPool(xPoolInfo);
+
+	}
+
 
 
 	vk::DescriptorSet VulkanRenderer::CreateDescriptorSet(const vk::DescriptorSetLayout& xLayout, const vk::DescriptorPool& xPool)

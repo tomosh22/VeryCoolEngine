@@ -128,17 +128,19 @@ namespace VeryCoolEngine {
 
 			virtual void UploadUniformData(void* pData, size_t uSize) = 0;
 
-			virtual void BindMaterial(Material* pxMaterial, uint32_t uSet) = 0;
-			//TODO: this will be a model when i stop duplicating animation data
-			virtual void BindAnimation(Mesh* pxModel, uint32_t uSet) = 0;
-
 			virtual void* Platform_GetCurrentCmdBuffer() const = 0;
 
+			virtual bool IsRecording() const = 0;
+
 			ManagedUniformBuffer* m_pxUniformBuffer;
+
+			bool m_bIsRecording = false;
 		};
 
 		std::vector<void*> s_axCmdBuffersToSubmit[RENDER_ORDER_MAX];
 		void Platform_SubmitCmdBuffers();
+
+		
 
 		//static TargetSetup s_xGBufferTargetSetup;
 	};

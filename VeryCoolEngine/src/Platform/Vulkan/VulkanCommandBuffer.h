@@ -3,6 +3,22 @@
 namespace VeryCoolEngine {
 	class VertexBuffer;
 	class IndexBuffer;
+	class Buffer;
+	class Texture;
+
+#define MAX_BINDINGS 16
+
+	struct DescSetBindings {
+		Buffer* m_xBuffers[MAX_BINDINGS];
+		Texture* m_xTextures[MAX_BINDINGS];
+	};
+
+	enum BINDING_FREQUENCY : uint32_t {
+		BINDING_FREQUENCY_PER_FRAME,
+		BINDING_FREQUENCY_PER_DRAW,
+		BINDING_FREQUENCY_MAX,
+	};
+
 	class VulkanCommandBuffer : public RendererAPI::CommandBuffer
 	{
 	public:
@@ -19,8 +35,7 @@ namespace VeryCoolEngine {
 		void PushConstant(void* pData, size_t uSize) override;
 		void UploadUniformData(void* pData, size_t uSize) override;
 
-		void BindMaterial(Material* pxMaterial, uint32_t uSet) override;
-		void BindAnimation(Mesh* pxMesh, uint32_t uSet) override;
+		void BeginBind(BINDING_FREQUENCY eFreq);
 
 		vk::CommandBuffer& GetCurrentCmdBuffer() { return m_xCurrentCmdBuffer; }
 		void* Platform_GetCurrentCmdBuffer() const override { return (void*) & m_xCurrentCmdBuffer; }
@@ -29,6 +44,8 @@ namespace VeryCoolEngine {
 		vk::RenderPass TargetSetupToRenderPass(const RendererAPI::TargetSetup& xTargetSetup);
 		//currently unused
 		vk::Framebuffer TargetSetupToFramebuffer(const RendererAPI::TargetSetup& xTargetSetup);
+
+		bool IsRecording() const override { return m_bIsRecording; }
 	public:
 		class VulkanRenderer* m_pxRenderer;
 
@@ -44,7 +61,10 @@ namespace VeryCoolEngine {
 
 		class VulkanPipeline* m_pxCurrentPipeline;
 
-		uint32_t m_uCurrentDescSetIndex = 0;
+		DescSetBindings m_xBindings[BINDING_FREQUENCY_MAX];
+		BINDING_FREQUENCY m_eCurrentBindFreq = BINDING_FREQUENCY_MAX;
+
+		
 	};
 
 }

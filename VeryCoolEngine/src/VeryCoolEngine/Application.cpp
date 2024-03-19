@@ -245,6 +245,8 @@ namespace VeryCoolEngine {
 					)
 			});
 
+		//#TO_TODO: move bone buffer to desc set 1
+		/*
 		m_xPipelineSpecs.insert(
 			{ "SkinnedMeshes",
 					PipelineSpecification(
@@ -264,11 +266,11 @@ namespace VeryCoolEngine {
 					false,
 					{
 						{3,0},
-						{0,5},
-						{1,0}
+						{1,5},
 					}
 					)
 			});
+			*/
 
 		m_xPipelineSpecs.insert(
 			{ "CopyToFramebuffer",
