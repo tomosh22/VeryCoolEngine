@@ -27,7 +27,7 @@ namespace VeryCoolEngine {
 	{
 	public:
 		VulkanFoliageMaterial() {};
-		VulkanFoliageMaterial(const char* szName);
+		VulkanFoliageMaterial(GUID xAlbedoGUID, GUID xBumpMapGUID, GUID xRoughnessTexGUID, GUID xHeightmapTexGUID, GUID xAlphaTexGUID, GUID xTranslucencyTexGUID);
 		~VulkanFoliageMaterial() override {
 			VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
 			pxRenderer->GetDevice().destroyDescriptorSetLayout(m_xDescSetLayout);

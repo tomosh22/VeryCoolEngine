@@ -60,14 +60,14 @@ namespace VeryCoolEngine {
 		}
 
 		static FoliageMaterial* Create();
-		static FoliageMaterial* Create(const char* szName);
+		static FoliageMaterial* Create(GUID xAlbedoGUID, GUID xBumpMapGUID, GUID xRoughnessTexGUID, GUID xHeightmapTexGUID, GUID xAlphaTexGUID, GUID xTranslucencyTexGUID);
 
-		void SetAlbedo(Texture2D* pxTex);
-		void SetBumpMap(Texture2D* pxTex);
-		void SetRoughness(Texture2D* pxTex);
-		void SetHeightmap(Texture2D* pxTex);
-		void SetAlpha(Texture2D* pxTex);
-		void SetTranslucency(Texture2D* pxTex);
+		void SetAlbedo(GUID xGUID);
+		void SetBumpMap(GUID xGUID);
+		void SetRoughness(GUID xGUID);
+		void SetHeightmap(GUID xGUID);
+		void SetAlpha(GUID xGUID);
+		void SetTranslucency(GUID xGUID);
 
 		virtual void PlatformInit() = 0;
 

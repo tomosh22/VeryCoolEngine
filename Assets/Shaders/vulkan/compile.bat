@@ -8,8 +8,8 @@
 %VULKAN_SDK%\Bin\glslc.exe meshGBuffer.frag -o meshGBufferFrag.spv
 %VULKAN_SDK%\Bin\glslc.exe mesh.tesc -o meshTesc.spv
 %VULKAN_SDK%\Bin\glslc.exe mesh.tese -o meshTese.spv
-%VULKAN_SDK%\Bin\glslc.exe foliage.vert -o foliageVert.spv
-%VULKAN_SDK%\Bin\glslc.exe foliage.frag -o foliageFrag.spv
+%VULKAN_SDK%\Bin\glslc.exe Foliage/foliage.vert -o Foliage/foliageVert.spv
+%VULKAN_SDK%\Bin\glslc.exe Foliage/foliage.frag -o Foliage/foliageFrag.spv
 
 %VULKAN_SDK%\Bin\glslc.exe Terrain/terrain.vert -o Terrain/terrainVert.spv
 %VULKAN_SDK%\Bin\glslc.exe Terrain/terrain.frag -o Terrain/terrainFrag.spv

@@ -74,39 +74,39 @@ namespace VeryCoolEngine {
 #endif
 	}
 
-	FoliageMaterial* FoliageMaterial::Create(const char* szName) {
+	FoliageMaterial* FoliageMaterial::Create(GUID xAlbedoGUID, GUID xBumpMapGUID, GUID xRoughnessTexGUID, GUID xHeightmapTexGUID, GUID xAlphaTexGUID, GUID xTranslucencyTexGUID) {
 #ifdef VCE_VULKAN
-		return new VulkanFoliageMaterial(szName);
+		return new VulkanFoliageMaterial(xAlbedoGUID, xBumpMapGUID, xRoughnessTexGUID, xHeightmapTexGUID, xAlphaTexGUID, xTranslucencyTexGUID);
 #endif
 	}
 
-	void FoliageMaterial::SetAlbedo(Texture2D* pxTex)
+	void FoliageMaterial::SetAlbedo(GUID xGUID)
 	{
-		m_pxAlbedo = pxTex;
+		m_pxAlbedo = Application::GetInstance()->m_xAssetHandler.TryGetTexture2D(xGUID);
 	}
 
-	void FoliageMaterial::SetBumpMap(Texture2D* pxTex)
+	void FoliageMaterial::SetBumpMap(GUID xGUID)
 	{
-		m_pxBumpMap = pxTex;
+		m_pxBumpMap = Application::GetInstance()->m_xAssetHandler.TryGetTexture2D(xGUID);
 	}
 
-	void FoliageMaterial::SetHeightmap(Texture2D* pxTex)
+	void FoliageMaterial::SetHeightmap(GUID xGUID)
 	{
-		m_pxHeightmapTex = pxTex;
+		m_pxHeightmapTex = Application::GetInstance()->m_xAssetHandler.TryGetTexture2D(xGUID);
 	}
 
-	void FoliageMaterial::SetRoughness(Texture2D* pxTex)
+	void FoliageMaterial::SetRoughness(GUID xGUID)
 	{
-		m_pxRoughnessTex = pxTex;
+		m_pxRoughnessTex = Application::GetInstance()->m_xAssetHandler.TryGetTexture2D(xGUID);
 	}
 
-	void FoliageMaterial::SetAlpha(Texture2D* pxTex)
+	void FoliageMaterial::SetAlpha(GUID xGUID)
 	{
-		m_pxAlphaTex = pxTex;
+		m_pxAlphaTex = Application::GetInstance()->m_xAssetHandler.TryGetTexture2D(xGUID);
 	}
 
-	void FoliageMaterial::SetTranslucency(Texture2D* pxTex)
+	void FoliageMaterial::SetTranslucency(GUID xGUID)
 	{
-		m_pxTranslucencyTex = pxTex;
+		m_pxTranslucencyTex = Application::GetInstance()->m_xAssetHandler.TryGetTexture2D(xGUID);
 	}
 }

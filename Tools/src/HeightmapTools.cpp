@@ -205,9 +205,58 @@ namespace VeryCoolEngine {
         VCE_TRACE("Mesh export took {} seconds", uNumSeconds);
     }
 
-    
+    void WriteFoliageMaterialAsset(GUID xMaterialGUID, GUID xAlbedoGUID, GUID xBumpMapGUID, GUID xRoughnessTexGUID, GUID xHeightmapTexGUID, GUID xAlphaTexGUID, GUID xTranslucencyTexGUID) {
+        std::ofstream xOut("foliage.vceassets");
+
+        xOut << "Texture2D\n";
+        xOut << xAlbedoGUID.m_uGuid << '\n';
+        xOut << "3\n";
+        xOut << "Foliage/Magnolia/diffuse.png\n";
+
+        xOut << "Texture2D\n";
+        xOut << xBumpMapGUID.m_uGuid << '\n';
+        xOut << "3\n";
+        xOut << "Foliage/Magnolia/normal.png\n";
+
+        xOut << "Texture2D\n";
+        xOut << xRoughnessTexGUID.m_uGuid << '\n';
+        xOut << "3\n";
+        xOut << "Foliage/Magnolia/roughness.png\n";
+
+        xOut << "Texture2D\n";
+        xOut << xHeightmapTexGUID.m_uGuid << '\n';
+        xOut << "3\n";
+        xOut << "Foliage/Magnolia/height.png\n";
+
+        xOut << "Texture2D\n";
+        xOut << xAlphaTexGUID.m_uGuid << '\n';
+        xOut << "3\n";
+        xOut << "Foliage/Magnolia/alpha.png\n";
+
+        xOut << "Texture2D\n";
+        xOut << xTranslucencyTexGUID.m_uGuid << '\n';
+        xOut << "3\n";
+        xOut << "Foliage/Magnolia/translucency.png\n";
+
+        xOut << "FoliageMaterial\n";
+        xOut << "HeightmapFoliage\n";
+        xOut << xMaterialGUID.m_uGuid << '\n';
+        xOut << xAlbedoGUID.m_uGuid << '\n';
+        xOut << xBumpMapGUID.m_uGuid << '\n';
+        xOut << xRoughnessTexGUID.m_uGuid << '\n';
+        xOut << xHeightmapTexGUID.m_uGuid << '\n';
+        xOut << xAlphaTexGUID.m_uGuid << '\n';
+        xOut << xTranslucencyTexGUID.m_uGuid << '\n';
+    }
+
+    void WriteFoliageComponent(GUID xParentGUID, GUID xMaterialGUID, glm::vec3 xPos, std::ofstream& xOut) {
+        xOut << "FoliageComponent\n";
+        xOut << xMaterialGUID.m_uGuid << '\n';
+        xOut << xPos.x << ' ' << xPos.y << ' ' << xPos.z << '\n';
+    }
 
     void GenerateHeightmapData() {
+
         cv::Mat xHeightmap = cv::imread(TEXTUREDIR + "Heightmaps/Test/heightmap.hdr", cv::IMREAD_ANYDEPTH);
 
         VCE_ASSERT(!xHeightmap.empty(), "Invalid image");
@@ -215,7 +264,14 @@ namespace VeryCoolEngine {
         uint32_t uImageWidth = xHeightmap.cols;
         uint32_t uImageHeight = xHeightmap.rows;
 
-        
+        GUID xFoliageMaterialGUID;
+        GUID xFoliageAlbedoGUID;
+        GUID xFoliageNormalGUID;
+        GUID xFoliageRoughnessGUID;
+        GUID xFoliageHeightmapGUID;
+        GUID xFoliageAlphaGUID;
+        GUID xFoliageTranslucencyGUID;
+        WriteFoliageMaterialAsset(xFoliageMaterialGUID, xFoliageAlbedoGUID, xFoliageNormalGUID, xFoliageRoughnessGUID, xFoliageHeightmapGUID, xFoliageAlphaGUID, xFoliageTranslucencyGUID);
 
         VCE_ASSERT((uImageWidth * HEIGHTMAP_MESH_DENSITY) % TERRAIN_SIZE == 0, "Invalid terrain width");
         VCE_ASSERT((uImageHeight * HEIGHTMAP_MESH_DENSITY) % TERRAIN_SIZE == 0, "Invalid terrain height");
@@ -474,23 +530,23 @@ namespace VeryCoolEngine {
                 GUID xAssetGUID;
                 GUID xSceneGUID;
                 xAssetsOut << "Mesh\n" << xAssetGUID.m_uGuid << '\n' << "Terrain/" << std::to_string(x) + "_" + std::to_string(z) + ".obj\n";
-                xSceneOut << "Entity\n" << xSceneGUID.m_uGuid << '\n' << "0\n" << "Terrain" << std::to_string(x) + "_" + std::to_string(z) << '\n' << "TerrainComponent\n" << xAssetGUID.m_uGuid << "\n1538048126\n" << x << ' ' << z << "\nEndEntity\n";
+                xSceneOut << "Entity\n" << xSceneGUID.m_uGuid << '\n' << "0\n" << "Terrain" << std::to_string(x) + "_" + std::to_string(z) << '\n' << "TerrainComponent\n" << xAssetGUID.m_uGuid << "\n1538048126\n" << x << ' ' << z << '\n';
+
+                for (uint32_t i = 0; i < TERRAIN_SIZE; i++) {
+                    bool bBreak = false;
+                    for (uint32_t j = 0; j < TERRAIN_SIZE; j++) {
+                        if (rand() / static_cast<float>(RAND_MAX) < 0.01f) {
+                            WriteFoliageComponent(xSceneGUID, xFoliageMaterialGUID, { i + x * TERRAIN_SIZE * TERRAIN_SCALE, 100, j + z * TERRAIN_SIZE * TERRAIN_SCALE }, xSceneOut);
+                            bBreak = true;
+                            break;
+                        }
+                    }
+                    if (bBreak) break;
+                }
+                    
+                xSceneOut << "EndEntity\n";
             }
         }
-
-#if 0
-        GUID xAssetGUID;
-        GUID xScene0GUID;
-        GUID xScene1GUID;
-        GUID xScene2GUID;
-        xAssetsOut << "Mesh\n" << xAssetGUID.m_uGuid << '\n' << "Terrain/" << "Whole_Terrain" << ".obj\n";
-        pxMesh->WriteToObj((MESHDIR + "Terrain/" + "Whole_Terrain" + ".obj").c_str());
-
-
-        xSceneOut << "Entity\n" << xScene0GUID.m_uGuid << '\n' << "0\n" << "Terrain" << std::to_string(4) + "_" + std::to_string(0) << '\n' << "TerrainComponent\n" << xAssetGUID.m_uGuid << "\n1538048126\n" << 4 << ' ' << 0 << "\nEndEntity\n";
-        xSceneOut << "Entity\n" << xScene1GUID.m_uGuid << '\n' << "0\n" << "Terrain" << std::to_string(0) + "_" + std::to_string(4) << '\n' << "TerrainComponent\n" << xAssetGUID.m_uGuid << "\n1538048126\n" << 0 << ' ' << 4 << "\nEndEntity\n";
-        xSceneOut << "Entity\n" << xScene2GUID.m_uGuid << '\n' << "0\n" << "Terrain" << std::to_string(4) + "_" + std::to_string(4) << '\n' << "TerrainComponent\n" << xAssetGUID.m_uGuid << "\n1538048126\n" << 4 << ' ' << 4 << "\nEndEntity\n";
-#endif
 
         xAssetsOut.close();
         xSceneOut.close();

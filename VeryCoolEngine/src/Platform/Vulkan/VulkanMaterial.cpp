@@ -135,15 +135,14 @@ namespace VeryCoolEngine {
 
 
 #pragma mark foliage
-	VulkanFoliageMaterial::VulkanFoliageMaterial(const char* szName)
+	VulkanFoliageMaterial::VulkanFoliageMaterial(GUID xAlbedoGUID, GUID xBumpMapGUID, GUID xRoughnessTexGUID, GUID xHeightmapTexGUID, GUID xAlphaTexGUID, GUID xTranslucencyTexGUID)
 	{
-		//TODO: don't make so many std::strings
-		SetAlbedo(Texture2D::Create((std::string(szName) + "/diffuse.jpg").c_str(), TextureStreamPriority::NotStreamed));
-		SetBumpMap(Texture2D::Create((std::string(szName) + "/normal.jpg").c_str(), TextureStreamPriority::NotStreamed));
-		SetRoughness(Texture2D::Create((std::string(szName) + "/roughness.jpg").c_str(), TextureStreamPriority::NotStreamed));
-		SetHeightmap(Texture2D::Create((std::string(szName) + "/height.jpg").c_str(), TextureStreamPriority::NotStreamed));
-		SetAlpha(Texture2D::Create((std::string(szName) + "/alpha.jpg").c_str(), TextureStreamPriority::NotStreamed));
-		SetTranslucency(Texture2D::Create((std::string(szName) + "/translucency.jpg").c_str(), TextureStreamPriority::NotStreamed));
+		SetAlbedo(xAlbedoGUID);
+		SetBumpMap(xBumpMapGUID);
+		SetRoughness(xRoughnessTexGUID);
+		SetHeightmap(xHeightmapTexGUID);
+		SetAlpha(xAlphaTexGUID);
+		SetTranslucency(xTranslucencyTexGUID);
 	}
 	void VulkanFoliageMaterial::PlatformInit()
 	{

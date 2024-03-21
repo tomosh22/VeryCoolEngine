@@ -6,6 +6,7 @@
 #include "VeryCoolEngine/Components/ColliderComponent.h"
 #include "VeryCoolEngine/Components/ScriptComponent.h"
 #include "VeryCoolEngine/Components/TerrainComponent.h"
+#include "VeryCoolEngine/Components/FoliageComponent.h"
 #include "VeryCoolEngine/Application.h"
 namespace VeryCoolEngine {
 
@@ -14,7 +15,8 @@ namespace VeryCoolEngine {
 		Model,
 		Collider,
 		Script,
-		Terrain
+		Terrain,
+		Foliage
 	};
 	std::unordered_map<std::string, ComponentType> g_xComponentNames = {
 		{"TransformComponent", ComponentType::Transform},
@@ -22,6 +24,7 @@ namespace VeryCoolEngine {
 		{"ColliderComponent", ComponentType::Collider},
 		{"ScriptComponent", ComponentType::Script},
 		{"TerrainComponent", ComponentType::Terrain},
+		{"FoliageComponent", ComponentType::Foliage},
 	};
 
 	std::unordered_map<std::string, Physics::CollisionVolumeType> g_xColliderNames = {
@@ -161,6 +164,24 @@ namespace VeryCoolEngine {
 						GUID xMeshGUID(strtoull(strMeshGUID.c_str(), nullptr, 10));
 						GUID xMaterialGUID(strtoull(strMaterialGUID.c_str(), nullptr, 10));
 						xEntity.AddComponent<TerrainComponent>(xMeshGUID, xMaterialGUID, std::stoi(strX), std::stoi(strY));
+					}
+					break;
+					case ComponentType::Foliage:
+					{
+						std::string strMaterialGUID;
+						std::string strPosition;
+						std::getline(xIn, strMaterialGUID);
+
+						std::getline(xIn,strPosition);
+						std::string strPosX, strPosY, strPosZ;
+						std::stringstream xPosStream(strPosition);
+						std::getline(xPosStream, strPosX, ' ');
+						std::getline(xPosStream, strPosY, ' ');
+						std::getline(xPosStream, strPosZ, ' ');
+						glm::vec3 xPos = { std::atof(strPosX.c_str()), std::atof(strPosY.c_str()), std::atof(strPosZ.c_str()) };
+
+						GUID xMaterialGUID(strtoull(strMaterialGUID.c_str(), nullptr, 10));
+						xEntity.AddComponent<FoliageComponent>(xMaterialGUID, xPos);
 					}
 					break;
 					}

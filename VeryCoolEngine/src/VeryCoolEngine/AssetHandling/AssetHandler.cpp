@@ -42,6 +42,32 @@ namespace VeryCoolEngine {
 				GUID xHeightmapGUID(strtoull(strHeightmapTexGUID.c_str(), nullptr, 10));
 				AddMaterial(xGUID, strName, xAlbedoGUID, xBumpMapGUID, xRoughnessTexGUID, xMetallicTexGUID, xHeightmapGUID);
 			}
+			if (strLine == "FoliageMaterial") {
+				std::string strName;
+				std::string strGUID;
+				std::string strAlbedoGUID;
+				std::string strBumpMapGUID;
+				std::string strRoughnessTexGUID;
+				std::string strHeightmapTexGUID;
+				std::string strAlphaTexGUID;
+				std::string strTranslucencyTexGUID;
+				std::getline(xIn, strName);
+				std::getline(xIn, strGUID);
+				std::getline(xIn, strAlbedoGUID);
+				std::getline(xIn, strBumpMapGUID);
+				std::getline(xIn, strRoughnessTexGUID);
+				std::getline(xIn, strHeightmapTexGUID);
+				std::getline(xIn, strAlphaTexGUID);
+				std::getline(xIn, strTranslucencyTexGUID);
+				GUID xGUID(strtoull(strGUID.c_str(), nullptr, 10));
+				GUID xAlbedoGUID(strtoull(strAlbedoGUID.c_str(), nullptr, 10));
+				GUID xBumpMapGUID(strtoull(strBumpMapGUID.c_str(), nullptr, 10));
+				GUID xRoughnessTexGUID(strtoull(strRoughnessTexGUID.c_str(), nullptr, 10));
+				GUID xHeightmapGUID(strtoull(strHeightmapTexGUID.c_str(), nullptr, 10));
+				GUID xAlphaGUID(strtoull(strAlphaTexGUID.c_str(), nullptr, 10));
+				GUID xTranslucencyGUID(strtoull(strTranslucencyTexGUID.c_str(), nullptr, 10));
+				AddFoliageMaterial(xGUID, strName, xAlbedoGUID, xBumpMapGUID, xRoughnessTexGUID, xHeightmapGUID, xAlphaGUID, xTranslucencyGUID);
+			}
 			if (strLine == "Mesh") {
 				std::string strGUID;
 				std::string strFile;
@@ -57,6 +83,8 @@ namespace VeryCoolEngine {
 		for (auto it = m_xTexture2dMap.begin(); it != m_xTexture2dMap.end(); it++)
 			it->second->PlatformInit();
 		for (auto it = m_xMaterialMap.begin(); it != m_xMaterialMap.end(); it++)
+			it->second->PlatformInit();
+		for (auto it = m_xFoliageMaterialMap.begin(); it != m_xFoliageMaterialMap.end(); it++)
 			it->second->PlatformInit();
 		for (auto it = m_xMeshMap.begin(); it != m_xMeshMap.end(); it++)
 			it->second->PlatformInit();
@@ -79,6 +107,12 @@ namespace VeryCoolEngine {
 		m_xMaterialMap.insert({ xGUID.m_uGuid, Material::Create(xAlbedoGUID, xBumpMapGUID, xRoughnessTexGUID, xMetallicTexGUID, xHeightmapTexGUID)});
 		VCE_ASSERT(m_xMaterialNameMap.find(strName) == m_xMaterialNameMap.end(), "Material name already exists");
 		m_xMaterialNameMap.insert({ strName, m_xMaterialMap.at(xGUID.m_uGuid)});
+	}
+	void AssetHandler::AddFoliageMaterial(GUID xGUID, const std::string& strName, GUID xAlbedoGUID, GUID xBumpMapGUID, GUID xRoughnessTexGUID, GUID xHeightmapTexGUID, GUID xAlphaTexGUID, GUID xTranslucencyTexGUID) {
+		VCE_ASSERT(m_xFoliageMaterialMap.find(xGUID.m_uGuid) == m_xFoliageMaterialMap.end(), "Foliage material guid already exists");
+		m_xFoliageMaterialMap.insert({ xGUID.m_uGuid, FoliageMaterial::Create(xAlbedoGUID, xBumpMapGUID, xRoughnessTexGUID, xHeightmapTexGUID, xAlphaTexGUID,xTranslucencyTexGUID) });
+		VCE_ASSERT(m_xFoliageMaterialNameMap.find(strName) == m_xFoliageMaterialNameMap.end(), "Foliage material name already exists");
+		m_xFoliageMaterialNameMap.insert({ strName, m_xFoliageMaterialMap.at(xGUID.m_uGuid) });
 	}
 
 	Texture2D* AssetHandler::GetTexture2D(GUID xGUID) {
@@ -108,6 +142,16 @@ namespace VeryCoolEngine {
 	Material* AssetHandler::TryGetMaterial(GUID xGUID) {
 		if (m_xMaterialMap.find(xGUID.m_uGuid) != m_xMaterialMap.end())
 			return m_xMaterialMap.at(xGUID.m_uGuid);
+		else
+			return nullptr;
+	}
+	FoliageMaterial* AssetHandler::GetFoliageMaterial(GUID xGUID) {
+		VCE_ASSERT(m_xFoliageMaterialMap.find(xGUID.m_uGuid) != m_xFoliageMaterialMap.end(), "Foliage material doesn't exist");
+		return m_xFoliageMaterialMap.at(xGUID.m_uGuid);
+	}
+	FoliageMaterial* AssetHandler::TryGetFoliageMaterial(GUID xGUID) {
+		if (m_xFoliageMaterialMap.find(xGUID.m_uGuid) != m_xFoliageMaterialMap.end())
+			return m_xFoliageMaterialMap.at(xGUID.m_uGuid);
 		else
 			return nullptr;
 	}
@@ -142,6 +186,16 @@ namespace VeryCoolEngine {
 		else
 			return nullptr;
 	}
+	FoliageMaterial* AssetHandler::GetFoliageMaterial(const std::string& strName) {
+		VCE_ASSERT(m_xFoliageMaterialNameMap.find(strName) != m_xFoliageMaterialNameMap.end(), "Material doesn't exist");
+		return m_xFoliageMaterialNameMap.at(strName);
+	}
+	FoliageMaterial* AssetHandler::TryGetFoliageMaterial(const std::string& strName) {
+		if (m_xFoliageMaterialNameMap.find(strName) != m_xFoliageMaterialNameMap.end())
+			return m_xFoliageMaterialNameMap.at(strName);
+		else
+			return nullptr;
+	}
 
 	void AssetHandler::DeleteTexture2D(GUID xGUID) {
 		VCE_ASSERT(m_xTexture2dMap.find(xGUID.m_uGuid) != m_xTexture2dMap.end(), "Texture2D doesn't exist");
@@ -173,5 +227,10 @@ namespace VeryCoolEngine {
 		VCE_ASSERT(m_xMaterialNameMap.find(strName) != m_xMaterialNameMap.end(), "Material doesn't exist");
 		VCE_DELETE(m_xMaterialNameMap.at(strName));
 		m_xMaterialNameMap.erase(strName);
+	}
+	void AssetHandler::DeleteFoliageMaterial(const std::string& strName) {
+		VCE_ASSERT(m_xFoliageMaterialNameMap.find(strName) != m_xFoliageMaterialNameMap.end(), "Material doesn't exist");
+		VCE_DELETE(m_xFoliageMaterialNameMap.at(strName));
+		m_xFoliageMaterialNameMap.erase(strName);
 	}
 }

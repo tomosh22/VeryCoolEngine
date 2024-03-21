@@ -134,7 +134,6 @@ namespace VeryCoolEngine {
 
 		VCEModel* m_pxFoliageModel;
 		std::vector<glm::vec3> m_xTestFoliagePositions;
-		FoliageMaterial* m_pxFoliageMaterial;
 
 		Mesh* m_pxPlaneMesh;
 

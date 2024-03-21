@@ -234,7 +234,7 @@ namespace VeryCoolEngine {
 			void DrawHeightmapTerrain(Scene* pxScene);
 			void DrawOpaqueMeshes(Scene* pxScene);
 			void DrawSkinnedMeshes(Scene* pxScene);
-			void DrawFoliage();
+			void DrawFoliage(Scene* pxScene);
 
 			void RecreateSwapChain();
 

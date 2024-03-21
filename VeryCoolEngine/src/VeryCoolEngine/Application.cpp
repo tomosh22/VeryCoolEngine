@@ -34,7 +34,6 @@ namespace VeryCoolEngine {
 		m_pxExampleSkinnedMesh = Mesh::FromFile("ogre.fbx");
 		m_pxExampleMesh = Mesh::FromFile("cubeFlat.obj");
 		m_pxFoliageModel->m_apxMeshes.emplace_back(Mesh::GenerateQuad(10));
-		m_pxFoliageMaterial = FoliageMaterial::Create("foliage1k");
 		m_pxFoliageModel->m_strDirectory = "FoliageModel";
 
 		m_pxPlaneMesh = Mesh::FromFile("plane_64verts.obj");
@@ -158,7 +157,7 @@ namespace VeryCoolEngine {
 		m_pxGBufferShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshGBufferFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
 		m_pxCopyToFramebufferShader = Shader::Create("vulkan/copyToFrameBufferVert.spv", "vulkan/copyToFrameBufferFrag.spv");
 		m_pxSkinnedMeshShader = Shader::Create("vulkan/skinnedMeshVert.spv", "vulkan/meshFrag.spv");
-		m_pxFoliageShader = Shader::Create("vulkan/foliageVert.spv", "vulkan/foliageFrag.spv");
+		m_pxFoliageShader = Shader::Create("vulkan/Foliage/foliageVert.spv", "vulkan/Foliage/foliageFrag.spv");
 
 		m_pxQuadModel = new VCEModel();
 		m_pxQuadModel->m_bShowInEditor = false;
@@ -299,7 +298,7 @@ namespace VeryCoolEngine {
 			{ "Foliage",
 					PipelineSpecification(
 					"Foliage",
-					m_pxFoliageModel->m_apxMeshes.back(),
+					m_pxQuadModel->m_apxMeshes.back(),
 					m_pxFoliageShader,
 					{BlendFactor::SrcAlpha},
 					{BlendFactor::OneMinusSrcAlpha},
@@ -310,7 +309,7 @@ namespace VeryCoolEngine {
 					{ColourFormat::BGRA8_sRGB},
 					DepthFormat::D32_SFloat,
 					"RenderToTextureNoClear",
-					false,
+					true,
 					false,
 					{
 						{1,0},
@@ -473,6 +472,7 @@ namespace VeryCoolEngine {
 		for(uint32_t i = 0; i < 15; i++)
 			m_xAssetHandler.LoadAssetsFromFile(std::to_string(i) + ".vceassets");
 		m_xAssetHandler.LoadAssetsFromFile("heightmap.vceassets");
+		m_xAssetHandler.LoadAssetsFromFile("foliage.vceassets");
 
 		m_xAssetHandler.PlatformInitialiseAssets();
 		
