@@ -21,7 +21,7 @@ namespace VeryCoolEngine {
 		void Unbind() const override;
 
 		
-		VulkanBuffer* m_pxIndexBuffer;
+		
 	};
 
 }

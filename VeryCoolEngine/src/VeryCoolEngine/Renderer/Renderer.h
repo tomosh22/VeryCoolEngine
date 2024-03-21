@@ -58,8 +58,14 @@ namespace VeryCoolEngine {
 		virtual void DrawIndexedInstanced(VertexArray* vertexArray, unsigned int count, MeshTopolgy topology = MeshTopolgy::Triangles) = 0;
 		static Renderer* Create();
 
+		//#TO_TODO: this should just be GetInstance, get rid of the vulkan one
+		static Renderer* GetRendererInstance() { return _spRenderer; }
 		static Renderer* _spRenderer;
-		static GraphicsContext* _spContext;
+
+		std::unordered_map<std::string, RendererAPI::TargetSetup> m_xTargetSetups;
+		std::unordered_map<std::string, RendererAPI::Pipeline*> m_xPipelines;
+
+		uint32_t m_currentFrame = 0;
 		
 
 		bool m_bShouldResize = false;

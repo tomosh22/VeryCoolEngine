@@ -40,7 +40,7 @@ namespace VeryCoolEngine {
 		m_xCurrentCmdBuffer = m_xCmdBuffers[m_pxRenderer->m_currentFrame];
 		m_xCurrentCmdBuffer.begin(vk::CommandBufferBeginInfo());
 
-		m_eCurrentBindFreq = BINDING_FREQUENCY_MAX;
+		m_eCurrentBindFreq = RendererAPI::BINDING_FREQUENCY_MAX;
 
 		m_bIsRecording = true;
 	}
@@ -52,7 +52,7 @@ namespace VeryCoolEngine {
 		m_xCurrentCmdBuffer.end();
 		pxRendererAPI->s_axCmdBuffersToSubmit[eOrder].push_back(&m_xCurrentCmdBuffer);
 
-		m_eCurrentBindFreq = BINDING_FREQUENCY_MAX;
+		m_eCurrentBindFreq = RendererAPI::BINDING_FREQUENCY_MAX;
 
 		m_bIsRecording = false;
 
@@ -63,12 +63,12 @@ namespace VeryCoolEngine {
 		VulkanVertexBuffer* pxVkVertexBuffer = dynamic_cast<VulkanVertexBuffer*>(xVertexBuffer);
 		//TODO: offsets
 		vk::DeviceSize offsets[] = { 0 };
-		m_xCurrentCmdBuffer.bindVertexBuffers(uBindPoint, 1, &pxVkVertexBuffer->m_pxVertexBuffer->m_xBuffer, offsets);
+		m_xCurrentCmdBuffer.bindVertexBuffers(uBindPoint, 1, &dynamic_cast<VulkanBuffer*>(pxVkVertexBuffer->m_pxVertexBuffer)->m_xBuffer, offsets);
 	}
 	void VulkanCommandBuffer::SetIndexBuffer(IndexBuffer* xIndexBuffer)
 	{
 		VulkanIndexBuffer* pxVkIndexBuffer = dynamic_cast<VulkanIndexBuffer*>(xIndexBuffer);
-		m_xCurrentCmdBuffer.bindIndexBuffer(pxVkIndexBuffer->m_pxIndexBuffer->m_xBuffer, 0, vk::IndexType::eUint32);
+		m_xCurrentCmdBuffer.bindIndexBuffer(dynamic_cast<VulkanBuffer*>(pxVkIndexBuffer->m_pxIndexBuffer)->m_xBuffer, 0, vk::IndexType::eUint32);
 	}
 	void VulkanCommandBuffer::Draw(uint32_t uNumIndices, uint32_t uNumInstances /*= 1*/, uint32_t uVertexOffset /*= 0*/, uint32_t uIndexOffset /*= 0*/, uint32_t uInstanceOffset /*= 0*/)
 	{
@@ -81,12 +81,12 @@ namespace VeryCoolEngine {
 
 			uint32_t uNumTextures = 0;
 			for (uint32_t i = 0; i < MAX_BINDINGS; i++) {
-				if (m_xBindings[BINDING_FREQUENCY_PER_DRAW].m_xTextures[i] != nullptr)
+				if (m_xBindings[RendererAPI::BINDING_FREQUENCY_PER_DRAW].m_xTextures[i] != nullptr)
 					uNumTextures++;
 				else {
 #ifdef VCE_DEBUG
 					for (uint32_t j = i + 1; j < MAX_BINDINGS; j++)
-						VCE_ASSERT(m_xBindings[BINDING_FREQUENCY_PER_DRAW].m_xTextures[j] == nullptr, "All non null textures must be contiguous");
+						VCE_ASSERT(m_xBindings[RendererAPI::BINDING_FREQUENCY_PER_DRAW].m_xTextures[j] == nullptr, "All non null textures must be contiguous");
 #endif
 					break;
 				}
@@ -95,12 +95,12 @@ namespace VeryCoolEngine {
 
 			uint32_t uNumBuffers = 0;
 			for (uint32_t i = 0; i < MAX_BINDINGS; i++) {
-				if (m_xBindings[BINDING_FREQUENCY_PER_DRAW].m_xBuffers[i] != nullptr)
+				if (m_xBindings[RendererAPI::BINDING_FREQUENCY_PER_DRAW].m_xBuffers[i] != nullptr)
 					uNumBuffers++;
 				else {
 #ifdef VCE_DEBUG
 					for (uint32_t j = i + 1; j < MAX_BINDINGS; j++)
-						VCE_ASSERT(m_xBindings[BINDING_FREQUENCY_PER_DRAW].m_xBuffers[j] == nullptr, "All non null buffers must be contiguous");
+						VCE_ASSERT(m_xBindings[RendererAPI::BINDING_FREQUENCY_PER_DRAW].m_xBuffers[j] == nullptr, "All non null buffers must be contiguous");
 #endif
 					break;
 				}
@@ -111,7 +111,7 @@ namespace VeryCoolEngine {
 			std::vector<vk::WriteDescriptorSet> xTexWrites(uNumTextures);
 			uint32_t uCount = 0;
 			for (uint32_t i = 0; i < uNumTextures; i++) {
-				Texture* pxTex = m_xBindings[BINDING_FREQUENCY_PER_DRAW].m_xTextures[i];
+				Texture* pxTex = m_xBindings[RendererAPI::BINDING_FREQUENCY_PER_DRAW].m_xTextures[i];
 				VulkanTexture2D* pxVkTex = dynamic_cast<VulkanTexture2D*>(pxTex);
 
 				vk::DescriptorImageInfo& xInfo = xTexInfos.at(uCount)
@@ -135,7 +135,7 @@ namespace VeryCoolEngine {
 			std::vector<vk::DescriptorBufferInfo> xBufferInfos(uNumBuffers);
 			std::vector<vk::WriteDescriptorSet> xBufferWrites(uNumBuffers);
 			for (uint32_t i = 0; i < uNumBuffers; i++) {
-				Buffer* pxBuf = m_xBindings[BINDING_FREQUENCY_PER_DRAW].m_xBuffers[i];
+				Buffer* pxBuf = m_xBindings[RendererAPI::BINDING_FREQUENCY_PER_DRAW].m_xBuffers[i];
 				VulkanBuffer* pxVkBuf = dynamic_cast<VulkanBuffer*>(pxBuf);
 
 				vk::DescriptorBufferInfo& xInfo = xBufferInfos.at(uCount)
@@ -156,7 +156,7 @@ namespace VeryCoolEngine {
 
 			m_pxRenderer->GetDevice().updateDescriptorSets(xBufferWrites.size(), xBufferWrites.data(), 0, nullptr);
 
-			m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxCurrentPipeline->m_xPipelineLayout, (int)BINDING_FREQUENCY_PER_DRAW, 1, &xSet, 0, nullptr);
+			m_xCurrentCmdBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, m_pxCurrentPipeline->m_xPipelineLayout, (int)RendererAPI::BINDING_FREQUENCY_PER_DRAW, 1, &xSet, 0, nullptr);
 		}
 	
 
@@ -221,9 +221,9 @@ namespace VeryCoolEngine {
 		m_xCurrentCmdBuffer.setScissor(0, 1, &xScissor);
 	}
 
-	void VulkanCommandBuffer::SetPipeline(void* pxPipeline)
+	void VulkanCommandBuffer::SetPipeline(RendererAPI::Pipeline* pxPipeline)
 	{
-		VulkanPipeline* pxVkPipeline = reinterpret_cast<VulkanPipeline*>(pxPipeline);
+		VulkanPipeline* pxVkPipeline = dynamic_cast<VulkanPipeline*>(pxPipeline);
 		m_xCurrentCmdBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pxVkPipeline->m_xPipeline);
 		std::vector<vk::DescriptorSet> axSets;
 		//new pipelines (skinned meshes)
@@ -237,9 +237,9 @@ namespace VeryCoolEngine {
 	}
 
 	void VulkanCommandBuffer::BindTexture(void* pxTexture, uint32_t uBindPoint, uint32_t uSet) {
-		VCE_ASSERT(m_eCurrentBindFreq < BINDING_FREQUENCY_MAX, "Haven't called BeginBind");
+		VCE_ASSERT(m_eCurrentBindFreq < RendererAPI::BINDING_FREQUENCY_MAX, "Haven't called BeginBind");
 
-		if (m_eCurrentBindFreq == BINDING_FREQUENCY_PER_FRAME) {
+		if (m_eCurrentBindFreq == RendererAPI::BINDING_FREQUENCY_PER_FRAME) {
 			VulkanTexture2D* pxTex = reinterpret_cast<VulkanTexture2D*>(pxTexture);
 
 			vk::DescriptorImageInfo xInfo = vk::DescriptorImageInfo()
@@ -258,14 +258,14 @@ namespace VeryCoolEngine {
 
 			m_pxRenderer->GetDevice().updateDescriptorSets(1, &xWrite, 0, nullptr);
 		}
-		else if(m_eCurrentBindFreq == BINDING_FREQUENCY_PER_DRAW)
+		else if(m_eCurrentBindFreq == RendererAPI::BINDING_FREQUENCY_PER_DRAW)
 			m_xBindings[m_eCurrentBindFreq].m_xTextures[uBindPoint] = reinterpret_cast<Texture*>(pxTexture);
 	}
 
 	void VulkanCommandBuffer::BindBuffer(void* pxBuffer, uint32_t uBindPoint, uint32_t uSet) {
-		VCE_ASSERT(m_eCurrentBindFreq < BINDING_FREQUENCY_MAX, "Haven't called BeginBind");
+		VCE_ASSERT(m_eCurrentBindFreq < RendererAPI::BINDING_FREQUENCY_MAX, "Haven't called BeginBind");
 
-		if (m_eCurrentBindFreq == BINDING_FREQUENCY_PER_FRAME) {
+		if (m_eCurrentBindFreq == RendererAPI::BINDING_FREQUENCY_PER_FRAME) {
 			VulkanBuffer* pxBuf = reinterpret_cast<VulkanBuffer*>(pxBuffer);
 
 			vk::DescriptorBufferInfo xInfo = vk::DescriptorBufferInfo()
@@ -284,7 +284,7 @@ namespace VeryCoolEngine {
 			m_pxRenderer->GetDevice().updateDescriptorSets(1, &xWrite, 0, nullptr);
 
 		}
-		else if (m_eCurrentBindFreq == BINDING_FREQUENCY_PER_DRAW)
+		else if (m_eCurrentBindFreq == RendererAPI::BINDING_FREQUENCY_PER_DRAW)
 			m_xBindings[m_eCurrentBindFreq].m_xBuffers[uBindPoint] = reinterpret_cast<Buffer*>(pxBuffer);
 	}
 
@@ -298,7 +298,7 @@ namespace VeryCoolEngine {
 		m_pxUniformBuffer->UploadData(pData, uSize, m_pxRenderer->m_currentFrame);
 	}
 
-	void VulkanCommandBuffer::BeginBind(BINDING_FREQUENCY eFreq)
+	void VulkanCommandBuffer::BeginBind(RendererAPI::BINDING_FREQUENCY eFreq)
 	{
 		for (uint32_t i = 0; i < MAX_BINDINGS; i++) {
 			m_xBindings[eFreq].m_xBuffers[i] = nullptr;

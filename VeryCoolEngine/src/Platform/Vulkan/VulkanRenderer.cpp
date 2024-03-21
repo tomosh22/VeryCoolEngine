@@ -230,7 +230,7 @@ void VulkanRenderer::CopyToFramebuffer() {
 	m_pxCopyToFramebufferCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer);
 	m_pxCopyToFramebufferCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
 
-	m_pxCopyToFramebufferCommandBuffer->BeginBind(BINDING_FREQUENCY_PER_FRAME);
+	m_pxCopyToFramebufferCommandBuffer->BeginBind(RendererAPI::BINDING_FREQUENCY_PER_FRAME);
 
 	m_pxCopyToFramebufferCommandBuffer->BindTexture(m_apxEditorSceneTexs[m_currentFrame], 0, 0);
 	
@@ -262,10 +262,9 @@ void VulkanRenderer::DrawSkybox() {
 
 	m_pxSkyboxCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTextureClear"));
 
-	VulkanPipeline* pxSkyboxPipeline = m_xPipelines.at("Skybox");
-	m_pxSkyboxCommandBuffer->SetPipeline(&pxSkyboxPipeline->m_xPipeline);
+	m_pxSkyboxCommandBuffer->SetPipeline(m_xPipelines.at("Skybox"));
 
-	m_pxSkyboxCommandBuffer->BeginBind(BINDING_FREQUENCY_PER_FRAME);
+	m_pxSkyboxCommandBuffer->BeginBind(RendererAPI::BINDING_FREQUENCY_PER_FRAME);
 
 	VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
 	m_pxSkyboxCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0, 0);
@@ -287,7 +286,7 @@ void VulkanRenderer::DrawHeightmapTerrain(Scene* pxScene) {
 	m_pxTerrainCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTextureNoClear"));
 
 
-	m_pxTerrainCommandBuffer->SetPipeline(&m_xPipelines.at("Terrain")->m_xPipeline);
+	m_pxTerrainCommandBuffer->SetPipeline(m_xPipelines.at("Terrain"));
 
 	Application::TerrainRenderData xTerrainRenderData;
 
@@ -299,7 +298,7 @@ void VulkanRenderer::DrawHeightmapTerrain(Scene* pxScene) {
 
 	app->m_pxMiscTerrainRenderDataUBO->UploadData(&xTerrainRenderData, sizeof(Application::TerrainRenderData), m_currentFrame, 0);
 
-	m_pxTerrainCommandBuffer->BeginBind(BINDING_FREQUENCY_PER_FRAME);
+	m_pxTerrainCommandBuffer->BeginBind(RendererAPI::BINDING_FREQUENCY_PER_FRAME);
 
 	VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
 	m_pxTerrainCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0, 0);
@@ -311,7 +310,7 @@ void VulkanRenderer::DrawHeightmapTerrain(Scene* pxScene) {
 	VulkanManagedUniformBuffer* pxMiscTerrainRenderDataUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxMiscTerrainRenderDataUBO);
 	m_pxTerrainCommandBuffer->BindBuffer(pxMiscTerrainRenderDataUBO->ppBuffers[m_currentFrame], 2, 0);
 
-	m_pxTerrainCommandBuffer->BeginBind(BINDING_FREQUENCY_PER_DRAW);
+	m_pxTerrainCommandBuffer->BeginBind(RendererAPI::BINDING_FREQUENCY_PER_DRAW);
 
 	Mesh* pxQuadMesh = app->m_pxPlaneMesh;
 	VCE_ASSERT(pxQuadMesh->m_bInitialised, "Mesh not initalised");
@@ -358,7 +357,7 @@ void VulkanRenderer::DrawOpaqueMeshes(Scene* pxScene) {
 	m_pxOpaqueMeshesCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTextureNoClear"));
 
 
-	m_pxOpaqueMeshesCommandBuffer->SetPipeline(&m_xPipelines.at("Meshes")->m_xPipeline);
+	m_pxOpaqueMeshesCommandBuffer->SetPipeline(m_xPipelines.at("Meshes"));
 
 	Application::MeshRenderData xMeshRenderData;
 
@@ -371,7 +370,7 @@ void VulkanRenderer::DrawOpaqueMeshes(Scene* pxScene) {
 
 	app->m_pxMiscMeshRenderDataUBO->UploadData(&xMeshRenderData, sizeof(Application::MeshRenderData), m_currentFrame, 0);
 
-	m_pxOpaqueMeshesCommandBuffer->BeginBind(BINDING_FREQUENCY_PER_FRAME);
+	m_pxOpaqueMeshesCommandBuffer->BeginBind(RendererAPI::BINDING_FREQUENCY_PER_FRAME);
 
 	VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
 	m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0, 0);
@@ -383,7 +382,7 @@ void VulkanRenderer::DrawOpaqueMeshes(Scene* pxScene) {
 	VulkanManagedUniformBuffer* pxMiscMeshRenderDataUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->m_pxMiscMeshRenderDataUBO);
 	m_pxOpaqueMeshesCommandBuffer->BindBuffer(pxMiscMeshRenderDataUBO->ppBuffers[m_currentFrame], 2, 0);
 
-	m_pxOpaqueMeshesCommandBuffer->BeginBind(BINDING_FREQUENCY_PER_DRAW);
+	m_pxOpaqueMeshesCommandBuffer->BeginBind(RendererAPI::BINDING_FREQUENCY_PER_DRAW);
 
 	std::vector<VCEModel*> xModels;
 	for (ModelComponent* xModelComponent : pxScene->GetAllOfComponentType<ModelComponent>()) {
@@ -452,7 +451,7 @@ void VulkanRenderer::DrawSkinnedMeshes(Scene* pxScene) {
 	m_pxSkinnedMeshesCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTextureNoClear"));
 
 
-	m_pxSkinnedMeshesCommandBuffer->SetPipeline(&m_xPipelines.at("SkinnedMeshes")->m_xPipeline);
+	m_pxSkinnedMeshesCommandBuffer->SetPipeline(m_xPipelines.at("SkinnedMeshes"));
 
 	Application::MeshRenderData xMeshRenderData;
 
@@ -550,9 +549,9 @@ void VulkanRenderer::DrawFoliage(Scene* pxScene) {
 	m_pxFoliageCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTextureNoClear"));
 
 
-	m_pxFoliageCommandBuffer->SetPipeline(&m_xPipelines.at("Foliage")->m_xPipeline);
+	m_pxFoliageCommandBuffer->SetPipeline(m_xPipelines.at("Foliage"));
 
-	m_pxFoliageCommandBuffer->BeginBind(BINDING_FREQUENCY_PER_FRAME);
+	m_pxFoliageCommandBuffer->BeginBind(RendererAPI::BINDING_FREQUENCY_PER_FRAME);
 
 	VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
 	m_pxFoliageCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0, 0);
@@ -561,7 +560,7 @@ void VulkanRenderer::DrawFoliage(Scene* pxScene) {
 	m_pxFoliageCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer,0);
 	m_pxFoliageCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
 
-	m_pxFoliageCommandBuffer->BeginBind(BINDING_FREQUENCY_PER_DRAW);
+	m_pxFoliageCommandBuffer->BeginBind(RendererAPI::BINDING_FREQUENCY_PER_DRAW);
 
 	for (FoliageComponent* pxFoliageComponent : pxScene->GetAllOfComponentType<FoliageComponent>()) {
 

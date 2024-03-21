@@ -11,12 +11,12 @@ namespace VeryCoolEngine {
 
 		VulkanRenderer* pRenderer = VulkanRenderer::GetInstance();
 
-		ppBuffers = new VulkanBuffer* [numFrames];
+		ppBuffers = new Buffer* [numFrames];
 		ppMappedPtrs = new void* [numFrames];
 		for (uint8_t i = 0; i < numFrames; i++)
 		{
 			ppBuffers[i] = new VulkanBuffer(size, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-			ppMappedPtrs[i] = VulkanRenderer::GetInstance()->GetDevice().mapMemory(ppBuffers[i]->m_xDeviceMem, 0, size);
+			ppMappedPtrs[i] = VulkanRenderer::GetInstance()->GetDevice().mapMemory(dynamic_cast<VulkanBuffer*>(ppBuffers[i])->m_xDeviceMem, 0, size);
 		}
 
 

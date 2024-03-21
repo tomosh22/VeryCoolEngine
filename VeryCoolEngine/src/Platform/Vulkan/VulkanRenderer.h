@@ -120,8 +120,7 @@ namespace VeryCoolEngine {
 			const vk::Fence& GetCurrentInFlightFence() const { return m_inFlightFences[m_currentFrame];}
 			const vk::Queue& GetGraphicsQueue() const { return m_graphicsQueue; }
 
-			//TODO: move to private
-			uint32_t m_currentFrame = 0;
+			
 
 			RendererAPI* m_pxRendererAPI;
 		protected:
@@ -282,11 +281,8 @@ namespace VeryCoolEngine {
 			std::vector<vk::ImageView> m_swapChainImageViews;
 
 
-			std::unordered_map<std::string, class VulkanPipeline*> m_xPipelines;
-
 			void InitialiseTargetSetup(const char* szName, const RendererAPI::TargetSetup& xTargetSetup);
 
-			std::unordered_map<std::string, RendererAPI::TargetSetup> m_xTargetSetups;
 			std::unordered_map<std::string, VulkanRenderPass*> m_xTargetSetupPasses;
 			std::unordered_map<std::string, std::vector<vk::Framebuffer>> m_xTargetSetupFramebuffers;
 			

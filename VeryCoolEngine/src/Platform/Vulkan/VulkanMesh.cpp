@@ -130,7 +130,7 @@ namespace VeryCoolEngine {
 			{
 				m_axBoneDescSet[i] = pxRenderer->CreateDescriptorSet(m_xBoneDescSetLayout, pxRenderer->GetDescriptorPool());
 				vk::DescriptorBufferInfo xInfo = vk::DescriptorBufferInfo()
-					.setBuffer(m_pxBoneBuffer->ppBuffers[i]->m_xBuffer)
+					.setBuffer(dynamic_cast<VulkanBuffer*>(m_pxBoneBuffer->ppBuffers[i])->m_xBuffer)
 					.setOffset(0)
 					.setRange(m_pxBoneBuffer->m_uSize);
 
@@ -152,14 +152,14 @@ namespace VeryCoolEngine {
 
 	void VulkanMesh::BindToCmdBuffer(vk::CommandBuffer& xCmdBuffer) const {
 		vk::DeviceSize offsets[] = { 0 };
-		xCmdBuffer.bindVertexBuffers(0, 1, &m_pxVertexBuffer->m_pxVertexBuffer->m_xBuffer, offsets);
+		xCmdBuffer.bindVertexBuffers(0, 1, &dynamic_cast<VulkanBuffer*>(m_pxVertexBuffer->m_pxVertexBuffer)->m_xBuffer, offsets);
 
 		if (m_pxIndexBuffer != nullptr) {
-			xCmdBuffer.bindIndexBuffer(m_pxIndexBuffer->m_pxIndexBuffer->m_xBuffer, 0, vk::IndexType::eUint32);
+			xCmdBuffer.bindIndexBuffer(dynamic_cast<VulkanBuffer*>(m_pxIndexBuffer->m_pxIndexBuffer)->m_xBuffer, 0, vk::IndexType::eUint32);
 		}
 
 		if (m_pxInstanceBuffer != nullptr) {
-			xCmdBuffer.bindVertexBuffers(1, 1, &m_pxInstanceBuffer->m_pxVertexBuffer->m_xBuffer, offsets);
+			xCmdBuffer.bindVertexBuffers(1, 1, &dynamic_cast<VulkanBuffer*>(m_pxInstanceBuffer->m_pxVertexBuffer)->m_xBuffer, offsets);
 		}
 	}
 

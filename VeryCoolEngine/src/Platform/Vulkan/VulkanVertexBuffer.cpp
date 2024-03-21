@@ -15,7 +15,7 @@ VeryCoolEngine::VulkanVertexBuffer::VulkanVertexBuffer(void* m_pVerts, size_t si
 
 	m_pxVertexBuffer = new VulkanBuffer(size, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
-	VulkanBuffer::CopyBufferToBuffer(&pxStagingBuffer, m_pxVertexBuffer, size);
+	VulkanBuffer::CopyBufferToBuffer(&pxStagingBuffer, dynamic_cast<VulkanBuffer*>(m_pxVertexBuffer), size);
 
 }
 

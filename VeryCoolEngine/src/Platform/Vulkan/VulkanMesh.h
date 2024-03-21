@@ -20,9 +20,7 @@ namespace VeryCoolEngine {
 
 		static vk::Format ShaderDataTypeToVulkanFormat(ShaderDataType t);
 
-		VulkanVertexBuffer* m_pxVertexBuffer;
-		VulkanIndexBuffer* m_pxIndexBuffer;
-		VulkanVertexBuffer* m_pxInstanceBuffer = nullptr;
+		
 
 		VulkanManagedUniformBuffer* m_pxBoneBuffer = nullptr;
 

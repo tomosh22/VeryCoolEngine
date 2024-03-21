@@ -111,6 +111,17 @@ namespace VeryCoolEngine {
 			std::string m_strName;
 		};
 
+		enum BINDING_FREQUENCY : uint32_t {
+			BINDING_FREQUENCY_PER_FRAME,
+			BINDING_FREQUENCY_PER_DRAW,
+			BINDING_FREQUENCY_MAX,
+		};
+
+		class Pipeline {
+		public:
+			virtual ~Pipeline() {}
+		};
+
 		class CommandBuffer {
 		public:
 			CommandBuffer(bool bAsybcLoader = false) {}
@@ -120,9 +131,11 @@ namespace VeryCoolEngine {
 			virtual void SetIndexBuffer(IndexBuffer* xIndexBuffer) = 0;
 			virtual void Draw(uint32_t uNumIndices, uint32_t uNumInstances = 1, uint32_t uVertexOffset = 0, uint32_t uIndexOffset = 0, uint32_t uInstanceOffset = 0) = 0;
 			virtual void SubmitTargetSetup(const TargetSetup& xTargetSetup) = 0;
-			virtual void SetPipeline(void* pxPipeline) = 0;
+			virtual void SetPipeline(Pipeline* pxPipeline) = 0;
 			virtual void BindTexture(void* pxTexture, uint32_t uBindPoint, uint32_t uSet) = 0;
 			virtual void BindBuffer(void* pxBuffer, uint32_t uBindPoint, uint32_t uSet) = 0;
+
+			virtual void BeginBind(BINDING_FREQUENCY eFreq) = 0;
 
 			virtual void PushConstant(void* pData, size_t uSize) = 0;
 
@@ -136,6 +149,8 @@ namespace VeryCoolEngine {
 
 			bool m_bIsRecording = false;
 		};
+
+		
 
 		std::vector<void*> s_axCmdBuffersToSubmit[RENDER_ORDER_MAX];
 		void Platform_SubmitCmdBuffers();

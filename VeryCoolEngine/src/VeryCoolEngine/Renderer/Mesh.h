@@ -87,6 +87,10 @@ namespace VeryCoolEngine {
 
 		static void ExtractBoneWeightForVertices(Mesh* pxMesh, std::vector<Vertex>& vertices, aiMesh* mesh, const aiScene* scene);
 
+		VertexBuffer* m_pxVertexBuffer;
+		IndexBuffer* m_pxIndexBuffer;
+		VertexBuffer* m_pxInstanceBuffer = nullptr;
+
 		friend class VCEModel;
 
 #ifdef VCE_MATERIAL_TEXTURE_DESC_SET

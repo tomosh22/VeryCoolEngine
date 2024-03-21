@@ -1,7 +1,22 @@
 #pragma once
 
 namespace VeryCoolEngine {
+	class Buffer {
 
+	public:
+		virtual ~Buffer() = default;
+
+		static Buffer* Create(uint64_t uSize);
+		static Buffer* CreateStaging(uint64_t uSize);
+
+		virtual void UploadData(void* pData, uint32_t uSize) = 0;
+
+		uint64_t GetSize() const { return m_uSize; }
+
+	protected:
+		void* m_pData;
+		uint64_t m_uSize;
+	};
 	
 	enum class ShaderDataType : uint8_t {
 		Float,
@@ -146,6 +161,8 @@ namespace VeryCoolEngine {
 
 		static VertexBuffer* Create(void* m_pVerts, size_t size);
 
+		Buffer* m_pxVertexBuffer;
+
 	protected:
 		BufferLayout _Layout;
 	};
@@ -163,26 +180,12 @@ namespace VeryCoolEngine {
 		static IndexBuffer* Create(uint32_t* m_puIndices, uint32_t count);
 
 		uint32_t GetCount() const { return _Count; }
+
+		Buffer* m_pxIndexBuffer;
 	protected:
 		uint32_t _Count;
 	};
 
-	//this class doesn't do anything other than hold the size, i was going to use it for bone data then realized I should do that at the platform level
-	class Buffer {
-
-	public:
-		virtual ~Buffer() = default;
-
-		static Buffer* Create(uint64_t uSize);
-		static Buffer* CreateStaging(uint64_t uSize);
-
-		virtual void UploadData(void* pData, uint32_t uSize) = 0;
-
-		uint64_t GetSize() const {return m_uSize;}
-
-	protected:
-		void* m_pData;
-		uint64_t m_uSize;
-	};
+	
 }
 

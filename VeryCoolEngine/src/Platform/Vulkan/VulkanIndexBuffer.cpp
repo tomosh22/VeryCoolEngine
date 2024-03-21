@@ -13,7 +13,7 @@ namespace VeryCoolEngine {
 
 		m_pxIndexBuffer = new VulkanBuffer(size, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal);
 
-		VulkanBuffer::CopyBufferToBuffer(&pxStagingBuffer, m_pxIndexBuffer, size);
+		VulkanBuffer::CopyBufferToBuffer(&pxStagingBuffer, dynamic_cast<VulkanBuffer*>(m_pxIndexBuffer), size);
 	}
 	void VulkanIndexBuffer::UploadData()
 	{

@@ -13,11 +13,7 @@ namespace VeryCoolEngine {
 		Texture* m_xTextures[MAX_BINDINGS];
 	};
 
-	enum BINDING_FREQUENCY : uint32_t {
-		BINDING_FREQUENCY_PER_FRAME,
-		BINDING_FREQUENCY_PER_DRAW,
-		BINDING_FREQUENCY_MAX,
-	};
+	
 
 	class VulkanCommandBuffer : public RendererAPI::CommandBuffer
 	{
@@ -29,13 +25,13 @@ namespace VeryCoolEngine {
 		void SetIndexBuffer(IndexBuffer* xIndexBuffer) override;
 		void Draw(uint32_t uNumIndices, uint32_t uNumInstances = 1, uint32_t uVertexOffset = 0, uint32_t uIndexOffset = 0, uint32_t uInstanceOffset = 0) override;
 		void SubmitTargetSetup(const RendererAPI::TargetSetup& xTargetSetup) override;
-		void SetPipeline(void* pxPipeline) override;
+		void SetPipeline(RendererAPI::Pipeline* pxPipeline) override;
 		void BindTexture(void* pxTexture, uint32_t uBindPoint, uint32_t uSet) override;
 		void BindBuffer(void* pxBuffer, uint32_t uBindPoint, uint32_t uSet) override;
 		void PushConstant(void* pData, size_t uSize) override;
 		void UploadUniformData(void* pData, size_t uSize) override;
 
-		void BeginBind(BINDING_FREQUENCY eFreq);
+		void BeginBind(RendererAPI::BINDING_FREQUENCY eFreq) override;
 
 		vk::CommandBuffer& GetCurrentCmdBuffer() { return m_xCurrentCmdBuffer; }
 		void* Platform_GetCurrentCmdBuffer() const override { return (void*) & m_xCurrentCmdBuffer; }
@@ -61,8 +57,8 @@ namespace VeryCoolEngine {
 
 		class VulkanPipeline* m_pxCurrentPipeline;
 
-		DescSetBindings m_xBindings[BINDING_FREQUENCY_MAX];
-		BINDING_FREQUENCY m_eCurrentBindFreq = BINDING_FREQUENCY_MAX;
+		DescSetBindings m_xBindings[RendererAPI::BINDING_FREQUENCY_MAX];
+		RendererAPI::BINDING_FREQUENCY m_eCurrentBindFreq = RendererAPI::BINDING_FREQUENCY_MAX;
 
 		
 	};

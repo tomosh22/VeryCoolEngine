@@ -12,12 +12,12 @@ License: MIT (see LICENSE file at the top of the source tree)
 namespace VeryCoolEngine {
 	class VulkanShader;
 
-	class VulkanPipeline {
+	class VulkanPipeline : public RendererAPI::Pipeline {
 	public:
 		vk::Pipeline m_xPipeline;
 		vk::PipelineLayout	m_xPipelineLayout;
 
-		~VulkanPipeline() {
+		~VulkanPipeline() override {
 			vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
 			xDevice.destroyPipeline(m_xPipeline);
 			xDevice.destroyPipelineLayout(m_xPipelineLayout);
