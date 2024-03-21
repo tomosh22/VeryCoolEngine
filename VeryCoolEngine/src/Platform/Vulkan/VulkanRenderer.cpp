@@ -20,10 +20,11 @@
 
 #include "VulkanMaterial.h"
 
+#include "VeryCoolEngine/Renderer/FoliageRenderer/FoliageRenderer.h"
+
 #include "reactphysics3d/reactphysics3d.h"
 #include "VeryCoolEngine/Components/ModelComponent.h"
 #include "VeryCoolEngine/Components/TerrainComponent.h"
-#include "VeryCoolEngine/Components/FoliageComponent.h"
 
 #include "VeryCoolEngine/Renderer/AsyncLoader.h"
 
@@ -38,12 +39,13 @@ VulkanRenderer::VulkanRenderer() {
 
 	m_pxRendererAPI = new RendererAPI;
 
+	m_pxFoliageRenderer = new FoliageRenderer;
+
 	m_pxCopyToFramebufferCommandBuffer = new VulkanCommandBuffer(false);
 	m_pxSkyboxCommandBuffer = new VulkanCommandBuffer(false);
 	m_pxOpaqueMeshesCommandBuffer = new VulkanCommandBuffer(false);
 	m_pxTerrainCommandBuffer = new VulkanCommandBuffer(false);
 	m_pxSkinnedMeshesCommandBuffer = new VulkanCommandBuffer(false);
-	m_pxFoliageCommandBuffer = new VulkanCommandBuffer(false);
 
 	AsyncLoader::g_pxAsyncLoaderCommandBuffer = new VulkanCommandBuffer(true);
 
@@ -540,54 +542,6 @@ void VulkanRenderer::DrawSkinnedMeshes(Scene* pxScene) {
 	m_pxSkinnedMeshesCommandBuffer->EndRecording(RENDER_ORDER_SKINNED_MESHES);
 }
 
-//#TO_TODO: BeginBind
-void VulkanRenderer::DrawFoliage(Scene* pxScene) {
-	Application* app = Application::GetInstance();
-
-	m_pxFoliageCommandBuffer->BeginRecording();
-
-	m_pxFoliageCommandBuffer->SubmitTargetSetup(m_xTargetSetups.at("RenderToTextureNoClear"));
-
-
-	m_pxFoliageCommandBuffer->SetPipeline(m_xPipelines.at("Foliage"));
-
-	m_pxFoliageCommandBuffer->BeginBind(RendererAPI::BINDING_FREQUENCY_PER_FRAME);
-
-	VulkanManagedUniformBuffer* pxCamUBO = dynamic_cast<VulkanManagedUniformBuffer*>(app->_pCameraUBO);
-	m_pxFoliageCommandBuffer->BindBuffer(pxCamUBO->ppBuffers[m_currentFrame], 0, 0);
-
-	VulkanMesh* pxVulkanMesh = dynamic_cast<VulkanMesh*>(app->m_pxQuadModel->m_apxMeshes.back());
-	m_pxFoliageCommandBuffer->SetVertexBuffer(pxVulkanMesh->m_pxVertexBuffer,0);
-	m_pxFoliageCommandBuffer->SetIndexBuffer(pxVulkanMesh->m_pxIndexBuffer);
-
-	m_pxFoliageCommandBuffer->BeginBind(RendererAPI::BINDING_FREQUENCY_PER_DRAW);
-
-	for (FoliageComponent* pxFoliageComponent : pxScene->GetAllOfComponentType<FoliageComponent>()) {
-
-		struct FoliagePushConstant {
-			glm::mat4 xMatrix;
-		} xPushConstant;
-
-		xPushConstant.xMatrix = glm::translate(pxFoliageComponent->m_xPos);
-
-		m_pxFoliageCommandBuffer->PushConstant(&xPushConstant, sizeof(xPushConstant));
-
-		FoliageMaterial* pxMaterial = pxFoliageComponent->m_pxMaterial;
-
-		m_pxFoliageCommandBuffer->BindTexture(pxMaterial->m_pxAlbedo, 0,1);
-		m_pxFoliageCommandBuffer->BindTexture(pxMaterial->m_pxBumpMap, 1,1);
-		m_pxFoliageCommandBuffer->BindTexture(pxMaterial->m_pxRoughnessTex, 2,1);
-		m_pxFoliageCommandBuffer->BindTexture(pxMaterial->m_pxAlphaTex, 3,1);
-		m_pxFoliageCommandBuffer->BindTexture(pxMaterial->m_pxTranslucencyTex, 4,1);
-		m_pxFoliageCommandBuffer->BindTexture(pxMaterial->m_pxHeightmapTex, 5,1);
-
-		m_pxFoliageCommandBuffer->Draw(pxVulkanMesh->m_uNumIndices, pxVulkanMesh->m_uNumInstances);
-
-	}
-
-	m_pxFoliageCommandBuffer->EndRecording(RENDER_ORDER_FOLIAGE);
-}
-
 void VulkanRenderer::DrawFrame(RendererScene* scene) {
 	if (m_bShouldResize) {
 		RecreateSwapChain();
@@ -618,7 +572,7 @@ void VulkanRenderer::DrawFrame(RendererScene* scene) {
 
 	//DrawSkinnedMeshes(scene->m_pxScene);
 
-	DrawFoliage(scene->m_pxScene);
+	m_pxFoliageRenderer->RenderFoliage(scene->m_pxScene);
 
 #ifdef VCE_USE_EDITOR
 	//TODO: I'm guessing the editor scene textures are being initalised in the wrong format

@@ -7,6 +7,7 @@ namespace VeryCoolEngine {
 	{
 	public:
 		FoliageRenderer();
+		~FoliageRenderer();
 		void RenderFoliage(Scene* pxScene);
 		RendererAPI::CommandBuffer* m_pxFoliageCommandBuffer;
 	};

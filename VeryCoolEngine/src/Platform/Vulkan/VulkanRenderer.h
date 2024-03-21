@@ -26,6 +26,7 @@ namespace VeryCoolEngine {
 	class VulkanBuffer;
 	class VulkanCommandBuffer;
 	class Scene;
+	class FoliageRenderer;
 	
 
 	static constexpr const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
@@ -233,7 +234,6 @@ namespace VeryCoolEngine {
 			void DrawHeightmapTerrain(Scene* pxScene);
 			void DrawOpaqueMeshes(Scene* pxScene);
 			void DrawSkinnedMeshes(Scene* pxScene);
-			void DrawFoliage(Scene* pxScene);
 
 			void RecreateSwapChain();
 
@@ -334,12 +334,15 @@ namespace VeryCoolEngine {
 			vk::CommandPool m_xAsyncLoaderCommandPool;
 			std::vector<vk::CommandBuffer> m_commandBuffers;
 
+			FoliageRenderer* m_pxFoliageRenderer;
+
 			VulkanCommandBuffer* m_pxCopyToFramebufferCommandBuffer;
 			VulkanCommandBuffer* m_pxSkyboxCommandBuffer;
 			VulkanCommandBuffer* m_pxOpaqueMeshesCommandBuffer;
 			VulkanCommandBuffer* m_pxTerrainCommandBuffer;
 			VulkanCommandBuffer* m_pxSkinnedMeshesCommandBuffer;
-			VulkanCommandBuffer* m_pxFoliageCommandBuffer;
+
+
 
 			std::vector<vk::Semaphore> m_imageAvailableSemaphores;
 			std::vector<vk::Semaphore> m_xSkyboxRenderedSemaphores;

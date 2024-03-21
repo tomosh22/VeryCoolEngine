@@ -124,7 +124,10 @@ namespace VeryCoolEngine {
 
 		class CommandBuffer {
 		public:
-			CommandBuffer(bool bAsybcLoader = false) {}
+
+			static CommandBuffer* Create(bool bAsyncLoader = false);
+
+			CommandBuffer(bool bAsyncLoader = false) {}
 			virtual void BeginRecording() = 0;
 			virtual void EndRecording(RenderOrder eOrder, bool bEndPass = true) = 0;
 			virtual void SetVertexBuffer(VertexBuffer* xVertexBuffer, uint32_t uBindPoint = 0) = 0;
