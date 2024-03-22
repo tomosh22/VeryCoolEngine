@@ -16,6 +16,7 @@ namespace VeryCoolEngine {
 	FoliageRenderer::~FoliageRenderer()
 	{
 		delete m_pxFoliageCommandBuffer;
+		delete m_pxQuadMesh;
 	}
 
 	void FoliageRenderer::RenderFoliage(Scene* pxScene) {
