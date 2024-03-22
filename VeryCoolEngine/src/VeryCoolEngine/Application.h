@@ -181,7 +181,7 @@ namespace VeryCoolEngine {
 		Shader* m_pxSkinnedMeshShader;
 		Shader* m_pxGBufferShader;
 		Shader* m_pxCopyToFramebufferShader;
-		Shader* m_pxFoliageShader;
+		
 
 		Mesh* _pHeightmap;
 		std::vector<RendererAPI::Light> _lights{};

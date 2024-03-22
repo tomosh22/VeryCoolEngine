@@ -6,12 +6,12 @@ namespace VeryCoolEngine {
 
 
 
-	VertexBuffer* VertexBuffer::Create(void* m_pVerts, size_t size) {
+	VertexBuffer* VertexBuffer::Create(void* pData, size_t size, bool bDeviceLocal /*= true*/) {
 #ifdef VCE_OPENGL
 		return new OpenGLVertexBuffer(verts, size);
 #endif
 #ifdef VCE_VULKAN
-		return new VulkanVertexBuffer(m_pVerts, size);
+		return new VulkanVertexBuffer(pData, size, bDeviceLocal);
 #endif
 	}
 

@@ -159,7 +159,7 @@ namespace VeryCoolEngine {
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 		virtual const BufferLayout& GetLayout() = 0;
 
-		static VertexBuffer* Create(void* m_pVerts, size_t size);
+		static VertexBuffer* Create(void* pData, size_t size, bool bDeviceLocal = true);
 
 		Buffer* m_pxVertexBuffer;
 

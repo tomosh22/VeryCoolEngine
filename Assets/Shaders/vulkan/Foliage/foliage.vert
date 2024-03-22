@@ -4,6 +4,7 @@
 
 layout(location = 0) in vec3 _aPosition;
 layout(location = 1) in vec2 _aUV;
+layout(location = 2) in vec3 _aInstancePosition;
 
 
 
@@ -18,5 +19,5 @@ void main(){
 	
 	UV = _aUV;
 	
-	gl_Position = _uViewProjMat * modelMatrix * vec4(_aPosition, 1);
+	gl_Position = _uViewProjMat * vec4(_aPosition + _aInstancePosition, 1);
 }

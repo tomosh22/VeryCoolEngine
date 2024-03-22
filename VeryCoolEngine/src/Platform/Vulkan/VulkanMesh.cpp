@@ -37,14 +37,6 @@ namespace VeryCoolEngine {
     {
 		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
 
-#ifndef VCE_MATERIAL_TEXTURE_DESC_SET
-		if(m_pxTexture != nullptr)m_pxTexture->PlatformInit();
-		if(m_pxBumpMap != nullptr)m_pxBumpMap->PlatformInit();
-		if(m_pxRoughnessTex != nullptr)m_pxRoughnessTex->PlatformInit();
-		if(m_pxMetallicTex != nullptr)m_pxMetallicTex->PlatformInit();
-		if(m_pxHeightmapTex != nullptr)m_pxHeightmapTex->PlatformInit();
-#endif
-
 		uint32_t uBindPoint = 0;
 		for (BufferElement& element : m_pxBufferLayout->GetElements()) {
 			
@@ -68,8 +60,7 @@ namespace VeryCoolEngine {
 
 		m_pxIndexBuffer = new VulkanIndexBuffer(m_puIndices, sizeof(unsigned int) * m_uNumIndices);
 
-		if (m_axInstanceData.size() > 0) {
-			m_pxInstanceBuffer = dynamic_cast<VulkanVertexBuffer*>(CreateInstancedVertexBuffer());
+		if (m_pxInstanceBuffer != nullptr) {
 			BufferLayout& xInstanceLayout = const_cast<BufferLayout&>(m_pxInstanceBuffer->GetLayout());
 			for (BufferElement& element : xInstanceLayout.GetElements()) {
 
@@ -100,19 +91,7 @@ namespace VeryCoolEngine {
 			uint64_t uSize = m_xBoneMats.size() * sizeof(glm::mat4);
 
 			VCE_ASSERT(uSize > 0, "Mesh has bones but no bone matrices");
-			//TODO: does this want to be device local?
-#if 0
-			VulkanBuffer pxStagingBuffer = VulkanBuffer(uSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 
-			vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
-			void* pData = xDevice.mapMemory(pxStagingBuffer.m_xDeviceMem, 0, uSize);
-			memcpy(pData, m_xBoneMats.data(), uSize);
-			xDevice.unmapMemory(pxStagingBuffer.m_xDeviceMem);
-
-			m_pxBoneBuffer = new VulkanBuffer(uSize, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal);
-
-			VulkanBuffer::CopyBufferToBuffer(&pxStagingBuffer, m_pxBoneBuffer, uSize);
-#endif
 
 			//TODO: get rid of last parameter
 			m_pxBoneBuffer = new VulkanManagedUniformBuffer(uSize, MAX_FRAMES_IN_FLIGHT, 0);

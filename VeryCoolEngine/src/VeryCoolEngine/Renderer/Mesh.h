@@ -208,7 +208,7 @@ namespace VeryCoolEngine {
 		
 
 		
-		void* m_pVerts;
+		void* m_pVerts = nullptr;
 
 		
 

@@ -157,7 +157,7 @@ namespace VeryCoolEngine {
 		m_pxGBufferShader = Shader::Create("vulkan/meshVert.spv", "vulkan/meshGBufferFrag.spv", "", "vulkan/meshTesc.spv", "vulkan/meshTese.spv");
 		m_pxCopyToFramebufferShader = Shader::Create("vulkan/copyToFrameBufferVert.spv", "vulkan/copyToFrameBufferFrag.spv");
 		m_pxSkinnedMeshShader = Shader::Create("vulkan/skinnedMeshVert.spv", "vulkan/meshFrag.spv");
-		m_pxFoliageShader = Shader::Create("vulkan/Foliage/foliageVert.spv", "vulkan/Foliage/foliageFrag.spv");
+		
 
 		m_pxQuadModel = new VCEModel();
 		m_pxQuadModel->m_bShowInEditor = false;
@@ -294,29 +294,7 @@ namespace VeryCoolEngine {
 					)
 			});
 
-		m_xPipelineSpecs.insert(
-			{ "Foliage",
-					PipelineSpecification(
-					"Foliage",
-					m_pxQuadModel->m_apxMeshes.back(),
-					m_pxFoliageShader,
-					{BlendFactor::SrcAlpha},
-					{BlendFactor::OneMinusSrcAlpha},
-					{true},
-					true,
-					true,
-					DepthCompareFunc::GreaterOrEqual,
-					{ColourFormat::BGRA8_sRGB},
-					DepthFormat::D32_SFloat,
-					"RenderToTextureNoClear",
-					true,
-					false,
-					{
-						{1,0},
-						{0,6}
-					}
-					)
-			});
+		
 
 		//#TODO: not ready for pipeline to be made yet
 #ifdef VCE_DEFERRED_SHADING

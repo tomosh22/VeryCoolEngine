@@ -34,6 +34,7 @@ using namespace VeryCoolEngine;
 VulkanRenderer* VulkanRenderer::s_pInstance = nullptr;
 
 VulkanRenderer::VulkanRenderer() {
+	Application* pxApp = Application::GetInstance();
 	InitWindow();
 	InitVulkan();
 
@@ -49,6 +50,9 @@ VulkanRenderer::VulkanRenderer() {
 
 	AsyncLoader::g_pxAsyncLoaderCommandBuffer = new VulkanCommandBuffer(true);
 
+	for (auto it = pxApp->m_xPipelineSpecs.begin(); it != pxApp->m_xPipelineSpecs.end(); it++) {
+		m_xPipelines.insert({ it->first,VulkanPipelineBuilder::FromSpecification(it->second) });
+	}
 
 	Application::GetInstance()->renderInitialised = true;
 }
@@ -66,9 +70,7 @@ void VulkanRenderer::InitialiseAssets() {
 
 	
 
-	for (auto it = app->m_xPipelineSpecs.begin(); it != app->m_xPipelineSpecs.end(); it++) {
-		m_xPipelines.insert({ it->first,VulkanPipelineBuilder::FromSpecification(it->second) });
-	}
+	
 
 
 

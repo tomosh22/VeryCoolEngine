@@ -12,8 +12,3 @@ layout(set = 1, binding = 2) uniform sampler2D roughnessTex;
 layout(set = 1, binding = 3) uniform sampler2D alphaTex;
 layout(set = 1, binding = 4) uniform sampler2D translucencyTex;
 layout(set = 1, binding = 5) uniform sampler2D heightmapTex;
-
-layout(push_constant) uniform ModelMatrix{
-	mat4 modelMatrix;
-	int bSelected;
-};

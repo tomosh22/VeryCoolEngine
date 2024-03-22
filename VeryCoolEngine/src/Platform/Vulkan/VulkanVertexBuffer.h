@@ -8,7 +8,7 @@ namespace VeryCoolEngine {
 	class VulkanVertexBuffer : public VertexBuffer
 	{
 	public:
-		VulkanVertexBuffer(void* m_pVerts, size_t size);
+		VulkanVertexBuffer(void* m_pVerts, size_t size, bool bDeviceLocal = true);
 		VulkanVertexBuffer() = default;
 		~VulkanVertexBuffer() { delete m_pxVertexBuffer; }
 		void UploadData() override;
