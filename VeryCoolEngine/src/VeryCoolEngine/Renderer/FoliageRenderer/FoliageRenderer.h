@@ -3,6 +3,7 @@
 
 namespace VeryCoolEngine {
 	class Scene;
+	class Mesh;
 	class FoliageRenderer
 	{
 	public:
@@ -10,6 +11,7 @@ namespace VeryCoolEngine {
 		~FoliageRenderer();
 		void RenderFoliage(Scene* pxScene);
 		RendererAPI::CommandBuffer* m_pxFoliageCommandBuffer;
+		Mesh* m_pxQuadMesh;
 	};
 
 }
