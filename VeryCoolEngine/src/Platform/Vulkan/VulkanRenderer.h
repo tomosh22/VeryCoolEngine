@@ -12,6 +12,7 @@
 
 #include "VeryCoolEngine/Renderer/Renderer.h"
 #include "VeryCoolEngine/Application.h"
+#include "Platform/Vulkan/VulkanMemoryManager.h"
 
 #define VCE_MATERIAL_TEXTURE_DESC_SET 1
 #define VCE_SKINNING_DESC_SET 2
@@ -124,6 +125,8 @@ namespace VeryCoolEngine {
 			
 
 			RendererAPI* m_pxRendererAPI;
+
+			VulkanMemoryManager* m_pxMemoryManager;
 		protected:
 			static VulkanRenderer* s_pInstance;
 

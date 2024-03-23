@@ -29,6 +29,8 @@
 #include "VeryCoolEngine/Renderer/AsyncLoader.h"
 
 
+
+
 using namespace VeryCoolEngine;
 
 VulkanRenderer* VulkanRenderer::s_pInstance = nullptr;
@@ -37,6 +39,8 @@ VulkanRenderer::VulkanRenderer() {
 	Application* pxApp = Application::GetInstance();
 	InitWindow();
 	InitVulkan();
+
+	m_pxMemoryManager = new VulkanMemoryManager;
 
 	m_pxRendererAPI = new RendererAPI;
 

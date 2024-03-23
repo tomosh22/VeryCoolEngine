@@ -18,14 +18,14 @@ namespace VeryCoolEngine {
 
 		vk::MemoryRequirements xRequirements = xDevice.getBufferMemoryRequirements(m_xBuffer);
 
-		uint32_t memoryType = -1;
+		uint32_t memoryType = ~0u;
 		for (uint32_t i = 0; i < xPhysDevice.getMemoryProperties().memoryTypeCount; i++) {
 			if ((xRequirements.memoryTypeBits & (1 << i)) && (xPhysDevice.getMemoryProperties().memoryTypes[i].propertyFlags & eMemProperties) == eMemProperties) {
 				memoryType = i;
 				break;
 			}
 		}
-		VCE_ASSERT(memoryType != -1, "couldn't find physical memory type");
+		VCE_ASSERT(memoryType != ~0u, "couldn't find physical memory type");
 
 		vk::MemoryAllocateInfo xAllocInfo = vk::MemoryAllocateInfo()
 			.setAllocationSize(xRequirements.size)
@@ -37,11 +37,21 @@ namespace VeryCoolEngine {
 
 	void VulkanBuffer::UploadData(void* pData, uint32_t uSize)
 	{
-		vk::Device xDevice = VulkanRenderer::GetInstance()->GetDevice();
+		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+		vk::Device& xDevice = pxRenderer->GetDevice();
+
 		void* pMappedPtr;
-		vkMapMemory(xDevice, m_xDeviceMem, 0, uSize, 0, &pMappedPtr);
-		memcpy(pMappedPtr, pData, uSize);
-		vkUnmapMemory(xDevice, m_xDeviceMem);
+		//TO_TODO: clean this up once every buffer goes through the memory manager
+		if (pxRenderer->m_pxMemoryManager->MemoryWasAllocated(this)) {
+			pMappedPtr = pxRenderer->m_pxMemoryManager->MapMemory(this);
+			memcpy(pMappedPtr, pData, uSize);
+			pxRenderer->m_pxMemoryManager->UnmapMemory(this);
+		}
+		else {
+			vkMapMemory(xDevice, m_xDeviceMem, 0, uSize, 0, &pMappedPtr);
+			memcpy(pMappedPtr, pData, uSize);
+			vkUnmapMemory(xDevice, m_xDeviceMem);
+		}
 	}
 
 	void VulkanBuffer::CopyBufferToBuffer(VulkanBuffer* pxSrc, VulkanBuffer* pxDst, size_t uSize)

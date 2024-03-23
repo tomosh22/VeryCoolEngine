@@ -78,6 +78,8 @@ namespace VeryCoolEngine {
 		GLFWwindow* pxWindow = (GLFWwindow*)Application::GetInstance()->GetWindow().GetNativeWindow();
 		glfwDestroyWindow(pxWindow);
 		glfwTerminate();
+
+		delete m_pxMemoryManager;
 	}
 
 	void VulkanRenderer::CleanupSwapChain() {
