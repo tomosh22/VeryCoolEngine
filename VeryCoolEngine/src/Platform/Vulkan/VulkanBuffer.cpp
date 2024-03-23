@@ -43,9 +43,7 @@ namespace VeryCoolEngine {
 		void* pMappedPtr;
 		//TO_TODO: clean this up once every buffer goes through the memory manager
 		if (pxRenderer->m_pxMemoryManager->MemoryWasAllocated(this)) {
-			pMappedPtr = pxRenderer->m_pxMemoryManager->MapMemory(this);
-			memcpy(pMappedPtr, pData, uSize);
-			pxRenderer->m_pxMemoryManager->UnmapMemory(this);
+			pxRenderer->m_pxMemoryManager->UploadData(this, pData, uSize);
 		}
 		else {
 			vkMapMemory(xDevice, m_xDeviceMem, 0, uSize, 0, &pMappedPtr);

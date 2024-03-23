@@ -7,6 +7,8 @@ namespace VeryCoolEngine {
 	constexpr size_t g_uCpuPoolSize = 1024u * 1024u * 1024u * 2u;
 	constexpr size_t g_uGpuPoolSize = 1024u * 1024u * 1024u * 2u;
 
+#define ALIGN(size, align) std::ceil((float)size / align) * align
+
 	class VulkanMemoryManager
 	{
 	public:
@@ -20,15 +22,15 @@ namespace VeryCoolEngine {
 
 		
 
-		VulkanBuffer* AllocateBuffer(uint32_t uSize, vk::BufferUsageFlags eUsageFlags, MemoryResidency eResidency);
+		VulkanBuffer* AllocateBuffer(size_t uSize, vk::BufferUsageFlags eUsageFlags, MemoryResidency eResidency);
 
-		void* MapMemory(void* pAllocation);
-		void UnmapMemory(void* pAllocation);
+		void UploadData(void* pAllocation, void* pData, size_t uSize);
 
 		bool MemoryWasAllocated(void* pAllocation);
 	private:
 
 		void HandleCpuOutOfMemory();
+		void HandleGpuOutOfMemory();
 
 		vk::DeviceMemory m_xCPUMemory;
 		vk::DeviceMemory m_xGPUMemory;

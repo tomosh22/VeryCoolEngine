@@ -12,26 +12,18 @@ VeryCoolEngine::VulkanVertexBuffer::VulkanVertexBuffer(void* pData, size_t size,
 
 		
 
-		m_pxVertexBuffer = new VulkanBuffer(size, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal);
+		//m_pxVertexBuffer = new VulkanBuffer(size, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal);
+		m_pxVertexBuffer = pxRenderer->m_pxMemoryManager->AllocateBuffer(size, vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, VulkanMemoryManager::GPU_RESIDENT);
 
 		if (pData) {
-
-			vk::Device& xDevice = pxRenderer->GetDevice();
-			void* pMappedData = xDevice.mapMemory(pxStagingBuffer.m_xDeviceMem, 0, size);
-			memcpy(pMappedData, pData, size);
-			xDevice.unmapMemory(pxStagingBuffer.m_xDeviceMem);
-
-			VulkanBuffer::CopyBufferToBuffer(&pxStagingBuffer, dynamic_cast<VulkanBuffer*>(m_pxVertexBuffer), size);
+			pxRenderer->m_pxMemoryManager->UploadData(m_pxVertexBuffer, pData, size);
 		}
 	}
 	else {
 		m_pxVertexBuffer = pxRenderer->m_pxMemoryManager->AllocateBuffer(size, vk::BufferUsageFlagBits::eVertexBuffer, VulkanMemoryManager::CPU_RESIDENT);
 
 		if (pData) {
-			vk::Device& xDevice = pxRenderer->GetDevice();
-			void* pMappedData = pxRenderer->m_pxMemoryManager->MapMemory(m_pxVertexBuffer);
-			memcpy(pMappedData, pData, size);
-			pxRenderer->m_pxMemoryManager->UnmapMemory(m_pxVertexBuffer);
+			pxRenderer->m_pxMemoryManager->UploadData(m_pxVertexBuffer, pData, size);
 		}
 	}
 
