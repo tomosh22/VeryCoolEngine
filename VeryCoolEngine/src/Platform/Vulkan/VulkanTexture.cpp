@@ -7,6 +7,8 @@
 #include "VeryCoolEngine/AssetHandling/Assets.h"
 #include "VulkanBuffer.h"
 #include "VeryCoolEngine/Renderer/AsyncLoader.h"
+#include "Platform/Vulkan/VulkanAssetHandler.h"
+#include "Platform/Vulkan/VulkanCommandBuffer.h"
 
 namespace VeryCoolEngine {
 
@@ -102,19 +104,34 @@ namespace VeryCoolEngine {
 
 		xDevice.bindImageMemory(m_xImage, m_xDeviceMemory, 0);
 
-		for(uint32_t i = 0; i < m_uNumMips; i++)
-			pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, i, 0,  bAsyncLoader);
-		VulkanBuffer::CopyBufferToImage(pxStagingBuffer, this, bAsyncLoader);
-		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eTransferSrcOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, 0, 0,  bAsyncLoader);
-		for (uint32_t i = 1; i < m_uNumMips; i++)
-			BlitImageToImage(this, this, i, bAsyncLoader);
-		pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, 0, 0, bAsyncLoader);
-		for (uint32_t i = 1; i < m_uNumMips; i++)
-			pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, i,  0, bAsyncLoader);//todo will probably need to change this to vertex shader in the future
+		if (bAsyncLoader) {
+			for (uint32_t i = 0; i < m_uNumMips; i++)
+				pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, i, 0, true);
+			VulkanBuffer::CopyBufferToImage(pxStagingBuffer, this, true);
+			pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eTransferSrcOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, 0, 0, true);
+			for (uint32_t i = 1; i < m_uNumMips; i++)
+				BlitImageToImage(this, this, i, true);
+			pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, 0, 0, true);
+			for (uint32_t i = 1; i < m_uNumMips; i++)
+				pxRenderer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, i, 0, true);//todo will probably need to change this to vertex shader in the future
 
-		//#TO_TODO: this needs deleting elsewhere
-		if(!bAsyncLoader)
-			delete pxStagingBuffer;
+		}
+		else {
+			VulkanCommandBuffer* pxBlockingCmdBuffer = dynamic_cast<VulkanAssetHandler*>(Application::GetInstance()->m_pxAssetHandler)->m_pxBlockingCommandBuffer;
+
+			for (uint32_t i = 0; i < m_uNumMips; i++)
+				pxBlockingCmdBuffer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, i, 0);
+			pxBlockingCmdBuffer->CopyBufferToImage(pxStagingBuffer, this);
+			pxBlockingCmdBuffer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eTransferSrcOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, 0, 0);
+			for (uint32_t i = 1; i < m_uNumMips; i++)
+				pxBlockingCmdBuffer->BlitImageToImage(this, this, i);
+			pxBlockingCmdBuffer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferSrcOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, 0, 0);
+			for (uint32_t i = 1; i < m_uNumMips; i++)
+				pxBlockingCmdBuffer->ImageTransitionBarrier(m_xImage, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageAspectFlagBits::eColor, vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, i, 0);//todo will probably need to change this to vertex shader in the future
+		}
+		
+		//#TO_TODO: delete staging buffer
+		//delete pxStagingBuffer;
 
 
 		vk::ImageSubresourceRange xSubresourceRange = vk::ImageSubresourceRange()

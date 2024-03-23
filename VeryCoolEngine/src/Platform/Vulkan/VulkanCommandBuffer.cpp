@@ -55,6 +55,29 @@ namespace VeryCoolEngine {
 
 	}
 
+	void VulkanCommandBuffer::EndAndCpuWait(bool bEndPass) {
+		if (bEndPass)
+			m_xCurrentCmdBuffer.endRenderPass();
+		m_xCurrentCmdBuffer.end();
+
+		vk::PipelineStageFlags eWaitStages = vk::PipelineStageFlagBits::eTransfer;
+
+		vk::SubmitInfo xSubmitInfo = vk::SubmitInfo()
+			.setCommandBufferCount(1)
+			.setPCommandBuffers(&m_xCurrentCmdBuffer)
+			.setWaitSemaphoreCount(0)
+			.setSignalSemaphoreCount(0);
+
+
+		vk::FenceCreateInfo fenceInfo;
+		vk::Fence xFence = m_pxRenderer->GetDevice().createFence(fenceInfo);
+		
+
+		m_pxRenderer->GetGraphicsQueue().submit(xSubmitInfo, xFence);
+
+		m_pxRenderer->GetDevice().waitForFences(1, &xFence, VK_TRUE, UINT64_MAX);
+	}
+
 	void VulkanCommandBuffer::SetVertexBuffer(VertexBuffer* xVertexBuffer, uint32_t uBindPoint /*= 0*/)
 	{
 		VulkanVertexBuffer* pxVkVertexBuffer = dynamic_cast<VulkanVertexBuffer*>(xVertexBuffer);
@@ -302,6 +325,105 @@ namespace VeryCoolEngine {
 			m_xBindings[eFreq].m_xTextures[i] = nullptr;
 		}
 		m_eCurrentBindFreq = eFreq;
+	}
+	void VulkanCommandBuffer::ImageTransitionBarrier(vk::Image xImage, vk::ImageLayout eOldLayout, vk::ImageLayout eNewLayout, vk::ImageAspectFlags eAspect, vk::PipelineStageFlags eSrcStage, vk::PipelineStageFlags eDstStage, int uMipLevel, int uLayer)
+	{
+		VulkanRenderer* pxRenderer = VulkanRenderer::GetInstance();
+
+		vk::ImageSubresourceRange xSubRange = vk::ImageSubresourceRange(eAspect, uMipLevel, 1, uLayer, 1);
+
+		vk::ImageMemoryBarrier xMemoryBarrier = vk::ImageMemoryBarrier()
+			.setSubresourceRange(xSubRange)
+			.setImage(xImage)
+			.setOldLayout(eOldLayout)
+			.setNewLayout(eNewLayout);
+
+		switch (eNewLayout) {
+		case (vk::ImageLayout::eTransferDstOptimal):
+			xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eTransferWrite);
+			break;
+		case (vk::ImageLayout::eTransferSrcOptimal):
+			xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eTransferRead);
+			break;
+		case (vk::ImageLayout::eColorAttachmentOptimal):
+			xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
+			break;
+		case (vk::ImageLayout::eDepthAttachmentOptimal):
+			xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eDepthStencilAttachmentWrite);
+			break;
+		case (vk::ImageLayout::eDepthStencilAttachmentOptimal):
+			xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eDepthStencilAttachmentWrite);
+			break;
+		case (vk::ImageLayout::eShaderReadOnlyOptimal):
+			xMemoryBarrier.setDstAccessMask(vk::AccessFlagBits::eShaderRead);
+			break;
+		default:
+			VCE_ASSERT(false, "unknown layout");
+			break;
+		}
+		
+		m_xCurrentCmdBuffer.pipelineBarrier(eSrcStage, eDstStage, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &xMemoryBarrier);
+	}
+
+	void VulkanCommandBuffer::CopyBufferToImage(VulkanBuffer* pxSrc, VulkanTexture2D* pxDst) {
+		vk::ImageSubresourceLayers xSubresource = vk::ImageSubresourceLayers()
+			.setAspectMask(vk::ImageAspectFlagBits::eColor)
+			.setMipLevel(0)
+			.setBaseArrayLayer(0)
+			.setLayerCount(1);
+
+
+		vk::BufferImageCopy region = vk::BufferImageCopy()
+			.setBufferOffset(0)
+			.setBufferRowLength(0)
+			.setBufferImageHeight(0)
+			.setImageSubresource(xSubresource)
+			.setImageOffset({ 0,0,0 })
+			.setImageExtent({ pxDst->GetWidth(), pxDst->GetHeight(), 1 });
+
+		
+			m_xCurrentCmdBuffer.copyBufferToImage(pxSrc->m_xBuffer, pxDst->m_xImage, vk::ImageLayout::eTransferDstOptimal, 1, &region);
+		
+	}
+	void VulkanCommandBuffer::BlitImageToImage(VulkanTexture2D* pxSrc, VulkanTexture2D* pxDst, uint32_t uDstMip)
+	{
+		std::array<vk::Offset3D, 2> axSrcOffsets;
+		axSrcOffsets.at(0).setX(0);
+		axSrcOffsets.at(0).setY(0);
+		axSrcOffsets.at(0).setZ(0);
+		axSrcOffsets.at(1).setX(pxSrc->GetWidth());
+		axSrcOffsets.at(1).setY(pxSrc->GetHeight());
+		axSrcOffsets.at(1).setZ(1);
+
+		vk::ImageSubresourceLayers xSrcSubresource = vk::ImageSubresourceLayers()
+			.setAspectMask(vk::ImageAspectFlagBits::eColor)
+			.setMipLevel(0)
+			.setBaseArrayLayer(0)
+			.setLayerCount(1);
+
+		std::array<vk::Offset3D, 2> axDstOffsets;
+		axDstOffsets.at(0).setX(0);
+		axDstOffsets.at(0).setY(0);
+		axDstOffsets.at(0).setZ(0);
+		axDstOffsets.at(1).setX(pxSrc->GetWidth() / std::pow(2, uDstMip));
+		axDstOffsets.at(1).setY(pxSrc->GetHeight() / std::pow(2, uDstMip));
+		axDstOffsets.at(1).setZ(1);
+
+		vk::ImageSubresourceLayers xDstSubresource = vk::ImageSubresourceLayers()
+			.setAspectMask(vk::ImageAspectFlagBits::eColor)
+			.setMipLevel(uDstMip)
+			.setBaseArrayLayer(0)
+			.setLayerCount(1);
+
+		vk::ImageBlit xBlit = vk::ImageBlit()
+			.setSrcOffsets(axSrcOffsets)
+			.setDstOffsets(axDstOffsets)
+			.setSrcSubresource(xSrcSubresource)
+			.setDstSubresource(xDstSubresource);
+
+		
+		m_xCurrentCmdBuffer.blitImage(pxSrc->m_xImage, vk::ImageLayout::eTransferSrcOptimal, pxDst->m_xImage, vk::ImageLayout::eTransferDstOptimal, xBlit, vk::Filter::eLinear);
+		
 	}
 }
 

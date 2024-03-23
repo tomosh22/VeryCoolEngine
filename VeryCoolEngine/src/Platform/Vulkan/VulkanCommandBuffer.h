@@ -5,6 +5,8 @@ namespace VeryCoolEngine {
 	class IndexBuffer;
 	class Buffer;
 	class Texture;
+	class VulkanBuffer;
+	class VulkanTexture2D;
 
 #define MAX_BINDINGS 16
 
@@ -21,6 +23,7 @@ namespace VeryCoolEngine {
 		VulkanCommandBuffer();
 		void BeginRecording() override;
 		void EndRecording(RenderOrder eOrder, bool bEndPass = true) override;
+		void EndAndCpuWait(bool bEndPass) override;
 		void SetVertexBuffer(VertexBuffer* xVertexBuffer, uint32_t uBindPoint = 0) override;
 		void SetIndexBuffer(IndexBuffer* xIndexBuffer) override;
 		void Draw(uint32_t uNumIndices, uint32_t uNumInstances = 1, uint32_t uVertexOffset = 0, uint32_t uIndexOffset = 0, uint32_t uInstanceOffset = 0) override;
@@ -35,6 +38,10 @@ namespace VeryCoolEngine {
 
 		vk::CommandBuffer& GetCurrentCmdBuffer() { return m_xCurrentCmdBuffer; }
 		void* Platform_GetCurrentCmdBuffer() const override { return (void*) & m_xCurrentCmdBuffer; }
+
+		void ImageTransitionBarrier(vk::Image xImage, vk::ImageLayout eOldLayout, vk::ImageLayout eNewLayout, vk::ImageAspectFlags eAspect, vk::PipelineStageFlags eSrcStage, vk::PipelineStageFlags eDstStage, int uMipLevel = 0, int uLayer = 0);
+		void CopyBufferToImage(VulkanBuffer* pxSrc, VulkanTexture2D* pxDst);
+		void BlitImageToImage(VulkanTexture2D* pxSrc, VulkanTexture2D* pxDst, uint32_t uDstMip);
 
 		//currently unused
 		vk::RenderPass TargetSetupToRenderPass(const RendererAPI::TargetSetup& xTargetSetup);

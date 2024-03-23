@@ -130,6 +130,7 @@ namespace VeryCoolEngine {
 			CommandBuffer() {}
 			virtual void BeginRecording() = 0;
 			virtual void EndRecording(RenderOrder eOrder, bool bEndPass = true) = 0;
+			virtual void EndAndCpuWait(bool bEndPass) = 0;
 			virtual void SetVertexBuffer(VertexBuffer* xVertexBuffer, uint32_t uBindPoint = 0) = 0;
 			virtual void SetIndexBuffer(IndexBuffer* xIndexBuffer) = 0;
 			virtual void Draw(uint32_t uNumIndices, uint32_t uNumInstances = 1, uint32_t uVertexOffset = 0, uint32_t uIndexOffset = 0, uint32_t uInstanceOffset = 0) = 0;
