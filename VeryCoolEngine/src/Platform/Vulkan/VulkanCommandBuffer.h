@@ -18,7 +18,7 @@ namespace VeryCoolEngine {
 	class VulkanCommandBuffer : public RendererAPI::CommandBuffer
 	{
 	public:
-		VulkanCommandBuffer(bool bAsyncLoader);
+		VulkanCommandBuffer();
 		void BeginRecording() override;
 		void EndRecording(RenderOrder eOrder, bool bEndPass = true) override;
 		void SetVertexBuffer(VertexBuffer* xVertexBuffer, uint32_t uBindPoint = 0) override;

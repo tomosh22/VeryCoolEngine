@@ -79,16 +79,7 @@ namespace VeryCoolEngine {
 		}
 	}
 
-	void AssetHandler::PlatformInitialiseAssets() {
-		for (auto it = m_xTexture2dMap.begin(); it != m_xTexture2dMap.end(); it++)
-			it->second->PlatformInit();
-		for (auto it = m_xMaterialMap.begin(); it != m_xMaterialMap.end(); it++)
-			it->second->PlatformInit();
-		for (auto it = m_xFoliageMaterialMap.begin(); it != m_xFoliageMaterialMap.end(); it++)
-			it->second->PlatformInit();
-		for (auto it = m_xMeshMap.begin(); it != m_xMeshMap.end(); it++)
-			it->second->PlatformInit();
-	}
+	
 
 	void AssetHandler::AddTexture2D(GUID xGUID, const std::string& strPath, TextureStreamPriority eStreamPrio) {
 		VCE_ASSERT(m_xTexture2dMap.find(xGUID.m_uGuid) == m_xTexture2dMap.end(), "Texture2D guid already exists");

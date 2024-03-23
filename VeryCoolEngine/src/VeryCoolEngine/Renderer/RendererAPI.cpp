@@ -5,9 +5,9 @@
 #endif
 
 namespace VeryCoolEngine {
-	RendererAPI::CommandBuffer* RendererAPI::CommandBuffer::Create(bool bAsyncLoader)
+	RendererAPI::CommandBuffer* RendererAPI::CommandBuffer::Create()
 	{
-		return new VulkanCommandBuffer(bAsyncLoader);
+		return new VulkanCommandBuffer;
 	}
 }
 

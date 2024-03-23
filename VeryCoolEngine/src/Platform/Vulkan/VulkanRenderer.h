@@ -333,7 +333,6 @@ namespace VeryCoolEngine {
 			std::vector<vk::Framebuffer> m_axRenderToTextureFramebuffersNoClear;
 
 			vk::CommandPool m_commandPool;
-			vk::CommandPool m_xAsyncLoaderCommandPool;
 			std::vector<vk::CommandBuffer> m_commandBuffers;
 
 			FoliageRenderer* m_pxFoliageRenderer;

@@ -734,7 +734,6 @@ namespace VeryCoolEngine {
 		poolInfo.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
 		poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
 		m_commandPool = m_device.createCommandPool(poolInfo);
-		m_xAsyncLoaderCommandPool = m_device.createCommandPool(poolInfo);
 	}
 
 	void VulkanRenderer::CreateDepthTexture() {

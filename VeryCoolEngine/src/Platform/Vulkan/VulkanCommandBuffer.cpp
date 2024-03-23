@@ -11,14 +11,11 @@
 #include "VulkanRenderPass.h"
 
 namespace VeryCoolEngine {
-	VulkanCommandBuffer::VulkanCommandBuffer(bool bAsyncLoader)
+	VulkanCommandBuffer::VulkanCommandBuffer()
 	{
 		m_pxRenderer = VulkanRenderer::GetInstance();
 		vk::CommandBufferAllocateInfo allocInfo{};
-		if(bAsyncLoader)
-			allocInfo.commandPool = m_pxRenderer->m_xAsyncLoaderCommandPool;
-		else
-			allocInfo.commandPool = m_pxRenderer->m_commandPool;
+		allocInfo.commandPool = m_pxRenderer->m_commandPool;
 		allocInfo.level = vk::CommandBufferLevel::ePrimary;
 		allocInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
 		m_xCmdBuffers = m_pxRenderer->m_device.allocateCommandBuffers(allocInfo);

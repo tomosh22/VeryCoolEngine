@@ -18,7 +18,7 @@ namespace VeryCoolEngine {
 
 	void AsyncLoader::ThreadFunc() {
 #ifdef VCE_VULKAN
-		g_pxAsyncLoaderCommandBuffer = new VulkanCommandBuffer(true);
+		g_pxAsyncLoaderCommandBuffer = new VulkanCommandBuffer;
 #endif
 		g_pxStagingBuffer = Buffer::CreateStaging(1024u * 1024u * 32);
 		Application* pxApp = Application::GetInstance();

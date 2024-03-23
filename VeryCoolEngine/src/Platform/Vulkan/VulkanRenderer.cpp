@@ -46,13 +46,13 @@ VulkanRenderer::VulkanRenderer() {
 
 	m_pxFoliageRenderer = new FoliageRenderer;
 
-	m_pxCopyToFramebufferCommandBuffer = new VulkanCommandBuffer(false);
-	m_pxSkyboxCommandBuffer = new VulkanCommandBuffer(false);
-	m_pxOpaqueMeshesCommandBuffer = new VulkanCommandBuffer(false);
-	m_pxTerrainCommandBuffer = new VulkanCommandBuffer(false);
-	m_pxSkinnedMeshesCommandBuffer = new VulkanCommandBuffer(false);
+	m_pxCopyToFramebufferCommandBuffer = new VulkanCommandBuffer;
+	m_pxSkyboxCommandBuffer = new VulkanCommandBuffer;
+	m_pxOpaqueMeshesCommandBuffer = new VulkanCommandBuffer;
+	m_pxTerrainCommandBuffer = new VulkanCommandBuffer;
+	m_pxSkinnedMeshesCommandBuffer = new VulkanCommandBuffer;
 
-	AsyncLoader::g_pxAsyncLoaderCommandBuffer = new VulkanCommandBuffer(true);
+	AsyncLoader::g_pxAsyncLoaderCommandBuffer = new VulkanCommandBuffer;
 
 	for (auto it = pxApp->m_xPipelineSpecs.begin(); it != pxApp->m_xPipelineSpecs.end(); it++) {
 		m_xPipelines.insert({ it->first,VulkanPipelineBuilder::FromSpecification(it->second) });
