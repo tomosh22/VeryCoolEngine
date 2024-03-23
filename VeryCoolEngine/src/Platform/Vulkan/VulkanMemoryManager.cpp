@@ -10,28 +10,22 @@ namespace VeryCoolEngine {
 		vk::PhysicalDevice& xPhysDevice = pxRenderer->GetPhysicalDevice();
 		vk::Device& xDevice = pxRenderer->GetDevice();
 
-		vk::MemoryRequirements xCpuRequirements;
-
 		vk::MemoryPropertyFlags eMemProperties = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-		uint32_t memoryType = ~0u;
+		uint32_t uMemoryType = ~0u;
 		for (uint32_t i = 0; i < xPhysDevice.getMemoryProperties().memoryTypeCount; i++) {
 			vk::MemoryType xMemType = xPhysDevice.getMemoryProperties().memoryTypes[i];
 			if(xMemType.propertyFlags & vk::MemoryPropertyFlagBits::eHostVisible && 
 				xMemType.propertyFlags & vk::MemoryPropertyFlagBits::eHostCoherent &&
 				xPhysDevice.getMemoryProperties().memoryHeaps[xMemType.heapIndex].size > g_uCpuPoolSize
 				)
-				memoryType = i;
+				uMemoryType = i;
 		}
-		VCE_ASSERT(memoryType != ~0u, "couldn't find physical memory type");
-		
-		xCpuRequirements.size = g_uCpuPoolSize;
-		xCpuRequirements.alignment = 1;
-		xCpuRequirements.memoryTypeBits = memoryType;
+		VCE_ASSERT(uMemoryType != ~0u, "couldn't find physical memory type");
 		
 
 		vk::MemoryAllocateInfo xAllocInfo = vk::MemoryAllocateInfo()
-			.setAllocationSize(xCpuRequirements.size)
-			.setMemoryTypeIndex(memoryType);
+			.setAllocationSize(g_uCpuPoolSize)
+			.setMemoryTypeIndex(uMemoryType);
 
 		m_xCPUMemory = xDevice.allocateMemory(xAllocInfo);
 	}
