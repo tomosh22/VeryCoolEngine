@@ -141,6 +141,7 @@ namespace VeryCoolEngine {
 	Application::~Application() { 
 		delete _window;
 		delete m_pxRendererScene;
+		delete m_pxAssetHandler;
 	}
 
 	
@@ -445,14 +446,15 @@ namespace VeryCoolEngine {
 		while (!m_bImGuiInitialised)
 			std::this_thread::yield();
 #endif
-		m_xAssetHandler.LoadAssetsFromFile("Assets.vceassets");
+		m_pxAssetHandler = AssetHandler::Create();
+		m_pxAssetHandler->LoadAssetsFromFile("Assets.vceassets");
 
 		for(uint32_t i = 0; i < 15; i++)
-			m_xAssetHandler.LoadAssetsFromFile(std::to_string(i) + ".vceassets");
-		m_xAssetHandler.LoadAssetsFromFile("heightmap.vceassets");
-		m_xAssetHandler.LoadAssetsFromFile("foliage.vceassets");
+			m_pxAssetHandler->LoadAssetsFromFile(std::to_string(i) + ".vceassets");
+		m_pxAssetHandler->LoadAssetsFromFile("heightmap.vceassets");
+		m_pxAssetHandler->LoadAssetsFromFile("foliage.vceassets");
 
-		m_xAssetHandler.PlatformInitialiseAssets();
+		m_pxAssetHandler->PlatformInitialiseAssets();
 		
 		m_pxCurrentScene = new Scene("TestScene.vcescene");
 		m_pxCurrentScene->LoadAssets("heightmap.vcescene");

@@ -4,6 +4,6 @@
 
 namespace VeryCoolEngine{
 	FoliageComponent::FoliageComponent(GUID xMaterialGUID, glm::vec3 xPos, TransformComponent& xTrans, Entity* xEntity) : m_xTransRef(xTrans), m_xParentEntity(*xEntity), m_xPos(xPos) {
-		m_pxMaterial = Application::GetInstance()->m_xAssetHandler.GetFoliageMaterial(xMaterialGUID);
+		m_pxMaterial = Application::GetInstance()->m_pxAssetHandler->GetFoliageMaterial(xMaterialGUID);
 	}
 }

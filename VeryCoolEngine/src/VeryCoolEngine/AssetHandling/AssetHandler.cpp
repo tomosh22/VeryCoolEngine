@@ -2,8 +2,17 @@
 #include "AssetHandler.h"
 #include "VeryCoolEngine/Renderer/Texture.h"
 #include "VeryCoolEngine/Renderer/Mesh.h"
+#ifdef VCE_VULKAN
+#include "Platform/Vulkan/VulkanAssetHandler.h"
+#endif
 
 namespace VeryCoolEngine {
+
+	AssetHandler* AssetHandler::Create() {
+#ifdef VCE_VULKAN
+		return new VulkanAssetHandler;
+#endif
+	}
 
 	void AssetHandler::LoadAssetsFromFile(const std::string& strFile) {
 		std::ifstream xIn(strFile);

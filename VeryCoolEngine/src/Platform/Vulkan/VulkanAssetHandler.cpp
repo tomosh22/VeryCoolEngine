@@ -7,9 +7,10 @@
 #include "Platform/Vulkan/VulkanCommandBuffer.h"
 
 namespace VeryCoolEngine {
-	void AssetHandler::PlatformInitialiseAssets() {
+	void VulkanAssetHandler::PlatformInitialiseAssets() {
 
-		//VulkanCommandBuffer* pxBlockingCommandBuffer = new VulkanCommandBuffer(false);
+		VulkanCommandBuffer* pxBlockingCommandBuffer = new VulkanCommandBuffer;
+		pxBlockingCommandBuffer->BeginRecording();
 
 		for (auto it = m_xTexture2dMap.begin(); it != m_xTexture2dMap.end(); it++)
 			it->second->PlatformInit();

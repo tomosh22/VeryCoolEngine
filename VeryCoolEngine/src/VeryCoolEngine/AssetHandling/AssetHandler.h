@@ -12,9 +12,11 @@ namespace VeryCoolEngine {
 		AssetHandler() = default;
 		~AssetHandler() {}
 
+		static AssetHandler* Create();
+
 		void LoadAssetsFromFile(const std::string& strFile);
 
-		void PlatformInitialiseAssets();
+		virtual void PlatformInitialiseAssets() = 0;
 
 		void AddTexture2D(GUID xGUID, const std::string& strPath, TextureStreamPriority eStreamPrio);
 		void AddMesh(GUID xGUID, const std::string& strPath);

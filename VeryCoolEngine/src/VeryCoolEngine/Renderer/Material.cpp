@@ -19,28 +19,28 @@ namespace VeryCoolEngine {
 
 	void Material::SetAlbedo(GUID xGUID)
 	{
-		m_pxAlbedo = Application::GetInstance()->m_xAssetHandler.TryGetTexture2D(xGUID);
+		m_pxAlbedo = Application::GetInstance()->m_pxAssetHandler->TryGetTexture2D(xGUID);
 	}
 
 	void Material::SetBumpMap(GUID xGUID)
 	{
-		m_pxBumpMap = Application::GetInstance()->m_xAssetHandler.TryGetTexture2D(xGUID);
+		m_pxBumpMap = Application::GetInstance()->m_pxAssetHandler->TryGetTexture2D(xGUID);
 	}
 
 	void Material::SetRoughness(GUID xGUID)
 	{
-		m_pxRoughnessTex = Application::GetInstance()->m_xAssetHandler.TryGetTexture2D(xGUID);
+		m_pxRoughnessTex = Application::GetInstance()->m_pxAssetHandler->TryGetTexture2D(xGUID);
 	}
 
 	void Material::SetMetallic(GUID xGUID)
 	{
-		m_pxMetallicTex = Application::GetInstance()->m_xAssetHandler.TryGetTexture2D(xGUID);
+		m_pxMetallicTex = Application::GetInstance()->m_pxAssetHandler->TryGetTexture2D(xGUID);
 	}
 
 	void Material::SetHeightmap(GUID xGUID)
 	{
 		
-		m_pxHeightmapTex = Application::GetInstance()->m_xAssetHandler.TryGetTexture2D(xGUID);
+		m_pxHeightmapTex = Application::GetInstance()->m_pxAssetHandler->TryGetTexture2D(xGUID);
 	}
 
 	void Material::SetAlbedo(Texture2D* pxTex)
@@ -82,31 +82,31 @@ namespace VeryCoolEngine {
 
 	void FoliageMaterial::SetAlbedo(GUID xGUID)
 	{
-		m_pxAlbedo = Application::GetInstance()->m_xAssetHandler.TryGetTexture2D(xGUID);
+		m_pxAlbedo = Application::GetInstance()->m_pxAssetHandler->TryGetTexture2D(xGUID);
 	}
 
 	void FoliageMaterial::SetBumpMap(GUID xGUID)
 	{
-		m_pxBumpMap = Application::GetInstance()->m_xAssetHandler.TryGetTexture2D(xGUID);
+		m_pxBumpMap = Application::GetInstance()->m_pxAssetHandler->TryGetTexture2D(xGUID);
 	}
 
 	void FoliageMaterial::SetHeightmap(GUID xGUID)
 	{
-		m_pxHeightmapTex = Application::GetInstance()->m_xAssetHandler.TryGetTexture2D(xGUID);
+		m_pxHeightmapTex = Application::GetInstance()->m_pxAssetHandler->TryGetTexture2D(xGUID);
 	}
 
 	void FoliageMaterial::SetRoughness(GUID xGUID)
 	{
-		m_pxRoughnessTex = Application::GetInstance()->m_xAssetHandler.TryGetTexture2D(xGUID);
+		m_pxRoughnessTex = Application::GetInstance()->m_pxAssetHandler->TryGetTexture2D(xGUID);
 	}
 
 	void FoliageMaterial::SetAlpha(GUID xGUID)
 	{
-		m_pxAlphaTex = Application::GetInstance()->m_xAssetHandler.TryGetTexture2D(xGUID);
+		m_pxAlphaTex = Application::GetInstance()->m_pxAssetHandler->TryGetTexture2D(xGUID);
 	}
 
 	void FoliageMaterial::SetTranslucency(GUID xGUID)
 	{
-		m_pxTranslucencyTex = Application::GetInstance()->m_xAssetHandler.TryGetTexture2D(xGUID);
+		m_pxTranslucencyTex = Application::GetInstance()->m_pxAssetHandler->TryGetTexture2D(xGUID);
 	}
 }

@@ -127,7 +127,7 @@ namespace VeryCoolEngine {
 
 		//#TO_TODO: do i want these handled by AssetHandler?
 		std::vector<HeightmapTexture*> m_apxHeightmapTextures;
-		AssetHandler m_xAssetHandler;
+		AssetHandler* m_pxAssetHandler;
 		AsyncLoader m_xAsyncLoader;
 
 		Texture2D* m_pxBlankTexture2D;
