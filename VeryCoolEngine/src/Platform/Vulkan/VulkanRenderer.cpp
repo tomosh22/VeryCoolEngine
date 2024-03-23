@@ -66,30 +66,6 @@ void VulkanRenderer::InitWindow() {
 	((WindowsWindow*)app->_window)->Init(WindowProperties());
 }
 
-void VulkanRenderer::InitialiseAssets() {
-	Application* app = Application::GetInstance();
-
-	
-	CreateDescriptorPool(false);
-
-	
-
-	
-
-
-
-	Scene* pxScene = app->m_pxCurrentScene;
-
-	VCE_ASSERT(pxScene != nullptr, "Null scene");
-
-	
-
-	for (ModelComponent* pxModelComponent : app->m_pxCurrentScene->GetAllOfComponentType<ModelComponent>()) {
-		for (Mesh* pMesh : pxModelComponent->GetModel()->m_apxMeshes) {
-			pMesh->PlatformInit();
-		}
-	}
-}
 
 void VulkanRenderer::CleanupAssets() {
 	Application* app = Application::GetInstance();

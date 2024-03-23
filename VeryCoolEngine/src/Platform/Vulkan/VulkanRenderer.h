@@ -54,7 +54,6 @@ namespace VeryCoolEngine {
 			virtual void PlatformInit() override;
 			virtual void OnResize(uint32_t uWidth, uint32_t uHeight) override;
 
-			virtual void InitialiseAssets() override;
 			virtual void CleanupAssets() override;
 			
 			virtual void WaitDeviceIdle() override;

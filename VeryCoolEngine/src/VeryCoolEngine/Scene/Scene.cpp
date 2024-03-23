@@ -188,7 +188,6 @@ namespace VeryCoolEngine {
 				}
 			}
 		}
-		app->_pRenderer->InitialiseAssets();
 	}
 
 	Scene::Scene(const std::string& strFilename) {

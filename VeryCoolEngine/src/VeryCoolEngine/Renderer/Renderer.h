@@ -28,7 +28,6 @@ namespace VeryCoolEngine {
 		virtual void PlatformInit()=0;
 		void GenericInit();
 
-		virtual void InitialiseAssets() = 0;
 		virtual void CleanupAssets() = 0;
 
 		virtual void WaitDeviceIdle() = 0;
